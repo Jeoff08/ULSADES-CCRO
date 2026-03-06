@@ -63,6 +63,16 @@ body {
   margin: 0;
 }
 
+/* Place-of-birth line: keep text continuous and normal word spacing (no stretched justify) */
+.ausf-doc .ausf-place-of-birth-line {
+  text-align: left;
+}
+.ausf-doc .ausf-place-of-birth-line .fill-blank {
+  display: inline !important;
+  min-width: 0;
+  text-align: left;
+}
+
 /* AUSF print document: 1.5 line spacing for body text (paragraphs, list items) */
 .ausf-doc {
   line-height: 1.5;
@@ -425,6 +435,13 @@ body.pdf-capture .ausf-doc {
   }
   .ausf-doc .text-justify {
     text-justify: inter-word;
+  }
+  /* Limit justified stretch so word spacing stays close to normal (one space) */
+  .ausf-doc ol li.text-justify {
+    word-spacing: 0.15em;
+  }
+  .ausf-doc .ausf-place-of-birth-line {
+    word-spacing: normal;
   }
   .ausf-doc .ausf-subscribed-sworn {
     line-height: 1.5 !important;

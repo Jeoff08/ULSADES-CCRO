@@ -108,13 +108,6 @@ export default function AUSFForm() {
             onChange={update.bind(null, 'relationshipToChild')}
             options={RELATIONSHIP_OPTIONS}
           />
-          <FormSelect
-            label="CIVIL STATUS"
-            id="civilStatus"
-            value={form.civilStatus}
-            onChange={update.bind(null, 'civilStatus')}
-            options={[{ value: 'single', label: 'Single' }, { value: 'married', label: 'Married' }]}
-          />
         </div>
       </FormSection>
 

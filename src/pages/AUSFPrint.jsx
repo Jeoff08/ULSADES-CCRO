@@ -5,6 +5,7 @@ import { defaultAUSF } from '../lib/ausfDefaults'
 import { formatDateLong, formatDateCert, fullName, formatDateCOLB } from '../lib/printUtils'
 
 const VIEW_PRINT_OPTIONS = [
+  { label: 'AUSF only', type: 'ausf-only' },
   { label: 'AUSF 0-6', type: 'ausf-0-6' },
   { label: 'AUSF 07-17', type: 'ausf-07-17' },
   { label: 'Registration of AUSF', type: 'reg-ausf' },
@@ -87,7 +88,6 @@ function PrintDocAUSFOnly({ data }) {
   const publicOffice = data.publicDocOffice
   const filingAt = data.filingLocation || 'ILIGAN CITY'
   const witnessDate = formatDateLong(data.affidavitExecutionDate) || colbDate
-  const civilStatus = data.civilStatus === 'married' ? 'married' : 'single'
   const placeCityProvince = [data.placeOfBirthCity, data.placeOfBirthProvince].filter(Boolean).join(', ')
 
   return (
@@ -95,14 +95,14 @@ function PrintDocAUSFOnly({ data }) {
       <DocumentHeader registryNo={data.ausfRegistryNo} />
       <h2 className="text-center font-bold text-lg uppercase mb-4 mt-2">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
       <p className="mb-4 leading-normal text-justify">
-        I, <span className={`${FILL} affiant-name-blank uppercase mx-0.5 align-baseline`}><span className="affiant-name-inner">{affiantName}</span></span>, of legal age, {civilStatus}, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
+        I, <span className={`${FILL} affiant-name-blank uppercase mx-0.5 align-baseline`}><span className="affiant-name-inner">{affiantName}</span></span>, of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
       </p>
 
       <ol className="list-decimal list-outside ml-8 mr-0 pl-1 space-y-3 mb-3 text-justify leading-normal">
         <li className="text-justify">
           I am seeking to use the surname of <span className={`${FILL} px-0.5 align-baseline`}>{surnameSought}</span> in the Certificate of Live Birth/Report of Birth of <span className={`${FILL} px-0.5 align-baseline`}>{childFullWithSurname}</span> who is my <span className={`${FILL} px-0.5 align-baseline uppercase`}>{data.relationshipToChild}</span> pursuant to R.A No. 9255;
         </li>
-        <li>
+        <li className="ausf-place-of-birth-line text-justify">
           <span>He/She was born on </span>
           <span className={`${FILL} px-0.5 align-baseline`}>{dobFormatted}</span>
           <span> at </span>
@@ -162,48 +162,49 @@ function PrintDocRegAUSF({ data }) {
   const publicOffice = data.publicDocOffice
   const filingAt = data.filingLocation || 'ILIGAN CITY'
   const witnessDate = formatDateLong(data.affidavitExecutionDate) || colbDate
-  const civilStatus = data.civilStatus === 'married' ? 'married' : 'single'
   const placeCityProvince = [data.placeOfBirthCity, data.placeOfBirthProvince].filter(Boolean).join(', ')
   const attestationName = fullName(data.childFirst, data.childMiddle, data.childLast) || data.applicantName
   const attestationRelationship = (data.relationshipToChild === 'FATHER' || data.relationshipToChild === 'MOTHER')
     ? (data.sex === 'MALE' ? 'SON' : 'DAUGHTER')
     : (data.relationshipToChild || 'SON')
+  const affiantFirstName = (affiantName || '').trim().split(/\s+/)[0] || affiantName || ''
+  const attestationFirstName = (attestationName || '').trim().split(/\s+/)[0] || attestationName || ''
 
   return (
-    <div className="ausf-doc print-doc ausf-07-17-doc bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4">
+    <div className="ausf-doc print-doc ausf-07-17-doc bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4 leading-normal">
       <DocumentHeader registryNo={data.ausfRegistryNo} />
       <h2 className="text-center font-bold text-lg uppercase mb-5 mt-4">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
       <p className="mb-4 leading-normal text-justify">
-        I, <span className={`${FILL} affiant-name-blank uppercase mx-0.5`}><span className="affiant-name-inner">{affiantName}</span></span>, of legal age, {civilStatus}, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
+        I, <span className={`${FILL} affiant-name-blank uppercase mx-0.5`}><span className="affiant-name-inner">{affiantFirstName}</span></span>, of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
       </p>
-      <ol className="list-decimal list-inside space-y-3 mb-4 ml-6">
-        <li>I am seeking to use the surname of <span className="fill-blank inline-block px-1 min-w-[4rem] text-center">{surnameSought}</span> in the Certificate of Live Birth/Report of Birth of <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{childFullWithSurname}</span> who is my <span className="fill-blank inline-block px-1 min-w-[4rem] text-center">{data.relationshipToChild}</span> pursuant to R.A No. 9255;</li>
-        <li>He/She was born on <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{dobFormatted}</span> at <span className="fill-blank inline-block px-1 min-w-[12rem] text-center">{data.placeOfBirthAddress}</span>.<span className="fill-blank inline-block px-1 min-w-[14rem] ml-6 text-center">{placeCityProvince}</span></li>
-        <li>The Birth was recorded under Registry Number <span className="fill-blank inline-block px-1 min-w-[5rem] text-center">{colbReg}</span> on <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{colbDate}</span>.</li>
-        <li>The Public Documents or the Private Handwritten Instrument was recorded under Registry Number <span className="fill-blank inline-block px-1 min-w-[5rem] text-center">{publicReg || ' '}</span> on <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{publicDate || ' '}</span> at the Local Civil Registry Office (LCRO)/Philippine Foreign Service Post (PFSP) of <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{publicOffice || ' '}</span>.</li>
-        <li>I am filing this AUSF at LCRO/PFSP of <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{filingAt}</span> in accordance with R.A No. 9255 and its Revised Implementing Rules and Regulations.</li>
-        <li>I hereby certify that the statements made herein are true and correct to the best of my knowledge and belief.</li>
+      <ol className="list-decimal list-inside space-y-3 mb-4 ml-6 text-justify">
+        <li className="text-justify">I am seeking to use the surname of <span className="fill-blank inline-block px-1 min-w-[4rem] text-center">{surnameSought}</span> in the Certificate of Live Birth/Report of Birth of <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{childFullWithSurname}</span> who is my <span className="fill-blank inline-block px-1 min-w-[4rem] text-center uppercase">{data.relationshipToChild}</span> pursuant to R.A No. 9255;</li>
+        <li className="ausf-place-of-birth-line text-justify">He/She was born on <span className={`${FILL} px-0.5 align-baseline`}>{dobFormatted}</span> at <span className={`${FILL} px-0.5 align-baseline`}>{data.placeOfBirthAddress}</span> <span className={`${FILL} px-0.5 align-baseline uppercase ml-0.5`}>{placeCityProvince}</span></li>
+        <li className="text-justify">The Birth was recorded under Registry Number <span className="fill-blank inline-block px-1 min-w-[5rem] text-center">{colbReg}</span> on <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{colbDate}</span>.</li>
+        <li className="text-justify">The Public Documents or the Private Handwritten Instrument was recorded under Registry Number <span className="fill-blank inline-block px-1 min-w-[5rem] text-center">{publicReg || ' '}</span> on <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{publicDate || ' '}</span> at the Local Civil Registry Office (LCRO)/Philippine Foreign Service Post (PFSP) of <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{publicOffice || ' '}</span>.</li>
+        <li className="text-justify">I am filing this AUSF at LCRO/PFSP of <span className="fill-blank inline-block px-1 min-w-[8rem] text-center uppercase">{filingAt}</span> in accordance with R.A No. 9255 and its Revised Implementing Rules and Regulations.</li>
+        <li className="text-justify">I hereby certify that the statements made herein are true and correct to the best of my knowledge and belief.</li>
       </ol>
-      <p className="mb-1">IN WITNESS WHEREOF, I have hereunto set my hand this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> at Iligan City, Philippines.</p>
+      <p className="mb-1 text-justify">IN WITNESS WHEREOF, I have hereunto set my hand this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> at Iligan City, Philippines.</p>
       <div className="text-center mt-6 mb-6">
-        <p className="fill-blank uppercase inline-block pb-0.5">{affiantName}</p>
+        <p className="fill-blank uppercase inline-block pb-0.5">{attestationName}</p>
         <p className="text-xs mt-1">Affiant</p>
       </div>
 
       <h2 className="text-center font-bold text-base uppercase my-6">SWORN ATTESTATION</h2>
       <p className="mb-3 text-justify">
-        I, <span className="fill-blank inline-block min-w-[12rem] text-center mx-1">{attestationName}</span>, of legal age, {civilStatus}, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare:
+        I, <span className="fill-blank inline-block min-w-[12rem] text-center mx-1">{attestationFirstName}</span>, of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
       </p>
-      <ol className="list-decimal list-inside space-y-2 mb-4 ml-6">
-        <li>That I am the <span className="fill-blank inline-block px-1 min-w-[3rem]">{attestationRelationship}</span> of the affiant in the above affidavit;</li>
-        <li>That my above-named child/ward is fully aware of the consequences of the Affidavit to use the surname of his/her father.</li>
+      <ol className="list-decimal list-inside space-y-2 mb-4 ml-6 text-justify">
+        <li className="text-justify">That I am the <span className="fill-blank inline-block px-1 min-w-[3rem]">{attestationRelationship}</span> of the affiant in the above affidavit;</li>
+        <li className="text-justify">That my above-named child/ward is fully aware of the consequences of the Affidavit to use the surname of his/her father.</li>
       </ol>
-      <p className="mb-1">IN WITNESS WHEREOF, I have hereunto set my hand this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> at Iligan City, Philippines.</p>
+      <p className="mb-1 text-justify">IN WITNESS WHEREOF, I have hereunto set my hand this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> at Iligan City, Philippines.</p>
       <div className="text-center mt-6 mb-4">
-        <p className="fill-blank uppercase inline-block pb-0.5">{attestationName}</p>
+        <p className="fill-blank uppercase inline-block pb-0.5">{affiantName}</p>
         <p className="text-xs mt-1">Affiant</p>
       </div>
-      <p className="ausf-subscribed-sworn mb-1">SUBSCRIBED AND SWORN to before me this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
+      <p className="ausf-subscribed-sworn mb-1 text-justify leading-normal">SUBSCRIBED AND SWORN to before me this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
       <div className="registrar-signature-zone flex-1 flex min-h-[3rem] flex-col justify-center items-end">
         <div className="text-right city-registrar-signature">
           <p className="font-bold">{data.cityCivilRegistrarName}</p>
@@ -682,6 +683,7 @@ export default function AUSFPrint() {
   }
 
   const type = displayType || data.formType
+  const isAUSFOnly = type === 'ausf-only'
   const isAUSF06 = type === 'ausf-0-6'
   const isAUSF0717 = type === 'ausf-07-17'
   const isRegAUSF = type === 'reg-ausf'
@@ -694,7 +696,7 @@ export default function AUSFPrint() {
   const isOutOfTown = type === 'out-of-town'
 
   let content
-  if (isAUSF06) content = <PrintDocAUSFOnly data={data} />
+  if (isAUSFOnly || isAUSF06) content = <PrintDocAUSFOnly data={data} />
   else if (isAUSF0717) content = <PrintDocRegAUSF data={data} />
   else if (isRegAUSF) content = <PrintDocCertRegistration data={data} isRegAck={false} />
   else if (isRegAck) content = <PrintDocCertRegistration data={data} isRegAck={true} />
@@ -706,62 +708,68 @@ export default function AUSFPrint() {
   else content = <LegacyPrintSummary data={data} />
 
   return (
-    <div className="flex gap-6 p-4 max-w-6xl mx-auto">
-      <aside className="no-print w-56 shrink-0 flex flex-col gap-3">
-        <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">View &amp; Print</h2>
-        <div className="flex flex-col gap-2">
-          {VIEW_PRINT_OPTIONS.map((opt) => {
-            const isSelected = type === opt.type
-            const isLcrButton = opt.type === 'child-not-ack-lcr' || opt.type === 'child-ack-lcr'
-            const btnClass = [
-              'text-left px-3 py-2.5 text-sm font-medium transition text-white',
-              isLcrButton ? 'bg-[#283750]' : '',
-              isLcrButton && opt.buttonRoundedLeft ? 'rounded-l-lg' : isLcrButton ? 'rounded-lg' : 'rounded-lg',
-              !isLcrButton && (isSelected ? 'bg-[var(--primary-blue)]' : 'bg-[var(--primary-blue)]/80 hover:bg-[var(--primary-blue)]'),
-              isLcrButton && isSelected ? 'ring-2 ring-offset-1 ring-[#283750]' : isLcrButton ? 'hover:bg-[#1e2d42]' : '',
-            ].filter(Boolean).join(' ')
-            return (
-              <button
-                key={opt.type}
-                type="button"
-                onClick={() => setDisplayType(opt.type)}
-                className={btnClass}
-              >
-                {opt.labelLine1 != null ? (
-                  <>
-                    <span className="block leading-tight">{opt.labelLine1}</span>
-                    <span className="block leading-tight">{opt.labelLine2}</span>
-                  </>
-                ) : (
-                  opt.label
-                )}
-              </button>
-            )
-          })}
-        </div>
-        <div className="mt-2 pt-2 border-t border-gray-200 flex flex-col gap-2">
-          <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">Paper size (for print)</label>
+    <div className="max-w-6xl mx-auto p-4">
+      <div className="no-print flex flex-wrap items-center justify-between gap-3 mb-4">
+        <button type="button" onClick={handleBack} className="px-3 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
+          Back to Form
+        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="sr-only" htmlFor="paper-size-select">Paper size (for print)</label>
           <select
+            id="paper-size-select"
             value={paperSize}
             onChange={(e) => setPaperSize(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
           >
             {PAPER_SIZES.map((p) => (
               <option key={p.id} value={p.id}>{p.label}</option>
             ))}
           </select>
-          <p className="text-xs text-gray-500">Layout fits one page on short, A4, and long bond. Choose size, then Print or Save as PDF.</p>
           <button type="button" onClick={handlePrint} className="px-3 py-2.5 bg-gray-700 text-white rounded-lg text-sm font-medium hover:bg-gray-800">
             Print
           </button>
-          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">To remove date, title, and URL from the printed page, uncheck &quot;Headers and footers&quot; in the print dialog.</p>
-          <button type="button" onClick={handleBack} className="px-3 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
-            Back to Form
-          </button>
         </div>
-      </aside>
-      <div className="flex-1 min-w-0">
-        {content}
+      </div>
+      <div className="flex gap-6">
+        <aside className="no-print w-56 shrink-0 flex flex-col gap-3">
+          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">View &amp; Print</h2>
+          <div className="flex flex-col gap-2">
+            {VIEW_PRINT_OPTIONS.map((opt) => {
+              const isSelected = type === opt.type
+              const isLcrButton = opt.type === 'child-not-ack-lcr' || opt.type === 'child-ack-lcr'
+              const btnClass = [
+                'text-left px-3 py-2.5 text-sm font-medium transition text-white',
+                isLcrButton ? 'bg-[#283750]' : '',
+                isLcrButton && opt.buttonRoundedLeft ? 'rounded-l-lg' : isLcrButton ? 'rounded-lg' : 'rounded-lg',
+                !isLcrButton && (isSelected ? 'bg-[var(--primary-blue)]' : 'bg-[var(--primary-blue)]/80 hover:bg-[var(--primary-blue)]'),
+                isLcrButton && isSelected ? 'ring-2 ring-offset-1 ring-[#283750]' : isLcrButton ? 'hover:bg-[#1e2d42]' : '',
+              ].filter(Boolean).join(' ')
+              return (
+                <button
+                  key={opt.type}
+                  type="button"
+                  onClick={() => setDisplayType(opt.type)}
+                  className={btnClass}
+                >
+                  {opt.labelLine1 != null ? (
+                    <>
+                      <span className="block leading-tight">{opt.labelLine1}</span>
+                      <span className="block leading-tight">{opt.labelLine2}</span>
+                    </>
+                  ) : (
+                    opt.label
+                  )}
+                </button>
+              )
+            })}
+          </div>
+          <div className="mt-2 pt-2 border-t border-gray-200 flex flex-col gap-2">
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">To remove date, title, and URL from the printed page, uncheck &quot;Headers and footers&quot; in the print dialog.</p>
+          </div>
+        </aside>
+        <div className="flex-1 min-w-0">
+          {content}
+        </div>
       </div>
     </div>
   )

@@ -41,6 +41,7 @@ export function addSavedAUSF(data) {
     const id = `ausf_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
     const label = data.applicantName || data.childFirst || data.formType || 'AUSF'
     const formTypeLabel = {
+      'ausf-only': 'AUSF only',
       'ausf-0-6': 'AUSF 0-6',
       'ausf-07-17': 'AUSF 07-17',
       'reg-ausf': 'Registration of AUSF',
@@ -108,6 +109,7 @@ export function updateSavedAUSF(id, data) {
     if (idx === -1) return false
     const label = data.applicantName || data.childFirst || data.formType || 'AUSF'
     const formTypeLabel = {
+      'ausf-only': 'AUSF only',
       'ausf-0-6': 'AUSF 0-6',
       'ausf-07-17': 'AUSF 07-17',
       'reg-ausf': 'Registration of AUSF',

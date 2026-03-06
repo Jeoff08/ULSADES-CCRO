@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { getSavedAUSFList, loadSavedAUSFToDraft, deleteSavedAUSF, restoreSavedAUSF } from '../lib/ausfStorage'
 
 const FORM_TYPE_LABELS = {
+  'ausf-only': 'AUSF only',
   'ausf-0-6': 'AUSF 0-6',
   'ausf-07-17': 'AUSF 07-17',
   'reg-ausf': 'Registration of AUSF',
