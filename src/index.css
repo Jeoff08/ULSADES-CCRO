@@ -1,0 +1,336 @@
+@import "tailwindcss";
+
+:root {
+  --primary-blue: #1e3a5f;
+  --primary-blue-light: #2d4a6f;
+  --primary-green: #0d9488;
+  --primary-green-light: #14b8a6;
+  --main-bg: #f1f5f9;
+  --card-bg: #ffffff;
+  --sidebar-bg: #1e3a5f;
+  --ulsades-font: 'Montserrat', sans-serif;
+}
+
+html {
+  font-size: 20px;
+}
+
+body {
+  margin: 0;
+  font-family: var(--ulsades-font);
+  font-size: 20px;
+  background: var(--main-bg);
+}
+
+/* Fill-in blanks: underline fits content width (like 2nd image), only slightly past the text */
+.fill-blank {
+  border-bottom: 1px solid #000;
+  padding-bottom: 1px;
+  padding-left: 0.15em;
+  padding-right: 0.15em;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.25;
+  vertical-align: baseline;
+  box-sizing: content-box;
+  width: fit-content;
+  min-width: 2em;
+  max-width: 100%;
+}
+.fill-blank.inline-block {
+  vertical-align: baseline;
+}
+/* Empty blanks (e.g. item 4): keep a visible minimum line length */
+.fill-blank.empty-blank {
+  min-width: 8rem;
+}
+
+/* Affiant name in "I, [NAME], of legal age..." — fixed width, name centered in the middle of the line */
+.ausf-doc .fill-blank.affiant-name-blank {
+  display: inline-block !important;
+  width: 6rem !important;
+  min-width: 6rem !important;
+  max-width: 6rem !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.ausf-doc .fill-blank.affiant-name-blank .affiant-name-inner {
+  display: block;
+  text-align: left;
+  width: 100%;
+  padding-left: 0;
+  margin-left: 1.5em;
+}
+
+/* Login page: blue & green, elderly-friendly (high contrast, large touch targets) */
+.login-page {
+  --login-bg-from: #0f766e;
+  --login-bg-to: #1e3a5f;
+  --login-heading: #0f172a;
+  --login-text: #1e293b;
+  --login-card-bg: #f8fafc;
+  --login-input-bg: #ffffff;
+  --login-input-border: #0f766e;
+  --login-placeholder: #64748b;
+  --login-focus: #0d9488;
+  --login-btn-bg: #0d9488;
+  --login-btn-hover: #0f766e;
+  --login-link: #1e40af;
+  --login-link-hover: #1e3a8a;
+  --login-error-bg: #fef2f2;
+  --login-error-text: #b91c1c;
+  --login-hint: #475569;
+  background: linear-gradient(160deg, var(--login-bg-from) 0%, #0d9488 40%, #1e40af 75%, var(--login-bg-to) 100%);
+}
+.login-page__bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, rgba(15, 118, 110, 0.15) 0%, rgba(13, 148, 136, 0.12) 50%, rgba(30, 64, 175, 0.12) 100%);
+  pointer-events: none;
+}
+.login-page__card {
+  background: var(--login-card-bg);
+  border: 2px solid rgba(15, 118, 110, 0.25);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  font-size: clamp(1rem, 2.5vw, 1.125rem);
+  line-height: 1.5;
+}
+.login-page__logo {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #fff;
+}
+.login-page__title {
+  color: var(--login-heading);
+  letter-spacing: 0.02em;
+}
+.login-page__subtitle {
+  color: var(--login-text);
+}
+.login-page__label {
+  color: var(--login-text);
+}
+.login-page__input {
+  background: var(--login-input-bg);
+  border-color: var(--login-input-border);
+  color: var(--login-text);
+}
+.login-page__input::placeholder {
+  color: var(--login-placeholder);
+}
+.login-page__input:focus {
+  border-color: var(--login-focus);
+}
+.login-page__btn {
+  background: linear-gradient(180deg, var(--login-btn-bg) 0%, var(--login-btn-hover) 100%);
+}
+.login-page__btn:hover {
+  background: linear-gradient(180deg, #0f766e 0%, #0d5c54 100%);
+}
+.login-page__link {
+  color: var(--login-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.login-page__link:hover {
+  color: var(--login-link-hover);
+}
+.login-page__error {
+  background: var(--login-error-bg);
+  color: var(--login-error-text);
+  font-weight: 500;
+}
+.login-page__hint {
+  color: var(--login-hint);
+}
+
+/* All underlined blanks (border-b): same 1px line, aligned under text */
+.ausf-doc .border-b.border-black,
+.print-doc .border-b.border-black {
+  border-bottom: 1px solid #000 !important;
+  padding-bottom: 1px;
+  line-height: 1.25;
+  vertical-align: baseline;
+  box-sizing: content-box;
+}
+
+/* Remove padding/margin during PDF capture so output has no margin */
+body.pdf-capture .print-doc,
+body.pdf-capture .ausf-doc {
+  padding: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  max-width: none !important;
+}
+
+@media print {
+  @page {
+    margin: 0;
+  }
+  body { background: white; margin: 0; padding: 0; }
+  .no-print { display: none !important; }
+  /* Ensure print page content is visible and uses full width */
+  main .flex.gap-6 { display: block !important; }
+  main .flex-1.min-w-0 { max-width: none !important; }
+  .print-doc {
+    max-width: 100% !important;
+    box-shadow: none !important;
+    padding: 0.3in 0.5in !important;
+    page-break-inside: avoid;
+  }
+  /* Compact layout to fit one page on A4 and short bond (8.5" × 11") */
+  .ausf-doc {
+    font-size: 10pt;
+    line-height: 1.3;
+  }
+  .ausf-doc .flex.justify-between.items-start {
+    margin-bottom: 0.1in !important;
+  }
+  .ausf-doc .flex.justify-between.items-start:first-of-type {
+    margin-bottom: 0.08in !important;
+  }
+  .ausf-doc hr {
+    margin-top: 0.06in !important;
+    margin-bottom: 0.06in !important;
+  }
+  .ausf-doc .flex.justify-between.items-baseline {
+    margin-bottom: 0.1in !important;
+  }
+  .ausf-doc h2 {
+    margin-bottom: 0.15in !important;
+    font-size: 1.05em;
+  }
+  .ausf-doc p {
+    margin-bottom: 0.1in !important;
+  }
+  .ausf-doc ol {
+    margin-bottom: 0.12in !important;
+  }
+  .ausf-doc ol li {
+    margin-bottom: 0.06in !important;
+  }
+  .ausf-doc .text-center.mt-6,
+  .ausf-doc .text-right.mt-6 {
+    margin-top: 0.15in !important;
+  }
+  .ausf-doc .text-xs.mt-6 {
+    margin-top: 0.15in !important;
+  }
+  .ausf-doc .border-t.mt-6 {
+    margin-top: 0.15in !important;
+    margin-bottom: 0.08in !important;
+  }
+  .ausf-doc header.mb-4 {
+    margin-bottom: 0.12in !important;
+  }
+  .ausf-doc .text-justify {
+    text-justify: inter-word;
+  }
+  /* Keep underline alignment in print/PDF */
+  .fill-blank,
+  .ausf-doc .border-b.border-black,
+  .print-doc .border-b.border-black {
+    border-bottom: 1px solid #000 !important;
+    padding-bottom: 1px !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Short bond (8.5" × 11"): tighter layout so content fits one page */
+  html[data-paper-size="short"] .print-doc {
+    padding: 0.2in 0.4in !important;
+  }
+  html[data-paper-size="short"] .ausf-doc {
+    font-size: 9pt !important;
+    line-height: 1.25 !important;
+  }
+  html[data-paper-size="short"] .ausf-doc header.mb-4 {
+    margin-bottom: 0.08in !important;
+  }
+  html[data-paper-size="short"] .ausf-doc h2 {
+    margin-top: 0.08in !important;
+    margin-bottom: 0.1in !important;
+    font-size: 1em !important;
+  }
+  html[data-paper-size="short"] .ausf-doc p {
+    margin-bottom: 0.06in !important;
+  }
+  html[data-paper-size="short"] .ausf-doc ol {
+    margin-bottom: 0.08in !important;
+  }
+  html[data-paper-size="short"] .ausf-doc ol li {
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="short"] .ausf-doc .text-center.mt-6,
+  html[data-paper-size="short"] .ausf-doc .text-right.mt-6,
+  html[data-paper-size="short"] .ausf-doc .text-xs.mt-6,
+  html[data-paper-size="short"] .ausf-doc .border-t.mt-6 {
+    margin-top: 0.1in !important;
+  }
+  html[data-paper-size="short"] .ausf-doc .border-t.mt-6 {
+    margin-bottom: 0.06in !important;
+  }
+  html[data-paper-size="short"] .ausf-doc hr {
+    margin-top: 0.04in !important;
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="short"] .ausf-doc .flex.justify-between.items-start,
+  html[data-paper-size="short"] .ausf-doc .flex.justify-between.items-baseline {
+    margin-bottom: 0.06in !important;
+  }
+  html[data-paper-size="short"] .ausf-doc table {
+    font-size: 0.95em;
+  }
+  html[data-paper-size="short"] .ausf-doc table td {
+    padding: 0.1in 0.15in !important;
+  }
+  /* AUSF 07-17: extra compact on short bond so affidavit + attestation fit one page */
+  html[data-paper-size="short"] .ausf-07-17-doc .text-center.mt-6.mb-6 {
+    margin-top: 0.08in !important;
+    margin-bottom: 0.08in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc h2.my-6 {
+    margin-top: 0.1in !important;
+    margin-bottom: 0.1in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc .text-center.mt-6.mb-4 {
+    margin-top: 0.08in !important;
+    margin-bottom: 0.06in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc .text-right.mt-6 {
+    margin-top: 0.1in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc ol.mb-4 {
+    margin-bottom: 0.08in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc p.mb-3 {
+    margin-bottom: 0.08in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc p.mb-1 {
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc header.mb-4 {
+    margin-bottom: 0.06in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc h2.mb-5.mt-4 {
+    margin-top: 0.06in !important;
+    margin-bottom: 0.1in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc p.mb-4 {
+    margin-bottom: 0.08in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc hr.border-t.mt-6 {
+    margin-top: 0.12in !important;
+    margin-bottom: 0.06in !important;
+  }
+
+  /* Long bond: comfortable spacing so content fits one page without cramping */
+  html[data-paper-size="long"] .print-doc {
+    padding: 0.35in 0.5in !important;
+  }
+  html[data-paper-size="long"] .ausf-doc {
+    font-size: 10.5pt;
+    line-height: 1.35;
+  }
+}
