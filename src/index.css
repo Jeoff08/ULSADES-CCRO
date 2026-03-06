@@ -45,23 +45,47 @@ body {
   min-width: 8rem;
 }
 
-/* Affiant name in "I, [NAME], of legal age..." — fixed width, name centered in the middle of the line */
+/* Affiant name in "I, [NAME], of legal age..." — expands with long names */
 .ausf-doc .fill-blank.affiant-name-blank {
   display: inline-block !important;
-  width: 6rem !important;
-  min-width: 6rem !important;
-  max-width: 6rem !important;
+  min-width: 4rem;
+  width: fit-content !important;
+  max-width: 100% !important;
   box-sizing: border-box !important;
-  text-align: center !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+  text-align: left !important;
+  padding-left: 0.5em !important;
+  padding-right: 0.15em !important;
 }
 .ausf-doc .fill-blank.affiant-name-blank .affiant-name-inner {
-  display: block;
+  display: inline;
   text-align: left;
-  width: 100%;
-  padding-left: 0;
-  margin-left: 1.5em;
+  padding: 0;
+  margin: 0;
+}
+
+/* AUSF print document: 1.5 line spacing for body text (paragraphs, list items) */
+.ausf-doc {
+  line-height: 1.5;
+}
+.ausf-doc p,
+.ausf-doc ol,
+.ausf-doc ol li {
+  line-height: 1.5;
+}
+/* One-line gap between "AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)" and body */
+.ausf-doc h2 {
+  font-size: 21px;
+  margin-bottom: 1.25rem;
+}
+/* "SUBSCRIBED AND SWORN..." paragraph: always 1.5 line spacing */
+.ausf-doc .ausf-subscribed-sworn {
+  line-height: 1.5;
+}
+/* Footer (CONTACT DETAILS + tagline): no extra spacing between lines */
+.print-doc-footer p {
+  margin: 0;
+  padding: 0;
+  line-height: 1.25;
 }
 
 /* Login page: blue & green, elderly-friendly (high contrast, large touch targets) */
@@ -155,6 +179,57 @@ body {
   box-sizing: content-box;
 }
 
+/* Short bond only (screen): footer at bottom edge */
+html[data-paper-size="short"] .print-doc {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-bottom: 0.25rem;
+}
+html[data-paper-size="short"] .print-doc-footer {
+  margin-top: auto;
+  flex-shrink: 0;
+  padding-bottom: 0.25rem;
+}
+/* A4 only: footer at bottom of page (short and long unchanged) */
+html[data-paper-size="a4"] .print-doc {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-bottom: 0.25rem;
+}
+html[data-paper-size="a4"] .registrar-signature-zone {
+  margin-top: auto;
+}
+html[data-paper-size="a4"] .print-doc-footer {
+  margin-top: auto;
+  flex-shrink: 0;
+  padding-bottom: 0.25rem;
+}
+/* Long bond only (screen): footer at bottom edge */
+html[data-paper-size="long"] .print-doc {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-bottom: 0.25rem;
+}
+html[data-paper-size="long"] .print-doc-footer {
+  margin-top: auto;
+  flex-shrink: 0;
+  padding-bottom: 0.25rem;
+}
+
+/* AUSF 0-6: preview min-height matches selected paper so layout auto-adjusts on screen */
+html[data-paper-size="short"] .ausf-0-6-doc.print-doc {
+  min-height: 11in;
+}
+html[data-paper-size="a4"] .ausf-0-6-doc.print-doc {
+  min-height: 297mm;
+}
+html[data-paper-size="long"] .ausf-0-6-doc.print-doc {
+  min-height: 13in;
+}
+
 /* Remove padding/margin during PDF capture so output has no margin */
 body.pdf-capture .print-doc,
 body.pdf-capture .ausf-doc {
@@ -168,21 +243,134 @@ body.pdf-capture .ausf-doc {
   @page {
     margin: 0;
   }
-  body { background: white; margin: 0; padding: 0; }
+  html, body {
+    background: white;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  main::-webkit-scrollbar,
+  *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+  html::-webkit-scrollbar-button,
+  body::-webkit-scrollbar-button,
+  main::-webkit-scrollbar-button,
+  *::-webkit-scrollbar-button {
+    display: none !important;
+  }
   .no-print { display: none !important; }
   /* Ensure print page content is visible and uses full width */
   main .flex.gap-6 { display: block !important; }
-  main .flex-1.min-w-0 { max-width: none !important; }
+  main .flex-1.min-w-0 { max-width: none !important; overflow: visible !important; }
+  main { overflow: hidden !important; }
   .print-doc {
     max-width: 100% !important;
     box-shadow: none !important;
     padding: 0.3in 0.5in !important;
     page-break-inside: avoid;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .ausf-0-6-doc.print-doc {
+    page-break-inside: avoid !important;
+  }
+  .print-doc-footer {
+    page-break-inside: avoid;
+  }
+  .print-doc-footer p {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.25 !important;
+  }
+  /* A4 only: footer at bottom of page + compact spacing so 1.5 line-height fits one page */
+  html[data-paper-size="a4"] .print-doc {
+    min-height: 297mm !important;
+    padding: 0.25in 0.5in 0.15in !important;
+  }
+  html[data-paper-size="a4"] .registrar-signature-zone {
+    margin-top: auto !important;
+  }
+  html[data-paper-size="a4"] .print-doc-footer {
+    margin-top: auto !important;
+    padding-bottom: 0.08in;
+  }
+  html[data-paper-size="a4"] .ausf-doc,
+  html[data-paper-size="a4"] .ausf-0-6-doc {
+    font-size: 9.5pt !important;
+    line-height: 1.45 !important;
+  }
+  html[data-paper-size="a4"] .ausf-doc header.mb-4,
+  html[data-paper-size="a4"] .ausf-0-6-doc header.mb-4 {
+    margin-bottom: 0.07in !important;
+  }
+  html[data-paper-size="a4"] .ausf-doc h2,
+  html[data-paper-size="a4"] .ausf-0-6-doc h2 {
+    margin-top: 0.05in !important;
+    margin-bottom: 0.2in !important;
+    font-size: 1.05rem !important;
+  }
+  html[data-paper-size="a4"] .ausf-doc p,
+  html[data-paper-size="a4"] .ausf-0-6-doc p {
+    margin-bottom: 0.05in !important;
+    line-height: 1.45 !important;
+  }
+  html[data-paper-size="a4"] .ausf-doc ol,
+  html[data-paper-size="a4"] .ausf-0-6-doc ol {
+    margin-bottom: 0.06in !important;
+  }
+  html[data-paper-size="a4"] .ausf-doc ol li,
+  html[data-paper-size="a4"] .ausf-0-6-doc ol li {
+    margin-bottom: 0.035in !important;
+    line-height: 1.45 !important;
+  }
+  html[data-paper-size="a4"] .ausf-doc .text-center.mt-6,
+  html[data-paper-size="a4"] .ausf-doc .text-right.mt-6,
+  html[data-paper-size="a4"] .ausf-doc .text-xs.mt-6,
+  html[data-paper-size="a4"] .ausf-doc .border-t.mt-6,
+  html[data-paper-size="a4"] .ausf-0-6-doc .text-center.mt-6,
+  html[data-paper-size="a4"] .ausf-0-6-doc .text-right.mt-6,
+  html[data-paper-size="a4"] .ausf-0-6-doc .text-xs.mt-6,
+  html[data-paper-size="a4"] .ausf-0-6-doc .border-t.mt-6 {
+    margin-top: 0.08in !important;
+  }
+  html[data-paper-size="a4"] .ausf-doc .border-t.mt-6,
+  html[data-paper-size="a4"] .ausf-0-6-doc .border-t.mt-6 {
+    margin-bottom: 0.05in !important;
+  }
+  html[data-paper-size="a4"] .ausf-doc hr,
+  html[data-paper-size="a4"] .ausf-0-6-doc hr {
+    margin-top: 0.035in !important;
+    margin-bottom: 0.035in !important;
+  }
+  html[data-paper-size="a4"] .ausf-doc .registrar-signature-zone,
+  html[data-paper-size="a4"] .ausf-0-6-doc .registrar-signature-zone {
+    min-height: 1.5rem !important;
+  }
+  /* Long bond only: footer at bottom edge of page (short and A4 unchanged) */
+  html[data-paper-size="long"] .print-doc {
+    min-height: 13in !important;
+    padding: 0.35in 0.5in 0.15in !important;
+  }
+  html[data-paper-size="long"] .print-doc-footer {
+    margin-top: auto !important;
+    padding-bottom: 0.08in;
   }
   /* Compact layout to fit one page on A4 and short bond (8.5" × 11") */
   .ausf-doc {
     font-size: 10pt;
-    line-height: 1.3;
+    line-height: 1.5;
+  }
+  .ausf-doc p,
+  .ausf-doc ol,
+  .ausf-doc ol li {
+    line-height: 1.5 !important;
   }
   .ausf-doc .flex.justify-between.items-start {
     margin-bottom: 0.1in !important;
@@ -198,8 +386,8 @@ body.pdf-capture .ausf-doc {
     margin-bottom: 0.1in !important;
   }
   .ausf-doc h2 {
-    margin-bottom: 0.15in !important;
-    font-size: 1.05em;
+    margin-bottom: 0.28in !important;
+    font-size: 21px !important;
   }
   .ausf-doc p {
     margin-bottom: 0.1in !important;
@@ -214,6 +402,17 @@ body.pdf-capture .ausf-doc {
   .ausf-doc .text-right.mt-6 {
     margin-top: 0.15in !important;
   }
+  .ausf-doc .registrar-signature-zone {
+    flex: 1 1 auto !important;
+    min-height: 2rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: flex-end !important;
+  }
+  .ausf-doc .city-registrar-signature {
+    margin-top: 0 !important;
+  }
   .ausf-doc .text-xs.mt-6 {
     margin-top: 0.15in !important;
   }
@@ -227,6 +426,9 @@ body.pdf-capture .ausf-doc {
   .ausf-doc .text-justify {
     text-justify: inter-word;
   }
+  .ausf-doc .ausf-subscribed-sworn {
+    line-height: 1.5 !important;
+  }
   /* Keep underline alignment in print/PDF */
   .fill-blank,
   .ausf-doc .border-b.border-black,
@@ -237,100 +439,359 @@ body.pdf-capture .ausf-doc {
     print-color-adjust: exact;
   }
 
-  /* Short bond (8.5" × 11"): tighter layout so content fits one page */
+  /* Short bond only: tighter layout + footer at bottom edge of page (long unchanged) */
   html[data-paper-size="short"] .print-doc {
-    padding: 0.2in 0.4in !important;
+    padding: 0.2in 0.4in 0.15in !important;
+    min-height: 11in !important;
   }
-  html[data-paper-size="short"] .ausf-doc {
+  html[data-paper-size="short"] .print-doc-footer {
+    margin-top: auto !important;
+    padding-bottom: 0.08in;
+  }
+  html[data-paper-size="short"] .ausf-doc,
+  html[data-paper-size="short"] .ausf-0-6-doc {
     font-size: 9pt !important;
     line-height: 1.25 !important;
   }
-  html[data-paper-size="short"] .ausf-doc header.mb-4 {
-    margin-bottom: 0.08in !important;
-  }
-  html[data-paper-size="short"] .ausf-doc h2 {
-    margin-top: 0.08in !important;
-    margin-bottom: 0.1in !important;
-    font-size: 1em !important;
-  }
-  html[data-paper-size="short"] .ausf-doc p {
+  html[data-paper-size="short"] .ausf-doc header.mb-4,
+  html[data-paper-size="short"] .ausf-0-6-doc header.mb-4 {
     margin-bottom: 0.06in !important;
   }
-  html[data-paper-size="short"] .ausf-doc ol {
-    margin-bottom: 0.08in !important;
+  html[data-paper-size="short"] .ausf-doc h2,
+  html[data-paper-size="short"] .ausf-0-6-doc h2 {
+    margin-top: 0.05in !important;
+    margin-bottom: 0.18in !important;
+    font-size: 1rem !important;
   }
-  html[data-paper-size="short"] .ausf-doc ol li {
-    margin-bottom: 0.04in !important;
+  html[data-paper-size="short"] .ausf-doc p,
+  html[data-paper-size="short"] .ausf-0-6-doc p {
+    margin-bottom: 0.05in !important;
+  }
+  html[data-paper-size="short"] .ausf-doc ol,
+  html[data-paper-size="short"] .ausf-0-6-doc ol {
+    margin-bottom: 0.06in !important;
+  }
+  html[data-paper-size="short"] .ausf-doc ol li,
+  html[data-paper-size="short"] .ausf-0-6-doc ol li {
+    margin-bottom: 0.03in !important;
   }
   html[data-paper-size="short"] .ausf-doc .text-center.mt-6,
   html[data-paper-size="short"] .ausf-doc .text-right.mt-6,
   html[data-paper-size="short"] .ausf-doc .text-xs.mt-6,
-  html[data-paper-size="short"] .ausf-doc .border-t.mt-6 {
-    margin-top: 0.1in !important;
+  html[data-paper-size="short"] .ausf-doc .border-t.mt-6,
+  html[data-paper-size="short"] .ausf-0-6-doc .text-center.mt-6,
+  html[data-paper-size="short"] .ausf-0-6-doc .text-right.mt-6,
+  html[data-paper-size="short"] .ausf-0-6-doc .text-xs.mt-6,
+  html[data-paper-size="short"] .ausf-0-6-doc .border-t.mt-6 {
+    margin-top: 0.08in !important;
   }
-  html[data-paper-size="short"] .ausf-doc .border-t.mt-6 {
-    margin-bottom: 0.06in !important;
+  html[data-paper-size="short"] .ausf-doc .border-t.mt-6,
+  html[data-paper-size="short"] .ausf-0-6-doc .border-t.mt-6 {
+    margin-bottom: 0.05in !important;
   }
-  html[data-paper-size="short"] .ausf-doc hr {
+  html[data-paper-size="short"] .ausf-doc hr,
+  html[data-paper-size="short"] .ausf-0-6-doc hr {
+    margin-top: 0.03in !important;
+    margin-bottom: 0.03in !important;
+  }
+  html[data-paper-size="short"] .ausf-doc .flex.justify-between.items-start,
+  html[data-paper-size="short"] .ausf-doc .flex.justify-between.items-baseline,
+  html[data-paper-size="short"] .ausf-0-6-doc .flex.justify-between.items-start,
+  html[data-paper-size="short"] .ausf-0-6-doc .flex.justify-between.items-baseline {
+    margin-bottom: 0.05in !important;
+  }
+  html[data-paper-size="short"] .ausf-doc .registrar-signature-zone,
+  html[data-paper-size="short"] .ausf-0-6-doc .registrar-signature-zone {
+    min-height: 1.25rem !important;
+  }
+  html[data-paper-size="short"] .ausf-doc .print-doc-footer,
+  html[data-paper-size="short"] .ausf-0-6-doc .print-doc-footer {
+    margin-top: auto !important;
+  }
+  html[data-paper-size="short"] .ausf-doc table,
+  html[data-paper-size="short"] .ausf-0-6-doc table {
+    font-size: 0.95em;
+  }
+  html[data-paper-size="short"] .ausf-doc table td,
+  html[data-paper-size="short"] .ausf-0-6-doc table td {
+    padding: 0.1in 0.15in !important;
+  }
+  /* AUSF 07-17: keep on one page for all paper sizes */
+  .ausf-07-17-doc {
+    page-break-inside: avoid;
+  }
+
+  /* AUSF 07-17 short bond: auto-adjust to fit one page (font, padding, all spacing reduced) */
+  html[data-paper-size="short"] .ausf-07-17-doc {
+    font-size: 8pt !important;
+    line-height: 1.15 !important;
+    padding: 0.12in 0.35in 0.1in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc header.mb-4 {
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc header.mb-4 hr {
+    margin-top: 0.02in !important;
+    margin-bottom: 0.02in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc h2 {
+    font-size: 0.95rem !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc h2.mb-5.mt-4 {
+    margin-top: 0.04in !important;
+    margin-bottom: 0.05in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc h2.my-6 {
+    margin-top: 0.05in !important;
+    margin-bottom: 0.05in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc p.mb-4 {
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc p.mb-3 {
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc p.mb-1 {
+    margin-bottom: 0.02in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc ol {
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc ol.mb-4 {
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc ol li {
+    margin-bottom: 0.02in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc .text-center.mt-6.mb-6 {
     margin-top: 0.04in !important;
     margin-bottom: 0.04in !important;
   }
-  html[data-paper-size="short"] .ausf-doc .flex.justify-between.items-start,
-  html[data-paper-size="short"] .ausf-doc .flex.justify-between.items-baseline {
-    margin-bottom: 0.06in !important;
-  }
-  html[data-paper-size="short"] .ausf-doc table {
-    font-size: 0.95em;
-  }
-  html[data-paper-size="short"] .ausf-doc table td {
-    padding: 0.1in 0.15in !important;
-  }
-  /* AUSF 07-17: extra compact on short bond so affidavit + attestation fit one page */
-  html[data-paper-size="short"] .ausf-07-17-doc .text-center.mt-6.mb-6 {
-    margin-top: 0.08in !important;
-    margin-bottom: 0.08in !important;
-  }
-  html[data-paper-size="short"] .ausf-07-17-doc h2.my-6 {
-    margin-top: 0.1in !important;
-    margin-bottom: 0.1in !important;
+  html[data-paper-size="short"] .ausf-07-17-doc .text-center.mt-6.mb-6 .text-xs {
+    margin-top: 0.01in !important;
   }
   html[data-paper-size="short"] .ausf-07-17-doc .text-center.mt-6.mb-4 {
+    margin-top: 0.04in !important;
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc h2.my-6 + p.mb-3 {
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc .text-right.city-registrar-signature {
+    margin-top: 0 !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc .registrar-signature-zone {
+    min-height: 1.5rem !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc .registrar-signature-zone .text-sm {
+    font-size: 7.5pt !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc .print-doc-footer {
+    margin-top: 0.06in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc .print-doc-footer hr {
+    margin-top: 0.03in !important;
+    margin-bottom: 0.02in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc .print-doc-footer .flex {
+    font-size: 7.5pt !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc hr.border-t.mt-6 {
+    margin-top: 0.05in !important;
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc .ausf-subscribed-sworn {
+    margin-bottom: 0.03in !important;
+  }
+
+  /* AUSF 07-17: fit one page on A4 */
+  html[data-paper-size="a4"] .ausf-07-17-doc {
+    font-size: 9pt !important;
+    line-height: 1.2 !important;
+    padding: 0.2in 0.4in 0.15in !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc header.mb-4 {
+    margin-bottom: 0.06in !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc h2.mb-5.mt-4 {
+    margin-top: 0.05in !important;
+    margin-bottom: 0.08in !important;
+    font-size: 1rem !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc h2.my-6 {
+    margin-top: 0.08in !important;
+    margin-bottom: 0.08in !important;
+    font-size: 0.95rem !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc p.mb-4,
+  html[data-paper-size="a4"] .ausf-07-17-doc ol.mb-4 {
+    margin-bottom: 0.06in !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc p.mb-3 {
+    margin-bottom: 0.05in !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc p.mb-1 {
+    margin-bottom: 0.03in !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc .text-center.mt-6.mb-6,
+  html[data-paper-size="a4"] .ausf-07-17-doc .text-center.mt-6.mb-4 {
+    margin-top: 0.06in !important;
+    margin-bottom: 0.05in !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone {
+    min-height: 2rem !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc .print-doc-footer {
+    margin-top: 0.15in !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc ol li {
+    margin-bottom: 0.02in !important;
+  }
+
+  /* AUSF 07-17: fit one page on long bond */
+  html[data-paper-size="long"] .ausf-07-17-doc {
+    font-size: 9.5pt !important;
+    line-height: 1.25 !important;
+    padding: 0.22in 0.4in 0.18in !important;
+  }
+  html[data-paper-size="long"] .ausf-07-17-doc header.mb-4 {
+    margin-bottom: 0.07in !important;
+  }
+  html[data-paper-size="long"] .ausf-07-17-doc h2.mb-5.mt-4 {
+    margin-top: 0.06in !important;
+    margin-bottom: 0.1in !important;
+    font-size: 1.05rem !important;
+  }
+  html[data-paper-size="long"] .ausf-07-17-doc h2.my-6 {
+    margin-top: 0.1in !important;
+    margin-bottom: 0.1in !important;
+    font-size: 1rem !important;
+  }
+  html[data-paper-size="long"] .ausf-07-17-doc p.mb-4,
+  html[data-paper-size="long"] .ausf-07-17-doc ol.mb-4 {
+    margin-bottom: 0.07in !important;
+  }
+  html[data-paper-size="long"] .ausf-07-17-doc p.mb-3 {
+    margin-bottom: 0.06in !important;
+  }
+  html[data-paper-size="long"] .ausf-07-17-doc p.mb-1 {
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="long"] .ausf-07-17-doc .text-center.mt-6.mb-6,
+  html[data-paper-size="long"] .ausf-07-17-doc .text-center.mt-6.mb-4 {
     margin-top: 0.08in !important;
     margin-bottom: 0.06in !important;
   }
-  html[data-paper-size="short"] .ausf-07-17-doc .text-right.mt-6 {
-    margin-top: 0.1in !important;
+  html[data-paper-size="long"] .ausf-07-17-doc .registrar-signature-zone {
+    min-height: 2.25rem !important;
   }
-  html[data-paper-size="short"] .ausf-07-17-doc ol.mb-4 {
-    margin-bottom: 0.08in !important;
+  html[data-paper-size="long"] .ausf-07-17-doc .print-doc-footer {
+    margin-top: 0.18in !important;
   }
-  html[data-paper-size="short"] .ausf-07-17-doc p.mb-3 {
-    margin-bottom: 0.08in !important;
-  }
-  html[data-paper-size="short"] .ausf-07-17-doc p.mb-1 {
-    margin-bottom: 0.04in !important;
-  }
-  html[data-paper-size="short"] .ausf-07-17-doc header.mb-4 {
-    margin-bottom: 0.06in !important;
-  }
-  html[data-paper-size="short"] .ausf-07-17-doc h2.mb-5.mt-4 {
-    margin-top: 0.06in !important;
-    margin-bottom: 0.1in !important;
-  }
-  html[data-paper-size="short"] .ausf-07-17-doc p.mb-4 {
-    margin-bottom: 0.08in !important;
-  }
-  html[data-paper-size="short"] .ausf-07-17-doc hr.border-t.mt-6 {
-    margin-top: 0.12in !important;
-    margin-bottom: 0.06in !important;
+  html[data-paper-size="long"] .ausf-07-17-doc ol li {
+    margin-bottom: 0.03in !important;
   }
 
-  /* Long bond: comfortable spacing so content fits one page without cramping */
-  html[data-paper-size="long"] .print-doc {
-    padding: 0.35in 0.5in !important;
+  /* Long bond: AUSF 0-6 fits one page (13" height), auto-adjusts with relaxed spacing */
+  html[data-paper-size="long"] .ausf-0-6-doc,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) {
+    font-size: 10.5pt !important;
+    line-height: 1.5 !important;
   }
-  html[data-paper-size="long"] .ausf-doc {
-    font-size: 10.5pt;
-    line-height: 1.35;
+  html[data-paper-size="long"] .ausf-0-6-doc header.mb-4,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) header.mb-4 {
+    margin-bottom: 0.1in !important;
   }
+  html[data-paper-size="long"] .ausf-0-6-doc h2,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) h2 {
+    margin-top: 0.06in !important;
+    margin-bottom: 0.28in !important;
+    font-size: 1.1rem !important;
+  }
+  html[data-paper-size="long"] .ausf-0-6-doc p,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) p {
+    margin-bottom: 0.08in !important;
+    line-height: 1.5 !important;
+  }
+  html[data-paper-size="long"] .ausf-0-6-doc ol,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) ol {
+    margin-bottom: 0.1in !important;
+  }
+  html[data-paper-size="long"] .ausf-0-6-doc ol li,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) ol li {
+    margin-bottom: 0.05in !important;
+    line-height: 1.5 !important;
+  }
+  html[data-paper-size="long"] .ausf-0-6-doc .text-center.mt-6,
+  html[data-paper-size="long"] .ausf-0-6-doc .text-right.mt-6,
+  html[data-paper-size="long"] .ausf-0-6-doc .text-xs.mt-6,
+  html[data-paper-size="long"] .ausf-0-6-doc .border-t.mt-6,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .text-center.mt-6,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .text-right.mt-6,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .text-xs.mt-6,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .border-t.mt-6 {
+    margin-top: 0.12in !important;
+  }
+  html[data-paper-size="long"] .ausf-0-6-doc .border-t.mt-6,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .border-t.mt-6 {
+    margin-bottom: 0.08in !important;
+  }
+  html[data-paper-size="long"] .ausf-0-6-doc hr,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) hr {
+    margin-top: 0.05in !important;
+    margin-bottom: 0.05in !important;
+  }
+  html[data-paper-size="long"] .ausf-0-6-doc .registrar-signature-zone,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .registrar-signature-zone {
+    min-height: 2.25rem !important;
+  }
+  html[data-paper-size="long"] .ausf-0-6-doc .print-doc-footer,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .print-doc-footer {
+    margin-top: auto !important;
+  }
+  html[data-paper-size="long"] .ausf-0-6-doc .ausf-subscribed-sworn,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .ausf-subscribed-sworn {
+    line-height: 1.5 !important;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.toast-enter {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+.toast-top-right.toast-enter {
+  animation: slideInFromRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.confirm-remove-modal {
+  animation: modalEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

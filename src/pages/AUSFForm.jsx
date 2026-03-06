@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import FormSection from '../components/FormSection'
 import { FormInput, FormSelect, FormRadioGroup } from '../components/FormField'
 import { defaultAUSF } from '../lib/ausfDefaults'
-import { saveAUSFDraft, addSavedAUSF } from '../lib/ausfStorage'
+import { saveAUSFDraft, getAUSFDraft, clearAUSFDraft, addSavedAUSF, updateSavedAUSF } from '../lib/ausfStorage'
 
 const RELATIONSHIP_OPTIONS = [
   { value: '', label: '—' },
@@ -46,21 +46,29 @@ export default function AUSFForm() {
 
   useEffect(() => {
     const type = searchParams.get('type') || 'ausf'
-    const formTypeMap = {
-      'ausf': 'ausf-0-6',
-      'ausf-07-17': 'ausf-07-17',
-      'reg-ausf': 'reg-ausf',
-      'reg-ack': 'reg-ack',
-      'child-ack': 'child-ack',
-      'child-ack-lcr': 'child-ack-lcr',
-      'child-ack-annotation': 'child-ack-annotation',
-      'child-not-ack': 'child-not-ack',
-      'child-not-ack-lcr': 'child-not-ack-lcr',
-      'child-not-ack-annotation': 'child-not-ack-annotation',
-      'child-not-ack-transmittal': 'child-not-ack-transmittal',
-      'out-of-town': 'out-of-town',
+    const editId = searchParams.get('id')
+    const isEdit = searchParams.get('edit') === '1'
+    if (isEdit && editId) {
+      const draft = getAUSFDraft()
+      if (draft) setForm(draft)
+    } else {
+      clearAUSFDraft()
+      const formTypeMap = {
+        'ausf': 'ausf-0-6',
+        'ausf-07-17': 'ausf-07-17',
+        'reg-ausf': 'reg-ausf',
+        'reg-ack': 'reg-ack',
+        'child-ack': 'child-ack',
+        'child-ack-lcr': 'child-ack-lcr',
+        'child-ack-annotation': 'child-ack-annotation',
+        'child-not-ack': 'child-not-ack',
+        'child-not-ack-lcr': 'child-not-ack-lcr',
+        'child-not-ack-annotation': 'child-not-ack-annotation',
+        'child-not-ack-transmittal': 'child-not-ack-transmittal',
+        'out-of-town': 'out-of-town',
+      }
+      if (formTypeMap[type]) setForm((prev) => ({ ...prev, formType: formTypeMap[type] }))
     }
-    if (formTypeMap[type]) setForm((prev) => ({ ...prev, formType: formTypeMap[type] }))
   }, [searchParams])
 
   const showItems4to7 = form.childAlreadyAcknowledged === 'NO' || form.formType === 'child-not-ack-transmittal' || form.formType === 'out-of-town'
@@ -70,8 +78,14 @@ export default function AUSFForm() {
 
   const handleDoneClick = () => setShowConfirmModal(true)
   const handleConfirmDone = () => {
+    const editId = searchParams.get('id')
+    const isEdit = searchParams.get('edit') === '1'
     saveAUSFDraft(form)
-    addSavedAUSF(form)
+    if (isEdit && editId) {
+      updateSavedAUSF(editId, form)
+    } else {
+      addSavedAUSF(form)
+    }
     setShowConfirmModal(false)
     navigate('/ausf/print')
   }

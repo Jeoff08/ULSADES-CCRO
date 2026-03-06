@@ -56,8 +56,8 @@ function DocumentHeader({ registryNo }) {
 
 function DocumentFooter({ contactPhone, contactEmail }) {
   return (
-    <>
-      <hr className="border-black border-t mt-6 mb-3" />
+    <div className="print-doc-footer mt-6">
+      <hr className="border-black border-t mb-3" />
       <div className="flex justify-between items-start text-xs">
         <div>
           <p className="font-bold">CONTACT DETAILS:</p>
@@ -69,7 +69,7 @@ function DocumentFooter({ contactPhone, contactEmail }) {
           <p>Register them all!</p>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -91,7 +91,7 @@ function PrintDocAUSFOnly({ data }) {
   const placeCityProvince = [data.placeOfBirthCity, data.placeOfBirthProvince].filter(Boolean).join(', ')
 
   return (
-    <div className="ausf-doc print-doc bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4 leading-snug">
+    <div className="ausf-doc ausf-0-6-doc print-doc bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4 leading-snug">
       <DocumentHeader registryNo={data.ausfRegistryNo} />
       <h2 className="text-center font-bold text-lg uppercase mb-4 mt-2">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
       <p className="mb-4 leading-normal text-justify">
@@ -116,15 +116,11 @@ function PrintDocAUSFOnly({ data }) {
           <span className={`${FILL} px-0.5 align-baseline`}>{colbDate}</span>.
         </li>
         <li className="text-justify">
-          <span>The Public Documents or the Private Handwritten Instrument was recorded under Registry </span>
-          <br />
-          <span>Number </span>
+          <span>The Public Documents or the Private Handwritten Instrument was recorded under Registry Number </span>
           <span className={`${FILL} empty-blank px-0.5 align-baseline`}>{publicReg || ' '}</span>
           <span> on </span>
           <span className={`${FILL} empty-blank px-0.5 align-baseline`}>{publicDate || ' '}</span>
-          <span> at the Local Civil Registry </span>
-          <br />
-          <span>Office (LCRO)/Philippine Foreign Service Post (PFSP) of </span>
+          <span> at the Local Civil Registry Office (LCRO)/Philippine Foreign Service Post (PFSP) of </span>
           <span className={`${FILL} empty-blank px-0.5 align-baseline`}>{publicOffice || ' '}</span>.
         </li>
         <li>
@@ -142,10 +138,12 @@ function PrintDocAUSFOnly({ data }) {
         <p className="fill-blank uppercase inline-block pb-0.5">{affiantName}</p>
         <p className="text-xs mt-1">Affiant</p>
       </div>
-      <p className="mb-1 leading-normal text-justify">SUBSCRIBED AND SWORN to before me this <span className={`${FILL} ml-1 align-baseline`}>{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
-      <div className="text-right mt-6">
-        <p className="font-bold">{data.cityCivilRegistrarName}</p>
-        <p className="text-sm">City Civil Registrar</p>
+      <p className="ausf-subscribed-sworn mb-1 leading-normal text-justify">SUBSCRIBED AND SWORN to before me this <span className={`${FILL} ml-1 align-baseline`}>{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
+      <div className="registrar-signature-zone flex-1 flex min-h-[3rem] flex-col justify-center items-end">
+        <div className="text-right city-registrar-signature">
+          <p className="font-bold">{data.cityCivilRegistrarName}</p>
+          <p className="text-sm">City Civil Registrar</p>
+        </div>
       </div>
       <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
     </div>
@@ -205,10 +203,12 @@ function PrintDocRegAUSF({ data }) {
         <p className="fill-blank uppercase inline-block pb-0.5">{attestationName}</p>
         <p className="text-xs mt-1">Affiant</p>
       </div>
-      <p className="mb-1">SUBSCRIBED AND SWORN to before me this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
-      <div className="text-right mt-6">
-        <p className="font-bold">{data.cityCivilRegistrarName}</p>
-        <p className="text-sm">City Civil Registrar</p>
+      <p className="ausf-subscribed-sworn mb-1">SUBSCRIBED AND SWORN to before me this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
+      <div className="registrar-signature-zone flex-1 flex min-h-[3rem] flex-col justify-center items-end">
+        <div className="text-right city-registrar-signature">
+          <p className="font-bold">{data.cityCivilRegistrarName}</p>
+          <p className="text-sm">City Civil Registrar</p>
+        </div>
       </div>
       <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
     </div>
