@@ -22,9 +22,10 @@ body {
   background: var(--main-bg);
 }
 
-/* Fill-in blanks: underline fits content width (like 2nd image), only slightly past the text */
+/* Fill-in blanks: single line only (border-bottom). No text-decoration: underline to avoid double line. */
 .fill-blank {
   border-bottom: 1px solid #000;
+  text-decoration: none;
   padding-bottom: 1px;
   padding-left: 0.15em;
   padding-right: 0.15em;
@@ -61,6 +62,11 @@ body {
   text-align: left;
   padding: 0;
   margin: 0;
+}
+
+/* AUSF 07-17: declarant name bold and underlined (single line via border only; no text-decoration to avoid double underline) */
+.ausf-07-17-doc .fill-blank.affiant-name-blank.affiant-name-bold-underline .affiant-name-inner {
+  font-weight: bold;
 }
 
 /* Place-of-birth line: keep text continuous and normal word spacing (no stretched justify) */
