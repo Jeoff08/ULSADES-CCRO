@@ -24,14 +24,14 @@ const LOGO_RIGHT_SRC = '/logo-shortcut.png'
 function PrintHeaderRow({ rightContent }) {
   return (
     <div className="flex justify-between items-center gap-4 mb-2">
-      <img src={SEAL_LEFT_SRC} alt="City of Iligan Official Seal" className="w-16 h-16 object-contain shrink-0" />
+      <img src={SEAL_LEFT_SRC} alt="City of Iligan Official Seal" className="w-20 h-20 object-contain shrink-0" />
       <div className="text-center flex-1 min-w-0 px-2">
         <p className="font-bold text-base leading-tight">Republic of the Philippines</p>
         <p className="font-bold text-base uppercase leading-tight">City Civil Registrar&apos;s Office</p>
         <p className="font-bold text-sm leading-tight">City of Iligan</p>
         <p className="text-sm leading-tight">Ground Flr., Pedro Generalao Bldg., Buhanginan Hill, Pala-o, Iligan City</p>
       </div>
-      {rightContent ?? <img src={LOGO_RIGHT_SRC} alt="Office of the City Civil Registrar" className="w-14 h-14 object-contain shrink-0" />}
+      {rightContent ?? <img src={LOGO_RIGHT_SRC} alt="Office of the City Civil Registrar" className="w-20 h-20 object-contain shrink-0" />}
     </div>
   )
 }
@@ -75,11 +75,17 @@ function DocumentFooter({ contactPhone, contactEmail }) {
 }
 
 const FILL = 'fill-blank inline-block'
+const FILL_BOLD = 'fill-blank inline-block font-bold'
 
-function PrintDocAUSFOnly({ data }) {
-  const affiantName = data.applicantName || fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
-  const childFullWithSurname = fullName(data.childFirst, data.childMiddle, data.fatherLast)
+function PrintDocAUSFOnly({ data, viewType }) {
+  const affiantName = data.applicantName || fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
   const surnameSought = data.fatherLast
+  const affiantWithSurname = (affiantName && surnameSought)
+    ? (affiantName.trim().toUpperCase().endsWith((surnameSought || '').trim().toUpperCase())
+      ? affiantName
+      : `${affiantName.trim()} ${surnameSought.trim()}`.trim())
+    : affiantName
+  const displayAffiantName = viewType === 'ausf-only' ? affiantWithSurname : affiantName
   const dobFormatted = formatDateLong(data.dateOfBirth)
   const colbReg = data.colbRegistryNo
   const colbDate = formatDateLong(data.colbDateOfRegistration)
@@ -87,7 +93,8 @@ function PrintDocAUSFOnly({ data }) {
   const publicDate = formatDateLong(data.publicDocDate)
   const publicOffice = data.publicDocOffice
   const filingAt = data.filingLocation || 'ILIGAN CITY'
-  const witnessDate = formatDateLong(data.affidavitExecutionDate) || colbDate
+  const witnessDate = formatDateLong(data.affidavitExecutionDate) || formatDateLong(data.colbDateOfRegistration)
+  const placeOfBirthName = data.placeOfBirthAddress || ''
   const placeCityProvince = [data.placeOfBirthCity, data.placeOfBirthProvince].filter(Boolean).join(', ')
 
   return (
@@ -95,54 +102,40 @@ function PrintDocAUSFOnly({ data }) {
       <DocumentHeader registryNo={data.ausfRegistryNo} />
       <h2 className="text-center font-bold text-lg uppercase mb-4 mt-2">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
       <p className="mb-4 leading-normal text-justify">
-        I, <span className={`${FILL} affiant-name-blank uppercase mx-0.5 align-baseline`}><span className="affiant-name-inner">{affiantName}</span></span>, of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
+        I, <span className={`${FILL} affiant-name-blank affiant-name-bold-underline uppercase mx-0.5 align-baseline`}><span className="affiant-name-inner">{displayAffiantName}</span></span>, of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
       </p>
 
       <ol className="list-decimal list-outside ml-8 mr-0 pl-1 space-y-3 mb-3 text-justify leading-normal">
         <li className="text-justify">
-          I am seeking to use the surname of <span className={`${FILL} px-0.5 align-baseline`}>{surnameSought}</span> in the Certificate of Live Birth/Report of Birth of <span className={`${FILL} px-0.5 align-baseline`}>{childFullWithSurname}</span> who is my <span className={`${FILL} px-0.5 align-baseline uppercase`}>{data.relationshipToChild}</span> pursuant to R.A No. 9255;
+          I am seeking to use the surname of <span className={`${FILL_BOLD} px-0.5 align-baseline uppercase`}>{surnameSought}</span> in the Certificate of Live Birth/Report of Birth of pursuant to R.A No. 9255
         </li>
         <li className="ausf-place-of-birth-line text-justify">
-          <span>He/She was born on </span>
-          <span className={`${FILL} px-0.5 align-baseline`}>{dobFormatted}</span>
-          <span> at </span>
-          <span className={`${FILL} px-0.5 align-baseline`}>{data.placeOfBirthAddress}</span>
-          <span className={`${FILL} px-0.5 align-baseline uppercase ml-0.5`}>{placeCityProvince}</span>
+          I was born on <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{dobFormatted}</span> at <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{placeOfBirthName}</span> <span className={`${FILL_BOLD} px-0.5 align-baseline uppercase ml-0.5`}>{placeCityProvince}</span>
         </li>
         <li>
-          <span>The Birth was recorded under Registry Number </span>
-          <span className={`${FILL} px-0.5 align-baseline`}>{colbReg}</span>
-          <span> on </span>
-          <span className={`${FILL} px-0.5 align-baseline`}>{colbDate}</span>.
+          My Birth was recorded under Registry Number <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{colbReg}</span> on <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{colbDate}</span>
         </li>
         <li className="text-justify">
-          <span>The Public Documents or the Private Handwritten Instrument was recorded under Registry Number </span>
-          <span className={`${FILL} empty-blank px-0.5 align-baseline`}>{publicReg || ' '}</span>
-          <span> on </span>
-          <span className={`${FILL} empty-blank px-0.5 align-baseline`}>{publicDate || ' '}</span>
-          <span> at the Local Civil Registry Office (LCRO)/Philippine Foreign Service Post (PFSP) of </span>
-          <span className={`${FILL} empty-blank px-0.5 align-baseline`}>{publicOffice || ' '}</span>.
+          The Public Documents or the Private Handwritten Instrument was recorded under Registry Number <span className={`${FILL} empty-blank px-0.5 align-baseline`}>{publicReg || ' '}</span> on <span className={`${FILL} empty-blank px-0.5 align-baseline`}>{publicDate || ' '}</span> at the Local Civil Registry Office (LCRO)/Philippine Foreign Service Post (PFSP) of <span className={`${FILL} empty-blank px-0.5 align-baseline`}>{publicOffice || ' '}</span>
         </li>
         <li>
-          <span>I am filing this AUSF at LCRO/PFSP of </span>
-          <span className={`${FILL} px-0.5 align-baseline uppercase`}>{filingAt}</span>
-          <span> in accordance with R.A No. 9255 and its Revised Implementing Rules and Regulations.</span>
+          I am filing this AUSF at LCRO/PFSP of <span className={`${FILL_BOLD} px-0.5 align-baseline uppercase`}>{filingAt}</span> in accordance with R.A No. 9255 and its Revised Implementing Rules and Regulations.
         </li>
         <li>
           I hereby certify that the statements made herein are true and correct to the best of my knowledge and belief.
         </li>
       </ol>
 
-      <p className="mb-1 leading-normal mt-4 text-justify">IN WITNESS WHEREOF, I have hereunto set my hand this <span className={`${FILL} ml-1 align-baseline`}>{witnessDate}</span> at Iligan City, Philippines.</p>
+      <p className="mb-1 leading-normal mt-4 text-justify">IN WITNESS WHEREOF, I have hereunto set my hand this <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> at Iligan City, Philippines.</p>
       <div className="text-center mt-6 mb-4">
-        <p className="fill-blank uppercase inline-block pb-0.5">{affiantName}</p>
+        <p className="fill-blank font-bold uppercase inline-block pb-0.5 border-b border-black min-w-[16rem]">{displayAffiantName}</p>
         <p className="text-xs mt-1">Affiant</p>
       </div>
-      <p className="ausf-subscribed-sworn mb-1 leading-normal text-justify">SUBSCRIBED AND SWORN to before me this <span className={`${FILL} ml-1 align-baseline`}>{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
+      <p className="ausf-subscribed-sworn mb-1 leading-normal text-justify">SUBSCRIBED AND SWORN to before me this <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
       <div className="registrar-signature-zone flex-1 flex min-h-[3rem] flex-col justify-center items-end">
         <div className="text-right city-registrar-signature">
-          <p className="font-bold">{data.cityCivilRegistrarName}</p>
-          <p className="text-sm">City Civil Registrar</p>
+          <p className="font-bold text-right">{data.cityCivilRegistrarName}</p>
+          <p className="text-sm mt-1">City Civil Registrar</p>
         </div>
       </div>
       <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
@@ -299,7 +292,7 @@ function PrintDocLCRFormA1({ data }) {
       <PrintHeaderRow
         rightContent={
           <div className="flex flex-col items-end shrink-0">
-            <img src={LOGO_RIGHT_SRC} alt="Office of the City Civil Registrar" className="w-14 h-14 object-contain shrink-0" />
+            <img src={LOGO_RIGHT_SRC} alt="Office of the City Civil Registrar" className="w-20 h-20 object-contain shrink-0" />
             <p className="text-sm font-medium mt-1">{formDate}</p>
           </div>
         }
@@ -366,23 +359,25 @@ function PrintDocCertRegistration({ data, isRegAck }) {
   const registryNo = data.ausfRegistryNo
   const issuedDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
   const affidavitLabel = isRegAck ? 'Affidavit of Acknowledgement' : 'Affidavit to Use Surname of the Father'
-  const signatoryTitle = isRegAck ? 'Registration Officer IV' : 'City Civil Registrar'
-  const signatoryName = isRegAck ? (data.certificateSignatoryName || 'LORELIE L. CANTO') : (data.cityCivilRegistrarName || data.certificateSignatoryName)
+  const signatoryName = data.certificateSignatoryName || 'LORELIE L. CANTO'
+  const signatoryTitle = 'Registration Officer IV'
 
   return (
-    <div className="ausf-doc print-doc bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4">
+    <div className="ausf-doc print-doc print-doc-cert-registration bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4">
       <PrintHeaderRow />
       <hr className="border-black my-3" />
-      <h2 className="text-center font-bold text-base uppercase mb-6">CERTIFICATE OF REGISTRATION</h2>
-      <p className="font-bold mb-2">TO WHOM IT MAY CONCERN:</p>
-      <p className="mb-3">
-        THIS IS TO CERTIFY that the {affidavitLabel} executed by <span className="fill-blank inline-block px-1 min-w-[8rem]">{affiantName}</span> had been registered in this office on <span className="fill-blank inline-block px-1 min-w-[8rem]">{regDate}</span> under Registry Number <span className="fill-blank inline-block px-1 min-w-[5rem]">{registryNo}</span>.
-      </p>
-      <p className="mb-3">This certification is issued for whatever legal purposes it may serve.</p>
-      <p className="mb-4">Issued this <span className="fill-blank inline-block px-1 min-w-[8rem]">{issuedDate}</span> at Iligan City, Philippines.</p>
-      <div className="mt-8">
-        <p className="font-bold">{signatoryName}</p>
-        <p className="text-sm">{signatoryTitle}</p>
+      <div className="cert-reg-body mt-12">
+        <h2 className="text-center font-bold text-base uppercase mb-6">CERTIFICATE OF REGISTRATION</h2>
+        <p className="font-bold mb-2">TO WHOM IT MAY CONCERN:</p>
+        <p className="mb-3 text-justify cert-reg-justify">
+          THIS IS TO CERTIFY that the {affidavitLabel} executed by <span className="fill-blank inline-block px-1 min-w-[8rem]">{affiantName}</span> had been registered in this office on <span className="fill-blank inline-block px-1 min-w-[8rem]">{regDate}</span> under Registry Number <span className="fill-blank inline-block px-1 min-w-[5rem]">{registryNo}</span>.
+        </p>
+        <p className="mb-3 text-justify cert-reg-justify">This certification is issued for whatever legal purposes it may serve.</p>
+        <p className="mb-4 text-justify cert-reg-justify">Issued this <span className="fill-blank inline-block px-1 min-w-[8rem]">{issuedDate}</span> at Iligan City, Philippines.</p>
+        <div className="mt-24">
+          <p className="font-bold uppercase">{signatoryName}</p>
+          <p className="text-sm text-gray-600">{signatoryTitle}</p>
+        </div>
       </div>
       <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
     </div>
@@ -696,7 +691,7 @@ export default function AUSFPrint() {
   const isOutOfTown = type === 'out-of-town'
 
   let content
-  if (isAUSFOnly || isAUSF06) content = <PrintDocAUSFOnly data={data} />
+  if (isAUSFOnly || isAUSF06) content = <PrintDocAUSFOnly data={data} viewType={type} />
   else if (isAUSF0717) content = <PrintDocRegAUSF data={data} />
   else if (isRegAUSF) content = <PrintDocCertRegistration data={data} isRegAck={false} />
   else if (isRegAck) content = <PrintDocCertRegistration data={data} isRegAck={true} />

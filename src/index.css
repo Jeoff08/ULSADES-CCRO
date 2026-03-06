@@ -64,8 +64,8 @@ body {
   margin: 0;
 }
 
-/* AUSF 07-17: declarant name bold and underlined (single line via border only; no text-decoration to avoid double underline) */
-.ausf-07-17-doc .fill-blank.affiant-name-blank.affiant-name-bold-underline .affiant-name-inner {
+/* AUSF: declarant/affiant name bold and underlined (single line via border only; no text-decoration to avoid double underline) */
+.ausf-doc .fill-blank.affiant-name-blank.affiant-name-bold-underline .affiant-name-inner {
   font-weight: bold;
 }
 
@@ -441,6 +441,18 @@ body.pdf-capture .ausf-doc {
   }
   .ausf-doc .text-justify {
     text-justify: inter-word;
+  }
+  /* Registration of AUSF / Certificate of Registration: keep justify in print/PDF */
+  .print-doc-cert-registration .cert-reg-body {
+    margin-top: 1in;
+  }
+  .print-doc-cert-registration .cert-reg-body p,
+  .print-doc-cert-registration .cert-reg-justify {
+    text-align: justify !important;
+    text-justify: inter-word;
+  }
+  .print-doc-cert-registration .cert-reg-body .font-bold.mb-2 {
+    text-align: left !important;
   }
   /* Limit justified stretch so word spacing stays close to normal (one space) */
   .ausf-doc ol li.text-justify {
