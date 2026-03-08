@@ -1,21 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { getSavedAUSFList, loadSavedAUSFToDraft, deleteSavedAUSF, restoreSavedAUSF } from '../lib/ausfStorage'
+import { getSavedCourtDecreeList, loadSavedCourtDecreeToDraft, deleteSavedCourtDecree, restoreSavedCourtDecree } from '../../lib/courtDecreeStorage'
 
-const FORM_TYPE_LABELS = {
-  'ausf-only': 'AUSF only',
-  'ausf-0-6': 'AUSF 0-6',
-  'ausf-07-17': 'AUSF 07-17',
-  'reg-ausf': 'Registration of AUSF',
-  'reg-ack': 'Registration of Acknowledgement',
-  'child-ack': 'Child Acknowledge',
-  'child-ack-lcr': 'LCR Form 1A (Birth-Available)',
-  'child-ack-annotation': 'Annotation',
-  'child-not-ack': 'Child Not Acknowledged',
-  'child-not-ack-lcr': 'LCR Form A1 (Child Not Acknowledged)',
-  'child-not-ack-annotation': 'Annotation (Child Not Acknowledged)',
-  'child-not-ack-transmittal': 'Transmittal (Child Not Acknowledged)',
-  'out-of-town': 'Out-of-Town Transmittal',
+const COURT_DECREE_TYPE_LABELS = {
+  'cert-authenticity': 'Certificate of authenticity',
+  'cert-registration': 'Certificate of registration',
+  'transmittal': 'Transmittal',
+  'out-of-town-transmittal': 'Out of town transmittal',
+  'lcr-form-1a': 'LCR FORM 1A',
+  'lcr-form-2a': 'LCR FORM 2A',
+  'lcr-form-3a': 'LCR FORM 3A',
+  'standard-annotation': 'Standard annotation with instructions (x)',
+  'annotation-form-1a': 'ANNOTATION FOR FORM 1A',
+  'annotation-form-2a': 'ANNOTATION FOR FORM 2A',
+  'annotation-form-3a': 'ANNOTATION FOR FORM 3A',
 }
 
 function formatSavedAt(iso) {
@@ -30,8 +28,8 @@ function formatSavedAt(iso) {
 
 const TOAST_DURATION_MS = 8000
 
-export default function AUSFSaved() {
-  const [list, setList] = useState(() => getSavedAUSFList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+export default function CourtDecreeSaved() {
+  const [list, setList] = useState(() => getSavedCourtDecreeList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [toastVisible, setToastVisible] = useState(false)
   const [toastProgress, setToastProgress] = useState(100)
@@ -40,7 +38,7 @@ export default function AUSFSaved() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    setList(getSavedAUSFList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+    setList(getSavedCourtDecreeList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
   }, [])
 
   useEffect(() => {
@@ -51,20 +49,18 @@ export default function AUSFSaved() {
       const elapsed = Date.now() - start
       const remaining = Math.max(0, 100 - (elapsed / TOAST_DURATION_MS) * 100)
       setToastProgress(remaining)
-      if (remaining <= 0) {
-        setToastVisible(false)
-      }
+      if (remaining <= 0) setToastVisible(false)
     }, 50)
     toastIntervalRef.current = id
     return () => clearInterval(id)
   }, [toastVisible])
 
   const handleViewPrint = (item) => {
-    if (loadSavedAUSFToDraft(item.id)) navigate('/ausf/print')
+    if (loadSavedCourtDecreeToDraft(item.id)) navigate(`/court-decree/print?type=${item.formType || 'cert-authenticity'}`)
   }
 
   const handleEdit = (item) => {
-    if (loadSavedAUSFToDraft(item.id)) navigate(`/ausf?edit=1&id=${encodeURIComponent(item.id)}`)
+    if (loadSavedCourtDecreeToDraft(item.id)) navigate(`/court-decree/form?type=${item.formType || 'cert-authenticity'}&edit=1&id=${encodeURIComponent(item.id)}`)
   }
 
   const openDeleteConfirm = (id) => setConfirmDeleteId(id)
@@ -74,15 +70,15 @@ export default function AUSFSaved() {
     if (!confirmDeleteId) return
     const item = list.find((x) => x.id === confirmDeleteId)
     if (item) setLastDeletedItem({ ...item, data: item.data ? { ...item.data } : undefined })
-    deleteSavedAUSF(confirmDeleteId)
-    setList(getSavedAUSFList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+    deleteSavedCourtDecree(confirmDeleteId)
+    setList(getSavedCourtDecreeList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
     setConfirmDeleteId(null)
     setToastVisible(true)
   }
 
   const handleUndo = () => {
-    if (lastDeletedItem && restoreSavedAUSF(lastDeletedItem)) {
-      setList(getSavedAUSFList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+    if (lastDeletedItem && restoreSavedCourtDecree(lastDeletedItem)) {
+      setList(getSavedCourtDecreeList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
       setLastDeletedItem(null)
       setToastVisible(false)
     }
@@ -90,30 +86,31 @@ export default function AUSFSaved() {
 
   return (
     <div className="p-6">
-      <h1 className="text-base font-bold text-gray-800 mb-1">Files Saved</h1>
+      <h1 className="text-base font-bold text-gray-800 mb-1">Court Decree – Files Saved</h1>
       <p className="text-sm text-gray-500 mb-4">
-        AUSF forms saved when you click Done appear here. Start a new form or open a saved file to view and print.
+        Court Decree forms saved when you click Done appear here. Open a saved file to view and print, or start a new form.
       </p>
       <div className="flex flex-wrap gap-3 mb-6">
         <Link
-          to="/ausf"
+          to="/ausf/saved"
+          className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition"
+        >
+          AUSF saved
+        </Link>
+        <Link
+          to="/court-decree/form"
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:bg-[var(--primary-blue-light)] transition"
         >
           <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          New AUSF
-        </Link>
-        <Link
-          to="/court-decree/saved"
-          className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition"
-        >
-          Court Decree saved
+          New Court Decree
         </Link>
       </div>
+
       {list.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-300 bg-white p-6 text-sm text-gray-500 text-center">
-          No saved AUSF files yet. Complete an AUSF form and click Done to save it here.
+          No saved Court Decree files yet. Complete a Court Decree form and click Done to save it here.
         </div>
       ) : (
         <ul className="space-y-3">
@@ -125,7 +122,7 @@ export default function AUSFSaved() {
               <div className="min-w-0">
                 <p className="font-medium text-gray-800 truncate">{item.label}</p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {FORM_TYPE_LABELS[item.formType] || item.formType} · {formatSavedAt(item.savedAt)}
+                  {COURT_DECREE_TYPE_LABELS[item.formType] || item.formType} · {formatSavedAt(item.savedAt)}
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
@@ -174,18 +171,10 @@ export default function AUSFSaved() {
               </div>
             </div>
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 px-6 pb-6 pt-1">
-              <button
-                type="button"
-                onClick={closeDeleteConfirm}
-                className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
-              >
+              <button type="button" onClick={closeDeleteConfirm} className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2">
                 Cancel
               </button>
-              <button
-                type="button"
-                onClick={handleConfirmDelete}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition"
-              >
+              <button type="button" onClick={handleConfirmDelete} className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition">
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
@@ -210,11 +199,7 @@ export default function AUSFSaved() {
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold text-gray-900">File removed</p>
                 <p className="mt-0.5 text-[11px] text-gray-500">Closing in 8 seconds.</p>
-                <button
-                  type="button"
-                  onClick={handleUndo}
-                  className="mt-2 w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md bg-[var(--primary-blue)] px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-[var(--primary-blue-light)] transition focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)] focus:ring-offset-2"
-                >
+                <button type="button" onClick={handleUndo} className="mt-2 w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md bg-[var(--primary-blue)] px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-[var(--primary-blue-light)] transition focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)] focus:ring-offset-2">
                   <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                   </svg>
@@ -224,10 +209,7 @@ export default function AUSFSaved() {
             </div>
           </div>
           <div className="h-1 bg-gray-100">
-            <div
-              className="h-full bg-[var(--primary-blue)]/70 transition-all duration-150 ease-linear rounded-br"
-              style={{ width: `${toastProgress}%` }}
-            />
+            <div className="h-full bg-[var(--primary-blue)]/70 transition-all duration-150 ease-linear rounded-br" style={{ width: `${toastProgress}%` }} />
           </div>
         </div>
       )}

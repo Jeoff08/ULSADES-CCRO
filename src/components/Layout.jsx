@@ -1,5 +1,5 @@
 import React from 'react'
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 function IconDashboard() {
@@ -26,9 +26,18 @@ function IconFolder() {
   )
 }
 
+function IconCourtDecree() {
+  return (
+    <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+    </svg>
+  )
+}
+
 export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const handleLogout = () => {
     logout()
@@ -73,29 +82,48 @@ export default function Layout() {
           </NavLink>
           <NavLink
             to="/ausf"
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition relative ${
-                isActive
+            end
+            className={({ isActive }) => {
+              const ausfActive = isActive || location.pathname === '/ausf'
+              return `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition relative ${
+                ausfActive
                   ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
                   : 'text-white/90 hover:bg-white/10 text-white'
               }`
-            }
+            }}
           >
             <IconAUSF />
             <span>AUSF</span>
           </NavLink>
           <NavLink
-            to="/ausf/saved"
-            className={({ isActive }) =>
-              `mt-1 flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition relative ${
-                isActive
+            to="/court-decree"
+            end={false}
+            className={({ isActive }) => {
+              const courtActive = isActive && location.pathname !== '/court-decree/saved'
+              return `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition relative ${
+                courtActive
                   ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
                   : 'text-white/90 hover:bg-white/10 text-white'
               }`
-            }
+            }}
+          >
+            <IconCourtDecree />
+            <span>Court Decree</span>
+          </NavLink>
+          <NavLink
+            to="/ausf/saved"
+            end
+            className={({ isActive }) => {
+              const filesSavedActive = isActive || location.pathname === '/court-decree/saved'
+              return `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition relative ${
+                filesSavedActive
+                  ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
+                  : 'text-white/90 hover:bg-white/10 text-white'
+              }`
+            }}
           >
             <IconFolder />
-            <span>Saved AUSF Files</span>
+            <span>Files Saved</span>
           </NavLink>
         </nav>
         <div className="p-3 border-t border-white/10 shrink-0">

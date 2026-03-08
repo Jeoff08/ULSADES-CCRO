@@ -703,11 +703,14 @@ export default function AUSFPrint() {
   else content = <LegacyPrintSummary data={data} />
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <div className="no-print flex flex-wrap items-center justify-between gap-3 mb-4">
-        <button type="button" onClick={handleBack} className="px-3 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
-          Back to Form
-        </button>
+    <div className="p-4 print:p-0">
+      <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-lg font-bold text-gray-800">AUSF – Print</h1>
+          <button type="button" onClick={handleBack} className="px-3 py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50">
+            Back to Form
+          </button>
+        </div>
         <div className="flex flex-wrap items-center gap-3">
           <label className="sr-only" htmlFor="paper-size-select">Paper size (for print)</label>
           <select
@@ -733,11 +736,9 @@ export default function AUSFPrint() {
               const isSelected = type === opt.type
               const isLcrButton = opt.type === 'child-not-ack-lcr' || opt.type === 'child-ack-lcr'
               const btnClass = [
-                'text-left px-3 py-2.5 text-sm font-medium transition text-white',
-                isLcrButton ? 'bg-[#283750]' : '',
-                isLcrButton && opt.buttonRoundedLeft ? 'rounded-l-lg' : isLcrButton ? 'rounded-lg' : 'rounded-lg',
-                !isLcrButton && (isSelected ? 'bg-[var(--primary-blue)]' : 'bg-[var(--primary-blue)]/80 hover:bg-[var(--primary-blue)]'),
-                isLcrButton && isSelected ? 'ring-2 ring-offset-1 ring-[#283750]' : isLcrButton ? 'hover:bg-[#1e2d42]' : '',
+                'text-left px-3 py-2.5 text-sm font-medium transition text-white rounded-lg',
+                isLcrButton ? 'bg-[#283750] hover:bg-[#1e2d42]' : 'bg-[var(--primary-blue)]/80 hover:bg-[var(--primary-blue)]',
+                isSelected ? 'ring-2 ring-offset-1 ring-[var(--primary-blue)]' : '',
               ].filter(Boolean).join(' ')
               return (
                 <button

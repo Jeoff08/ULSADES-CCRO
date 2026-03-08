@@ -442,17 +442,33 @@ body.pdf-capture .ausf-doc {
   .ausf-doc .text-justify {
     text-justify: inter-word;
   }
-  /* Registration of AUSF / Certificate of Registration: keep justify in print/PDF */
+  /* Certificate of Registration: same print layout as Certificate of Authenticity */
   .print-doc-cert-registration .cert-reg-body {
-    margin-top: 1in;
+    line-height: 2 !important;
   }
   .print-doc-cert-registration .cert-reg-body p,
   .print-doc-cert-registration .cert-reg-justify {
     text-align: justify !important;
     text-justify: inter-word;
+    line-height: 2 !important;
+    margin-bottom: 0.15in !important;
+  }
+  .print-doc-cert-registration .cert-reg-body p:last-child {
+    margin-bottom: 0 !important;
   }
   .print-doc-cert-registration .cert-reg-body .font-bold.mb-2 {
     text-align: left !important;
+  }
+  /* Certificate of Authenticity: double line spacing + paragraph gaps in print/PDF */
+  .print-doc-cert-auth .cert-auth-body {
+    line-height: 2 !important;
+  }
+  .print-doc-cert-auth .cert-auth-body p {
+    line-height: 2 !important;
+    margin-bottom: 0.15in !important;
+  }
+  .print-doc-cert-auth .cert-auth-body p:last-child {
+    margin-bottom: 0 !important;
   }
   /* Limit justified stretch so word spacing stays close to normal (one space) */
   .ausf-doc ol li.text-justify {

@@ -36,9 +36,14 @@ export default function Login() {
             alt="City of Iligan Official Seal"
             className="w-14 h-14 object-contain shrink-0 rounded-full border-2 border-[var(--login-input-border)]"
           />
-          <h1 className="login-page__title font-bold text-2xl md:text-3xl tracking-wide uppercase text-[var(--login-heading)]">
-            ULSADES
-          </h1>
+          <div>
+            <h1 className="login-page__title font-bold text-2xl md:text-3xl tracking-wide uppercase text-[var(--login-heading)]">
+              ULSADES
+            </h1>
+            <p className="text-xs md:text-sm mt-1 text-[var(--login-text)]/90 font-normal normal-case tracking-normal">
+              Unified Legal Status Automated Data Entry System
+            </p>
+          </div>
           <img
             src="/logo-shortcut.png"
             alt="City Civil Registrar's Office"
@@ -93,20 +98,7 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="mt-8 space-y-3">
-          <p>
-            <a href="#" className="login-page__link text-base md:text-lg">
-              Can&apos;t log in?
-            </a>
-          </p>
-          <p className="flex items-center justify-center gap-2 flex-wrap text-base">
-            <a href="#" className="login-page__link">Privacy policy</a>
-            <span className="opacity-70">·</span>
-            <a href="#" className="login-page__link">Terms of use</a>
-          </p>
-        </div>
-
-        <p className="login-page__hint mt-6 text-base">
+        <p className="login-page__hint mt-8 text-base">
           Demo: admin / admin123
         </p>
       </div>
