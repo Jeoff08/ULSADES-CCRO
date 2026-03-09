@@ -10,6 +10,7 @@ const PRINT_SIZE_STYLE_ID = 'print-paper-size-court'
 function usePrintPageSize(paperId) {
   useEffect(() => {
     const spec = PAPER_SIZES.find((p) => p.id === paperId) || PAPER_SIZES[0]
+    document.documentElement.dataset.paperSize = paperId
     let el = document.getElementById(PRINT_SIZE_STYLE_ID)
     if (!el) {
       el = document.createElement('style')
@@ -17,6 +18,9 @@ function usePrintPageSize(paperId) {
       document.head.appendChild(el)
     }
     el.textContent = `@media print { @page { size: ${spec.size}; } }`
+    return () => {
+      delete document.documentElement.dataset.paperSize
+    }
   }, [paperId])
 }
 import {
@@ -54,10 +58,7 @@ export default function CourtDecreePrint() {
 
   useEffect(() => {
     const stored = getStoredData()
-    if (stored) {
-      setData(stored)
-      clearCourtDecreeDraft()
-    }
+    if (stored) setData(stored)
   }, [])
 
   const validType = COURT_DECREE_TYPES.some((t) => t.id === type) ? type : 'cert-authenticity'

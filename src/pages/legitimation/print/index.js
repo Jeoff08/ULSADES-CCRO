@@ -1,0 +1,8 @@
+export { default as SoleAffidavitLegitimation } from './SoleAffidavitLegitimation'
+export { default as JointAffidavitLegitimation } from './JointAffidavitLegitimation'
+export { default as RegistrationOfLegitimation } from './RegistrationOfLegitimation'
+export { default as RegistrationOfAcknowledgement } from './RegistrationOfAcknowledgement'
+export { default as LcrForm1A } from './LcrForm1A'
+export { default as Transmittal } from './Transmittal'
+export { default as OutOfTownTransmittal } from './OutOfTownTransmittal'
+export { default as Annotation } from './Annotation'

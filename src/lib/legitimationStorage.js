@@ -1,0 +1,127 @@
+const KEY_DRAFT = 'legitimationDraft'
+const KEY_SAVED = 'ulsades_legitimation_saved'
+
+const FORM_TYPE_LABELS = {
+  'sole-affidavit': 'Sole Affidavit Legitimation',
+  'joint-affidavit': 'Joint Affidavit Legitimation',
+  'registration-legitimation': 'Registration of Legitimation',
+  'registration-acknowledgement': 'Registration of Acknowledgement',
+  'lcr-form-1a': 'LCR Form 1A',
+  'transmittal': 'Transmittal',
+  'out-of-town-transmittal': 'Out of Town Transmittal',
+  'annotation': 'Annotation',
+}
+
+function getLabel(data) {
+  const child = [data.childFirst, data.childMiddle, data.childLast].filter(Boolean).join(' ')
+  if (child) return child
+  return FORM_TYPE_LABELS[data.formType] || 'Legitimation'
+}
+
+export function saveLegitimationDraft(data) {
+  try {
+    localStorage.setItem(KEY_DRAFT, JSON.stringify(data))
+    return true
+  } catch {
+    return false
+  }
+}
+
+export function getLegitimationDraft() {
+  try {
+    const raw = localStorage.getItem(KEY_DRAFT)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+export function clearLegitimationDraft() {
+  try {
+    localStorage.removeItem(KEY_DRAFT)
+  } catch {}
+}
+
+export function getSavedLegitimationList() {
+  try {
+    const raw = localStorage.getItem(KEY_SAVED)
+    const list = raw ? JSON.parse(raw) : []
+    return Array.isArray(list) ? list : []
+  } catch {
+    return []
+  }
+}
+
+export function addSavedLegitimation(data) {
+  try {
+    const list = getSavedLegitimationList()
+    const id = `leg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
+    const payload = { ...data, certificateIssuanceDate: data.certificateIssuanceDate || new Date().toISOString() }
+    list.unshift({
+      id,
+      savedAt: new Date().toISOString(),
+      label: getLabel(data),
+      formType: data.formType || 'joint-affidavit',
+      data: payload,
+    })
+    localStorage.setItem(KEY_SAVED, JSON.stringify(list))
+    saveLegitimationDraft(payload)
+    return id
+  } catch {
+    return null
+  }
+}
+
+export function deleteSavedLegitimation(id) {
+  try {
+    const list = getSavedLegitimationList().filter((item) => item.id !== id)
+    localStorage.setItem(KEY_SAVED, JSON.stringify(list))
+  } catch {}
+}
+
+export function restoreSavedLegitimation(item) {
+  if (!item || !item.id || !item.data) return false
+  try {
+    const list = getSavedLegitimationList()
+    list.unshift({
+      id: item.id,
+      savedAt: item.savedAt || new Date().toISOString(),
+      label: item.label || getLabel(item.data),
+      formType: item.formType || 'joint-affidavit',
+      data: { ...item.data },
+    })
+    localStorage.setItem(KEY_SAVED, JSON.stringify(list))
+    return true
+  } catch {
+    return false
+  }
+}
+
+export function loadSavedLegitimationToDraft(id) {
+  const list = getSavedLegitimationList()
+  const item = list.find((x) => x.id === id)
+  if (!item || !item.data) return false
+  saveLegitimationDraft(item.data)
+  return true
+}
+
+export function updateSavedLegitimation(id, data) {
+  try {
+    const list = getSavedLegitimationList()
+    const idx = list.findIndex((x) => x.id === id)
+    if (idx === -1) return false
+    const payload = { ...data, certificateIssuanceDate: data.certificateIssuanceDate || new Date().toISOString() }
+    list[idx] = {
+      id,
+      savedAt: new Date().toISOString(),
+      label: getLabel(data),
+      formType: data.formType || 'joint-affidavit',
+      data: payload,
+    }
+    localStorage.setItem(KEY_SAVED, JSON.stringify(list))
+    saveLegitimationDraft(payload)
+    return true
+  } catch {
+    return false
+  }
+}

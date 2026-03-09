@@ -34,6 +34,14 @@ function IconCourtDecree() {
   )
 }
 
+function IconLegitimation() {
+  return (
+    <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  )
+}
+
 export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -47,22 +55,24 @@ export default function Layout() {
   return (
     <div className="h-screen flex overflow-hidden bg-[var(--main-bg)]">
       <aside className="no-print w-64 shrink-0 flex flex-col bg-[var(--sidebar-bg)] overflow-hidden">
-        <div className="p-4 shrink-0">
-          <div className="flex items-center gap-2">
+        <div className="p-3 shrink-0">
+          <div className="flex items-center gap-2 px-2 py-3 rounded-lg">
             <img
-              src="/iligan official seal.jpg"
+              src="/iligan_seal_transparent.png"
               alt="City of Iligan Official Seal"
-              className="w-11 h-11 object-contain shrink-0 rounded-full bg-white/10"
+              className="w-16 h-16 object-contain shrink-0 rounded-full"
             />
             <div className="flex-1 min-w-0 text-center">
-              <p className="font-semibold text-white text-sm leading-tight">ULSADES</p>
-              <p className="text-white/70 text-xs leading-tight">Civil Registrar</p>
+              <p className="font-bold text-white text-sm leading-tight">ULSADES</p>
+              <p className="text-white/80 text-[10px] leading-tight mt-0.5">Unified Legal Status Automated Data Entry System</p>
             </div>
-            <img
-              src="/logo-shortcut.png"
-              alt="City Civil Registrar's Office"
-              className="w-11 h-11 object-contain shrink-0 rounded-full bg-white/10"
-            />
+            <div className="shrink-0 w-16 h-16 rounded-lg p-0.5 flex items-center justify-center">
+              <img
+                src="/ChatGPT Image Feb 11, 2026, 03_26_31 PM.png"
+                alt="City Civil Registrar's Office"
+                className="w-full h-full object-contain"
+              />
+            </div>
           </div>
         </div>
         <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
@@ -111,10 +121,25 @@ export default function Layout() {
             <span>Court Decree</span>
           </NavLink>
           <NavLink
+            to="/legitimation/form?type=joint-affidavit"
+            end={false}
+            className={({ isActive }) => {
+              const legitActive = isActive && location.pathname !== '/legitimation/saved'
+              return `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition relative ${
+                legitActive
+                  ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
+                  : 'text-white/90 hover:bg-white/10 text-white'
+              }`
+            }}
+          >
+            <IconLegitimation />
+            <span>Legitimation</span>
+          </NavLink>
+          <NavLink
             to="/ausf/saved"
             end
             className={({ isActive }) => {
-              const filesSavedActive = isActive || location.pathname === '/court-decree/saved'
+              const filesSavedActive = isActive || location.pathname === '/court-decree/saved' || location.pathname === '/legitimation/saved'
               return `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition relative ${
                 filesSavedActive
                   ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'

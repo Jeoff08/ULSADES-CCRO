@@ -1,15 +1,28 @@
-import React from 'react'
+import React, { useState } from 'react'
 import TransmittalDoc from '../../print/TransmittalDoc'
-import { COURT_DECREE_TRANSMITTAL_LIST } from '../../../components/print'
+import TransmittalChecklistEditor from '../../print/TransmittalChecklistEditor'
+import { COURT_DECREE_OUT_OF_TOWN_ATTACHMENTS } from '../../../components/print'
 
-/** Court decree Out of town transmittal. */
+/** Court decree Out-of-Town transmittal: editable checklist; only checked items appear in print. */
 export default function OutOfTownTransmittal({ data, subjectLine }) {
+  const [checkedLabels, setCheckedLabels] = useState([])
+
   return (
-    <TransmittalDoc
-      data={data}
-      isOutOfTown={true}
-      attachments={COURT_DECREE_TRANSMITTAL_LIST}
-      subjectLine={subjectLine}
-    />
+    <>
+      <TransmittalChecklistEditor
+        isOutOfTown={true}
+        listId="court-decree-out-of-town"
+        defaultLabels={COURT_DECREE_OUT_OF_TOWN_ATTACHMENTS}
+        onCheckedLabelsChange={setCheckedLabels}
+      />
+      <TransmittalDoc
+        data={data}
+        isOutOfTown={true}
+        attachments={checkedLabels}
+        subjectLine={subjectLine}
+        hideLineBelowDate
+        showLineAboveDate
+      />
+    </>
   )
 }

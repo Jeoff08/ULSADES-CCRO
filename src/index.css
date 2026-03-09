@@ -104,85 +104,67 @@ body {
   line-height: 1.25;
 }
 
-/* Login page: blue & green, elderly-friendly (high contrast, large touch targets) */
+/* Login page: blue and green gradient background */
 .login-page {
-  --login-bg-from: #0f766e;
-  --login-bg-to: #1e3a5f;
-  --login-heading: #0f172a;
-  --login-text: #1e293b;
-  --login-card-bg: #f8fafc;
-  --login-input-bg: #ffffff;
-  --login-input-border: #0f766e;
-  --login-placeholder: #64748b;
-  --login-focus: #0d9488;
-  --login-btn-bg: #0d9488;
-  --login-btn-hover: #0f766e;
-  --login-link: #1e40af;
-  --login-link-hover: #1e3a8a;
-  --login-error-bg: #fef2f2;
-  --login-error-text: #b91c1c;
-  --login-hint: #475569;
-  background: linear-gradient(160deg, var(--login-bg-from) 0%, #0d9488 40%, #1e40af 75%, var(--login-bg-to) 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0d5c4a 50%, #0f766e 100%);
 }
 .login-page__bg {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(160deg, rgba(15, 118, 110, 0.15) 0%, rgba(13, 148, 136, 0.12) 50%, rgba(30, 64, 175, 0.12) 100%);
-  pointer-events: none;
+  display: none;
 }
+/* Elderly-friendly: high contrast, large touch targets, readable fonts */
 .login-page__card {
-  background: var(--login-card-bg);
-  border: 2px solid rgba(15, 118, 110, 0.25);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  font-size: clamp(1rem, 2.5vw, 1.125rem);
-  line-height: 1.5;
-}
-.login-page__logo {
-  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
-  color: #fff;
+  background: #ffffff;
+  border: 2px solid rgba(0, 148, 136, 0.3);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
 }
 .login-page__title {
-  color: var(--login-heading);
-  letter-spacing: 0.02em;
-}
-.login-page__subtitle {
-  color: var(--login-text);
+  color: #0f766e;
+  letter-spacing: 0.1em;
 }
 .login-page__label {
-  color: var(--login-text);
+  color: #0f172a;
 }
 .login-page__input {
-  background: var(--login-input-bg);
-  border-color: var(--login-input-border);
-  color: var(--login-text);
+  background: #ffffff;
+  border: 2px solid #0d9488;
+  color: #0f172a;
+  font-size: 1rem;
 }
 .login-page__input::placeholder {
-  color: var(--login-placeholder);
+  color: #64748b;
+  font-size: 0.9375rem;
 }
 .login-page__input:focus {
-  border-color: var(--login-focus);
+  border-color: #0d9488;
+  outline: 2px solid #0d9488;
+  outline-offset: 2px;
 }
 .login-page__btn {
-  background: linear-gradient(180deg, var(--login-btn-bg) 0%, var(--login-btn-hover) 100%);
+  background: #0d9488;
+  color: #ffffff;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.4);
 }
 .login-page__btn:hover {
-  background: linear-gradient(180deg, #0f766e 0%, #0d5c54 100%);
+  background: #0f766e;
 }
-.login-page__link {
-  color: var(--login-link);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+.login-page__register {
+  background: linear-gradient(180deg, #00BFA5 0%, #00897B 100%);
+  box-shadow: 0 2px 8px rgba(0, 191, 165, 0.3);
 }
-.login-page__link:hover {
-  color: var(--login-link-hover);
+.login-page__register:hover {
+  background: linear-gradient(180deg, #26A69A 0%, #00695C 100%);
 }
 .login-page__error {
-  background: var(--login-error-bg);
-  color: var(--login-error-text);
-  font-weight: 500;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  border: 2px solid #f87171;
 }
 .login-page__hint {
-  color: var(--login-hint);
+  color: #0f766e;
+  font-size: 0.875rem;
 }
 
 /* All underlined blanks (border-b): same 1px line, aligned under text */
@@ -246,9 +228,26 @@ html[data-paper-size="long"] .ausf-0-6-doc.print-doc {
   min-height: 13in;
 }
 
+/* LCR Form A1: screen layout */
+.lcr-a1-print-root {
+  width: 100%;
+}
+.print-doc-lcr-a1 {
+  padding: 0.5rem 1.5rem 1rem;
+  font-size: 0.875rem;
+}
+.print-doc-lcr-a1 .lcr-a1-table td {
+  padding: 0.2rem 0.4rem;
+  line-height: 1.2;
+}
+.lcr-a1-footer-no-hr .print-doc-footer hr {
+  display: none;
+}
+
 /* Remove padding/margin during PDF capture so output has no margin */
 body.pdf-capture .print-doc,
 body.pdf-capture .ausf-doc {
+  font-family: 'Times New Roman', Times, serif !important;
   padding: 0 !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
@@ -260,6 +259,7 @@ body.pdf-capture .ausf-doc {
     margin: 0;
   }
   html, body {
+    font-family: 'Times New Roman', Times, serif !important;
     background: white;
     margin: 0;
     padding: 0;
@@ -286,6 +286,10 @@ body.pdf-capture .ausf-doc {
   main .flex.gap-6 { display: block !important; }
   main .flex-1.min-w-0 { max-width: none !important; overflow: visible !important; }
   main { overflow: hidden !important; }
+  .print-doc,
+  .ausf-doc {
+    font-family: 'Times New Roman', Times, serif !important;
+  }
   .print-doc {
     max-width: 100% !important;
     box-shadow: none !important;
@@ -297,6 +301,97 @@ body.pdf-capture .ausf-doc {
   .ausf-0-6-doc.print-doc {
     page-break-inside: avoid !important;
   }
+
+  /* LCR Form A1: fit entire form on ONE bond paper — avoid second page from scaled content in flow */
+  .lcr-a1-print-root {
+    position: relative !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    page-break-inside: avoid !important;
+    box-sizing: border-box !important;
+  }
+  /* Take content out of flow so root height is the only layout height (one page) */
+  .lcr-a1-print-root .print-doc-lcr-a1 {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform-origin: top left !important;
+    padding: 0.1in 0.3in 0.1in !important;
+    margin: 0 !important;
+    min-height: auto !important;
+    box-sizing: border-box !important;
+  }
+  /* Override any generic .print-doc padding/min-height when inside LCR A1 */
+  .lcr-a1-print-root .print-doc.print-doc-lcr-a1 {
+    padding: 0.1in 0.3in 0.1in !important;
+    min-height: auto !important;
+  }
+  .lcr-a1-print-root .lcr-a1-body,
+  .lcr-a1-print-root .lcr-a1-body p,
+  .lcr-a1-print-root .lcr-a1-body .lcr-a1-table,
+  .lcr-a1-print-root .lcr-a1-body .lcr-a1-table td,
+  .lcr-a1-print-root .lcr-a1-body .lcr-a1-remarks p,
+  .lcr-a1-print-root .lcr-a1-body .lcr-a1-signature p,
+  .lcr-a1-print-root .lcr-a1-body .lcr-a1-note {
+    font-size: 12pt !important;
+  }
+  .lcr-a1-print-root .lcr-a1-footer-no-hr .print-doc-footer hr {
+    display: none !important;
+  }
+  .lcr-a1-print-root .print-doc-footer {
+    margin-top: 0.03in !important;
+  }
+  .lcr-a1-print-root .print-doc-footer hr {
+    margin: 0 !important;
+  }
+  .lcr-a1-print-root .lcr-a1-body > * {
+    margin-top: 0 !important;
+    margin-bottom: 0.02in !important;
+  }
+  .lcr-a1-print-root .lcr-a1-body .lcr-a1-table td {
+    padding-top: 0.02in !important;
+    padding-bottom: 0.02in !important;
+  }
+  .lcr-a1-print-root .print-doc-footer p,
+  .lcr-a1-print-root .print-doc-footer .text-xs {
+    font-size: 5.5pt !important;
+    line-height: 1.1 !important;
+  }
+
+  /* Short bond (8.5" × 11"): one page only */
+  .lcr-a1-print-root,
+  html[data-paper-size="short"] .lcr-a1-print-root {
+    height: 11in !important;
+    max-height: 11in !important;
+  }
+  .lcr-a1-print-root .print-doc-lcr-a1,
+  html[data-paper-size="short"] .lcr-a1-print-root .print-doc-lcr-a1 {
+    transform: scale(0.68) !important;
+    width: 147.06% !important; /* 100% / 0.68 */
+  }
+
+  /* A4 (210mm × 297mm): one page only */
+  html[data-paper-size="a4"] .lcr-a1-print-root {
+    height: 297mm !important;
+    max-height: 297mm !important;
+  }
+  html[data-paper-size="a4"] .lcr-a1-print-root .print-doc-lcr-a1 {
+    transform: scale(0.78) !important;
+    width: 128.2% !important; /* 100% / 0.78 */
+  }
+
+  /* Long bond (8.5" × 13"): one page only */
+  html[data-paper-size="long"] .lcr-a1-print-root {
+    height: 13in !important;
+    max-height: 13in !important;
+  }
+  html[data-paper-size="long"] .lcr-a1-print-root .print-doc-lcr-a1 {
+    transform: scale(0.88) !important;
+    width: 113.64% !important; /* 100% / 0.88 */
+  }
+
   .print-doc-footer {
     page-break-inside: avoid;
   }

@@ -1,0 +1,5 @@
+export { default as LegitimationDashboard } from './LegitimationDashboard'
+export { default as LegitimationForm } from './LegitimationForm'
+export { default as LegitimationPrint } from './LegitimationPrint'
+export { default as LegitimationSaved } from './LegitimationSaved'
+export { LEGITIMATION_TYPES } from './constants'

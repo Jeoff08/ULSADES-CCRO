@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import TransmittalDoc from '../../print/TransmittalDoc'
 import TransmittalChecklistEditor from '../../print/TransmittalChecklistEditor'
-import { COURT_DECREE_TRANSMITTAL_LIST } from '../../../components/print'
+import { LEGITIMATION_TRANSMITTAL_LIST } from '../../../components/print'
 
-/** Court decree Transmittal (local): editable checklist; only checked items appear in print. */
+/** Legitimation Transmittal: editable checklist; only checked items appear in print. */
 export default function Transmittal({ data, subjectLine }) {
   const [checkedLabels, setCheckedLabels] = useState([])
 
@@ -11,8 +11,8 @@ export default function Transmittal({ data, subjectLine }) {
     <>
       <TransmittalChecklistEditor
         isOutOfTown={false}
-        listId="court-decree-local"
-        defaultLabels={COURT_DECREE_TRANSMITTAL_LIST}
+        listId="legitimation-local"
+        defaultLabels={LEGITIMATION_TRANSMITTAL_LIST}
         onCheckedLabelsChange={setCheckedLabels}
       />
       <TransmittalDoc

@@ -6,7 +6,7 @@ import { PrintHeaderRow, DocumentFooter, TRANSMITTAL_ATTACHMENTS_LOCAL, TRANSMIT
  * Shared transmittal letter content. Use Transmittal.jsx (isOutOfTown=false) or OutOfTownTransmittal.jsx (isOutOfTown=true).
  * Pass optional attachments (e.g. COURT_DECREE_TRANSMITTAL_LIST) so the list is printed on the letter.
  */
-export default function TransmittalDoc({ data, isOutOfTown, attachments: attachmentsProp, subjectLine }) {
+export default function TransmittalDoc({ data, isOutOfTown, attachments: attachmentsProp, subjectLine, hideLineBelowDate, showLineAboveDate }) {
   const isPsaLetter = !isOutOfTown
   const childFull = fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.childFirst, data.childMiddle, data.childLast) || '—'
   const childFullCaps = (childFull !== '—' ? childFull : '').toUpperCase()
@@ -16,9 +16,10 @@ export default function TransmittalDoc({ data, isOutOfTown, attachments: attachm
   const recipientOffice = (data.recipientOffice || '').toUpperCase()
   const recipientAgency = (data.recipientAgency || '').toUpperCase()
   const salutation = data.transmittalSalutation || (isPsaLetter ? "Ma'am:" : "Sir/Ma'am:")
-  const attachments = Array.isArray(attachmentsProp) && attachmentsProp.length > 0
+  // Local transmittal (AUSF): 6-item list; out-of-town/PSA: 8-item list
+  const attachments = Array.isArray(attachmentsProp)
     ? attachmentsProp
-    : (isPsaLetter ? TRANSMITTAL_ATTACHMENTS_PSA : TRANSMITTAL_ATTACHMENTS_LOCAL)
+    : (isOutOfTown ? TRANSMITTAL_ATTACHMENTS_PSA : TRANSMITTAL_ATTACHMENTS_LOCAL)
   const defaultSignatoryName = 'LORELIE L. CANTO'
   const defaultSignatoryTitle = 'Registration Officer IV'
   const displaySignatory = (data.transmittalSignatoryName || defaultSignatoryName).toUpperCase()
@@ -28,8 +29,9 @@ export default function TransmittalDoc({ data, isOutOfTown, attachments: attachm
   return (
     <div className="ausf-doc print-doc bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4 leading-normal">
       <PrintHeaderRow />
-      <hr className="border-black my-2" />
+      {!hideLineBelowDate && <hr className="border-black my-2" />}
 
+      {showLineAboveDate && <hr className="border-black my-2" />}
       <p className="font-bold text-sm mb-8">{transmittalDate}</p>
 
       {isPsaLetter ? (
@@ -41,9 +43,9 @@ export default function TransmittalDoc({ data, isOutOfTown, attachments: attachm
         </div>
       ) : (
         <div className="mb-6 space-y-1">
-          <p className="fill-blank inline-block min-w-[18rem] !text-left font-bold uppercase">{recipientName || ' '}</p>
-          <p className="fill-blank inline-block min-w-[18rem] !text-left uppercase">{recipientTitle || ' '}</p>
-          <p className="fill-blank inline-block min-w-[18rem] !text-left uppercase">{recipientOffice || ' '}</p>
+          <p className="font-bold uppercase">{recipientName || ' '}</p>
+          <p className="uppercase">{recipientTitle || ' '}</p>
+          <p className="uppercase">{recipientOffice || ' '}</p>
         </div>
       )}
 
@@ -65,13 +67,13 @@ export default function TransmittalDoc({ data, isOutOfTown, attachments: attachm
         </ol>
       </div>
 
-      <p className="mb-8">For appropriate action.</p>
-
-      <p className="mb-6">Respectfully yours,</p>
-
-      <div className="mb-6">
-        <p className="font-bold uppercase">{displaySignatory}</p>
-        <p className="text-sm">{signatoryTitle}</p>
+      <div className="min-h-[28vh] flex flex-col justify-center">
+        <div className="space-y-4 text-left">
+          <p>For appropriate action.</p>
+          <p>Respectfully yours,</p>
+          <p className="font-bold uppercase">{displaySignatory}</p>
+          <p className="text-sm">{signatoryTitle}</p>
+        </div>
       </div>
       <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
     </div>

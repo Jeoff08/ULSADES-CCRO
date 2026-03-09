@@ -1,4 +1,4 @@
-export const SEAL_LEFT_SRC = '/iligan official seal.jpg'
+export const SEAL_LEFT_SRC = '/iligan_seal_transparent.png'
 export const LOGO_RIGHT_SRC = '/logo-shortcut.png'
 
 export const FILL = 'fill-blank inline-block'
@@ -24,7 +24,18 @@ export const PAPER_SIZES = [
   { id: 'long', label: 'Long (8.5" × 13")', size: '8.5in 13in', widthMm: 215.9, heightMm: 330.2 },
 ]
 
+/** Transmittal (local) – first image: 6 items */
 export const TRANSMITTAL_ATTACHMENTS_LOCAL = [
+  'AFFIDAVIT TO USE SURNAME OF THE FATHER',
+  'CERTIFICATE OF REGISTRATION OF AUSF',
+  'UN-ANNOTATED BIRTH CERTIFICATE',
+  'ANNOTATED BIRTH CERTIFICATE',
+  'LCR FORM 1A',
+  'AFFIDAVIT OF ACKNOWLEDGEMENT',
+]
+
+/** Out-of-Town Transmittal – second image: 8 items */
+export const TRANSMITTAL_ATTACHMENTS_PSA = [
   'CERTIFICATE OF LIVE BIRTH OF CHILD',
   'AFFIDAVIT TO USE SURNAME OF THE FATHER',
   'CERTIFICATE OF LIVE BIRTH OF PARENTS',
@@ -35,13 +46,25 @@ export const TRANSMITTAL_ATTACHMENTS_LOCAL = [
   'PICTURES',
 ]
 
-export const TRANSMITTAL_ATTACHMENTS_PSA = [
-  'AFFIDAVIT TO USE SURNAME OF THE FATHER',
-  'CERTIFICATE OF REGISTRATION OF AUSF',
+/** Legitimation transmittal: 7-item list per endorsement letter format */
+export const LEGITIMATION_TRANSMITTAL_LIST = [
+  'AFFIDAVIT OF LEGITIMATION',
+  'CERTIFICATE OF REGISTRATION',
+  'MARRIAGE CERTIFICATE OF PARENTS',
+  'MARRIAGE ADVISORY OF PARENTS',
   'UN-ANNOTATED BIRTH CERTIFICATE',
   'ANNOTATED BIRTH CERTIFICATE',
   'LCR FORM 1A',
-  'AFFIDAVIT OF ACKNOWLEDGEMENT',
+]
+
+/** Legitimation Out-of-Town transmittal: 6-item list per official letter format */
+export const LEGITIMATION_OUT_OF_TOWN_ATTACHMENTS = [
+  'CERTIFICATE OF LIVE BIRTH OF CHILD',
+  'MARRIAGE CERTIFICATE OF PARENTS',
+  'MARRIAGE ADVISORY OF PARENTS',
+  'AFFIDAVIT OF LEGITIMATION',
+  'CERTIFICATE OF LIVE BIRTH OF PARENTS',
+  'VALID ID OF PARENT/S',
 ]
 
 /** Court decree transmittal: list of 11 document types to print on transmittal/out-of-town letters */
@@ -57,6 +80,14 @@ export const COURT_DECREE_TRANSMITTAL_LIST = [
   'ANNOTATION FOR FORM 1A',
   'ANNOTATION FOR FORM 2A',
   'ANNOTATION FOR FORM 3A',
+]
+
+/** Court decree Out-of-Town transmittal: 4-item list per official letter format */
+export const COURT_DECREE_OUT_OF_TOWN_ATTACHMENTS = [
+  'COURT ORDER/DECREE',
+  'CERTIFICATE OF FINALITY',
+  'CERTIFICATE OF REGISTRATION OF COURT ORDER/DECREE',
+  'CERTIFICATE OF AUTHENTICITY OF THE COURT ORDER/DECREE',
 ]
 
 export const PRINT_SIZE_STYLE_ID = 'print-paper-size'

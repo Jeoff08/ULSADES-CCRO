@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { getAUSFDraft } from '../lib/ausfStorage'
 import { defaultAUSF } from '../lib/ausfDefaults'
 import { formatDateLong, formatDateCert, fullName, formatDateCOLB } from '../lib/printUtils'
+import TransmittalDoc from './print/TransmittalDoc'
+import TransmittalChecklistEditor from './print/TransmittalChecklistEditor'
+import { TRANSMITTAL_ATTACHMENTS_LOCAL, TRANSMITTAL_ATTACHMENTS_PSA } from '../components/print'
 
 const VIEW_PRINT_OPTIONS = [
   { label: 'AUSF only', type: 'ausf-only' },
@@ -18,7 +21,7 @@ const VIEW_PRINT_OPTIONS = [
   { label: 'Out-of-Town Transmittal', type: 'out-of-town' },
 ]
 
-const SEAL_LEFT_SRC = '/iligan official seal.jpg'
+const SEAL_LEFT_SRC = '/iligan_seal_transparent.png'
 const LOGO_RIGHT_SRC = '/logo-shortcut.png'
 
 function PrintHeaderRow({ rightContent }) {
@@ -384,62 +387,23 @@ function PrintDocCertRegistration({ data, isRegAck }) {
   )
 }
 
-const TRANSMITTAL_ATTACHMENTS_LOCAL = [
-  'CERTIFICATE OF LIVE BIRTH OF CHILD',
-  'AFFIDAVIT TO USE SURNAME OF THE FATHER',
-  'CERTIFICATE OF LIVE BIRTH OF PARENTS',
-  'AFFIDAVIT OF GUARDIANSHIP',
-  'AFFIDAVIT OF ACKNOWLEDGEMENT',
-  'SCHOOL RECORDS',
-  'INSURANCE POLICY',
-  'PICTURES',
-]
-
-const TRANSMITTAL_ATTACHMENTS_PSA = [
-  'AFFIDAVIT TO USE SURNAME OF THE FATHER',
-  'CERTIFICATE OF REGISTRATION OF AUSF',
-  'UN-ANNOTATED BIRTH CERTIFICATE',
-  'ANNOTATED BIRTH CERTIFICATE',
-  'LCR FORM 1A',
-  'AFFIDAVIT OF ACKNOWLEDGEMENT',
-]
-
 function PrintDocTransmittal({ data, isOutOfTown }) {
-  const childFull = fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.childFirst, data.childMiddle, data.childLast) || '—'
-  const transmittalDate = formatDateCert(data.transmittalDate) || formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
-  const recipientName = data.recipientName || ''
-  const recipientTitle = data.recipientTitle || ''
-  const recipientOffice = data.recipientOffice || ''
-  const signatoryName = data.transmittalSignatoryName || data.cityCivilRegistrarName || 'ATTY. YUSSIF DON JUSTIN F. MARTIL'
-  const signatoryTitle = isOutOfTown ? 'Registration Officer IV' : 'City Civil Registrar'
-  const attachments = isOutOfTown ? TRANSMITTAL_ATTACHMENTS_PSA : TRANSMITTAL_ATTACHMENTS_LOCAL
-  const displaySignatory = isOutOfTown ? (data.transmittalSignatoryName || data.certificateSignatoryName || 'LORELIE L. CANTO') : signatoryName
+  const [checkedLabels, setCheckedLabels] = useState([])
+  const defaultLabels = isOutOfTown ? TRANSMITTAL_ATTACHMENTS_PSA : TRANSMITTAL_ATTACHMENTS_LOCAL
 
   return (
-    <div className="ausf-doc print-doc bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4">
-      <PrintHeaderRow />
-      <hr className="border-black my-2" />
-      <p className="font-bold text-sm mb-4">{transmittalDate}</p>
-      <div className="mb-4">
-        <p className="fill-blank inline-block min-w-[14rem]">{recipientName || ' '}</p>
-        <p className="fill-blank inline-block min-w-[14rem] mt-1">{recipientTitle || ' '}</p>
-        <p className="fill-blank inline-block min-w-[14rem] mt-1">{recipientOffice || ' '}</p>
-      </div>
-      <p className="font-bold text-sm mb-1">SUBJECT:</p>
-      <p className="font-bold text-sm mb-4">ENDORSEMENT OF AFFIDAVIT TO USE SURNAME OF FATHER IN FAVOR OF {childFull}</p>
-      <p className="mb-2">Sir/Ma&apos;am:</p>
-      <p className="mb-3">I am respectfully forwarding to your good office the attached documents in relation to the above-cited subject, to wit:</p>
-      <ol className="list-decimal list-inside space-y-1 ml-2 mb-4">
-        {attachments.map((item, i) => (
-          <li key={i}>{item}</li>
-        ))}
-      </ol>
-      <p className="mb-4">For appropriate action.</p>
-      <p className="mb-4">Respectfully yours,</p>
-      <p className="font-bold">{displaySignatory}</p>
-      <p className="text-sm">{signatoryTitle}</p>
-      <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
-    </div>
+    <>
+      <TransmittalChecklistEditor
+        isOutOfTown={isOutOfTown}
+        defaultLabels={defaultLabels}
+        onCheckedLabelsChange={setCheckedLabels}
+      />
+      <TransmittalDoc
+        data={data}
+        isOutOfTown={isOutOfTown}
+        attachments={checkedLabels}
+      />
+    </>
   )
 }
 

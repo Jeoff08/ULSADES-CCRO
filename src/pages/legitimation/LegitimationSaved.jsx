@@ -1,21 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { getSavedAUSFList, loadSavedAUSFToDraft, deleteSavedAUSF, restoreSavedAUSF } from '../lib/ausfStorage'
+import { getSavedLegitimationList, loadSavedLegitimationToDraft, deleteSavedLegitimation, restoreSavedLegitimation } from '../../lib/legitimationStorage'
 
-const FORM_TYPE_LABELS = {
-  'ausf-only': 'AUSF only',
-  'ausf-0-6': 'AUSF 0-6',
-  'ausf-07-17': 'AUSF 07-17',
-  'reg-ausf': 'Registration of AUSF',
-  'reg-ack': 'Registration of Acknowledgement',
-  'child-ack': 'Child Acknowledge',
-  'child-ack-lcr': 'LCR Form 1A (Birth-Available)',
-  'child-ack-annotation': 'Annotation',
-  'child-not-ack': 'Child Not Acknowledged',
-  'child-not-ack-lcr': 'LCR Form A1 (Child Not Acknowledged)',
-  'child-not-ack-annotation': 'Annotation (Child Not Acknowledged)',
-  'child-not-ack-transmittal': 'Transmittal (Child Not Acknowledged)',
-  'out-of-town': 'Out-of-Town Transmittal',
+const LEGITIMATION_TYPE_LABELS = {
+  'sole-affidavit': 'Sole Affidavit Legitimation',
+  'joint-affidavit': 'Joint Affidavit Legitimation',
+  'registration-legitimation': 'Registration of Legitimation',
+  'registration-acknowledgement': 'Registration of Acknowledgement',
+  'lcr-form-1a': 'LCR Form 1A',
+  'transmittal': 'Transmittal',
+  'out-of-town-transmittal': 'Out of Town Transmittal',
+  'annotation': 'Annotation',
 }
 
 function formatSavedAt(iso) {
@@ -30,8 +25,8 @@ function formatSavedAt(iso) {
 
 const TOAST_DURATION_MS = 8000
 
-export default function AUSFSaved() {
-  const [list, setList] = useState(() => getSavedAUSFList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+export default function LegitimationSaved() {
+  const [list, setList] = useState(() => getSavedLegitimationList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [toastVisible, setToastVisible] = useState(false)
   const [toastProgress, setToastProgress] = useState(100)
@@ -40,7 +35,7 @@ export default function AUSFSaved() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    setList(getSavedAUSFList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+    setList(getSavedLegitimationList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
   }, [])
 
   useEffect(() => {
@@ -51,20 +46,18 @@ export default function AUSFSaved() {
       const elapsed = Date.now() - start
       const remaining = Math.max(0, 100 - (elapsed / TOAST_DURATION_MS) * 100)
       setToastProgress(remaining)
-      if (remaining <= 0) {
-        setToastVisible(false)
-      }
+      if (remaining <= 0) setToastVisible(false)
     }, 50)
     toastIntervalRef.current = id
     return () => clearInterval(id)
   }, [toastVisible])
 
   const handleViewPrint = (item) => {
-    if (loadSavedAUSFToDraft(item.id)) navigate('/ausf/print')
+    if (loadSavedLegitimationToDraft(item.id)) navigate(`/legitimation/print?type=${item.formType || 'joint-affidavit'}`)
   }
 
   const handleEdit = (item) => {
-    if (loadSavedAUSFToDraft(item.id)) navigate(`/ausf?edit=1&id=${encodeURIComponent(item.id)}`)
+    if (loadSavedLegitimationToDraft(item.id)) navigate(`/legitimation/form?type=${item.formType || 'joint-affidavit'}&edit=1&id=${encodeURIComponent(item.id)}`)
   }
 
   const openDeleteConfirm = (id) => setConfirmDeleteId(id)
@@ -74,15 +67,15 @@ export default function AUSFSaved() {
     if (!confirmDeleteId) return
     const item = list.find((x) => x.id === confirmDeleteId)
     if (item) setLastDeletedItem({ ...item, data: item.data ? { ...item.data } : undefined })
-    deleteSavedAUSF(confirmDeleteId)
-    setList(getSavedAUSFList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+    deleteSavedLegitimation(confirmDeleteId)
+    setList(getSavedLegitimationList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
     setConfirmDeleteId(null)
     setToastVisible(true)
   }
 
   const handleUndo = () => {
-    if (lastDeletedItem && restoreSavedAUSF(lastDeletedItem)) {
-      setList(getSavedAUSFList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+    if (lastDeletedItem && restoreSavedLegitimation(lastDeletedItem)) {
+      setList(getSavedLegitimationList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
       setLastDeletedItem(null)
       setToastVisible(false)
     }
@@ -90,19 +83,16 @@ export default function AUSFSaved() {
 
   return (
     <div className="p-6">
-      <h1 className="text-base font-bold text-gray-800 mb-1">Files Saved</h1>
+      <h1 className="text-base font-bold text-gray-800 mb-1">Legitimation – Files Saved</h1>
       <p className="text-sm text-gray-500 mb-4">
-        AUSF forms saved when you click Done appear here. Start a new form or open a saved file to view and print.
+        Legitimation forms saved when you click Done appear here. Open a saved file to view and print, or start a new form.
       </p>
       <div className="flex flex-wrap gap-3 mb-6">
         <Link
-          to="/ausf"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:bg-[var(--primary-blue-light)] transition"
+          to="/ausf/saved"
+          className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition"
         >
-          <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          New AUSF
+          AUSF saved
         </Link>
         <Link
           to="/court-decree/saved"
@@ -111,15 +101,18 @@ export default function AUSFSaved() {
           Court Decree saved
         </Link>
         <Link
-          to="/legitimation/saved"
-          className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition"
+          to="/legitimation/form?type=joint-affidavit"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:bg-[var(--primary-blue-light)] transition"
         >
-          Legitimation saved
+          <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          New Legitimation
         </Link>
       </div>
       {list.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-300 bg-white p-6 text-sm text-gray-500 text-center">
-          No saved AUSF files yet. Complete an AUSF form and click Done to save it here.
+          No saved Legitimation files yet. Complete a Legitimation form and click Done to save it here.
         </div>
       ) : (
         <ul className="space-y-3">
@@ -131,7 +124,7 @@ export default function AUSFSaved() {
               <div className="min-w-0">
                 <p className="font-medium text-gray-800 truncate">{item.label}</p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {FORM_TYPE_LABELS[item.formType] || item.formType} · {formatSavedAt(item.savedAt)}
+                  {LEGITIMATION_TYPE_LABELS[item.formType] || item.formType} · {formatSavedAt(item.savedAt)}
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">

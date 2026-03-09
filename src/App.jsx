@@ -8,6 +8,7 @@ import AUSFForm from './pages/AUSFForm'
 import AUSFPrint from './pages/AUSFPrint'
 import AUSFSaved from './pages/AUSFSaved'
 import { CourtDecreeForm, CourtDecreeInstructions, CourtDecreePrint, CourtDecreeSaved } from './pages/courtDecree'
+import { LegitimationForm, LegitimationPrint, LegitimationSaved } from './pages/legitimation'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth()
@@ -36,6 +37,10 @@ export default function App() {
         <Route path="court-decree/print" element={<CourtDecreePrint />} />
         <Route path="court-decree/instructions" element={<CourtDecreeInstructions />} />
         <Route path="court-decree/saved" element={<CourtDecreeSaved />} />
+        <Route path="legitimation" element={<Navigate to="/legitimation/form?type=joint-affidavit" replace />} />
+        <Route path="legitimation/form" element={<LegitimationForm />} />
+        <Route path="legitimation/print" element={<LegitimationPrint />} />
+        <Route path="legitimation/saved" element={<LegitimationSaved />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
