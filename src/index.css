@@ -177,6 +177,23 @@ body {
   box-sizing: content-box;
 }
 
+/* Registration of AUSF: spacing and signatory position (screen) */
+.ausf-registration-cert .cert-reg-title {
+  margin-bottom: 1.5rem;
+}
+.ausf-registration-cert .cert-reg-to-whom {
+  margin-bottom: 0.75rem;
+}
+.ausf-registration-cert .cert-reg-p {
+  margin-bottom: 1.25rem;
+}
+.ausf-registration-cert .cert-reg-signatory-spacer {
+  min-height: 8.5rem;
+}
+.ausf-registration-cert .cert-reg-signatory {
+  margin-top: 6.25rem;
+}
+
 /* Short bond only (screen): footer at bottom edge */
 html[data-paper-size="short"] .print-doc {
   display: flex;
@@ -244,6 +261,11 @@ html[data-paper-size="long"] .ausf-0-6-doc.print-doc {
   display: none;
 }
 
+/* Certificate of Authenticity: 2-line gap between the three body paragraphs (inside content, screen + PDF) */
+.cert-auth-body-gaps p + p {
+  margin-top: 2em; /* 2 line heights = 2-space gap between blocks */
+}
+
 /* Remove padding/margin during PDF capture so output has no margin */
 body.pdf-capture .print-doc,
 body.pdf-capture .ausf-doc {
@@ -252,6 +274,29 @@ body.pdf-capture .ausf-doc {
   margin-left: 0 !important;
   margin-right: 0 !important;
   max-width: none !important;
+}
+/* Certificate of Authenticity / Registration: ensure 2-space gap inside content when capturing to PDF */
+body.pdf-capture .print-doc-cert-auth .cert-auth-body p + p,
+body.pdf-capture .print-doc-cert-registration .cert-reg-body p + p {
+  margin-top: 2em !important;
+}
+/* Transmittal (court decree): elderly-friendly larger text when capturing to PDF */
+body.pdf-capture .print-doc-transmittal-elderly.ausf-doc {
+  font-size: 14pt !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly p {
+  font-size: 14pt !important;
+  line-height: 1.5 !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly p.font-bold {
+  font-size: 15pt !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly ol li {
+  font-size: 14pt !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer p,
+body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
+  font-size: 12pt !important;
 }
 
 @media print {
@@ -299,6 +344,24 @@ body.pdf-capture .ausf-doc {
     display: flex !important;
     flex-direction: column !important;
   }
+  /* Print PDF only: header and footer fixed; only body content is flexible */
+  .print-doc-header {
+    flex-shrink: 0 !important;
+  }
+  .print-header-address {
+    font-size: 18px !important;
+  }
+  .print-doc-body {
+    flex: 1 1 0% !important;
+    min-height: 0 !important;
+  }
+  .print-doc-footer-wrap {
+    flex-shrink: 0 !important;
+    margin-top: auto !important;
+  }
+  .print-doc .print-doc-footer {
+    flex-shrink: 0 !important;
+  }
   .ausf-0-6-doc.print-doc {
     page-break-inside: avoid !important;
   }
@@ -313,9 +376,10 @@ body.pdf-capture .ausf-doc {
     flex-shrink: 0;
   }
 
-  /* LCR Form A1: fit entire form on ONE bond paper — avoid second page from scaled content in flow */
+  /* LCR Form A1: one page, header + footer always visible, body auto-adjusts to paper size */
   .lcr-a1-print-root {
-    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
     width: 100% !important;
     overflow: hidden !important;
     padding: 0 !important;
@@ -323,43 +387,72 @@ body.pdf-capture .ausf-doc {
     page-break-inside: avoid !important;
     box-sizing: border-box !important;
   }
-  /* Take content out of flow so root height is the only layout height (one page) */
   .lcr-a1-print-root .print-doc-lcr-a1 {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    transform-origin: top left !important;
-    padding: 0.1in 0.3in 0.1in !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 0% !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    padding: 0.12in 0.35in 0.12in !important;
     margin: 0 !important;
-    min-height: auto !important;
     box-sizing: border-box !important;
   }
-  /* Override any generic .print-doc padding/min-height when inside LCR A1 */
-  .lcr-a1-print-root .print-doc.print-doc-lcr-a1 {
-    padding: 0.1in 0.3in 0.1in !important;
-    min-height: auto !important;
+  .lcr-a1-print-root .lcr-a1-header {
+    flex-shrink: 0 !important;
+    page-break-after: avoid !important;
+  }
+  .lcr-a1-print-root .lcr-a1-content-wrap {
+    flex: 1 1 0% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .lcr-a1-print-root .lcr-a1-scaled {
+    transform-origin: top left !important;
+  }
+  .lcr-a1-print-root .lcr-a1-header,
+  .lcr-a1-print-root .lcr-a1-header p {
+    font-size: 15px !important;
+  }
+  .lcr-a1-print-root .lcr-a1-title {
+    font-size: 15px !important;
   }
   .lcr-a1-print-root .lcr-a1-body,
   .lcr-a1-print-root .lcr-a1-body p,
-  .lcr-a1-print-root .lcr-a1-body .lcr-a1-table,
-  .lcr-a1-print-root .lcr-a1-body .lcr-a1-table td,
   .lcr-a1-print-root .lcr-a1-body .lcr-a1-remarks p,
   .lcr-a1-print-root .lcr-a1-body .lcr-a1-signature p,
   .lcr-a1-print-root .lcr-a1-body .lcr-a1-note {
-    font-size: 12pt !important;
+    font-size: 17px !important;
+  }
+  .lcr-a1-print-root .lcr-a1-body .lcr-a1-note {
+    font-style: italic !important;
+    font-weight: 500 !important;
+  }
+  .lcr-a1-print-root .lcr-a1-body .lcr-a1-table,
+  .lcr-a1-print-root .lcr-a1-body .lcr-a1-table td {
+    font-size: 18px !important;
   }
   .lcr-a1-print-root .lcr-a1-footer-no-hr .print-doc-footer hr {
     display: none !important;
   }
   .lcr-a1-print-root .print-doc-footer {
-    margin-top: 0.03in !important;
+    flex-shrink: 0 !important;
+    margin-top: 0.04in !important;
+    page-break-before: avoid !important;
   }
   .lcr-a1-print-root .print-doc-footer hr {
     margin: 0 !important;
   }
   .lcr-a1-print-root .lcr-a1-body > * {
     margin-top: 0 !important;
-    margin-bottom: 0.02in !important;
+    margin-bottom: 0.07in !important;
+  }
+  .lcr-a1-print-root .lcr-a1-scaled {
+    gap: 0.2in !important;
+  }
+  .lcr-a1-print-root .lcr-a1-body {
+    gap: 0.2in !important;
   }
   .lcr-a1-print-root .lcr-a1-body .lcr-a1-table td {
     padding-top: 0.02in !important;
@@ -367,40 +460,96 @@ body.pdf-capture .ausf-doc {
   }
   .lcr-a1-print-root .print-doc-footer p,
   .lcr-a1-print-root .print-doc-footer .text-xs {
-    font-size: 5.5pt !important;
-    line-height: 1.1 !important;
+    font-size: 14px !important;
+    line-height: 1.25 !important;
   }
 
-  /* Short bond (8.5" × 11"): one page only */
-  .lcr-a1-print-root,
-  html[data-paper-size="short"] .lcr-a1-print-root {
+  /* LCR A1: enforce 15px header/title, 17px body, 18px table, 14px footer in print PDF for all paper sizes */
+  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-header,
+  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-header p,
+  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-title,
+  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-header,
+  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-header p,
+  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-title,
+  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-header,
+  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-header p,
+  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-title {
+    font-size: 15px !important;
+  }
+  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-body,
+  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-body p,
+  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-remarks p,
+  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-signature p,
+  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-note,
+  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-body,
+  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-body p,
+  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-remarks p,
+  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-signature p,
+  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-note,
+  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-body,
+  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-body p,
+  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-remarks p,
+  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-signature p,
+  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-note {
+    font-size: 17px !important;
+  }
+  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-table,
+  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-table td,
+  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-table,
+  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-table td,
+  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-table,
+  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-table td {
+    font-size: 18px !important;
+  }
+  html[data-paper-size="short"] .lcr-a1-print-root .print-doc-footer p,
+  html[data-paper-size="short"] .lcr-a1-print-root .print-doc-footer .text-xs,
+  html[data-paper-size="a4"] .lcr-a1-print-root .print-doc-footer p,
+  html[data-paper-size="a4"] .lcr-a1-print-root .print-doc-footer .text-xs,
+  html[data-paper-size="long"] .lcr-a1-print-root .print-doc-footer p,
+  html[data-paper-size="long"] .lcr-a1-print-root .print-doc-footer .text-xs {
+    font-size: 14px !important;
+  }
+
+  /* Short bond: same output as A4 (same height, scale, and layout) */
+  .lcr-a1-print-root {
     height: 11in !important;
+    min-height: 11in !important;
     max-height: 11in !important;
   }
-  .lcr-a1-print-root .print-doc-lcr-a1,
-  html[data-paper-size="short"] .lcr-a1-print-root .print-doc-lcr-a1 {
-    transform: scale(0.68) !important;
-    width: 147.06% !important; /* 100% / 0.68 */
+  .lcr-a1-print-root .lcr-a1-scaled {
+    transform: scale(0.72) !important;
+    width: 138.89% !important; /* 100% / 0.72 */
   }
-
-  /* A4 (210mm × 297mm): one page only */
-  html[data-paper-size="a4"] .lcr-a1-print-root {
+  html[data-paper-size="short"] .lcr-a1-print-root {
     height: 297mm !important;
+    min-height: 297mm !important;
     max-height: 297mm !important;
   }
-  html[data-paper-size="a4"] .lcr-a1-print-root .print-doc-lcr-a1 {
-    transform: scale(0.78) !important;
-    width: 128.2% !important; /* 100% / 0.78 */
+  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-scaled {
+    transform: scale(0.72) !important;
+    width: 138.89% !important; /* same as A4 */
   }
 
-  /* Long bond (8.5" × 13"): one page only */
+  /* A4 (210mm × 297mm) */
+  html[data-paper-size="a4"] .lcr-a1-print-root {
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+  }
+  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-scaled {
+    transform: scale(0.72) !important;
+    width: 138.89% !important; /* 100% / 0.72 */
+  }
+
+  /* Long bond (8.5" × 13"): scale middle only */
   html[data-paper-size="long"] .lcr-a1-print-root {
     height: 13in !important;
+    min-height: 13in !important;
     max-height: 13in !important;
   }
-  html[data-paper-size="long"] .lcr-a1-print-root .print-doc-lcr-a1 {
-    transform: scale(0.88) !important;
-    width: 113.64% !important; /* 100% / 0.88 */
+  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-scaled {
+    transform: scale(0.82) !important;
+    width: 121.95% !important; /* 100% / 0.82 */
   }
 
   .print-doc-footer {
@@ -475,14 +624,47 @@ body.pdf-capture .ausf-doc {
   html[data-paper-size="a4"] .ausf-0-6-doc .registrar-signature-zone {
     min-height: 1.5rem !important;
   }
-  /* Long bond only: footer at bottom edge of page (short and A4 unchanged) */
-  html[data-paper-size="long"] .print-doc {
+  /* Long bond: transmittal (and all print-doc) – one-page layout, footer as footer at bottom, visible */
+  html[data-paper-size="long"] .print-doc,
+  html[data-paper-size="long"] .print-doc-transmittal {
+    display: flex !important;
+    flex-direction: column !important;
     min-height: 13in !important;
-    padding: 0.35in 0.5in 0.15in !important;
+    height: 13in !important;
+    max-height: 13in !important;
+    padding: 0.35in 0.5in 0.25in !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
   }
-  html[data-paper-size="long"] .print-doc-footer {
+  html[data-paper-size="long"] .print-doc-footer,
+  html[data-paper-size="long"] .print-doc-transmittal .print-doc-footer,
+  html[data-paper-size="long"] .print-doc-transmittal footer .print-doc-footer {
     margin-top: auto !important;
-    padding-bottom: 0.08in;
+    flex-shrink: 0 !important;
+    padding-bottom: 0.12in !important;
+    padding-top: 0.08in !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    page-break-inside: avoid !important;
+  }
+  html[data-paper-size="long"] .print-doc-footer hr,
+  html[data-paper-size="long"] .print-doc-footer p,
+  html[data-paper-size="long"] .print-doc-footer .grid,
+  html[data-paper-size="long"] .print-doc-transmittal .print-doc-footer hr,
+  html[data-paper-size="long"] .print-doc-transmittal .print-doc-footer p,
+  html[data-paper-size="long"] .print-doc-transmittal .print-doc-footer .grid {
+    visibility: visible !important;
+  }
+  html[data-paper-size="long"] .print-doc .mt-auto,
+  html[data-paper-size="long"] .print-doc-transmittal .print-doc-footer-wrap,
+  html[data-paper-size="long"] .print-doc-transmittal footer {
+    flex-shrink: 0 !important;
+    margin-top: auto !important;
+  }
+  html[data-paper-size="long"] .print-doc .flex-1,
+  html[data-paper-size="long"] .print-doc-transmittal .print-doc-body .flex-1 {
+    min-height: 0 !important;
+    flex: 1 1 0% !important;
   }
   /* Compact layout to fit one page on A4 and short bond (8.5" × 11") */
   .ausf-doc {
@@ -548,33 +730,125 @@ body.pdf-capture .ausf-doc {
   .ausf-doc .text-justify {
     text-justify: inter-word;
   }
-  /* Certificate of Registration: same print layout as Certificate of Authenticity */
+  /* Certificate of Registration: same print layout as Certificate of Authenticity (2-space gap between body blocks) */
   .print-doc-cert-registration .cert-reg-body {
-    line-height: 2 !important;
+    line-height: 1.8 !important;
   }
   .print-doc-cert-registration .cert-reg-body p,
   .print-doc-cert-registration .cert-reg-justify {
     text-align: justify !important;
     text-justify: inter-word;
-    line-height: 2 !important;
-    margin-bottom: 0.15in !important;
+    line-height: 1.8 !important;
   }
-  .print-doc-cert-registration .cert-reg-body p:last-child {
-    margin-bottom: 0 !important;
+  .print-doc-cert-registration .cert-reg-body p + p {
+    margin-top: 2em !important;
   }
   .print-doc-cert-registration .cert-reg-body .font-bold.mb-2 {
     text-align: left !important;
   }
-  /* Certificate of Authenticity: double line spacing + paragraph gaps in print/PDF */
+
+  /* Registration of AUSF: larger fonts for elderly (print/PDF), same output */
+  .ausf-registration-cert.ausf-doc {
+    font-size: 13pt !important;
+  }
+  .ausf-registration-cert > .flex.justify-between.items-center p {
+    font-size: 12pt !important;
+  }
+  .ausf-registration-cert > .flex.justify-between.items-center p.text-lg {
+    font-size: 14pt !important;
+  }
+  .ausf-registration-cert h2 {
+    font-size: 16pt !important;
+  }
+  .ausf-registration-cert .cert-reg-body p,
+  .ausf-registration-cert .cert-reg-justify {
+    font-size: 13pt !important;
+    line-height: 1.5 !important;
+  }
+  .ausf-registration-cert .cert-reg-body > p.font-bold {
+    font-size: 14pt !important;
+  }
+  .ausf-registration-cert .cert-reg-body .text-left p:first-child {
+    font-size: 13pt !important;
+  }
+  .ausf-registration-cert .cert-reg-body .text-left p:last-child {
+    font-size: 12pt !important;
+  }
+  .ausf-registration-cert .print-doc-footer p,
+  .ausf-registration-cert .print-doc-footer .text-xs {
+    font-size: 11pt !important;
+  }
+  .ausf-registration-cert .fill-blank {
+    border-bottom-width: 1.5px !important;
+  }
+  /* Registration of AUSF: space between sections + signatory lower (print/PDF) */
+  .ausf-registration-cert .cert-reg-title {
+    margin-bottom: 0.25in !important;
+  }
+  .ausf-registration-cert .cert-reg-to-whom {
+    margin-top: 0.15in !important;
+    margin-bottom: 0.12in !important;
+  }
+  .ausf-registration-cert .cert-reg-p {
+    margin-bottom: 0.2in !important;
+  }
+  .ausf-registration-cert .cert-reg-signatory-spacer {
+    min-height: 2.2in !important;
+  }
+  .ausf-registration-cert .cert-reg-signatory {
+    margin-top: 1.2in !important;
+  }
+
+  /* Transmittal: elderly-friendly larger text in print/PDF; header and footer fixed */
+  .print-doc-transmittal .print-doc-header {
+    flex-shrink: 0 !important;
+    page-break-after: avoid !important;
+  }
+  .print-doc-transmittal .print-doc-body {
+    flex: 1 1 0% !important;
+    min-height: 0 !important;
+  }
+  .print-doc-transmittal .print-doc-footer-wrap {
+    flex-shrink: 0 !important;
+    margin-top: auto !important;
+  }
+  .print-doc-transmittal-elderly.ausf-doc {
+    font-size: 14pt !important;
+  }
+  .print-doc-transmittal-elderly p {
+    font-size: 14pt !important;
+    line-height: 1.5 !important;
+  }
+  .print-doc-transmittal-elderly p.font-bold.uppercase,
+  .print-doc-transmittal-elderly p.font-bold {
+    font-size: 15pt !important;
+  }
+  .print-doc-transmittal-elderly ol li {
+    font-size: 14pt !important;
+    line-height: 1.5 !important;
+  }
+  .print-doc-transmittal-elderly .print-doc-footer p,
+  .print-doc-transmittal-elderly .print-doc-footer .text-xs {
+    font-size: 12pt !important;
+  }
+  .print-doc-transmittal-elderly .mt-auto {
+    flex-shrink: 0 !important;
+  }
+  .print-doc-transmittal-elderly .print-doc-footer {
+    margin-top: 0.1in !important;
+    flex-shrink: 0 !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Certificate of Authenticity: 2-space gap inside content (between blocks) in print/PDF */
   .print-doc-cert-auth .cert-auth-body {
-    line-height: 2 !important;
+    line-height: 1.8 !important;
   }
   .print-doc-cert-auth .cert-auth-body p {
-    line-height: 2 !important;
-    margin-bottom: 0.15in !important;
+    line-height: 1.8 !important;
   }
-  .print-doc-cert-auth .cert-auth-body p:last-child {
-    margin-bottom: 0 !important;
+  .print-doc-cert-auth .cert-auth-body p + p {
+    margin-top: 2em !important; /* 2 line heights = gap between blocks, not outside */
   }
   /* Limit justified stretch so word spacing stays close to normal (one space) */
   .ausf-doc ol li.text-justify {
@@ -596,19 +870,64 @@ body.pdf-capture .ausf-doc {
     print-color-adjust: exact;
   }
 
-  /* Short bond only: tighter layout + footer at bottom edge of page (long unchanged) */
-  html[data-paper-size="short"] .print-doc {
-    padding: 0.2in 0.4in 0.15in !important;
+  /* Short bond: transmittal (and all print-doc) – one-page layout, footer as footer at bottom, visible */
+  html[data-paper-size="short"] .print-doc,
+  html[data-paper-size="short"] .print-doc-transmittal {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0.2in 0.4in 0.25in !important;
     min-height: 11in !important;
+    height: 11in !important;
+    max-height: 11in !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
   }
-  html[data-paper-size="short"] .print-doc-footer {
+  html[data-paper-size="short"] .print-doc-footer,
+  html[data-paper-size="short"] .print-doc-transmittal .print-doc-footer,
+  html[data-paper-size="short"] .print-doc-transmittal footer .print-doc-footer {
     margin-top: auto !important;
-    padding-bottom: 0.08in;
+    flex-shrink: 0 !important;
+    padding-bottom: 0.12in !important;
+    padding-top: 0.08in !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    page-break-inside: avoid !important;
   }
-  html[data-paper-size="short"] .ausf-doc,
+  html[data-paper-size="short"] .print-doc-footer hr,
+  html[data-paper-size="short"] .print-doc-footer p,
+  html[data-paper-size="short"] .print-doc-footer .grid,
+  html[data-paper-size="short"] .print-doc-transmittal .print-doc-footer hr,
+  html[data-paper-size="short"] .print-doc-transmittal .print-doc-footer p,
+  html[data-paper-size="short"] .print-doc-transmittal .print-doc-footer .grid {
+    visibility: visible !important;
+  }
+  html[data-paper-size="short"] .print-doc .mt-auto,
+  html[data-paper-size="short"] .print-doc-transmittal .print-doc-footer-wrap,
+  html[data-paper-size="short"] .print-doc-transmittal footer {
+    flex-shrink: 0 !important;
+    margin-top: auto !important;
+  }
+  html[data-paper-size="short"] .print-doc .flex-1,
+  html[data-paper-size="short"] .print-doc-transmittal .print-doc-body .flex-1 {
+    min-height: 0 !important;
+    flex: 1 1 0% !important;
+  }
+  html[data-paper-size="short"] .ausf-doc:not(.print-doc-transmittal-elderly),
   html[data-paper-size="short"] .ausf-0-6-doc {
     font-size: 9pt !important;
     line-height: 1.25 !important;
+  }
+  /* Transmittal: keep larger text on short bond for elderly readability */
+  html[data-paper-size="short"] .print-doc-transmittal-elderly.ausf-doc {
+    font-size: 14pt !important;
+    line-height: 1.5 !important;
+  }
+  html[data-paper-size="short"] .print-doc-transmittal-elderly.ausf-doc p {
+    font-size: 14pt !important;
+  }
+  html[data-paper-size="short"] .print-doc-transmittal-elderly .print-doc-footer p,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly .print-doc-footer .text-xs {
+    font-size: 12pt !important;
   }
   html[data-paper-size="short"] .ausf-doc header.mb-4,
   html[data-paper-size="short"] .ausf-0-6-doc header.mb-4 {

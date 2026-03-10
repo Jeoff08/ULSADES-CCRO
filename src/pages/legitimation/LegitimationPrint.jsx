@@ -56,10 +56,7 @@ export default function LegitimationPrint() {
 
   useEffect(() => {
     const stored = getStoredData()
-    if (stored) {
-      setData(stored)
-      clearLegitimationDraft()
-    }
+    if (stored) setData(stored)
   }, [])
 
   const validType = LEGITIMATION_TYPES.some((t) => t.id === type) ? type : 'joint-affidavit'

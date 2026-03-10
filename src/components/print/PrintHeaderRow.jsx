@@ -9,8 +9,8 @@ export default function PrintHeaderRow({ rightContent }) {
         <p className="font-bold text-sm leading-tight">Republic of the Philippines</p>
         <p className="font-bold text-lg uppercase leading-tight tracking-tight">City Civil Registrar&apos;s Office</p>
         <p className="font-bold text-sm leading-tight">City of Iligan</p>
-        <p className="text-sm leading-tight">Ground Flr., Pedro Generalao Bldg., Buhanginan</p>
-        <p className="text-sm leading-tight">Hill, Pala-o, Iligan City</p>
+        <p className="print-header-address text-[18px] leading-tight">Ground Flr., Pedro Generalao Bldg., Buhanginan</p>
+        <p className="print-header-address text-[18px] leading-tight">Hill, Pala-o, Iligan City</p>
       </div>
       {rightContent ?? <img src={LOGO_RIGHT_SRC} alt="Office of the City Civil Registrar" className="w-20 h-20 object-contain shrink-0" />}
     </div>
