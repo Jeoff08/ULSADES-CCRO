@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { defaultCourtDecree } from '../../lib/courtDecreeDefaults'
-import { clearCourtDecreeDraft } from '../../lib/courtDecreeStorage'
+import { defaultCourtDecree } from './lib/courtDecreeDefaults'
+import { clearCourtDecreeDraft } from './lib/courtDecreeStorage'
 import { COURT_DECREE_TYPES } from './constants'
 import { PAPER_SIZES } from '../../components/print'
 

@@ -24,21 +24,25 @@ export function loadTransmittalChecklist(isOutOfTown, defaultLabels, listId) {
     }
     // When we have defaultLabels (e.g. AUSF local = 6 items, PSA = 8), use them as source of truth for labels and length
     if (defaultList && defaultList.length > 0) {
+      // Migration: old saved data had all items unchecked. Treat "all false" as legacy and default to checked.
+      const isLegacyAllUnchecked = parsed && parsed.length > 0 && parsed.every((item) => item.completed === false)
       return defaultList.map((label, i) => {
         const saved = parsed && parsed[i]
+        const useCompleted = isLegacyAllUnchecked ? true : (saved != null ? !!saved.completed : true)
         return {
           id: saved?.id || `t-${i}-${String(label).slice(0, 12).replace(/\s/g, '-')}`,
           label: label,
-          completed: saved != null ? !!saved.completed : false,
+          completed: useCompleted,
           notes: saved && typeof saved.notes === 'string' ? saved.notes : '',
         }
       })
     }
     if (parsed && parsed.length > 0) {
+      const isLegacyAllUnchecked = parsed.every((item) => item.completed === false)
       return parsed.map((item, i) => ({
         id: item.id || `t-${i}-${String(item.label).slice(0, 12).replace(/\s/g, '-')}`,
         label: typeof item.label === 'string' ? item.label : '',
-        completed: !!item.completed,
+        completed: isLegacyAllUnchecked ? true : !!item.completed,
         notes: typeof item.notes === 'string' ? item.notes : '',
       }))
     }
@@ -62,7 +66,7 @@ export function labelsToChecklistItems(labels) {
   return labels.map((label, i) => ({
     id: `t-${i}-${String(label).slice(0, 12).replace(/\s/g, '-')}`,
     label: label,
-    completed: false,
+    completed: true,
     notes: '',
   }))
 }

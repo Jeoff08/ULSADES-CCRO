@@ -1,6 +1,6 @@
 import React from 'react'
-import { formatDateLong, formatDateCert, fullName } from '../../lib/printUtils'
-import { PrintHeaderRow, DocumentFooter } from '../../components/print'
+import { formatDateLong, formatDateCert, fullName } from '../../../lib/printUtils'
+import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 
 export default function RegistrationOfAcknowledgement({ data }) {
   const affiantName = data.applicantName || fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)

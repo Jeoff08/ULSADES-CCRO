@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { defaultLegitimation } from '../../lib/legitimationDefaults'
-import { clearLegitimationDraft } from '../../lib/legitimationStorage'
+import { defaultLegitimation } from './lib/legitimationDefaults'
+import { clearLegitimationDraft } from './lib/legitimationStorage'
 import { LEGITIMATION_TYPES } from './constants'
 import { PAPER_SIZES } from '../../components/print'
 import {

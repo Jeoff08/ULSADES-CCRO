@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import FormSection from '../components/FormSection'
-import { FormInput, FormSelect, FormRadioGroup } from '../components/FormField'
-import { defaultAUSF } from '../lib/ausfDefaults'
-import { saveAUSFDraft, getAUSFDraft, clearAUSFDraft, addSavedAUSF, updateSavedAUSF } from '../lib/ausfStorage'
+import FormSection from '../../components/FormSection'
+import { FormInput, FormSelect, FormRadioGroup } from '../../components/FormField'
+import { defaultAUSF } from './lib/ausfDefaults'
+import { saveAUSFDraft, getAUSFDraft, clearAUSFDraft, addSavedAUSF, updateSavedAUSF } from './lib/ausfStorage'
 
 const RELATIONSHIP_OPTIONS = [
   { value: '', label: '—' },
@@ -91,13 +91,19 @@ export default function AUSFForm() {
   }
   const handleCancelModal = () => setShowConfirmModal(false)
 
-  return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="bg-red-600 text-white text-center py-3 px-4 rounded-t-xl no-print">
-        <h1 className="font-bold text-base uppercase">RA 9255 AUTOMATED DATA ENTRY FORM</h1>
-        <p className="text-sm text-white/80 mt-0.5">Unified Legal Status Automated Data Entry System — Iligan City</p>
-      </div>
+  let sectionIndex = 0
+  const sectionDelay = (i) => ({ animationDelay: `${i * 0.06}s` })
 
+  return (
+    <div className="ausf-form-page no-print">
+      <div className="ausf-form-page__card">
+        <header className="ausf-form-page__header no-print">
+          <h1>RA 9255 Automated Data Entry Form</h1>
+          <p>Unified Legal Status Automated Data Entry System — Iligan City</p>
+        </header>
+
+        <div className="ausf-form-page__body">
+      <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
       <FormSection number={1} title="DETAILS OF APPLICANT/CLIENT">
         <div className="grid gap-4 sm:grid-cols-2">
           <FormInput label="NAME" id="applicantName" value={form.applicantName} onChange={(v) => update('applicantName', v)} />
@@ -110,8 +116,10 @@ export default function AUSFForm() {
           />
         </div>
       </FormSection>
+      </div>
 
       {(form.formType === 'reg-ack' || form.formType === 'reg-ausf') && (
+        <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
         <FormSection noNumber title="CERTIFICATE OF REGISTRATION DETAILS">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <FormInput label="AUSF REGISTRY NO." id="ausfRegistryNo" value={form.ausfRegistryNo} onChange={(v) => update('ausfRegistryNo', v)} />
@@ -119,9 +127,11 @@ export default function AUSFForm() {
             <FormInput label="CERTIFICATE ISSUANCE DATE" id="certificateIssuanceDate" type="date" value={form.certificateIssuanceDate} onChange={(v) => update('certificateIssuanceDate', v)} />
           </div>
         </FormSection>
+        </div>
       )}
 
       {(form.formType === 'child-not-ack-transmittal' || form.formType === 'out-of-town') && (
+        <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
         <FormSection noNumber title="TRANSMITTAL DETAILS">
           <div className="grid gap-4 sm:grid-cols-2">
             <FormInput label="TRANSMITTAL DATE" id="transmittalDate" type="date" value={form.transmittalDate} onChange={(v) => update('transmittalDate', v)} />
@@ -131,10 +141,12 @@ export default function AUSFForm() {
             <FormInput label="SIGNATORY NAME (optional)" id="transmittalSignatoryName" value={form.transmittalSignatoryName} onChange={(v) => update('transmittalSignatoryName', v)} placeholder="Leave blank for default" />
           </div>
         </FormSection>
+        </div>
       )}
 
       {form.formType !== 'reg-ack' && form.formType !== 'reg-ausf' && (
         <>
+      <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
       <FormSection number={2} title="BIRTH OF CHILD REGISTERED IN ILIGAN">
         <FormRadioGroup
           name="birthIligan"
@@ -143,7 +155,9 @@ export default function AUSFForm() {
           options={[{ value: 'YES', label: 'YES' }, { value: 'NO', label: 'NO' }]}
         />
       </FormSection>
+      </div>
 
+      <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
       <FormSection number={3} title="CHILD ALREADY ACKNOWLEDGED BY THE FATHER?">
         <div className="flex flex-wrap items-start gap-4">
           <FormRadioGroup
@@ -153,17 +167,22 @@ export default function AUSFForm() {
             options={[{ value: 'YES', label: 'YES' }, { value: 'NO', label: 'NO' }]}
           />
           {form.childAlreadyAcknowledged === 'NO' && (
-            <div className="border-2 border-red-500 bg-red-50 text-red-800 text-sm font-medium px-3 py-2 rounded-lg">
-              Instruction: Fill-up Items 4-7
+            <div className="ausf-form-page__instruction">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              Instruction: Fill-up Items 4–7
             </div>
           )}
         </div>
       </FormSection>
+      </div>
         </>
       )}
 
       {showItems4to7 && form.formType !== 'reg-ack' && form.formType !== 'reg-ausf' && (
         <>
+          <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
           <FormSection number={4} title="DETAILS OF THE CHILD">
             <div className="space-y-4">
               <div>
@@ -222,7 +241,9 @@ export default function AUSFForm() {
               </div>
             </div>
           </FormSection>
+          </div>
 
+          <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
           <FormSection number={5} title="DETAILS OF REGISTERED COLB">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <FormInput label="REGISTRY NO." id="colbRegistry" value={form.colbRegistryNo} onChange={(v) => update('colbRegistryNo', v)} />
@@ -231,56 +252,61 @@ export default function AUSFForm() {
               <FormInput label="BOOK NUMBER" id="colbBook" value={form.colbBookNumber} onChange={(v) => update('colbBookNumber', v)} />
             </div>
           </FormSection>
+          </div>
 
+          <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
           <FormSection number={6} title="DETAILS OF AFFIDAVIT TO USE THE SURNAME OF FATHER">
             <div className="grid gap-4 sm:grid-cols-2">
               <FormInput label="REGISTRY NO." id="ausfRegistry" value={form.ausfRegistryNo} onChange={(v) => update('ausfRegistryNo', v)} />
               <FormInput label="DATE OF REGISTRATION" id="ausfDate" type="date" value={form.ausfDateOfRegistration} onChange={(v) => update('ausfDateOfRegistration', v)} />
             </div>
           </FormSection>
+          </div>
 
+          <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
           <FormSection number={7} title="DETAILS OF AFFIDAVIT OF ACKNOWLEDGEMENT">
             <div className="grid gap-4 sm:grid-cols-2">
               <FormInput label="REGISTRY NO." id="ackRegistry" value={form.ackRegistryNo} onChange={(v) => update('ackRegistryNo', v)} />
               <FormInput label="DATE OF REGISTRATION" id="ackDate" type="date" value={form.ackDateOfRegistration} onChange={(v) => update('ackDateOfRegistration', v)} />
             </div>
           </FormSection>
+          </div>
         </>
       )}
 
-      <div className="flex flex-wrap gap-4 mt-6 no-print">
+      <div className="ausf-form-page__actions no-print">
         <button
           type="button"
           onClick={handleDoneClick}
-          className="px-6 py-2.5 bg-[var(--primary-blue)] text-white font-medium rounded-lg hover:bg-[var(--primary-blue-light)] transition"
+          className="ausf-form-page__btn ausf-form-page__btn--primary"
         >
           Done
         </button>
         <a
           href="/ausf"
-          className="px-6 py-2.5 border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition inline-block"
+          className="ausf-form-page__btn ausf-form-page__btn--secondary no-underline"
         >
           Clear / New
         </a>
       </div>
 
       {showConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 no-print" role="dialog" aria-modal="true" aria-labelledby="confirm-done-title">
-          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 ausf-form-page__modal-backdrop no-print" role="dialog" aria-modal="true" aria-labelledby="confirm-done-title">
+          <div className="ausf-form-page__modal-dialog bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 border border-gray-100">
             <h2 id="confirm-done-title" className="text-lg font-semibold text-gray-800 mb-2">Complete form?</h2>
             <p className="text-sm text-gray-600 mb-6">Your entries will be saved and you can view and print the document. Continue?</p>
             <div className="flex gap-3 justify-end">
               <button
                 type="button"
                 onClick={handleCancelModal}
-                className="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition"
+                className="ausf-form-page__btn ausf-form-page__btn--secondary"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleConfirmDone}
-                className="px-4 py-2 bg-[var(--primary-blue)] text-white font-medium rounded-lg hover:bg-[var(--primary-blue-light)] transition"
+                className="ausf-form-page__btn ausf-form-page__btn--primary"
               >
                 Confirm
               </button>
@@ -289,7 +315,9 @@ export default function AUSFForm() {
         </div>
       )}
 
-      <p className="text-xs text-gray-500 mt-6 no-print">created by: ATTY. YUSSIF DON JUSTINE F. MARTIL</p>
+      <p className="ausf-form-page__footer-note no-print">created by: ATTY. YUSSIF DON JUSTINE F. MARTIL</p>
+        </div>
+      </div>
     </div>
   )
 }

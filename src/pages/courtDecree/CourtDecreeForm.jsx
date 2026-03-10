@@ -1,15 +1,80 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
-import { defaultCourtDecree } from '../../lib/courtDecreeDefaults'
-import { addSavedCourtDecree, getCourtDecreeDraft, updateSavedCourtDecree } from '../../lib/courtDecreeStorage'
-import { COURT_DECREE_TYPES, AFFECTED_DOCUMENT_OPTIONS } from './constants'
+import { defaultCourtDecree } from './lib/courtDecreeDefaults'
+import { addSavedCourtDecree, getCourtDecreeDraft, updateSavedCourtDecree } from './lib/courtDecreeStorage'
+import { COURT_DECREE_TYPES, AFFECTED_DOCUMENT_OPTIONS, DATE_MONTHS } from './constants'
 
 const inputClass = 'w-full border border-orange-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-orange-100 focus:border-[var(--primary-blue)] focus:ring-2 focus:ring-[var(--primary-blue)]/20'
 
+function formatDigitsToDdMmYyyy(digits) {
+  const d = (digits || '').replace(/\D/g, '').slice(0, 8)
+  if (d.length <= 2) return d
+  if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`
+  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`
+}
+
+function isoToDdMmYyyy(iso) {
+  if (!iso || typeof iso !== 'string') return ''
+  const [y, m, d] = iso.split('-')
+  if (!y || !m || !d) return ''
+  return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`
+}
+
+function dateToOutputFormat(str) {
+  if (!str || typeof str !== 'string') return str
+  const parts = str.trim().split('/')
+  if (parts.length !== 3) return str
+  const [dd, mm, yyyy] = parts
+  const monthNum = parseInt(mm, 10)
+  if (monthNum < 1 || monthNum > 12) return str
+  return `${dd.padStart(2, '0')}/${DATE_MONTHS[monthNum]}/${yyyy}`
+}
+
+const COURT_DECREE_DATE_KEYS = ['dateIssued', 'dateRegistered']
+
+function DateInput({ value, onChange, placeholder = 'dd/mm/yyyy' }) {
+  const pickerRef = useRef(null)
+  const handleInputChange = (e) => {
+    const formatted = formatDigitsToDdMmYyyy(e.target.value)
+    onChange(formatted)
+  }
+  const isDigitsAndSlashes = /^[\d/]*$/.test((value || '').trim())
+  const displayValue = isDigitsAndSlashes ? formatDigitsToDdMmYyyy(value) : (value || '')
+  return (
+    <div className="relative flex items-center gap-1">
+      <input
+        type="text"
+        inputMode="numeric"
+        value={displayValue}
+        onChange={handleInputChange}
+        placeholder={placeholder}
+        maxLength={10}
+        className={`${inputClass} pr-9`}
+      />
+      <button
+        type="button"
+        onClick={() => pickerRef.current?.showPicker?.() || pickerRef.current?.click()}
+        className="absolute right-1.5 p-1 rounded text-gray-500 hover:bg-orange-200/60 focus:ring-2 focus:ring-[var(--primary-blue)]/30"
+        title="Pick date"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+      </button>
+      <input
+        ref={pickerRef}
+        type="date"
+        className="sr-only"
+        aria-hidden="true"
+        tabIndex={-1}
+        onChange={(e) => onChange(isoToDdMmYyyy(e.target.value))}
+      />
+    </div>
+  )
+}
+
 function CourtDecreeSection({ number, title, children }) {
   return (
-    <div className="mb-4 rounded-lg overflow-hidden border border-gray-200 bg-white">
-      <div className="bg-[var(--primary-blue)] text-white px-4 py-2.5 font-semibold text-sm uppercase">
+    <div className="mb-6 rounded-xl overflow-hidden border border-gray-100 bg-[var(--card-bg)] shadow-sm">
+      <div className="bg-[var(--primary-blue)] text-white px-4 py-2.5 font-semibold text-sm uppercase tracking-wide">
         {number} {title}
       </div>
       <div className="p-4">
@@ -41,10 +106,14 @@ export default function CourtDecreeForm() {
   const proceedToPrint = () => {
     const editId = searchParams.get('id')
     const isEdit = searchParams.get('edit') === '1'
+    const formForOutput = { ...form }
+    COURT_DECREE_DATE_KEYS.forEach((key) => {
+      if (formForOutput[key]) formForOutput[key] = dateToOutputFormat(formForOutput[key])
+    })
     if (isEdit && editId) {
-      updateSavedCourtDecree(editId, form)
+      updateSavedCourtDecree(editId, formForOutput)
     } else {
-      addSavedCourtDecree(form)
+      addSavedCourtDecree(formForOutput)
     }
     navigate(`/court-decree/print?type=${form.formType}`)
   }
@@ -56,14 +125,19 @@ export default function CourtDecreeForm() {
     }
   }, [searchParams])
 
-  return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-white bg-red-600 px-6 py-4 rounded-lg text-center uppercase">
-          Court Decree Automated Data Entry Form
-        </h1>
-      </div>
+  let sectionIndex = 0
+  const sectionDelay = (i) => ({ animationDelay: `${i * 0.06}s` })
 
+  return (
+    <div className="court-decree-form-page no-print">
+      <div className="court-decree-form-page__card">
+        <header className="court-decree-form-page__header no-print">
+          <h1>Court Decree Automated Data Entry Form</h1>
+          <p>Unified Legal Status Automated Data Entry System — Iligan City</p>
+        </header>
+
+        <div className="court-decree-form-page__body">
+      <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
       <CourtDecreeSection number="1" title="What country issued the court order/decree">
         <div className="space-y-4">
           <div>
@@ -76,7 +150,7 @@ export default function CourtDecreeForm() {
             />
           </div>
           <div>
-            <div className="bg-[var(--primary-blue)] text-white text-xs px-2 py-1 rounded mb-1 w-fit">Court or Racco?</div>
+            <div className="court-decree-form-page__label-tag">Court or Racco?</div>
             <input
               type="text"
               value={form.courtOrRacco}
@@ -87,7 +161,9 @@ export default function CourtDecreeForm() {
           </div>
         </div>
       </CourtDecreeSection>
+      </div>
 
+      <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
       <CourtDecreeSection number="2" title="Affected civil document?">
         <div className="space-y-4">
           <div>
@@ -102,15 +178,22 @@ export default function CourtDecreeForm() {
               ))}
             </select>
           </div>
-          <p className="text-sm text-gray-600">NOTE: Manually fill-up Form 3A</p>
-          <div className="flex gap-4">
-            <Link to="/court-decree/form?type=lcr-form-1a" className="text-[var(--primary-blue)] font-medium hover:underline">FORM 1A</Link>
-            <Link to="/court-decree/form?type=lcr-form-2a" className="text-[var(--primary-blue)] font-medium hover:underline">FORM 2A</Link>
-            <Link to="/court-decree/form?type=lcr-form-3a" className="text-[var(--primary-blue)] font-medium hover:underline">FORM 3A</Link>
+          <div className="court-decree-form-page__instruction">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            NOTE: Manually fill-up Form 3A
+          </div>
+          <div className="flex flex-wrap gap-3 mt-3">
+            <Link to="/court-decree/form?type=lcr-form-1a" className="text-[var(--primary-blue)] font-semibold text-sm hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)]/30 rounded px-2 py-1">FORM 1A</Link>
+            <Link to="/court-decree/form?type=lcr-form-2a" className="text-[var(--primary-blue)] font-semibold text-sm hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)]/30 rounded px-2 py-1">FORM 2A</Link>
+            <Link to="/court-decree/form?type=lcr-form-3a" className="text-[var(--primary-blue)] font-semibold text-sm hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)]/30 rounded px-2 py-1">FORM 3A</Link>
           </div>
         </div>
       </CourtDecreeSection>
+      </div>
 
+      <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
       <CourtDecreeSection number="3" title="Document owner/s">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -123,12 +206,14 @@ export default function CourtDecreeForm() {
           />
         </div>
       </CourtDecreeSection>
+      </div>
 
+      <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
       <CourtDecreeSection number="4" title="Court decree details">
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Date Issued</label>
-            <input type="text" value={form.dateIssued} onChange={(e) => update('dateIssued', e.target.value)} placeholder="e.g. 30-May-25" className={inputClass} />
+            <DateInput value={form.dateIssued} onChange={(v) => update('dateIssued', v)} placeholder="dd/mm/yyyy" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Court that issued the court decree</label>
@@ -163,7 +248,7 @@ export default function CourtDecreeForm() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Date Registered</label>
-              <input type="text" value={form.dateRegistered} onChange={(e) => update('dateRegistered', e.target.value)} placeholder="e.g. 13-Jun-25" className={inputClass} />
+              <DateInput value={form.dateRegistered} onChange={(v) => update('dateRegistered', v)} placeholder="dd/mm/yyyy" />
             </div>
           </div>
           <div>
@@ -178,28 +263,29 @@ export default function CourtDecreeForm() {
           </div>
         </div>
       </CourtDecreeSection>
+      </div>
 
-      <div className="mt-6 flex gap-3">
+      <div className="court-decree-form-page__actions no-print">
         <button
           type="button"
           onClick={() => navigate('/court-decree')}
-          className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="court-decree-form-page__btn court-decree-form-page__btn--secondary"
         >
           Back
         </button>
         <button
           type="button"
           onClick={() => setShowConfirm(true)}
-          className="px-4 py-2 bg-[var(--primary-blue)] text-white rounded-lg text-sm font-medium hover:opacity-90"
+          className="court-decree-form-page__btn court-decree-form-page__btn--primary"
         >
           Done
         </button>
       </div>
 
       {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowConfirm(false)}>
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Confirm submission</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 court-decree-form-page__modal-backdrop no-print" onClick={() => setShowConfirm(false)} role="dialog" aria-modal="true" aria-labelledby="court-decree-confirm-title">
+          <div className="court-decree-form-page__modal-dialog bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-100" onClick={(e) => e.stopPropagation()}>
+            <h3 id="court-decree-confirm-title" className="text-lg font-bold text-gray-800 mb-2">Confirm submission</h3>
             <p className="text-gray-600 text-sm mb-6">
               Are you sure you want to proceed? Please verify that all entries are correct. You will be directed to the print view.
             </p>
@@ -207,14 +293,14 @@ export default function CourtDecreeForm() {
               <button
                 type="button"
                 onClick={() => setShowConfirm(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="court-decree-form-page__btn court-decree-form-page__btn--secondary"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => { setShowConfirm(false); proceedToPrint() }}
-                className="px-4 py-2 bg-[var(--primary-blue)] text-white rounded-lg text-sm font-medium hover:opacity-90"
+                className="court-decree-form-page__btn court-decree-form-page__btn--primary"
               >
                 Confirm &amp; Proceed
               </button>
@@ -223,7 +309,9 @@ export default function CourtDecreeForm() {
         </div>
       )}
 
-      <p className="mt-8 text-xs text-gray-500">created by: ATTY. YUSSIF DON JUSTIN F. MARTIL</p>
+      <p className="court-decree-form-page__footer-note no-print">created by: ATTY. YUSSIF DON JUSTINE F. MARTIL</p>
+        </div>
+      </div>
     </div>
   )
 }

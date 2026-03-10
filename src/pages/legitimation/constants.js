@@ -1,3 +1,5 @@
+export const DATE_MONTHS = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
 export const LEGITIMATION_TYPES = [
   { id: 'sole-affidavit', title: '1. SOLE AFFIDAVIT LEGITIMATION', desc: 'Sole affidavit for legitimation' },
   { id: 'joint-affidavit', title: '2. JOINT AFFIDAVIT LEGITIMATION', desc: 'Joint affidavit for legitimation' },

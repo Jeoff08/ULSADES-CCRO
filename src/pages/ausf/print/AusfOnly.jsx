@@ -1,6 +1,6 @@
 import React from 'react'
-import { formatDateLong, fullName } from '../../lib/printUtils'
-import { DocumentHeader, DocumentFooter, FILL, FILL_BOLD } from '../../components/print'
+import { formatDateLong, fullName } from '../../../lib/printUtils'
+import { DocumentHeader, DocumentFooter, FILL, FILL_BOLD } from '../../../components/print'
 
 export default function AusfOnly({ data, viewType }) {
   const affiantName = data.applicantName || fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
@@ -23,7 +23,7 @@ export default function AusfOnly({ data, viewType }) {
   const placeCityProvince = [data.placeOfBirthCity, data.placeOfBirthProvince].filter(Boolean).join(', ')
 
   return (
-    <div className="ausf-doc ausf-0-6-doc print-doc bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4 leading-snug">
+    <div className="ausf-doc ausf-0-6-doc print-doc ausf-only-doc flex flex-col min-h-[297mm] bg-white text-black text-[14px] max-w-[210mm] mx-auto px-6 py-4 leading-snug">
       <DocumentHeader registryNo={data.ausfRegistryNo} />
       <h2 className="text-center font-bold text-lg uppercase mb-4 mt-2">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
       <p className="mb-4 leading-normal text-justify">

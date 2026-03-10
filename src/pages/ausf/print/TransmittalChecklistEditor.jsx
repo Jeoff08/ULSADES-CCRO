@@ -3,7 +3,7 @@ import {
   loadTransmittalChecklist,
   saveTransmittalChecklist,
   labelsToChecklistItems,
-} from '../../lib/transmittalChecklistStorage'
+} from '../lib/transmittalChecklistStorage'
 
 /**
  * Editable checklist for transmittal attachments. Only checked items are included in the printed letter.
@@ -66,7 +66,7 @@ export default function TransmittalChecklistEditor({
   return (
     <div className="transmittal-checklist-editor no-print mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
       <p className="text-sm font-medium text-gray-700 mb-2">
-        Attachments: check the items to include in the printed letter. Unchecked items will not appear on the printout.
+        Attachments: all items are included by default. Uncheck the items you want to remove from the printed letter.
       </p>
       <ol className="list-decimal list-inside space-y-2 text-left max-w-2xl">
         {items.map((item, i) => (
@@ -85,7 +85,7 @@ export default function TransmittalChecklistEditor({
                 onChange={() => onToggle(item.id)}
                 className="w-4 h-4"
               />
-              <span className="text-xs text-gray-600">Include in print</span>
+              <span className="text-xs text-gray-600">Include in print (uncheck to remove)</span>
             </label>
           </li>
         ))}

@@ -282,6 +282,7 @@ body.pdf-capture .ausf-doc {
     display: none !important;
   }
   .no-print { display: none !important; }
+  .print-only { display: block !important; }
   /* Ensure print page content is visible and uses full width */
   main .flex.gap-6 { display: block !important; }
   main .flex-1.min-w-0 { max-width: none !important; overflow: visible !important; }
@@ -300,6 +301,16 @@ body.pdf-capture .ausf-doc {
   }
   .ausf-0-6-doc.print-doc {
     page-break-inside: avoid !important;
+  }
+
+  /* AUSF Only: elderly-friendly print, one page, footer at bottom */
+  .ausf-only-doc.print-doc {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .ausf-only-doc .print-doc-footer {
+    margin-top: auto !important;
+    flex-shrink: 0;
   }
 
   /* LCR Form A1: fit entire form on ONE bond paper — avoid second page from scaled content in flow */
@@ -667,7 +678,7 @@ body.pdf-capture .ausf-doc {
     page-break-inside: avoid;
   }
 
-  /* AUSF 07-17 short bond: auto-adjust to fit one page (font, padding, all spacing reduced) */
+  /* AUSF 07-17 short bond: one page (8pt, compact; use A4 or long for best readability) */
   html[data-paper-size="short"] .ausf-07-17-doc {
     font-size: 8pt !important;
     line-height: 1.15 !important;
@@ -750,24 +761,33 @@ body.pdf-capture .ausf-doc {
     margin-bottom: 0.03in !important;
   }
 
-  /* AUSF 07-17: fit one page on A4 */
+  /* AUSF 07-17 A4: elderly-friendly, one page (9.5pt body, 1.3 line-height) */
   html[data-paper-size="a4"] .ausf-07-17-doc {
-    font-size: 9pt !important;
-    line-height: 1.2 !important;
+    font-size: 9.5pt !important;
+    line-height: 1.3 !important;
     padding: 0.2in 0.4in 0.15in !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc header.mb-4 {
     margin-bottom: 0.06in !important;
   }
-  html[data-paper-size="a4"] .ausf-07-17-doc h2.mb-5.mt-4 {
+  html[data-paper-size="a4"] .ausf-07-17-doc h2 {
+    font-size: 1.05rem !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc h2.mb-5.mt-4,
+  html[data-paper-size="a4"] .ausf-07-17-doc h2.text-center.font-bold {
     margin-top: 0.05in !important;
     margin-bottom: 0.08in !important;
-    font-size: 1rem !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc h2.my-6 {
     margin-top: 0.08in !important;
     margin-bottom: 0.08in !important;
-    font-size: 0.95rem !important;
+    font-size: 1rem !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc p,
+  html[data-paper-size="a4"] .ausf-07-17-doc ol,
+  html[data-paper-size="a4"] .ausf-07-17-doc ol li {
+    font-size: 9.5pt !important;
+    line-height: 1.3 !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc p.mb-4,
   html[data-paper-size="a4"] .ausf-07-17-doc ol.mb-4 {
@@ -776,28 +796,46 @@ body.pdf-capture .ausf-doc {
   html[data-paper-size="a4"] .ausf-07-17-doc p.mb-3 {
     margin-bottom: 0.05in !important;
   }
+  html[data-paper-size="a4"] .ausf-07-17-doc p.mb-2 {
+    margin-bottom: 0.05in !important;
+  }
   html[data-paper-size="a4"] .ausf-07-17-doc p.mb-1 {
     margin-bottom: 0.03in !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc .text-center.mt-6.mb-6,
-  html[data-paper-size="a4"] .ausf-07-17-doc .text-center.mt-6.mb-4 {
+  html[data-paper-size="a4"] .ausf-07-17-doc .text-center.mt-6.mb-4,
+  html[data-paper-size="a4"] .ausf-07-17-doc .text-center.mt-2 {
     margin-top: 0.06in !important;
     margin-bottom: 0.05in !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc .text-xs {
+    font-size: 9pt !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone {
     min-height: 2rem !important;
   }
+  html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone .font-bold,
+  html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone .text-sm {
+    font-size: 9.5pt !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone .text-xs {
+    font-size: 9pt !important;
+  }
   html[data-paper-size="a4"] .ausf-07-17-doc .print-doc-footer {
-    margin-top: 0.15in !important;
+    margin-top: 0.12in !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc .print-doc-footer p,
+  html[data-paper-size="a4"] .ausf-07-17-doc .print-doc-footer .text-xs {
+    font-size: 9pt !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc ol li {
-    margin-bottom: 0.02in !important;
+    margin-bottom: 0.04in !important;
   }
 
-  /* AUSF 07-17: fit one page on long bond */
+  /* AUSF 07-17 long bond: one page, elderly-friendly (10pt, 1.35 line-height) */
   html[data-paper-size="long"] .ausf-07-17-doc {
-    font-size: 9.5pt !important;
-    line-height: 1.25 !important;
+    font-size: 10pt !important;
+    line-height: 1.35 !important;
     padding: 0.22in 0.4in 0.18in !important;
   }
   html[data-paper-size="long"] .ausf-07-17-doc header.mb-4 {
@@ -835,7 +873,26 @@ body.pdf-capture .ausf-doc {
     margin-top: 0.18in !important;
   }
   html[data-paper-size="long"] .ausf-07-17-doc ol li {
-    margin-bottom: 0.03in !important;
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="long"] .ausf-07-17-doc p,
+  html[data-paper-size="long"] .ausf-07-17-doc ol,
+  html[data-paper-size="long"] .ausf-07-17-doc ol li {
+    line-height: 1.35 !important;
+  }
+  html[data-paper-size="long"] .ausf-07-17-doc .text-xs {
+    font-size: 9pt !important;
+  }
+  html[data-paper-size="long"] .ausf-07-17-doc .registrar-signature-zone .font-bold,
+  html[data-paper-size="long"] .ausf-07-17-doc .registrar-signature-zone .text-sm {
+    font-size: 10pt !important;
+  }
+  html[data-paper-size="long"] .ausf-07-17-doc .registrar-signature-zone .text-xs {
+    font-size: 9pt !important;
+  }
+  html[data-paper-size="long"] .ausf-07-17-doc .print-doc-footer p,
+  html[data-paper-size="long"] .ausf-07-17-doc .print-doc-footer .text-xs {
+    font-size: 9pt !important;
   }
 
   /* Long bond: AUSF 0-6 fits one page (13" height), auto-adjusts with relaxed spacing */
@@ -899,6 +956,119 @@ body.pdf-capture .ausf-doc {
   html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .ausf-subscribed-sworn {
     line-height: 1.5 !important;
   }
+
+  /* AUSF Only: elderly-friendly, clear text for all paper sizes, one page */
+  html[data-paper-size="short"] .ausf-only-doc.ausf-doc,
+  html[data-paper-size="short"] .ausf-only-doc.ausf-0-6-doc {
+    font-size: 10pt !important;
+    line-height: 1.35 !important;
+  }
+  html[data-paper-size="short"] .ausf-only-doc header.mb-4 {
+    margin-bottom: 0.06in !important;
+  }
+  html[data-paper-size="short"] .ausf-only-doc h2 {
+    margin-top: 0.05in !important;
+    margin-bottom: 0.16in !important;
+    font-size: 1.05rem !important;
+  }
+  html[data-paper-size="short"] .ausf-only-doc p,
+  html[data-paper-size="short"] .ausf-only-doc ol,
+  html[data-paper-size="short"] .ausf-only-doc ol li {
+    font-size: 10pt !important;
+    line-height: 1.35 !important;
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="short"] .ausf-only-doc ol {
+    margin-bottom: 0.05in !important;
+  }
+  html[data-paper-size="short"] .ausf-only-doc ol li {
+    margin-bottom: 0.025in !important;
+  }
+  html[data-paper-size="short"] .ausf-only-doc .registrar-signature-zone .text-sm,
+  html[data-paper-size="short"] .ausf-only-doc .text-xs.mt-1 {
+    font-size: 9pt !important;
+  }
+  html[data-paper-size="short"] .ausf-only-doc header .text-sm {
+    font-size: 9.5pt !important;
+  }
+  html[data-paper-size="short"] .ausf-only-doc .print-doc-footer p,
+  html[data-paper-size="short"] .ausf-only-doc .print-doc-footer .text-xs {
+    font-size: 9pt !important;
+  }
+
+  html[data-paper-size="a4"] .ausf-only-doc.ausf-doc,
+  html[data-paper-size="a4"] .ausf-only-doc.ausf-0-6-doc {
+    font-size: 10.5pt !important;
+    line-height: 1.4 !important;
+  }
+  html[data-paper-size="a4"] .ausf-only-doc header.mb-4 {
+    margin-bottom: 0.07in !important;
+  }
+  html[data-paper-size="a4"] .ausf-only-doc h2 {
+    margin-top: 0.05in !important;
+    margin-bottom: 0.18in !important;
+    font-size: 1.1rem !important;
+  }
+  html[data-paper-size="a4"] .ausf-only-doc p,
+  html[data-paper-size="a4"] .ausf-only-doc ol,
+  html[data-paper-size="a4"] .ausf-only-doc ol li {
+    font-size: 10.5pt !important;
+    line-height: 1.4 !important;
+  }
+  html[data-paper-size="a4"] .ausf-only-doc ol li {
+    margin-bottom: 0.03in !important;
+  }
+  html[data-paper-size="a4"] .ausf-only-doc .registrar-signature-zone .text-sm,
+  html[data-paper-size="a4"] .ausf-only-doc .text-xs.mt-1 {
+    font-size: 10pt !important;
+  }
+  html[data-paper-size="a4"] .ausf-only-doc header .text-sm {
+    font-size: 10pt !important;
+  }
+  html[data-paper-size="a4"] .ausf-only-doc .print-doc-footer p,
+  html[data-paper-size="a4"] .ausf-only-doc .print-doc-footer .text-xs {
+    font-size: 9.5pt !important;
+  }
+
+  html[data-paper-size="long"] .ausf-only-doc.ausf-doc,
+  html[data-paper-size="long"] .ausf-only-doc.ausf-0-6-doc {
+    font-size: 11pt !important;
+    line-height: 1.45 !important;
+  }
+  html[data-paper-size="long"] .ausf-only-doc header.mb-4 {
+    margin-bottom: 0.08in !important;
+  }
+  html[data-paper-size="long"] .ausf-only-doc h2 {
+    margin-top: 0.06in !important;
+    margin-bottom: 0.2in !important;
+    font-size: 1.15rem !important;
+  }
+  html[data-paper-size="long"] .ausf-only-doc p,
+  html[data-paper-size="long"] .ausf-only-doc ol,
+  html[data-paper-size="long"] .ausf-only-doc ol li {
+    font-size: 11pt !important;
+    line-height: 1.45 !important;
+  }
+  html[data-paper-size="long"] .ausf-only-doc ol li {
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="long"] .ausf-only-doc .registrar-signature-zone .text-sm,
+  html[data-paper-size="long"] .ausf-only-doc .text-xs.mt-1 {
+    font-size: 10.5pt !important;
+  }
+  html[data-paper-size="long"] .ausf-only-doc header .text-sm {
+    font-size: 10.5pt !important;
+  }
+  html[data-paper-size="long"] .ausf-only-doc .print-doc-footer p,
+  html[data-paper-size="long"] .ausf-only-doc .print-doc-footer .text-xs {
+    font-size: 10pt !important;
+  }
+
+  /* AUSF Only: thicker underlines for fill-blanks (elderly readability) */
+  .ausf-only-doc .fill-blank,
+  .ausf-only-doc .border-b.border-black {
+    border-bottom-width: 1.5px !important;
+  }
 }
 
 @keyframes fadeIn {
@@ -940,4 +1110,282 @@ body.pdf-capture .ausf-doc {
 }
 .confirm-remove-modal {
   animation: modalEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.print-only {
+  display: none;
+}
+
+/* AUSFSaved page animations */
+@keyframes ausfSavedPageIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes ausfSavedItemIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes ausfSavedActionIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes ausfSavedEmptyIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes ausfSavedModalBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.ausf-saved-anim-page,
+.court-decree-saved-anim-page,
+.legitimation-saved-anim-page { animation: ausfSavedPageIn 0.35s ease-out forwards; }
+.ausf-saved-anim-action,
+.court-decree-saved-anim-action,
+.legitimation-saved-anim-action { animation: ausfSavedActionIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.ausf-saved-anim-item,
+.court-decree-saved-anim-item,
+.legitimation-saved-anim-item { animation: ausfSavedItemIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.ausf-saved-anim-empty,
+.court-decree-saved-anim-empty,
+.legitimation-saved-anim-empty { animation: ausfSavedEmptyIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.ausf-saved-anim-backdrop,
+.court-decree-saved-anim-backdrop,
+.legitimation-saved-anim-backdrop { animation: ausfSavedModalBackdropIn 0.2s ease-out forwards; }
+
+/* AUSF + Court Decree + Legitimation form pages: modern form layout and motion */
+.ausf-form-page,
+.court-decree-form-page,
+.legitimation-form-page {
+  min-height: 100%;
+  background: linear-gradient(165deg, #e8eef4 0%, #f1f5f9 35%, #f8fafc 100%);
+  padding: 1.5rem 0 3rem;
+}
+.ausf-form-page__card,
+.court-decree-form-page__card,
+.legitimation-form-page__card {
+  max-width: 52rem;
+  margin-left: auto;
+  margin-right: auto;
+  background: var(--card-bg);
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(30, 58, 95, 0.06), 0 10px 40px -12px rgba(30, 58, 95, 0.15);
+  overflow: hidden;
+  border: 1px solid rgba(30, 58, 95, 0.08);
+}
+.ausf-form-page__header,
+.court-decree-form-page__header,
+.legitimation-form-page__header {
+  background: linear-gradient(135deg, #1e3a5f 0%, #152a47 50%, #0d1f38 100%);
+  color: #fff;
+  text-align: center;
+  padding: 1.25rem 1.5rem 1.35rem;
+  position: relative;
+  letter-spacing: 0.02em;
+}
+.ausf-form-page__header::after,
+.court-decree-form-page__header::after,
+.legitimation-form-page__header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(13, 148, 136, 0.5), transparent);
+  opacity: 0.8;
+}
+.ausf-form-page__header h1,
+.court-decree-form-page__header h1,
+.legitimation-form-page__header h1 {
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.ausf-form-page__header p,
+.court-decree-form-page__header p,
+.legitimation-form-page__header p {
+  font-size: 0.8rem;
+  opacity: 0.88;
+  margin: 0.35rem 0 0;
+  font-weight: 500;
+}
+.ausf-form-page__body,
+.court-decree-form-page__body,
+.legitimation-form-page__body {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+.ausf-form-page__section,
+.court-decree-form-page__section,
+.legitimation-form-page__section {
+  opacity: 0;
+  animation: ausfSectionIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes ausfSectionIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.ausf-form-page__instruction,
+.court-decree-form-page__instruction,
+.legitimation-form-page__instruction {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #991b1b;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid rgba(185, 28, 28, 0.25);
+  box-shadow: 0 1px 2px rgba(185, 28, 28, 0.06);
+}
+.ausf-form-page__instruction svg,
+.court-decree-form-page__instruction svg,
+.legitimation-form-page__instruction svg {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  opacity: 0.9;
+}
+.legitimation-form-page__section-instruction {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #92400e;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid rgba(180, 83, 9, 0.25);
+  border-top: none;
+  border-radius: 0 0 0.35rem 0.35rem;
+  box-shadow: 0 1px 2px rgba(180, 83, 9, 0.06);
+}
+.legitimation-form-page__section-instruction svg {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.9;
+}
+.ausf-form-page__label-tag,
+.court-decree-form-page__label-tag,
+.legitimation-form-page__label-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary-blue) 0%, #152a47 100%);
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.35rem;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 1px 2px rgba(30, 58, 95, 0.2);
+}
+.ausf-form-page__actions,
+.court-decree-form-page__actions,
+.legitimation-form-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(30, 58, 95, 0.1);
+}
+.ausf-form-page__btn,
+.court-decree-form-page__btn,
+.legitimation-form-page__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.35rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+.ausf-form-page__btn:active,
+.court-decree-form-page__btn:active,
+.legitimation-form-page__btn:active {
+  transform: scale(0.98);
+}
+.ausf-form-page__btn--primary,
+.court-decree-form-page__btn--primary,
+.legitimation-form-page__btn--primary {
+  background: var(--primary-blue);
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 6px rgba(30, 58, 95, 0.3);
+}
+.ausf-form-page__btn--primary:hover,
+.court-decree-form-page__btn--primary:hover,
+.legitimation-form-page__btn--primary:hover {
+  background: var(--primary-blue-light);
+  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.35);
+}
+.ausf-form-page__btn--secondary,
+.court-decree-form-page__btn--secondary,
+.legitimation-form-page__btn--secondary {
+  background: #fff;
+  color: #475569;
+  border: 1.5px solid #e2e8f0;
+}
+.ausf-form-page__btn--secondary:hover,
+.court-decree-form-page__btn--secondary:hover,
+.legitimation-form-page__btn--secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+.ausf-form-page__modal-backdrop,
+.court-decree-form-page__modal-backdrop,
+.legitimation-form-page__modal-backdrop {
+  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.4);
+}
+.ausf-form-page__modal-dialog,
+.court-decree-form-page__modal-dialog,
+.legitimation-form-page__modal-dialog {
+  animation: modalEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.ausf-form-page__footer-note,
+.court-decree-form-page__footer-note,
+.legitimation-form-page__footer-note {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-top: 1.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(30, 58, 95, 0.08);
 }

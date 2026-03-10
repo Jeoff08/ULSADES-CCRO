@@ -1,5 +1,5 @@
 import React from 'react'
-import { fullName } from '../../lib/printUtils'
+import { fullName } from '../../../lib/printUtils'
 
 function formatDate(str) {
   if (!str) return ''

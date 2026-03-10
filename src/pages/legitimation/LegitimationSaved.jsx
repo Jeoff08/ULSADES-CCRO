@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { getSavedLegitimationList, loadSavedLegitimationToDraft, deleteSavedLegitimation, restoreSavedLegitimation } from '../../lib/legitimationStorage'
+import { getSavedLegitimationList, loadSavedLegitimationToDraft, deleteSavedLegitimation, restoreSavedLegitimation } from './lib/legitimationStorage'
 
 const LEGITIMATION_TYPE_LABELS = {
   'sole-affidavit': 'Sole Affidavit Legitimation',
@@ -25,8 +25,18 @@ function formatSavedAt(iso) {
 
 const TOAST_DURATION_MS = 8000
 
+function matchesSearch(item, query, formTypeLabels) {
+  if (!query.trim()) return true
+  const q = query.trim().toLowerCase()
+  const label = (item.label || '').toLowerCase()
+  const formLabel = (formTypeLabels[item.formType] || item.formType || '').toLowerCase()
+  const savedAt = formatSavedAt(item.savedAt).toLowerCase()
+  return label.includes(q) || formLabel.includes(q) || savedAt.includes(q)
+}
+
 export default function LegitimationSaved() {
   const [list, setList] = useState(() => getSavedLegitimationList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+  const [searchQuery, setSearchQuery] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [toastVisible, setToastVisible] = useState(false)
   const [toastProgress, setToastProgress] = useState(100)
@@ -81,8 +91,10 @@ export default function LegitimationSaved() {
     }
   }
 
+  const filteredList = list.filter((item) => matchesSearch(item, searchQuery, LEGITIMATION_TYPE_LABELS))
+
   return (
-    <div className="p-6">
+    <div className="p-6 legitimation-saved-anim-page">
       <h1 className="text-base font-bold text-gray-800 mb-1">Legitimation – Files Saved</h1>
       <p className="text-sm text-gray-500 mb-4">
         Legitimation forms saved when you click Done appear here. Open a saved file to view and print, or start a new form.
@@ -90,19 +102,22 @@ export default function LegitimationSaved() {
       <div className="flex flex-wrap gap-3 mb-6">
         <Link
           to="/ausf/saved"
-          className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition"
+          className="legitimation-saved-anim-action inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all duration-200 ease-out hover:shadow-md active:scale-[0.98] opacity-0 no-underline"
+          style={{ animationDelay: '0.05s' }}
         >
           AUSF saved
         </Link>
         <Link
           to="/court-decree/saved"
-          className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition"
+          className="legitimation-saved-anim-action inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all duration-200 ease-out hover:shadow-md active:scale-[0.98] opacity-0 no-underline"
+          style={{ animationDelay: '0.1s' }}
         >
           Court Decree saved
         </Link>
         <Link
           to="/legitimation/form?type=joint-affidavit"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:bg-[var(--primary-blue-light)] transition"
+          className="legitimation-saved-anim-action inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:bg-[var(--primary-blue-light)] transition-all duration-200 ease-out hover:shadow-md hover:scale-[1.02] active:scale-[0.98] opacity-0"
+          style={{ animationDelay: '0.15s' }}
         >
           <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -110,16 +125,48 @@ export default function LegitimationSaved() {
           New Legitimation
         </Link>
       </div>
+      {list.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
+          <div className="relative min-w-[200px] w-full sm:w-auto sm:max-w-sm">
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by label, form type, or date..."
+              aria-label="Search saved files"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:border-[var(--primary-blue)] focus:ring-2 focus:ring-[var(--primary-blue)]/20 outline-none transition-all duration-200"
+            />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" aria-hidden>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSearchQuery('')}
+            className="px-3 py-2.5 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 ease-out active:scale-95"
+          >
+            Clear
+          </button>
+        </div>
+      )}
       {list.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 bg-white p-6 text-sm text-gray-500 text-center">
+        <div className="legitimation-saved-anim-empty rounded-xl border border-dashed border-gray-300 bg-white p-6 text-sm text-gray-500 text-center">
           No saved Legitimation files yet. Complete a Legitimation form and click Done to save it here.
         </div>
       ) : (
         <ul className="space-y-3">
-          {list.map((item) => (
+          {filteredList.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/50 p-6 text-sm text-gray-500 text-center">
+              No matches for &quot;{searchQuery}&quot;. Try a different search term.
+            </div>
+          ) : (
+          filteredList.map((item, idx) => (
             <li
               key={item.id}
-              className="rounded-xl border border-gray-200 bg-white p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm"
+              className="legitimation-saved-anim-item rounded-xl border border-gray-200 bg-white p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm opacity-0 transition-all duration-200 ease-out hover:shadow-md hover:border-gray-300 hover:-translate-y-0.5"
+              style={{ animationDelay: `${0.2 + idx * 0.05}s` }}
             >
               <div className="min-w-0">
                 <p className="font-medium text-gray-800 truncate">{item.label}</p>
@@ -131,32 +178,33 @@ export default function LegitimationSaved() {
                 <button
                   type="button"
                   onClick={() => handleEdit(item)}
-                  className="px-3 py-1.5 border border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition"
+                  className="px-3 py-1.5 border border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all duration-200 ease-out active:scale-95"
                 >
                   Edit
                 </button>
                 <button
                   type="button"
                   onClick={() => handleViewPrint(item)}
-                  className="px-3 py-1.5 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:bg-[var(--primary-blue-light)] transition"
+                  className="px-3 py-1.5 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:bg-[var(--primary-blue-light)] transition-all duration-200 ease-out hover:shadow-md active:scale-95"
                 >
                   View &amp; Print
                 </button>
                 <button
                   type="button"
                   onClick={() => openDeleteConfirm(item.id)}
-                  className="px-3 py-1.5 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
+                  className="px-3 py-1.5 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-red-200 hover:text-red-600 transition-all duration-200 ease-out active:scale-95"
                 >
                   Remove
                 </button>
               </div>
             </li>
-          ))}
+          ))
+          )}
         </ul>
       )}
 
       {confirmDeleteId != null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="confirm-remove-title">
+        <div className="legitimation-saved-anim-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="confirm-remove-title">
           <div className="confirm-remove-modal w-full max-w-md overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-[0_24px_48px_-12px_rgba(0,0,0,0.18),0_0_0_1px_rgba(0,0,0,0.05)]">
             <div className="relative bg-gradient-to-b from-red-50/80 to-white px-6 pt-6 pb-5">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 via-red-500 to-red-400" aria-hidden="true" />
@@ -176,14 +224,14 @@ export default function LegitimationSaved() {
               <button
                 type="button"
                 onClick={closeDeleteConfirm}
-                className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
+                className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 active:scale-95"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleConfirmDelete}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 ease-out hover:shadow-md active:scale-95"
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -212,7 +260,7 @@ export default function LegitimationSaved() {
                 <button
                   type="button"
                   onClick={handleUndo}
-                  className="mt-2 w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md bg-[var(--primary-blue)] px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-[var(--primary-blue-light)] transition focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)] focus:ring-offset-2"
+                  className="mt-2 w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md bg-[var(--primary-blue)] px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-[var(--primary-blue-light)] transition-all duration-200 ease-out hover:shadow-md active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)] focus:ring-offset-2"
                 >
                   <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />

@@ -1,6 +1,6 @@
 import React from 'react'
-import { formatDateLong, formatDateCOLB, fullName } from '../../lib/printUtils'
-import { DocumentFooter } from '../../components/print'
+import { formatDateLong, formatDateCOLB, fullName } from '../../../lib/printUtils'
+import { DocumentFooter } from '../../../components/print'
 
 const COLB_BAND = 'bg-[#e8f5e9]'
 

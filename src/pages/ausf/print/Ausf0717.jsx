@@ -1,6 +1,6 @@
 import React from 'react'
-import { formatDateLong, fullName } from '../../lib/printUtils'
-import { DocumentHeader, DocumentFooter, FILL } from '../../components/print'
+import { formatDateLong, fullName } from '../../../lib/printUtils'
+import { DocumentHeader, DocumentFooter, FILL } from '../../../components/print'
 
 export default function Ausf0717({ data }) {
   const affiantName = data.applicantName || fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
@@ -54,7 +54,7 @@ export default function Ausf0717({ data }) {
         <p className="fill-blank uppercase inline-block pb-0.5">{affiantName}</p>
         <p className="text-xs mt-0.5">Affiant</p>
       </div>
-      <p className="ausf-subscribed-sworn mb-0.5 text-justify leading-snug">SUBSCRIBED AND SWORN to before me this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
+      <p className="ausf-subscribed-sworn mt-4 mb-0.5 text-justify leading-snug">SUBSCRIBED AND SWORN to before me this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
       <div className="registrar-signature-zone flex-1 flex min-h-[2rem] flex-col justify-center items-end">
         <div className="text-right city-registrar-signature">
           <p className="font-bold text-sm">{data.cityCivilRegistrarName}</p>

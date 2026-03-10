@@ -1,6 +1,6 @@
 import React from 'react'
-import { formatDateLong, formatDateCert, fullName } from '../../lib/printUtils'
-import { PrintHeaderRow, DocumentFooter, LOGO_RIGHT_SRC } from '../../components/print'
+import { formatDateLong, formatDateCert, fullName } from '../../../lib/printUtils'
+import { PrintHeaderRow, DocumentFooter, LOGO_RIGHT_SRC } from '../../../components/print'
 
 export default function LcrFormA1({ data }) {
   const childFull = fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.childFirst, data.childMiddle, data.childLast)

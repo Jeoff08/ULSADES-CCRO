@@ -1,3 +1,5 @@
+export const DATE_MONTHS = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
 export const COURT_DECREE_TYPES = [
   { id: 'cert-authenticity', title: '1. Certificate of authenticity', desc: 'Certificate of authenticity for court decree' },
   { id: 'cert-registration', title: '2. Certificate of registration', desc: 'Certificate of registration for court decree' },
