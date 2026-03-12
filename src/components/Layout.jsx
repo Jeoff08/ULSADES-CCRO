@@ -1,6 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+
+const LOGOUT_EXIT_MS = 450
 
 function IconDashboard() {
   return (
@@ -46,14 +48,26 @@ export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const [isExiting, setIsExiting] = useState(false)
 
   const handleLogout = () => {
-    logout()
-    navigate('/login')
+    if (isExiting) return
+    setIsExiting(true)
+    setTimeout(() => {
+      logout()
+      navigate('/login')
+    }, LOGOUT_EXIT_MS)
   }
 
   return (
-    <div className="h-screen flex overflow-hidden bg-[var(--main-bg)]">
+    <div className={`layout-root h-screen flex overflow-hidden bg-[var(--main-bg)] ${isExiting ? 'layout-root--exiting' : ''}`}>
+      {/* Logout loading overlay */}
+      {isExiting && (
+        <div className="logout-loading-overlay" role="status" aria-live="polite">
+          <div className="logout-loading-spinner" aria-hidden />
+          <p className="logout-loading-text">Logging out...</p>
+        </div>
+      )}
       <aside className="no-print w-64 shrink-0 flex flex-col bg-[var(--sidebar-bg)] overflow-hidden">
         <div className="p-3 shrink-0">
           <div className="flex items-center gap-2 px-2 py-3 rounded-lg">
@@ -162,7 +176,7 @@ export default function Layout() {
           </button>
         </div>
       </aside>
-      <main className="flex-1 min-h-0 overflow-auto bg-[var(--main-bg)]">
+      <main className="layout-main flex-1 min-h-0 overflow-auto bg-[var(--main-bg)]">
         <Outlet />
       </main>
     </div>

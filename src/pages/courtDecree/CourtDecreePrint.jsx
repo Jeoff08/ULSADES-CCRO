@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { defaultCourtDecree } from './lib/courtDecreeDefaults'
-import { clearCourtDecreeDraft } from './lib/courtDecreeStorage'
 import { COURT_DECREE_TYPES } from './constants'
 import { PAPER_SIZES } from '../../components/print'
 
@@ -63,11 +62,6 @@ export default function CourtDecreePrint() {
 
   const validType = COURT_DECREE_TYPES.some((t) => t.id === type) ? type : 'cert-authenticity'
 
-  const handleBack = () => {
-    clearCourtDecreeDraft()
-    navigate(`/court-decree/form?type=${validType}`)
-  }
-
   const subjectLine = data.caseTitle
     ? `SUBJECT: IN RE: ${(data.caseTitle || '').toUpperCase()}`
     : `SUBJECT: IN RE: JOINT PETITION TO APPROVE AND REGISTER THE DIVORCE OF SPOUSES ${(data.documentOwnerName || '').toUpperCase()}`
@@ -113,8 +107,8 @@ export default function CourtDecreePrint() {
       <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-lg font-bold text-gray-800">Court Decree – Print</h1>
-          <button type="button" onClick={handleBack} className="px-3 py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50">
-            Back to Form
+          <button type="button" onClick={() => navigate('/court-decree/saved')} className="px-3 py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50">
+            Back to Files Saved
           </button>
         </div>
         <div className="flex flex-wrap items-center gap-3">

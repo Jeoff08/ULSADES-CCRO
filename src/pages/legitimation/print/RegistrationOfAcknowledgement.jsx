@@ -1,12 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { formatDateCert, formatDateLong, fullName } from '../../../lib/printUtils'
 import { DocumentFooter, PrintHeaderRow } from '../../../components/print'
 
 /** Certificate of Registration – Affidavit of Acknowledgement (layout matches provided certificate sample). */
 export default function RegistrationOfAcknowledgement({ data }) {
-  const executorName = fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast).toUpperCase() || '—'
-  const registeredDate = formatDateLong(data.affidavitAckDate) || '—'
-  const registryNo = data.affidavitAckRegistryNo || '—'
+  const executorName = fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast).toUpperCase() || ''
+  const [registeredDate, setRegisteredDate] = useState(() => formatDateLong(data.affidavitAckDate) || '')
+  const [registryNo, setRegistryNo] = useState(() => data.affidavitAckRegistryNo || '')
   const issuedDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
   const signatory = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
 
@@ -26,8 +26,23 @@ export default function RegistrationOfAcknowledgement({ data }) {
           THIS IS TO CERTIFY that the Affidavit of Acknowledgement executed by{' '}
           <span className="font-bold underline uppercase">{executorName}</span>{' '}
           had been registered in this office on{' '}
-          <span className="underline">{registeredDate}</span> under Registry Number{' '}
-          <span className="underline">{registryNo}</span>.
+          <input
+            type="text"
+            value={registeredDate}
+            onChange={(e) => setRegisteredDate(e.target.value)}
+            placeholder=""
+            className="registration-of-ack-input inline-block border-0 border-b border-black bg-transparent outline-none min-w-[18ch] max-w-[22ch] align-baseline text-inherit font-inherit p-0"
+            aria-label="Registration date"
+          />{' '}
+          under Registry Number{' '}
+          <input
+            type="text"
+            value={registryNo}
+            onChange={(e) => setRegistryNo(e.target.value)}
+            placeholder=""
+            className="registration-of-ack-input registration-of-ack-registry inline-block border-0 border-b border-black bg-transparent outline-none min-w-[10ch] max-w-[14ch] align-baseline text-inherit font-inherit p-0"
+            aria-label="Registry number"
+          />.
         </p>
         <p className="mt-4">
           This certification is issued for whatever legal purposes it may serve.
@@ -39,8 +54,7 @@ export default function RegistrationOfAcknowledgement({ data }) {
 
       <div className="min-h-[6rem] flex-1" aria-hidden />
 
-      <div className="mt-auto pt-6 flex flex-col items-start">
-        <div className="w-64 border-b border-black mb-1" aria-hidden />
+      <div className="mt-auto pt-6 flex flex-col items-end">
         <p className="font-bold uppercase text-[18px]">{signatory}</p>
         <p className="text-base">City Civil Registrar</p>
         <div className="w-full mt-6">
@@ -50,6 +64,15 @@ export default function RegistrationOfAcknowledgement({ data }) {
 
       <style>{`
         .registration-of-ack-doc .print-doc-footer .text-right p { color: #2563eb; }
+        .registration-of-ack-doc .registration-of-ack-input { min-width: 18ch; }
+        .registration-of-ack-doc .registration-of-ack-registry { min-width: 10ch; }
+        @media print {
+          .registration-of-ack-doc .registration-of-ack-input {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent !important;
+          }
+        }
       `}</style>
     </div>
   )

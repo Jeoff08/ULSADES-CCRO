@@ -24,6 +24,28 @@ export function fullName(first, middle, last) {
   return [first, middle, last].filter(Boolean).join(' ').trim() || ''
 }
 
+/** Format for LCR Date of Registration: "APR 03 2023" */
+export function formatDateReg(str) {
+  if (!str) return ''
+  const d = new Date(str)
+  if (isNaN(d.getTime())) return str
+  const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+  const day = String(d.getDate()).padStart(2, '0')
+  const year = d.getFullYear()
+  return `${months[d.getMonth()]} ${day} ${year}`
+}
+
+/** Format for LCR Date of Birth (short): "09-Mar-23" */
+export function formatDateDobShort(str) {
+  if (!str) return ''
+  const d = new Date(str)
+  if (isNaN(d.getTime())) return str
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const day = String(d.getDate()).padStart(2, '0')
+  const year = String(d.getFullYear()).slice(-2)
+  return `${day}-${months[d.getMonth()]}-${year}`
+}
+
 /** Format for COLB: "29", "APRIL", "2017" or full "29 APRIL 2017" */
 export function formatDateCOLB(str) {
   if (!str) return { day: '', month: '', year: '', full: '' }

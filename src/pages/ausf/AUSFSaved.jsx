@@ -100,6 +100,8 @@ export default function AUSFSaved() {
 
   const filteredList = list.filter((item) => matchesSearch(item, searchQuery, FORM_TYPE_LABELS))
 
+  const ausfTotal = getSavedAUSFList().length
+
   return (
     <div className="p-6 ausf-saved-anim-page">
       <h1 className="text-base font-bold text-gray-800 mb-1">Files Saved</h1>
@@ -132,32 +134,37 @@ export default function AUSFSaved() {
           Legitimation saved
         </Link>
       </div>
-      {list.length > 0 && (
-        <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
-          <div className="relative min-w-[200px] w-full sm:w-auto sm:max-w-sm">
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by label, form type, or date..."
-              aria-label="Search saved files"
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:border-[var(--primary-blue)] focus:ring-2 focus:ring-[var(--primary-blue)]/20 outline-none transition-all duration-200"
-            />
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" aria-hidden>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setSearchQuery('')}
-            className="px-3 py-2.5 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 ease-out active:scale-95"
-          >
-            Clear
-          </button>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 inline-block" aria-label={`AUSF total: ${ausfTotal}`}>
+          <span className="text-sm font-bold text-gray-600">Total: {ausfTotal}</span>
         </div>
-      )}
+        {list.length > 0 && (
+          <div className="flex flex-wrap items-center justify-end gap-2 ml-auto">
+            <div className="relative min-w-[200px] w-full sm:w-auto sm:max-w-sm">
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by label, form type, or date..."
+                aria-label="Search saved files"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:border-[var(--primary-blue)] focus:ring-2 focus:ring-[var(--primary-blue)]/20 outline-none transition-all duration-200"
+              />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" aria-hidden>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="px-3 py-2.5 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 ease-out active:scale-95"
+            >
+              Clear
+            </button>
+          </div>
+        )}
+      </div>
       {list.length === 0 ? (
         <div className="ausf-saved-anim-empty rounded-xl border border-dashed border-gray-300 bg-white p-6 text-sm text-gray-500 text-center">
           No saved AUSF files yet. Complete an AUSF form and click Done to save it here.

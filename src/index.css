@@ -104,67 +104,290 @@ body {
   line-height: 1.25;
 }
 
-/* Login page: blue and green gradient background */
-.login-page {
-  background: linear-gradient(135deg, #1e3a5f 0%, #0d5c4a 50%, #0f766e 100%);
+/* Login page: split layout, dark blue left panel */
+.login-split {
+  min-height: 100vh;
 }
-.login-page__bg {
-  display: none;
+.login-split__panels {
+  display: flex;
+  flex: 1;
+  min-height: 0;
 }
-/* Elderly-friendly: high contrast, large touch targets, readable fonts */
-.login-page__card {
-  background: #ffffff;
-  border: 2px solid rgba(0, 148, 136, 0.3);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+.login-brand {
+  width: 50%;
+  min-height: 100%;
+  background: #1e3a5f;
 }
-.login-page__title {
-  color: #0f766e;
-  letter-spacing: 0.1em;
+.login-brand__logos {
+  max-width: 100%;
 }
-.login-page__label {
-  color: #0f172a;
+.login-brand__acronym {
+  font-size: 1.125rem;
 }
-.login-page__input {
-  background: #ffffff;
-  border: 2px solid #0d9488;
+.login-brand__title {
+  max-width: 18rem;
+}
+.login-brand__footer {
+  align-self: flex-start;
+}
+
+.login-form-panel {
+  width: 50%;
+  min-height: 100%;
+}
+.login-form-panel__input {
+  background: #fff;
+  border: 1px solid #cbd5e1;
   color: #0f172a;
   font-size: 1rem;
 }
-.login-page__input::placeholder {
-  color: #64748b;
-  font-size: 0.9375rem;
+.login-form-panel__input::placeholder {
+  color: #94a3b8;
 }
-.login-page__input:focus {
-  border-color: #0d9488;
-  outline: 2px solid #0d9488;
-  outline-offset: 2px;
-}
-.login-page__btn {
-  background: #0d9488;
-  color: #ffffff;
+.login-form-panel__btn {
+  background: #1e3a5f;
   font-size: 1rem;
-  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.4);
+  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.35);
 }
-.login-page__btn:hover {
-  background: #0f766e;
+.login-form-panel__btn:hover {
+  background: #16304d;
 }
-.login-page__register {
-  background: linear-gradient(180deg, #00BFA5 0%, #00897B 100%);
-  box-shadow: 0 2px 8px rgba(0, 191, 165, 0.3);
+
+/* Login marquee: right-to-left scrolling text about the system, repeats every 3s */
+.login-marquee-wrap {
+  flex-shrink: 0;
+  width: 100%;
+  overflow: hidden;
+  padding: 0.5rem 0;
+  background: #1e3a5f;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
-.login-page__register:hover {
-  background: linear-gradient(180deg, #26A69A 0%, #00695C 100%);
+.login-marquee {
+  display: flex;
+  width: max-content;
+  animation: login-marquee-scroll 120s linear infinite;
 }
+.login-marquee__text {
+  padding: 0 2rem;
+  color: #22c55e;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+@keyframes login-marquee-scroll {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Login: smooth transitions and loading overlay */
+.login-split {
+  position: relative;
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.login-page--exiting .login-brand,
+.login-page--exiting .login-form-panel {
+  transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.login-page--exiting .login-brand {
+  opacity: 0.5;
+}
+.login-page--exiting .login-form-panel {
+  opacity: 0.5;
+}
+.login-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  background: rgba(30, 58, 95, 0.94);
+  animation: login-loading-fade-in 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.login-loading-overlay--exiting {
+  animation: login-loading-fade-out 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.login-loading-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: login-spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+.login-loading-text {
+  color: #fff;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  opacity: 0.95;
+}
+@keyframes login-loading-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes login-loading-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes login-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Login error: slide-down + fade-in, form shake */
+.login-form--error {
+  animation: login-form-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+}
+.login-page__error--animate {
+  animation: login-error-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes login-form-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  12% {
+    transform: translateX(-6px);
+  }
+  24% {
+    transform: translateX(5px);
+  }
+  36% {
+    transform: translateX(-4px);
+  }
+  48% {
+    transform: translateX(3px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  72% {
+    transform: translateX(1px);
+  }
+}
+@keyframes login-error-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dashboard / layout fade-in after login */
+.layout-main {
+  animation: layout-fade-in 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes layout-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Logout: loading overlay and smooth fade-out before navigating to login */
+.layout-root {
+  position: relative;
+  transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.layout-root--exiting {
+  opacity: 0;
+  pointer-events: none;
+}
+.logout-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  background: rgba(30, 58, 95, 0.94);
+  animation: login-loading-fade-in 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.logout-loading-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: login-spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+.logout-loading-text {
+  color: #fff;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  opacity: 0.95;
+}
+
+/* Login page: smooth fade-in when arriving from logout */
+.login-page--enter {
+  animation: login-page-enter 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes login-page-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-split {
+    flex-direction: column;
+  }
+  .login-split__panels {
+    flex-direction: column;
+  }
+  .login-brand {
+    width: 100%;
+    min-height: auto;
+    padding: 2rem 1rem 1.5rem;
+  }
+  .login-brand__logos {
+    gap: 1rem;
+  }
+  .login-brand__footer {
+    margin-top: 2rem;
+  }
+  .login-form-panel {
+    width: 100%;
+    flex: 1;
+    min-height: auto;
+    padding: 2rem 1rem;
+  }
+}
+
+/* Legacy login-page classes (error, etc.) */
 .login-page__error {
   background: #fef2f2;
   color: #b91c1c;
   font-weight: 600;
   font-size: 0.9375rem;
   border: 2px solid #f87171;
-}
-.login-page__hint {
-  color: #0f766e;
-  font-size: 0.875rem;
 }
 
 /* All underlined blanks (border-b): same 1px line, aligned under text */
@@ -259,6 +482,11 @@ html[data-paper-size="long"] .ausf-0-6-doc.print-doc {
 }
 .lcr-a1-footer-no-hr .print-doc-footer hr {
   display: none;
+}
+
+/* Legitimation LCR Form 1A only: sheet wrapper for fit-to-page (header + footer visible on one bond) */
+.legitimation-lcr-1a .legitimation-lcr-1a-sheet {
+  box-sizing: border-box;
 }
 
 /* Certificate of Authenticity: 2-line gap between the three body paragraphs (inside content, screen + PDF) */
@@ -374,6 +602,127 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .ausf-only-doc .print-doc-footer {
     margin-top: auto !important;
     flex-shrink: 0;
+  }
+
+  /* Legitimation LCR Form 1A only: all content on one page A4/short/long. Sheet grows with content; scale to fit (no clipping). */
+  .legitimation-lcr-1a.legitimation-lcr-1a-outer {
+    padding: 0 !important;
+    overflow: visible !important;
+    page-break-inside: avoid !important;
+    box-sizing: border-box !important;
+  }
+  .legitimation-lcr-1a .legitimation-lcr-1a-sheet {
+    box-sizing: border-box !important;
+    font-size: 10pt !important;
+    line-height: 1.3 !important;
+  }
+  .legitimation-lcr-1a .legitimation-lcr-1a-sheet p,
+  .legitimation-lcr-1a .legitimation-lcr-1a-sheet table { margin-bottom: 0.08in !important; }
+  .legitimation-lcr-1a .legitimation-lcr-1a-sheet .mb-4 { margin-bottom: 0.08in !important; }
+  .legitimation-lcr-1a .legitimation-lcr-1a-sheet .mb-2 { margin-bottom: 0.05in !important; }
+  .legitimation-lcr-1a .legitimation-lcr-1a-sheet td { padding: 0.04in 0.1in !important; font-size: inherit !important; }
+  .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-footer-wrap p,
+  .legitimation-lcr-1a .legitimation-lcr-1a-sheet .print-doc-footer .text-xs { font-size: 9pt !important; line-height: 1.25 !important; }
+  /* Footer: ensure CONTACT DETAILS (Telephone, Email) and "Register them all!" are always visible and printed */
+  .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer,
+  .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer hr,
+  .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer .grid,
+  .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer p { visibility: visible !important; display: block !important; }
+  .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer .grid { display: grid !important; }
+  .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer p { margin: 0 !important; }
+  /* Sheet: no fixed height, no overflow hidden – all content visible; then scale fits it on one page */
+  .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-body { overflow: visible !important; flex: 0 1 auto !important; min-height: 0 !important; }
+  /* Short (11in): scale so even tall content fits */
+  html[data-paper-size="short"] .legitimation-lcr-1a.legitimation-lcr-1a-outer {
+    height: 11in !important;
+    min-height: 11in !important;
+    max-height: 11in !important;
+    display: block !important;
+    position: relative !important;
+  }
+  html[data-paper-size="short"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet {
+    position: absolute !important;
+    top: 0 !important;
+    left: 50% !important;
+    width: 210mm !important;
+    min-height: 297mm !important;
+    height: auto !important;
+    transform: translateX(-50%) scale(0.87) !important;
+    transform-origin: top center !important;
+    padding: 0.2in 0.45in 0.18in !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: visible !important;
+  }
+  html[data-paper-size="short"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet > div:first-child,
+  html[data-paper-size="short"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet > div:nth-child(2) { flex-shrink: 0 !important; }
+  html[data-paper-size="short"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-body { flex: 0 1 auto !important; }
+  html[data-paper-size="short"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-footer-wrap { flex-shrink: 0 !important; margin-top: auto !important; page-break-inside: avoid !important; }
+  html[data-paper-size="short"] .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer,
+  html[data-paper-size="short"] .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer * { visibility: visible !important; }
+  /* A4 (297mm): scale so all content fits */
+  html[data-paper-size="a4"] .legitimation-lcr-1a.legitimation-lcr-1a-outer {
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    display: block !important;
+    position: relative !important;
+  }
+  html[data-paper-size="a4"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet {
+    position: absolute !important;
+    top: 0 !important;
+    left: 50% !important;
+    width: 210mm !important;
+    min-height: 297mm !important;
+    height: auto !important;
+    transform: translateX(-50%) scale(0.92) !important;
+    transform-origin: top center !important;
+    padding: 0.22in 0.5in 0.18in !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: visible !important;
+  }
+  html[data-paper-size="a4"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet > div:first-child,
+  html[data-paper-size="a4"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet > div:nth-child(2) { flex-shrink: 0 !important; }
+  html[data-paper-size="a4"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-body { flex: 0 1 auto !important; }
+  html[data-paper-size="a4"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-footer-wrap { flex-shrink: 0 !important; margin-top: auto !important; page-break-inside: avoid !important; }
+  html[data-paper-size="a4"] .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer,
+  html[data-paper-size="a4"] .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer * { visibility: visible !important; }
+  /* Long (13in): scale so entire content including footer (Telephone, Email, Register them all!) fits on one page */
+  html[data-paper-size="long"] .legitimation-lcr-1a.legitimation-lcr-1a-outer {
+    height: 13in !important;
+    min-height: 13in !important;
+    max-height: 13in !important;
+    display: block !important;
+    position: relative !important;
+    overflow: visible !important;
+  }
+  html[data-paper-size="long"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet {
+    position: absolute !important;
+    top: 0 !important;
+    left: 50% !important;
+    width: 210mm !important;
+    min-height: 297mm !important;
+    height: auto !important;
+    transform: translateX(-50%) scale(0.88) !important;
+    transform-origin: top center !important;
+    padding: 0.24in 0.5in 0.2in !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: visible !important;
+  }
+  html[data-paper-size="long"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet > div:first-child,
+  html[data-paper-size="long"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet > div:nth-child(2) { flex-shrink: 0 !important; }
+  html[data-paper-size="long"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-body { flex: 0 1 auto !important; }
+  html[data-paper-size="long"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-footer-wrap {
+    flex-shrink: 0 !important;
+    margin-top: auto !important;
+    padding-bottom: 0.08in !important;
+    page-break-inside: avoid !important;
+  }
+  html[data-paper-size="long"] .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer,
+  html[data-paper-size="long"] .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer * {
+    visibility: visible !important;
   }
 
   /* LCR Form A1: one page, header + footer always visible, body auto-adjusts to paper size */

@@ -2,6 +2,9 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { COURT_DECREE_TYPES } from './courtDecree/constants'
 import { LEGITIMATION_TYPES } from './legitimation/constants'
+import { getSavedAUSFList } from './ausf/lib/ausfStorage'
+import { getSavedCourtDecreeList } from './courtDecree/lib/courtDecreeStorage'
+import { getSavedLegitimationList } from './legitimation/lib/legitimationStorage'
 
 const AUSF_ITEMS = [
   { title: 'AUSF 0-6', desc: 'Affidavit to Use the Surname of Father (ages 0-6)', path: '/ausf', type: 'ausf' },
@@ -58,6 +61,12 @@ export default function Dashboard() {
 
   const showDetail = !!selectedCategory
 
+  const totalCounts = {
+    ausf: getSavedAUSFList().length,
+    'court-decree': getSavedCourtDecreeList().length,
+    legitimation: getSavedLegitimationList().length,
+  }
+
   return (
     <div className="relative min-h-full overflow-hidden">
       <div
@@ -84,14 +93,20 @@ export default function Dashboard() {
               <h2 className="font-semibold text-gray-800 text-base mb-1">{cat.title}</h2>
               <p className="text-sm text-gray-500">{cat.meaning}</p>
             </button>
-            <div className="p-4 pt-2">
+            <div className="p-4 pt-2 flex flex-col gap-1 flex-1">
               <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide cursor-default">
                 Files
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
-              <p className="text-xs text-gray-400 mt-1">Click category to view files</p>
+              <p className="text-xs text-gray-400">Click category to view files</p>
+            </div>
+            <div
+              className="dashboard-card-total mt-4 mx-4 mb-4 p-4 rounded-lg border-2 flex items-center justify-center min-h-[4.5rem] shrink-0 bg-[#e8f4f8] border-[#0d9488]"
+              aria-label={`Total saved: ${totalCounts[cat.id]}`}
+            >
+              <span className="text-2xl font-bold text-[#0f766e] tabular-nums">Total: {totalCounts[cat.id]}</span>
             </div>
           </section>
         ))}

@@ -78,7 +78,6 @@ export default function AUSFPrint() {
   }, [])
 
   const handlePrint = () => window.print()
-  const handleBack = () => navigate('/ausf')
 
   if (data === null) {
     return (
@@ -108,8 +107,8 @@ export default function AUSFPrint() {
       <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-lg font-bold text-gray-800">AUSF – Print</h1>
-          <button type="button" onClick={handleBack} className="px-3 py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50">
-            Back to Form
+          <button type="button" onClick={() => navigate('/ausf/saved')} className="px-3 py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50">
+            Back to Files Saved
           </button>
         </div>
         <div className="flex flex-wrap items-center gap-3">

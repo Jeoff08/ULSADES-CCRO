@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { defaultLegitimation } from './lib/legitimationDefaults'
-import { clearLegitimationDraft } from './lib/legitimationStorage'
 import { LEGITIMATION_TYPES } from './constants'
 import { PAPER_SIZES } from '../../components/print'
 import {
@@ -61,11 +60,6 @@ export default function LegitimationPrint() {
 
   const validType = LEGITIMATION_TYPES.some((t) => t.id === type) ? type : 'joint-affidavit'
 
-  const handleBack = () => {
-    clearLegitimationDraft()
-    navigate(`/legitimation/form?type=${validType}`)
-  }
-
   const childFull = [data.childFirst, data.childMiddle, data.childLast].filter(Boolean).join(' ')
   const fatherFull = [data.fatherFirst, data.fatherMiddle, data.fatherLast].filter(Boolean).join(' ')
   const motherFull = [data.motherFirst, data.motherMiddle, data.motherLast].filter(Boolean).join(' ')
@@ -106,8 +100,8 @@ export default function LegitimationPrint() {
       <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-lg font-bold text-gray-800">Legitimation – Print</h1>
-          <button type="button" onClick={handleBack} className="px-3 py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50">
-            Back to Form
+          <button type="button" onClick={() => navigate('/legitimation/saved')} className="px-3 py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50">
+            Back to Files Saved
           </button>
         </div>
         <div className="flex flex-wrap items-center gap-3">
