@@ -71,7 +71,7 @@ export default function AUSFForm() {
     }
   }, [searchParams])
 
-  const showItems4to7 = form.childAlreadyAcknowledged === 'NO' || form.formType === 'child-not-ack-transmittal' || form.formType === 'out-of-town'
+  const showItems4to7 = form.childAlreadyAcknowledged === 'NO' || form.formType === 'child-not-ack-transmittal' || form.formType === 'out-of-town' || form.formType === 'child-ack-annotation'
   const isAUSF06 = form.formType === 'ausf-0-6' || form.formType === 'ausf-07-17'
 
   const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -272,6 +272,46 @@ export default function AUSFForm() {
           </FormSection>
           </div>
         </>
+      )}
+
+      {form.formType === 'child-ack-annotation' && (
+        <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
+        <FormSection noNumber title="ANNOTATION (CHILD ACKNOWLEDGED) — ATTACH SCAN &amp; EDIT">
+          <p className="text-sm text-gray-600 mb-3">Attach a scan copy of the COLB office file. The white REMARKS/ANNOTATION section will show this annotation when the child is acknowledged.</p>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="colb-scan" className="block text-sm font-medium text-gray-700 mb-1">Scan copy of COLB office file</label>
+              <input
+                id="colb-scan"
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  const reader = new FileReader()
+                  reader.onload = () => update('colbScanDataUrl', reader.result)
+                  reader.readAsDataURL(file)
+                }}
+                className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-orange-100 file:text-orange-800"
+              />
+              {form.colbScanDataUrl && (
+                <p className="mt-1 text-xs text-green-600">File attached. Preview will appear in print view.</p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="annotation-text" className="block text-sm font-medium text-gray-700 mb-1">Edit annotation</label>
+              <textarea
+                id="annotation-text"
+                value={form.annotationChildAckText}
+                onChange={(e) => update('annotationChildAckText', e.target.value)}
+                placeholder='"The child shall be known as [FULL NAME] pursuant to R.A. 9255"'
+                rows={4}
+                className="w-full border border-orange-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-orange-50/30 focus:border-[var(--primary-blue)] focus:ring-2 focus:ring-[var(--primary-blue)]/20"
+              />
+            </div>
+          </div>
+        </FormSection>
+        </div>
       )}
 
       <div className="ausf-form-page__actions no-print">

@@ -18,6 +18,26 @@ function getLabel(data) {
   return FORM_TYPE_LABELS[data.formType] || 'Legitimation'
 }
 
+/** Document owner label for Court Decree dropdown: marriage = "SPS. Father AND Mother", death = deceased parent full name. */
+export function getDocumentOwnerLabelFromLegitimationData(data, type) {
+  if (!data) return ''
+  if (type === 'MARRIAGE_CERTIFICATE' || type === 'marriage') {
+    const f = [data.fatherFirst, data.fatherMiddle, data.fatherLast].filter(Boolean).join(' ').trim()
+    const m = [data.motherFirst, data.motherMiddle, data.motherLast].filter(Boolean).join(' ').trim()
+    if (f && m) return `SPS. ${f} AND ${m}`
+    if (f || m) return f || m
+    const child = [data.childFirst, data.childMiddle, data.childLast].filter(Boolean).join(' ').trim()
+    return child || ''
+  }
+  if (type === 'DEATH_CERTIFICATE' || type === 'death') {
+    return [data.deceasedParentFirst, data.deceasedParentMiddle, data.deceasedParentLast].filter(Boolean).join(' ').trim() || ''
+  }
+  const f = [data.fatherFirst, data.fatherMiddle, data.fatherLast].filter(Boolean).join(' ').trim()
+  const m = [data.motherFirst, data.motherMiddle, data.motherLast].filter(Boolean).join(' ').trim()
+  if (f && m) return `SPS. ${f} AND ${m}`
+  return [data.deceasedParentFirst, data.deceasedParentMiddle, data.deceasedParentLast].filter(Boolean).join(' ').trim() || ''
+}
+
 export function saveLegitimationDraft(data) {
   try {
     localStorage.setItem(KEY_DRAFT, JSON.stringify(data))

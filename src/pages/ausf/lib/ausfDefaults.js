@@ -79,4 +79,7 @@ export const defaultAUSF = {
   recipientTitle: '',
   recipientOffice: '',
   transmittalSignatoryName: '',
+  // Annotation (Child Ack): COLB scan and annotation text
+  colbScanDataUrl: '',
+  annotationChildAckText: '',
 }

@@ -34,6 +34,7 @@ export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
   const from = location.state?.from?.pathname || '/'
+  const fromLogout = location.state?.fromLogout === true
 
   if (isAuthenticated && !isLoading && !isTransitioning) {
     navigate(from, { replace: true })
@@ -99,7 +100,7 @@ export default function Login() {
             Unified Legal Status Automated Data Entry System
           </p>
         </div>
-        <footer className="login-brand__footer pt-10 text-left w-full text-xs text-white/90 shrink-0">
+        <footer className="login-brand__footer pt-10 text-center w-full text-xs text-white/90 shrink-0">
           <p>© 2026 City Civil Registrar Office • Archive Locator System</p>
           <p>Developed by CS students, St. Peter&apos;s College</p>
         </footer>
@@ -182,8 +183,8 @@ export default function Login() {
       </div>
       </div>
 
-      {/* Scrolling text: system meaning, AUSF, Court Decree, Legitimation — right to left, 15s loop */}
-      <div className="login-marquee-wrap" aria-hidden>
+      {/* Scrolling text: system meaning, AUSF, Court Decree, Legitimation — right to left; slides in from right when arriving from logout */}
+      <div className={`login-marquee-wrap${fromLogout ? ' login-marquee-wrap--from-logout' : ''}`} aria-hidden>
         <div className="login-marquee">
           <span className="login-marquee__text">
             ULSADES: Unified Legal Status Automated Data Entry System — streamlining civil registry documents for the City Civil Registrar&apos;s Office, Iligan City.

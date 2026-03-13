@@ -96,12 +96,16 @@ export default function LegitimationForm() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const typeFromUrl = searchParams.get('type') || 'joint-affidavit'
+  const editId = searchParams.get('id')
+  const isEdit = searchParams.get('edit') === '1'
   const [showConfirm, setShowConfirm] = useState(false)
 
   const [form, setForm] = useState(() => {
-    const draft = getLegitimationDraft()
-    if (draft && typeof draft === 'object') {
-      return { ...defaultLegitimation, ...draft, formType: draft.formType || typeFromUrl || 'joint-affidavit' }
+    if (isEdit && editId) {
+      const draft = getLegitimationDraft()
+      if (draft && typeof draft === 'object') {
+        return { ...defaultLegitimation, ...draft, formType: draft.formType || typeFromUrl || 'joint-affidavit' }
+      }
     }
     return {
       ...defaultLegitimation,
@@ -112,8 +116,6 @@ export default function LegitimationForm() {
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
 
   const proceedToPrint = () => {
-    const editId = searchParams.get('id')
-    const isEdit = searchParams.get('edit') === '1'
     const formForOutput = { ...form }
     LEGITIMATION_DATE_KEYS.forEach((key) => {
       if (formForOutput[key]) formForOutput[key] = dateToOutputFormat(formForOutput[key])

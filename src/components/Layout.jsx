@@ -55,7 +55,7 @@ export default function Layout() {
     setIsExiting(true)
     setTimeout(() => {
       logout()
-      navigate('/login')
+      navigate('/login', { state: { fromLogout: true } })
     }, LOGOUT_EXIT_MS)
   }
 

@@ -39,8 +39,24 @@ function matchesSearch(item, query, formTypeLabels) {
   return label.includes(q) || formLabel.includes(q) || savedAt.includes(q)
 }
 
+const FORM_TYPE_HIDDEN_IN_AUSF_SAVED = 'child-ack-annotation'
+
+function getAusfSavedListForDisplay() {
+  return getSavedAUSFList().filter((item) => item.formType !== FORM_TYPE_HIDDEN_IN_AUSF_SAVED)
+}
+
+function sortAusfSavedList(items) {
+  return [...items].sort((a, b) => {
+    const aIsAusfOnly = a.formType === 'ausf-only'
+    const bIsAusfOnly = b.formType === 'ausf-only'
+    if (aIsAusfOnly && !bIsAusfOnly) return -1
+    if (!aIsAusfOnly && bIsAusfOnly) return 1
+    return new Date(b.savedAt) - new Date(a.savedAt)
+  })
+}
+
 export default function AUSFSaved() {
-  const [list, setList] = useState(() => getSavedAUSFList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+  const [list, setList] = useState(() => sortAusfSavedList(getAusfSavedListForDisplay()))
   const [searchQuery, setSearchQuery] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [toastVisible, setToastVisible] = useState(false)
@@ -50,7 +66,7 @@ export default function AUSFSaved() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    setList(getSavedAUSFList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+    setList(sortAusfSavedList(getAusfSavedListForDisplay()))
   }, [])
 
   useEffect(() => {
@@ -85,22 +101,21 @@ export default function AUSFSaved() {
     const item = list.find((x) => x.id === confirmDeleteId)
     if (item) setLastDeletedItem({ ...item, data: item.data ? { ...item.data } : undefined })
     deleteSavedAUSF(confirmDeleteId)
-    setList(getSavedAUSFList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+    setList(sortAusfSavedList(getAusfSavedListForDisplay()))
     setConfirmDeleteId(null)
     setToastVisible(true)
   }
 
   const handleUndo = () => {
     if (lastDeletedItem && restoreSavedAUSF(lastDeletedItem)) {
-      setList(getSavedAUSFList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+      setList(sortAusfSavedList(getAusfSavedListForDisplay()))
       setLastDeletedItem(null)
       setToastVisible(false)
     }
   }
 
   const filteredList = list.filter((item) => matchesSearch(item, searchQuery, FORM_TYPE_LABELS))
-
-  const ausfTotal = getSavedAUSFList().length
+  const ausfTotal = getAusfSavedListForDisplay().length
 
   return (
     <div className="p-6 ausf-saved-anim-page">
@@ -108,7 +123,7 @@ export default function AUSFSaved() {
       <p className="text-sm text-gray-500 mb-4">
         AUSF forms saved when you click Done appear here. Start a new form or open a saved file to view and print.
       </p>
-      <div className="flex flex-wrap gap-3 mb-6">
+      <div className="flex flex-wrap gap-3 mb-3">
         <Link
           to="/ausf"
           className="ausf-saved-anim-action inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:bg-[var(--primary-blue-light)] transition-all duration-200 ease-out hover:shadow-md hover:scale-[1.02] active:scale-[0.98] opacity-0"

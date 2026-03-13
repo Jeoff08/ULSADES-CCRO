@@ -55,19 +55,23 @@ export default function LcrFormA1({ data }) {
           </p>
 
           <table className="lcr-a1-table w-full border-collapse border border-black table-fixed text-[18px]">
+            <colgroup>
+              <col style={{ width: '50%' }} />
+              <col style={{ width: '50%' }} />
+            </colgroup>
             <tbody>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-top w-28">LCR Registry Number</td><td className="py-0.25 px-1 border border-black font-bold text-center">{data.colbRegistryNo || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-top">Date of Registration</td><td className="py-0.25 px-1 border border-black font-bold text-center">{formatDateLong(data.colbDateOfRegistration) || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-top">Name of Child</td><td className="py-0.25 px-1 border border-black font-bold text-center">{childFull || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-top">Sex</td><td className="py-0.25 px-1 border border-black font-bold text-center">{data.sex || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-top">Date of Birth</td><td className="py-0.25 px-1 border border-black font-bold text-center">{formatDateLong(data.dateOfBirth) || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-top">Place of Birth</td><td className="py-0.25 px-1 border border-black font-bold text-center leading-tight"><span>{placeOfBirthLine1}</span>{placeOfBirthLine2 && <><br /><span>{placeOfBirthLine2}</span></>}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-top">Name of Mother</td><td className="py-0.25 px-1 border border-black font-bold text-center">{motherFull || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-top">Citizenship of Mother</td><td className="py-0.25 px-1 border border-black font-bold text-center">{data.motherCitizenship || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-top">Name of Father</td><td className="py-0.25 px-1 border border-black font-bold text-center">{fatherFull || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-top">Citizenship of Father</td><td className="py-0.25 px-1 border border-black font-bold text-center">{data.fatherCitizenship || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-top">Date of Marriage of Parents</td><td className="py-0.25 px-1 border border-black font-bold text-center">NOT APPLICABLE</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-top">Place of Marriage of Parents</td><td className="py-0.25 px-1 border border-black font-bold text-center">NOT APPLICABLE</td></tr>
+              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">LCR Registry Number</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{data.colbRegistryNo || '—'}</td></tr>
+              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Date of Registration</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{formatDateLong(data.colbDateOfRegistration) || '—'}</td></tr>
+              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Name of Child</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{childFull || '—'}</td></tr>
+              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Sex</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{data.sex || '—'}</td></tr>
+              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Date of Birth</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{formatDateLong(data.dateOfBirth) || '—'}</td></tr>
+              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Place of Birth</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle leading-tight"><span>{placeOfBirthLine1}</span>{placeOfBirthLine2 && <><br /><span>{placeOfBirthLine2}</span></>}</td></tr>
+              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Name of Mother</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{motherFull || '—'}</td></tr>
+              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Citizenship of Mother</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{data.motherCitizenship || '—'}</td></tr>
+              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Name of Father</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{fatherFull || '—'}</td></tr>
+              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Citizenship of Father</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{data.fatherCitizenship || '—'}</td></tr>
+              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Date of Marriage of Parents</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">NOT APPLICABLE</td></tr>
+              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Place of Marriage of Parents</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">NOT APPLICABLE</td></tr>
             </tbody>
           </table>
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getAUSFDraft } from './lib/ausfStorage'
+import { getAUSFDraft, saveAUSFDraft } from './lib/ausfStorage'
 import { defaultAUSF } from './lib/ausfDefaults'
 import { TRANSMITTAL_ATTACHMENTS_LOCAL, TRANSMITTAL_ATTACHMENTS_PSA } from '../../components/print'
 import AusfOnly from './print/AusfOnly'
@@ -9,6 +9,7 @@ import RegistrationOfAusf from './print/RegistrationOfAusf'
 import RegistrationOfAcknowledgement from './print/RegistrationOfAcknowledgement'
 import LcrForm1ABirthAvailable from './print/LcrForm1ABirthAvailable'
 import LcrFormA1 from './print/LcrFormA1'
+import AnnotationChildAck from './print/AnnotationChildAck'
 import AnnotationChildNotAck from './print/AnnotationChildNotAck'
 import TransmittalDoc from './print/TransmittalDoc'
 import LegacyPrintSummary from './print/LegacyPrintSummary'
@@ -95,9 +96,38 @@ export default function AUSFPrint() {
   else if (type === 'ausf-07-17') content = <Ausf0717 data={data} />
   else if (type === 'reg-ausf') content = <RegistrationOfAusf data={data} />
   else if (type === 'reg-ack') content = <RegistrationOfAcknowledgement data={data} />
-  else if (type === 'child-ack-lcr' || type === 'child-ack-annotation') content = <LcrForm1ABirthAvailable data={data} />
+  else if (type === 'child-ack-lcr') content = <LcrForm1ABirthAvailable data={data} />
+  else if (type === 'child-ack-annotation') content = (
+    <AnnotationChildAck
+      data={data}
+      onColbScanChange={(url) => {
+        const next = { ...data, colbScanDataUrl: url }
+        setData(next)
+        saveAUSFDraft(next)
+      }}
+      onAnnotationChange={(text) => {
+        const next = { ...data, annotationChildAckText: text }
+        setData(next)
+        saveAUSFDraft(next)
+      }}
+    />
+  )
   else if (type === 'child-not-ack-lcr') content = <LcrFormA1 data={data} />
-  else if (type === 'child-not-ack-annotation') content = <AnnotationChildNotAck data={data} />
+  else if (type === 'child-not-ack-annotation') content = (
+    <AnnotationChildNotAck
+      data={data}
+      onColbScanChange={(url) => {
+        const next = { ...data, colbScanDataUrl: url }
+        setData(next)
+        saveAUSFDraft(next)
+      }}
+      onAnnotationChange={(text) => {
+        const next = { ...data, annotationChildAckText: text }
+        setData(next)
+        saveAUSFDraft(next)
+      }}
+    />
+  )
   else if (type === 'child-not-ack-transmittal') content = <TransmittalDoc data={data} isOutOfTown={false} checklistConfig={{ isOutOfTown: false, defaultLabels: TRANSMITTAL_ATTACHMENTS_LOCAL }} />
   else if (type === 'out-of-town') content = <TransmittalDoc data={data} isOutOfTown={true} checklistConfig={{ isOutOfTown: true, defaultLabels: TRANSMITTAL_ATTACHMENTS_PSA }} />
   else content = <LegacyPrintSummary data={data} />

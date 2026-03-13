@@ -20,18 +20,18 @@ export default function Annotation({ data }) {
   const signatory = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
 
   return (
-    <div className="ausf-doc print-doc bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4 leading-normal flex flex-col min-h-[297mm]">
+    <div className="ausf-doc print-doc legitimation-annotation-doc bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4 leading-normal flex flex-col min-h-[297mm]">
       <DocumentHeader registryNo={data.colbRegistryNo} />
 
       <h2 className="text-center font-bold text-xl uppercase mb-6 tracking-tight">ANNOTATION</h2>
 
-      <p className="font-bold mb-4">TO WHOM IT MAY CONCERN:</p>
+      <p className="legitimation-annotation-to-whom font-bold mb-4 text-[18px]">TO WHOM IT MAY CONCERN:</p>
 
-      <div className="space-y-6 text-justify leading-[2]">
+      <div className="legitimation-annotation-body space-y-6 text-justify leading-[2]">
         <p>
           The following annotation is applicable for the child <span className="font-bold">{childFull || '—'}</span>:
         </p>
-        <p className="font-bold italic border-l-4 border-gray-400 pl-4 py-2">
+        <p className="font-bold italic py-2">
           {annotationText}
         </p>
         <p>
@@ -41,7 +41,7 @@ export default function Annotation({ data }) {
 
       <div className="min-h-[8rem] flex-1" aria-hidden />
 
-      <div className="mt-auto pt-6 flex flex-col items-end">
+      <div className="legitimation-annotation-body mt-auto pt-6 flex flex-col items-end">
         <div className="flex flex-col items-end text-right mb-8">
           <p className="font-bold uppercase">{signatory}</p>
           <p className="text-sm italic">City Civil Registrar</p>

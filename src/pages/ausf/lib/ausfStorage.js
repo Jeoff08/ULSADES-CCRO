@@ -1,6 +1,17 @@
 const KEY = 'ulsades_ausf_draft'
 const KEY_SAVED = 'ulsades_ausf_saved'
 
+/** Build document owner label from AUSF data (for birth: SPS. Father AND Mother, or child/applicant name). */
+export function getDocumentOwnerLabelFromAUSFData(data) {
+  if (!data) return ''
+  const f = [data.fatherFirst, data.fatherMiddle, data.fatherLast].filter(Boolean).join(' ').trim()
+  const m = [data.motherFirst, data.motherMiddle, data.motherLast].filter(Boolean).join(' ').trim()
+  if (f && m) return `SPS. ${f} AND ${m}`
+  if (f || m) return f || m
+  const child = [data.childFirst, data.childMiddle, data.childLast].filter(Boolean).join(' ').trim()
+  return child || (data.applicantName || '').trim() || ''
+}
+
 export function saveAUSFDraft(data) {
   try {
     localStorage.setItem(KEY, JSON.stringify(data))
