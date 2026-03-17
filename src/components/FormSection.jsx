@@ -2,8 +2,8 @@ import React from 'react'
 
 export default function FormSection({ number, title, children, noNumber }) {
   return (
-    <div className="mb-6 rounded-xl overflow-hidden shadow-sm border border-gray-100 bg-[var(--card-bg)]">
-      <div className="bg-[var(--primary-blue)] text-white px-4 py-2.5 font-semibold text-sm">
+    <div className="form-section mb-6 rounded-xl overflow-hidden border border-gray-200 bg-[var(--card-bg)] shadow-sm">
+      <div className="form-section__header bg-[var(--primary-blue)] text-white px-4 py-2.5 font-semibold text-sm uppercase tracking-wide">
         {noNumber ? title : `${number}. ${title}`}
       </div>
       <div className="p-4">

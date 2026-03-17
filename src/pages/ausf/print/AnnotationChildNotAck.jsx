@@ -1,5 +1,8 @@
 import React, { useState, useRef } from 'react'
 import { buildDefaultAnnotationText } from '../../../lib/printUtils'
+import { ensureImageDataUrl } from '../../../lib/colbUtils'
+import { exportColbAsPdf } from '../../../lib/colbExportPdf'
+import { useColbRemarksDetection } from '../../../hooks/useColbRemarksDetection'
 import { DocumentFooter } from '../../../components/print'
 
 const MAX_FILE_SIZE_MB = 25
@@ -11,6 +14,25 @@ const MAX_FILE_SIZE_MB = 25
 export default function AnnotationChildNotAck({ data, onColbScanChange, onAnnotationChange }) {
   const hasScan = Boolean(data.colbScanDataUrl)
   const defaultAnnotation = buildDefaultAnnotationText(data)
+  const [displayImageUrl, setDisplayImageUrl] = useState(null)
+
+  React.useEffect(() => {
+    if (!data.colbScanDataUrl) {
+      setDisplayImageUrl(null)
+      return
+    }
+    if (data.colbScanDataUrl.startsWith('data:image/')) {
+      setDisplayImageUrl(data.colbScanDataUrl)
+      return
+    }
+    if (data.colbScanDataUrl.startsWith('data:application/pdf')) {
+      ensureImageDataUrl(data.colbScanDataUrl).then(setDisplayImageUrl).catch(() => setDisplayImageUrl(null))
+      return
+    }
+    setDisplayImageUrl(null)
+  }, [data.colbScanDataUrl])
+
+  const { overlayRect, isAnalyzing } = useColbRemarksDetection(displayImageUrl || null)
   const annotationText = data.annotationChildAckText || defaultAnnotation
 
   // Render annotation in two lines (break after " under ") with "known as [NAME]" bold+underline
@@ -53,6 +75,16 @@ export default function AnnotationChildNotAck({ data, onColbScanChange, onAnnota
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [uploadList, setUploadList] = useState([])
   const fileInputRef = useRef(null)
+  const colbExportRef = useRef(null)
+  const [imgAspectRatio, setImgAspectRatio] = useState(null)
+
+  const handleImageLoad = (e) => {
+    const { naturalWidth, naturalHeight } = e.target
+    if (naturalWidth && naturalHeight) setImgAspectRatio(naturalWidth / naturalHeight)
+  }
+  React.useEffect(() => {
+    setImgAspectRatio(null)
+  }, [data.colbScanDataUrl])
 
   const handleFileSelect = (file) => {
     if (!file) return
@@ -103,12 +135,22 @@ export default function AnnotationChildNotAck({ data, onColbScanChange, onAnnota
   const cancelUpload = (id) => setUploadList((prev) => prev.filter((i) => i.id !== id))
 
   const completedFile = uploadList.find((i) => i.dataUrl)
+  const [attaching, setAttaching] = useState(false)
 
-  const handleAttachAndClose = () => {
+  const handleAttachAndClose = async () => {
     if (!completedFile?.dataUrl) return
-    onColbScanChange?.(completedFile.dataUrl)
-    setUploadList([])
-    setShowUploadModal(false)
+    setAttaching(true)
+    try {
+      const imageDataUrl = await ensureImageDataUrl(completedFile.dataUrl)
+      onColbScanChange?.(imageDataUrl)
+      setUploadList([])
+      setShowUploadModal(false)
+    } catch (err) {
+      console.warn('Failed to process file:', err)
+      setUploadList((prev) => prev.map((i) => (i.id === completedFile.id ? { ...i, error: 'Failed to process file' } : i)))
+    } finally {
+      setAttaching(false)
+    }
   }
 
   const handleCloseModal = () => {
@@ -140,6 +182,18 @@ export default function AnnotationChildNotAck({ data, onColbScanChange, onAnnota
           </svg>
           Upload and attach file
         </button>
+        {hasScan && displayImageUrl && (
+          <button
+            type="button"
+            onClick={() => exportColbAsPdf(colbExportRef.current)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-emerald-600 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 text-sm font-medium"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+            Export as PDF
+          </button>
+        )}
         {hasScan && (
           <button
             type="button"
@@ -158,36 +212,56 @@ export default function AnnotationChildNotAck({ data, onColbScanChange, onAnnota
         <div className="colb-print-area relative mb-4">
           <p className="text-xs font-medium text-gray-600 mb-1 print:hidden">Attached file</p>
           <div className="relative border border-gray-300 rounded overflow-hidden print:border-0">
-            {data.colbScanDataUrl.startsWith('data:image') ? (
-              <>
+            {displayImageUrl ? (
+              <div
+                ref={colbExportRef}
+                className="relative w-full max-h-[520px] print:max-h-[270mm] mx-auto overflow-visible colb-certificate-container"
+                style={{
+                  ...(imgAspectRatio != null ? { aspectRatio: imgAspectRatio } : {}),
+                  // Nudge the annotation overlay slightly upward on the COLB scan
+                  '--colb-overlay-left': `${(overlayRect.left || 0) * 100}%`,
+                  '--colb-overlay-top': `${Math.max((overlayRect.top || 0) - 0.02, 0) * 100}%`,
+                  '--colb-overlay-width': `${(overlayRect.width || 0) * 100}%`,
+                  '--colb-overlay-height': `${(overlayRect.height || 0) * 100}%`,
+                }}
+              >
+                {isAnalyzing && (
+                  <div className="colb-analyzing-overlay print:hidden" aria-live="polite">
+                    <span className="colb-analyzing-text">Analyzing document…</span>
+                  </div>
+                )}
                 <img
-                  src={data.colbScanDataUrl}
+                  src={displayImageUrl}
                   alt="COLB office file scan"
-                  className="w-full max-h-[520px] object-contain object-top print:max-h-[270mm] print:w-full"
+                  className="w-full h-full object-contain object-top print:w-full print:h-full"
+                  onLoad={handleImageLoad}
                 />
                 <div
-                  className="colb-annotation-overlay colb-annotation-overlay-remarks"
+                  className="colb-annotation-overlay colb-annotation-overlay-remarks colb-annotation-overlay-dynamic"
                   aria-label="REMARKS/ANNOTATIONS (For LCRO/OCRG Use Only)"
+                  style={{
+                    position: 'absolute',
+                    left: 'var(--colb-overlay-left)',
+                    top: 'var(--colb-overlay-top)',
+                    width: 'var(--colb-overlay-width)',
+                    height: 'var(--colb-overlay-height)',
+                    boxSizing: 'border-box',
+                    overflow: 'hidden',
+                  }}
                 >
-                  <p className="colb-annotation-remarks-label">REMARKS/ANNOTATIONS (For LCRO/OCRG Use Only)</p>
                   <div className="colb-annotation-remarks-body">
-                    <p className="colb-annotation-remarks-text" style={{ fontSize: '15px', textAlign: 'left' }}>
+                    <p className="colb-annotation-remarks-text">
                       {renderAnnotationContent()}
                     </p>
                   </div>
                 </div>
-              </>
-            ) : data.colbScanDataUrl.startsWith('data:application/pdf') ? (
-              <div className="relative">
-                <iframe
-                  src={data.colbScanDataUrl}
-                  title="COLB office file scan"
-                  className="w-full h-[520px] print:hidden"
-                />
-                <p className="print:block hidden p-4 text-sm">PDF attached. For printing with annotation overlay, please attach an image (PNG/JPG) of the COLB scan.</p>
               </div>
             ) : (
-              <div className="p-4 text-sm text-gray-500">Attached file. <a href={data.colbScanDataUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Open in new tab</a> to view.</div>
+              <div className="p-4 text-sm text-gray-500 colb-loading-placeholder">
+                {data.colbScanDataUrl.startsWith('data:application/pdf')
+                  ? 'Converting PDF…'
+                  : 'Loading…'}
+              </div>
             )}
           </div>
           <div className="no-print mt-3">
@@ -306,17 +380,18 @@ export default function AnnotationChildNotAck({ data, onColbScanChange, onAnnota
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 text-sm font-medium"
+                disabled={attaching}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 text-sm font-medium"
               >
                 Close
               </button>
               <button
                 type="button"
                 onClick={handleAttachAndClose}
-                disabled={!completedFile?.dataUrl}
+                disabled={!completedFile?.dataUrl || attaching}
                 className="px-4 py-2 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium"
               >
-                Attach file
+                {attaching ? 'Processing…' : 'Attach file'}
               </button>
             </div>
           </div>

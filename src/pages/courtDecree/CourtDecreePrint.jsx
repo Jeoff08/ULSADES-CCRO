@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { defaultCourtDecree } from './lib/courtDecreeDefaults'
+import { saveCourtDecreeDraft, getCourtDecreeDraft } from './lib/courtDecreeStorage'
 import { getLegitimationDraft, getSavedLegitimationList, getDocumentOwnerLabelFromLegitimationData } from '../legitimation/lib/legitimationStorage'
 import { defaultLegitimation } from '../legitimation/lib/legitimationDefaults'
 import { buildLcrRemarks } from './lib/lcrRemarks'
@@ -65,9 +66,9 @@ export default function CourtDecreePrint() {
 
   const validType = COURT_DECREE_TYPES.some((t) => t.id === type) ? type : 'cert-authenticity'
 
-  // For LCR Form 1A: Legitimation only — no Court Decree or AUSF data
+  // For LCR Form 1A and Annotation Form 1A: same legitimation + remarks
   const dataForLcr1A = useMemo(() => {
-    if (validType !== 'lcr-form-1a') return data
+    if (validType !== 'lcr-form-1a' && validType !== 'annotation-form-1a') return data
     const ownerName = (data.documentOwnerName || '').trim()
     const normalize = (s) => (s || '').trim().toUpperCase()
     let ownerData = null
@@ -100,9 +101,9 @@ export default function CourtDecreePrint() {
     }
   }, [validType, data])
 
-  // For LCR Form 2A: Legitimation only — no Court Decree or AUSF data
+  // For LCR Form 2A and Annotation Form 2A: same legitimation + remarks (DEATH)
   const dataForLcr2A = useMemo(() => {
-    if (validType !== 'lcr-form-2a') return data
+    if (validType !== 'lcr-form-2a' && validType !== 'annotation-form-2a') return data
     const ownerName = (data.documentOwnerName || '').trim()
     const normalize = (s) => (s || '').trim().toUpperCase()
     let ownerData = null
@@ -208,10 +209,36 @@ export default function CourtDecreePrint() {
       )
       break
     case 'annotation-form-1a':
-      content = <AnnotationForForm1A data={data} />
+      content = (
+        <AnnotationForForm1A
+          paperSize={paperSize}
+          data={{ ...data, remarks: dataForLcr1A.remarks }}
+          onAttachmentChange={(url) => {
+            const next = { ...data, annotationForm1AScanDataUrl: url ?? '' }
+            setData(next)
+            try {
+              const stored = getCourtDecreeDraft() || {}
+              saveCourtDecreeDraft({ ...stored, annotationForm1AScanDataUrl: url ?? '' })
+            } catch (_) {}
+          }}
+        />
+      )
       break
     case 'annotation-form-2a':
-      content = <AnnotationForForm2A data={data} />
+      content = (
+        <AnnotationForForm2A
+          paperSize={paperSize}
+          data={{ ...data, remarks: dataForLcr2A.remarks }}
+          onAttachmentChange={(url) => {
+            const next = { ...data, annotationForm2AScanDataUrl: url ?? '' }
+            setData(next)
+            try {
+              const stored = getCourtDecreeDraft() || {}
+              saveCourtDecreeDraft({ ...stored, annotationForm2AScanDataUrl: url ?? '' })
+            } catch (_) {}
+          }}
+        />
+      )
       break
     case 'annotation-form-3a':
       content = <AnnotationForForm3A data={data} />

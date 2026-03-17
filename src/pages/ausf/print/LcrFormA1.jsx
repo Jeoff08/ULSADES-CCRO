@@ -26,14 +26,10 @@ export default function LcrFormA1({ data }) {
             }
           />
           <hr className="border-black border-t my-2" />
-          <div className="flex justify-between items-baseline gap-4 leading-tight">
-            <div>
-              <p>Republic of the Philippines)</p>
-              <p>City of Iligan)S.S</p>
-            </div>
+          <div className="flex justify-end items-baseline gap-4 text-[21px] leading-tight">
             <div className="flex items-baseline gap-1 shrink-0">
               <span>Registry Number:</span>
-              <span className="fill-blank inline-block text-center min-w-[3rem] font-bold underline">{registryNo}</span>
+              <span className="fill-blank inline-block text-center min-w-[3rem] font-bold underline text-[21px]">{registryNo}</span>
             </div>
           </div>
         </header>
@@ -43,9 +39,9 @@ export default function LcrFormA1({ data }) {
             <div className="flex justify-between items-baseline shrink-0">
               <div>
                 <p className="lcr-a1-title font-bold text-[15px] mb-0">LCR Form No. 1A</p>
-                <p className="text-[15px] mb-0">(Birth-Available)</p>
+                <p className="lcr-a1-subtitle text-[15px] mb-0">(Birth-Available)</p>
               </div>
-              <p className="text-[15px] font-medium shrink-0">{formDate}</p>
+              <p className="lcr-a1-form-date text-[15px] font-medium shrink-0">{formDate}</p>
             </div>
 
             <div className="lcr-a1-body flex flex-col flex-1 min-h-0 leading-snug text-[17px] gap-3">
@@ -105,7 +101,7 @@ export default function LcrFormA1({ data }) {
           </div>
         </div>
 
-        <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} contentClassName="text-[14px]" />
+        <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} contentClassName="text-[11px]" />
       </div>
     </div>
   )

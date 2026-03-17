@@ -1,10 +1,10 @@
 import React from 'react'
 
-export default function DocumentFooter({ contactPhone, contactEmail, sloganBlue }) {
+export default function DocumentFooter({ contactPhone, contactEmail, sloganBlue, contentClassName }) {
   return (
     <div className="print-doc-footer mt-4 w-full">
       <hr className="border-black border-t mb-3" />
-      <div className="grid grid-cols-2 text-xs gap-6 items-start">
+      <div className={`grid grid-cols-2 gap-6 items-start ${contentClassName || 'text-xs'}`}>
         <div className="leading-tight space-y-0.5">
           <p className="font-bold">CONTACT DETAILS:</p>
           <p>Telephone No.: {contactPhone || '(063) 224-5038'}</p>

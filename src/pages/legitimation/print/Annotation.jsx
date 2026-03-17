@@ -41,8 +41,8 @@ export default function Annotation({ data }) {
 
       <div className="min-h-[8rem] flex-1" aria-hidden />
 
-      <div className="legitimation-annotation-body mt-auto pt-6 flex flex-col items-end">
-        <div className="flex flex-col items-end text-right mb-8">
+      <div className="legitimation-annotation-body mt-auto pt-6 flex flex-col items-start">
+        <div className="flex flex-col items-start text-left mb-8">
           <p className="font-bold uppercase">{signatory}</p>
           <p className="text-sm italic">City Civil Registrar</p>
         </div>

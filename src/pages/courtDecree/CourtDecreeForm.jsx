@@ -1,14 +1,36 @@
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react'
-import { createPortal } from 'react-dom'
+import React, { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { defaultCourtDecree } from './lib/courtDecreeDefaults'
 import { addSavedCourtDecree, getCourtDecreeDraft, updateSavedCourtDecree } from './lib/courtDecreeStorage'
-import { getDocumentOwnerOptions } from '../../lib/documentOwnerOptions'
 import { COURT_DECREE_TYPES, AFFECTED_DOCUMENT_OPTIONS, DATE_MONTHS } from './constants'
 
 const LCR_FORM_TYPES = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a']
 
-const inputClass = 'w-full border border-orange-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-orange-100 focus:border-[var(--primary-blue)] focus:ring-2 focus:ring-[var(--primary-blue)]/20'
+const inputClass = 'court-decree-form-page__input w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-gray-50 transition-colors duration-150'
+
+function isEmpty(v) {
+  return v == null || String(v).trim() === ''
+}
+
+const REQUIRED_FIELDS = [
+  { key: 'country', label: 'Country' },
+  { key: 'courtOrRacco', label: 'Court or Racco' },
+  { key: 'documentOwnerName', label: 'Document owner/s' },
+  { key: 'dateIssued', label: 'Date Issued' },
+  { key: 'courtThatIssued', label: 'Court that issued the decree' },
+  { key: 'issuedByTitle', label: 'Issued/Rendered By (Title)' },
+  { key: 'issuedByName', label: 'Issued/Rendered By (Name)' },
+  { key: 'typeOfCase', label: 'Type of Case' },
+  { key: 'caseNo', label: 'Case No' },
+  { key: 'authenticatedBy', label: 'Authenticated By' },
+  { key: 'registryNumber', label: 'Registry Number' },
+  { key: 'dateRegistered', label: 'Date Registered' },
+  { key: 'caseTitle', label: 'Case Title' },
+]
+
+function getMissingFields(form) {
+  return REQUIRED_FIELDS.filter(({ key }) => isEmpty(form[key]))
+}
 
 function formatDigitsToDdMmYyyy(digits) {
   const d = (digits || '').replace(/\D/g, '').slice(0, 8)
@@ -58,7 +80,7 @@ function DateInput({ value, onChange, placeholder = 'dd/mm/yyyy' }) {
       <button
         type="button"
         onClick={() => pickerRef.current?.showPicker?.() || pickerRef.current?.click()}
-        className="absolute right-1.5 p-1 rounded text-gray-500 hover:bg-orange-200/60 focus:ring-2 focus:ring-[var(--primary-blue)]/30"
+        className="court-decree-form-page__date-picker-btn absolute right-1.5 p-1 rounded text-gray-500"
         title="Pick date"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -77,8 +99,8 @@ function DateInput({ value, onChange, placeholder = 'dd/mm/yyyy' }) {
 
 function CourtDecreeSection({ number, title, children }) {
   return (
-    <div className="mb-6 rounded-xl overflow-hidden border border-gray-100 bg-[var(--card-bg)] shadow-sm">
-      <div className="bg-[var(--primary-blue)] text-white px-4 py-2.5 font-semibold text-sm uppercase tracking-wide">
+    <div className="court-decree-form-page__section-card mb-6 rounded-xl overflow-hidden border border-gray-200 bg-[var(--card-bg)] shadow-sm">
+      <div className="court-decree-form-page__section-header bg-[var(--primary-blue)] text-white px-4 py-2.5 font-semibold text-sm uppercase tracking-wide">
         {number} {title}
       </div>
       <div className="p-4">
@@ -93,16 +115,12 @@ export default function CourtDecreeForm() {
   const navigate = useNavigate()
   const typeFromUrl = searchParams.get('type') || 'cert-authenticity'
   const [showConfirm, setShowConfirm] = useState(false)
+  const [showValidationModal, setShowValidationModal] = useState(false)
+  const [missingFields, setMissingFields] = useState([])
 
   const editId = searchParams.get('id')
   const isEdit = searchParams.get('edit') === '1'
-  const [showOtherWarning, setShowOtherWarning] = useState(false)
   const [blockPrintReason, setBlockPrintReason] = useState(null)
-  const [documentOwnerSuggestionsOpen, setDocumentOwnerSuggestionsOpen] = useState(false)
-  const [dropdownPosition, setDropdownPosition] = useState(null)
-  const documentOwnerInputRef = useRef(null)
-  const documentOwnerWrapperRef = useRef(null)
-  const documentOwnerSuggestionsRef = useRef(null)
 
   const urlToAffectedDoc = (t) => {
     if (t === 'lcr-form-1a') return 'BIRTH_CERTIFICATE'
@@ -158,44 +176,6 @@ export default function CourtDecreeForm() {
   }, [form.documentOwnerName])
 
   const isLcrFormType = LCR_FORM_TYPES.includes(form.formType)
-  const documentOwnerGroups = isLcrFormType ? getDocumentOwnerOptions(form.affectedDocument) : { legitimation: [], courtDecree: [] }
-  const documentOwnerOptionsFlat = [...documentOwnerGroups.legitimation, ...documentOwnerGroups.courtDecree]
-  const hasDocumentOwnerOptions = documentOwnerOptionsFlat.length > 0
-  const selectedOwnerMatch = hasDocumentOwnerOptions && documentOwnerOptionsFlat.some(
-    (o) => (o.value || '').trim().toUpperCase() === (form.documentOwnerName || '').trim().toUpperCase()
-  )
-  const isOtherMode = isLcrFormType && (form.documentOwnerName || '').trim() && !selectedOwnerMatch
-
-  const documentOwnerTyped = (form.documentOwnerName || '').trim()
-  const documentOwnerQuery = documentOwnerTyped.toUpperCase()
-  const filteredLegitimation = documentOwnerQuery
-    ? documentOwnerGroups.legitimation.filter((o) => (o.value || '').toUpperCase().startsWith(documentOwnerQuery))
-    : documentOwnerGroups.legitimation
-  const filteredCourtDecree = documentOwnerQuery
-    ? documentOwnerGroups.courtDecree.filter((o) => (o.value || '').toUpperCase().startsWith(documentOwnerQuery))
-    : documentOwnerGroups.courtDecree
-  const hasDocumentOwnerSuggestions = documentOwnerSuggestionsOpen && (filteredLegitimation.length > 0 || filteredCourtDecree.length > 0)
-
-  const updateDropdownPosition = () => {
-    const el = documentOwnerWrapperRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    setDropdownPosition({ top: rect.bottom + 4, left: rect.left, width: rect.width })
-  }
-
-  useLayoutEffect(() => {
-    if (!hasDocumentOwnerSuggestions) {
-      setDropdownPosition(null)
-      return
-    }
-    updateDropdownPosition()
-    window.addEventListener('scroll', updateDropdownPosition, true)
-    window.addEventListener('resize', updateDropdownPosition)
-    return () => {
-      window.removeEventListener('scroll', updateDropdownPosition, true)
-      window.removeEventListener('resize', updateDropdownPosition)
-    }
-  }, [hasDocumentOwnerSuggestions])
 
   let sectionIndex = 0
   const sectionDelay = (i) => ({ animationDelay: `${i * 0.06}s` })
@@ -250,23 +230,17 @@ export default function CourtDecreeForm() {
               ))}
             </select>
           </div>
-          <div className="court-decree-form-page__instruction">
+          <div className="court-decree-form-page__instruction court-decree-form-page__instruction--muted flex items-center gap-2 mt-2">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
             </svg>
             NOTE: Manually fill-up Form 3A
           </div>
-          <div className="flex flex-wrap gap-3 mt-3">
-            <Link to="/court-decree/form?type=lcr-form-1a" className="text-[var(--primary-blue)] font-semibold text-sm hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)]/30 rounded px-2 py-1">FORM 1A</Link>
-            <Link to="/court-decree/form?type=lcr-form-2a" className="text-[var(--primary-blue)] font-semibold text-sm hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)]/30 rounded px-2 py-1">FORM 2A</Link>
-            <Link to="/court-decree/form?type=lcr-form-3a" className="text-[var(--primary-blue)] font-semibold text-sm hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)]/30 rounded px-2 py-1">FORM 3A</Link>
+          <div className="court-decree-form-page__form-links flex flex-wrap gap-2 mt-3">
+            <Link to="/court-decree/form?type=lcr-form-1a" className="court-decree-form-page__form-link">FORM 1A</Link>
+            <Link to="/court-decree/form?type=lcr-form-2a" className="court-decree-form-page__form-link">FORM 2A</Link>
+            <Link to="/court-decree/form?type=lcr-form-3a" className="court-decree-form-page__form-link">FORM 3A</Link>
           </div>
-          {isLcrFormType && (
-            <div className="mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-sm flex flex-col gap-2">
-              <span className="font-medium">For LCR Form 1A / 2A / 3A:</span>
-              <p>A matching Legitimation record must exist. If needed, fill and save a Legitimation record first, then return here and select the document owner.</p>
-            </div>
-          )}
         </div>
       </CourtDecreeSection>
       </div>
@@ -274,110 +248,14 @@ export default function CourtDecreeForm() {
       <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
       <CourtDecreeSection number="3" title="Document owner/s">
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {isLcrFormType ? 'Document owner (from saved Legitimation or Court Decree records)' : 'Document owner/s'}
-          </label>
-          {isLcrFormType ? (
-            <>
-              {!hasDocumentOwnerOptions ? (
-                <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-sm space-y-3">
-                  <p>No Legitimation records found. Save a Legitimation record first, then return to this form.</p>
-                  <Link
-                    to="/legitimation/form"
-                    className="inline-flex items-center px-3 py-2 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)]/50"
-                  >
-                    Open Legitimation form
-                  </Link>
-                </div>
-              ) : (
-                <>
-                  <div ref={documentOwnerWrapperRef} className="relative flex items-stretch">
-                    <input
-                      ref={documentOwnerInputRef}
-                      type="text"
-                      value={form.documentOwnerName}
-                      onChange={(e) => update('documentOwnerName', e.target.value)}
-                      onFocus={() => setDocumentOwnerSuggestionsOpen(true)}
-                      onBlur={() => {
-                        setShowOtherWarning(true)
-                        setTimeout(() => setDocumentOwnerSuggestionsOpen(false), 200)
-                      }}
-                      placeholder="Select or type document owner (e.g. SPS. FRANCIS CANO CUBERO AND JULIEMAE ORLANES BAGTONG)"
-                      className={`${inputClass} rounded-r-none`}
-                      autoComplete="off"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        documentOwnerInputRef.current?.focus()
-                        setDocumentOwnerSuggestionsOpen(true)
-                      }}
-                      className="flex items-center justify-center w-10 rounded-r-lg border border-l-0 border-orange-300 bg-orange-100 text-gray-600 hover:bg-orange-200/60 focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)]/20 focus:ring-inset"
-                      title="Show options"
-                      aria-label="Show document owner options"
-                    >
-                      <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    {hasDocumentOwnerSuggestions && dropdownPosition && createPortal(
-                      <ul
-                        ref={documentOwnerSuggestionsRef}
-                        className="fixed z-[100] max-h-48 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg py-1 text-sm"
-                        role="listbox"
-                        style={{
-                          top: dropdownPosition.top,
-                          left: dropdownPosition.left,
-                          width: dropdownPosition.width,
-                        }}
-                      >
-                        {filteredLegitimation.length > 0 && (
-                          <li className="px-3 py-1.5 text-gray-500 text-xs font-semibold uppercase tracking-wide border-b border-gray-100">Legitimation</li>
-                        )}
-                        {filteredLegitimation.map((opt) => (
-                          <li
-                            key={`leg-${opt.value}`}
-                            role="option"
-                            className="px-3 py-2 cursor-pointer hover:bg-[var(--primary-blue)]/10 text-gray-800"
-                            onMouseDown={(e) => { e.preventDefault(); update('documentOwnerName', opt.value); documentOwnerInputRef.current?.focus(); }}
-                          >
-                            {opt.label}
-                          </li>
-                        ))}
-                        {filteredCourtDecree.length > 0 && (
-                          <li className="px-3 py-1.5 text-gray-500 text-xs font-semibold uppercase tracking-wide border-b border-gray-100 mt-1">Court Decree</li>
-                        )}
-                        {filteredCourtDecree.map((opt) => (
-                          <li
-                            key={`cd-${opt.value}`}
-                            role="option"
-                            className="px-3 py-2 cursor-pointer hover:bg-[var(--primary-blue)]/10 text-gray-800"
-                            onMouseDown={(e) => { e.preventDefault(); update('documentOwnerName', opt.value); documentOwnerInputRef.current?.focus(); }}
-                          >
-                            {opt.label}
-                          </li>
-                        ))}
-                      </ul>,
-                      document.body
-                    )}
-                  </div>
-                  {showOtherWarning && isOtherMode && (
-                    <p className="mt-2 text-amber-700 text-sm">
-                      No matching Legitimation record found for this name. LCR output may use default or draft data.
-                    </p>
-                  )}
-                </>
-              )}
-            </>
-          ) : (
-            <input
-              type="text"
-              value={form.documentOwnerName}
-              onChange={(e) => update('documentOwnerName', e.target.value)}
-              placeholder="e.g. SPS. FRANCIS CANO CUBERO AND JULIEMAE ORLANES BAGTONG"
-              className={inputClass}
-            />
-          )}
+          <label className="block text-sm font-medium text-gray-700 mb-1">Document owner/s</label>
+          <input
+            type="text"
+            value={form.documentOwnerName}
+            onChange={(e) => update('documentOwnerName', e.target.value)}
+            placeholder="e.g. SPS. FRANCIS CANO CUBERO AND JULIEMAE ORLANES BAGTONG"
+            className={inputClass}
+          />
         </div>
       </CourtDecreeSection>
       </div>
@@ -455,8 +333,15 @@ export default function CourtDecreeForm() {
 <button
         type="button"
         onClick={() => {
+          const missing = getMissingFields(form)
+          if (missing.length > 0) {
+            setMissingFields(missing)
+            setShowValidationModal(true)
+            setBlockPrintReason(null)
+            return
+          }
           if (isLcrFormType && !(form.documentOwnerName || '').trim()) {
-            setBlockPrintReason('Please select or enter a document owner. For LCR Form 1A/2A/3A a matching Legitimation or Court Decree record is required.')
+            setBlockPrintReason('Please enter a document owner.')
             return
           }
           setBlockPrintReason(null)
@@ -468,6 +353,59 @@ export default function CourtDecreeForm() {
       </button>
       </div>
 
+      {showValidationModal && (
+        <div
+          className="court-decree-form-page__validation-backdrop court-decree-form-page__modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 no-print"
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="court-decree-validation-title"
+          aria-describedby="court-decree-validation-desc"
+          onClick={() => setShowValidationModal(false)}
+        >
+          <div
+            className="court-decree-form-page__validation-modal court-decree-form-page__modal-dialog no-print"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="court-decree-form-page__validation-strip" aria-hidden />
+            <div className="court-decree-form-page__validation-body">
+              <div className="court-decree-form-page__validation-icon" aria-hidden>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  <path d="M12 16h.01" strokeWidth="2.5" />
+                </svg>
+              </div>
+              <div className="court-decree-form-page__validation-content">
+                <h2 id="court-decree-validation-title" className="court-decree-form-page__validation-title">
+                  All required fields must be filled out
+                </h2>
+                <p id="court-decree-validation-desc" className="court-decree-form-page__validation-desc">
+                  You cannot proceed until every required field is completed. Please review and fill in the items below.
+                </p>
+                {missingFields.length > 0 && (
+                  <div className="court-decree-form-page__validation-list-wrap">
+                    <p className="court-decree-form-page__validation-list-label">Missing ({missingFields.length}):</p>
+                    <ul className="court-decree-form-page__validation-list">
+                      {missingFields.map(({ label }) => (
+                        <li key={label}>{label}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div className="court-decree-form-page__validation-actions">
+                  <button
+                    type="button"
+                    onClick={() => setShowValidationModal(false)}
+                    className="court-decree-form-page__validation-btn"
+                  >
+                    Got it
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 court-decree-form-page__modal-backdrop no-print" onClick={() => setShowConfirm(false)} role="dialog" aria-modal="true" aria-labelledby="court-decree-confirm-title">
           <div className="court-decree-form-page__modal-dialog bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-100" onClick={(e) => e.stopPropagation()}>
@@ -475,11 +413,6 @@ export default function CourtDecreeForm() {
             <p className="text-gray-600 text-sm mb-4">
               Are you sure you want to proceed? Please verify that all entries are correct. You will be directed to the print view.
             </p>
-            {isLcrFormType && isOtherMode && (
-              <p className="text-amber-700 text-sm mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200">
-                No matching Legitimation record found for the entered name. LCR output may use default or draft data. You may go back to select a saved record or proceed anyway.
-              </p>
-            )}
             <div className="flex justify-end gap-3">
               <button
                 type="button"

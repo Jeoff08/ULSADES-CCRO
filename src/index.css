@@ -103,6 +103,28 @@ body {
   padding: 0;
   line-height: 1.25;
 }
+/* AUSF-only: screen preview – footer 12px to match PDF */
+.ausf-only-doc .print-doc-footer,
+.ausf-only-doc .print-doc-footer p,
+.ausf-only-doc .print-doc-footer .text-xs {
+  font-size: 12px;
+}
+/* AUSF-only: City Civil Registrar block left-aligned (screen and print) */
+.ausf-only-doc .registrar-signature-zone {
+  align-items: flex-start;
+}
+.ausf-only-doc .registrar-signature-zone .city-registrar-signature,
+.ausf-only-doc .registrar-signature-zone .city-registrar-signature p {
+  text-align: left;
+}
+/* AUSF 07-17: City Civil Registrar block left-aligned (screen and print) */
+.ausf-07-17-doc .registrar-signature-zone {
+  align-items: flex-start;
+}
+.ausf-07-17-doc .registrar-signature-zone .city-registrar-signature,
+.ausf-07-17-doc .registrar-signature-zone .city-registrar-signature p {
+  text-align: left;
+}
 
 /* Login page: split layout, dark blue left panel */
 .login-split {
@@ -635,6 +657,66 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   display: block;
 }
 
+/* Annotation for Form 1A (Court Decree): REMARKS overlay on Form 102 scan – gray box edge-to-edge with text, justified, italic, 12px */
+.colb-annotation-form-1a .colb-print-area .colb-annotation-overlay-remarks {
+  background-color: #e5e7eb;
+  padding: 6px 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+.colb-annotation-form-1a .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-remarks-body {
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 0;
+  background: transparent;
+}
+.colb-annotation-form-1a .colb-annotation-form1a-text,
+.colb-annotation-form-1a .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-form1a-text {
+  font-size: 11.4px;
+  line-height: 1.3;
+  color: black;
+  text-align: justify;
+  font-style: italic;
+  margin: 0;
+  width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Annotation for Form 2A (Court Decree): REMARKS overlay on Certificate of Death scan – same as Form 1A */
+.colb-annotation-form-2a .colb-print-area .colb-annotation-overlay-remarks {
+  background-color: #e5e7eb;
+  padding: 6px 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+.colb-annotation-form-2a .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-remarks-body {
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 0;
+  background: transparent;
+}
+.colb-annotation-form-2a .colb-annotation-form2a-text,
+.colb-annotation-form-2a .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-form2a-text {
+  font-size: 11.4px;
+  line-height: 1.3;
+  color: black;
+  text-align: justify;
+  font-style: italic;
+  margin: 0;
+  width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
 @media print {
   @page {
     margin: 0;
@@ -701,16 +783,118 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .ausf-0-6-doc.print-doc {
     page-break-inside: avoid !important;
   }
+  /* AUSF 0-6 PDF print only: 16.4px body, 12px footer for A4, Short, Long (overrides paper-size pt rules) */
+  html[data-paper-size="a4"] .ausf-0-6-doc.print-doc,
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc,
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc {
+    font-size: 16.4px !important;
+  }
+  html[data-paper-size="a4"] .ausf-0-6-doc .print-doc-footer,
+  html[data-paper-size="a4"] .ausf-0-6-doc .print-doc-footer p,
+  html[data-paper-size="a4"] .ausf-0-6-doc .print-doc-footer .text-xs,
+  html[data-paper-size="a4"] .ausf-0-6-doc .print-doc-footer *,
+  html[data-paper-size="short"] .ausf-0-6-doc .print-doc-footer,
+  html[data-paper-size="short"] .ausf-0-6-doc .print-doc-footer p,
+  html[data-paper-size="short"] .ausf-0-6-doc .print-doc-footer .text-xs,
+  html[data-paper-size="short"] .ausf-0-6-doc .print-doc-footer *,
+  html[data-paper-size="long"] .ausf-0-6-doc .print-doc-footer,
+  html[data-paper-size="long"] .ausf-0-6-doc .print-doc-footer p,
+  html[data-paper-size="long"] .ausf-0-6-doc .print-doc-footer .text-xs,
+  html[data-paper-size="long"] .ausf-0-6-doc .print-doc-footer * {
+    font-size: 12px !important;
+  }
+  /* AUSF 0-6 PDF print: City Civil Registrar (name + title) left-aligned, nudged down */
+  .ausf-0-6-doc.print-doc .registrar-signature-zone {
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    margin-top: 0.2in !important;
+  }
+  .ausf-0-6-doc.print-doc .registrar-signature-zone .city-registrar-signature,
+  .ausf-0-6-doc.print-doc .registrar-signature-zone .city-registrar-signature p {
+    text-align: left !important;
+  }
+  /* AUSF 0-6 and AUSF Only PDF print: move main title "AFFIDAVIT TO USE..." a little bit higher */
+  .ausf-0-6-doc.print-doc h2,
+  .ausf-only-doc.ausf-doc.print-doc h2 {
+    margin-top: 0.05in !important;
+  }
 
   /* COLB annotation (Child Not Ack): overlay fits Remarks/Annotations on scanned COLB when printing to PDF */
-  .colb-annotation-ack .colb-print-area {
+  /* Annotation Form 1A: print only the attached file (image + overlay), nothing else */
+  .colb-annotation-form-1a.annotation-form-1a-print-attachment-only {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
+  }
+  .colb-annotation-form-1a.annotation-form-1a-print-attachment-only .print-doc-body {
+    padding: 0 !important;
+    margin: 0 !important;
+    flex: none !important;
+    min-height: 0 !important;
+    display: block !important;
+  }
+  .colb-annotation-form-1a.annotation-form-1a-print-attachment-only .print-doc-body > *:not(.colb-print-area) {
+    display: none !important;
+  }
+  /* Form 102: default full A4 width edge-to-edge */
+  .colb-annotation-form-1a.annotation-form-1a-print-attachment-only .colb-print-area {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-height: none !important;
+    max-width: 210mm !important;
+    width: 100% !important;
+    border: none !important;
+    overflow: visible !important;
+  }
+  /* A4 bond only: reduced width so content is narrower on the page */
+  html[data-paper-size="a4"] .colb-annotation-form-1a.annotation-form-1a-print-attachment-only .colb-print-area {
+    max-width: 190mm !important;
+    width: 90% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  /* Short bond: reduced width so output fits on 8.5" × 11" */
+  html[data-paper-size="short"] .colb-annotation-form-1a.annotation-form-1a-print-attachment-only .colb-print-area {
+    max-width: 170mm !important;
+    width: 85% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  /* Long bond (8.5" × 13"): full width edge-to-edge, larger height so certificate + remarks fit */
+  html[data-paper-size="long"] .colb-annotation-form-1a.annotation-form-1a-print-attachment-only .colb-print-area {
+    max-width: 216mm !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  html[data-paper-size="long"] .colb-annotation-form-1a .colb-print-area .colb-form1a-full-height,
+  html[data-paper-size="long"] .colb-annotation-form-1a .colb-print-area img {
+    max-height: 320mm !important;
+  }
+  .colb-annotation-form-1a.annotation-form-1a-print-attachment-only .colb-print-area > div {
+    border: none !important;
+    overflow: visible !important;
+  }
+
+  .colb-annotation-ack .colb-print-area,
+  .colb-annotation-form-1a .colb-print-area {
     position: relative !important;
   }
-  .colb-annotation-ack .colb-print-area img {
+  .colb-annotation-ack .colb-print-area img,
+  .colb-annotation-form-1a .colb-print-area img {
     width: 100% !important;
     max-height: 270mm !important;
     object-fit: contain !important;
     object-position: top !important;
+  }
+  /* Form 1A: form height (275mm) for print/PDF, object-contain so bottom green line is visible */
+  .colb-annotation-form-1a .colb-print-area .colb-form1a-full-height,
+  .colb-annotation-form-1a .colb-print-area img {
+    max-height: 275mm !important;
+  }
+  .colb-annotation-form-1a .colb-print-area img {
+    object-fit: contain !important;
+    object-position: top center !important;
   }
   .colb-annotation-overlay {
     position: absolute !important;
@@ -771,6 +955,216 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     overflow-wrap: break-word !important;
     text-align: center !important;
   }
+  /* Form 1A: keep dynamic rect (detection or FORM_102 fallback) in print */
+  /* Form 1A: overlay height fits text in print/PDF – no large empty gray area */
+  .colb-annotation-form-1a .colb-print-area .colb-annotation-overlay-remarks {
+    left: var(--colb-overlay-left) !important;
+    top: var(--colb-overlay-top) !important;
+    width: var(--colb-overlay-width) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    bottom: auto !important;
+    right: auto !important;
+    overflow: visible !important;
+    background-color: #e5e7eb !important;
+    padding: 4px 6px !important;
+    box-sizing: border-box !important;
+  }
+  .colb-annotation-form-1a .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-remarks-body {
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    padding: 0 !important;
+  }
+  .colb-annotation-form-1a .colb-annotation-form1a-text,
+  .colb-annotation-form-1a .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-form1a-text {
+    text-align: justify !important;
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+    font-style: italic !important;
+  }
+  /* Long bond: Form 1A remarks text */
+  html[data-paper-size="long"] .colb-annotation-form-1a .colb-annotation-form1a-text,
+  html[data-paper-size="long"] .colb-annotation-form-1a .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-form1a-text {
+    font-size: 11px !important;
+  }
+  /* Form 1A attachment-only: only the certificate + overlay in output; hide everything else */
+  .colb-annotation-form-1a.annotation-form-1a-print-attachment-only > header,
+  .colb-annotation-form-1a.annotation-form-1a-print-attachment-only .print-doc-footer-wrap,
+  .colb-annotation-form-1a.annotation-form-1a-print-attachment-only .no-print,
+  .colb-annotation-form-1a.annotation-form-1a-print-attachment-only .colb-print-area > p {
+    display: none !important;
+  }
+  .colb-annotation-form-1a.annotation-form-1a-print-attachment-only .colb-analyzing-overlay {
+    display: none !important;
+  }
+
+  /* Court Decree Annotation Form 1A: separate output per paper so A4/Short/Long do not affect each other */
+  .court-decree-annotation-form-1a.colb-annotation-form-1a[data-paper-size="a4"].annotation-form-1a-print-attachment-only .colb-print-area {
+    max-width: 190mm !important;
+    width: 90% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .court-decree-annotation-form-1a.colb-annotation-form-1a[data-paper-size="a4"] .colb-print-area .colb-form1a-full-height,
+  .court-decree-annotation-form-1a.colb-annotation-form-1a[data-paper-size="a4"] .colb-print-area img {
+    max-height: 275mm !important;
+  }
+  .court-decree-annotation-form-1a.colb-annotation-form-1a[data-paper-size="a4"] .colb-annotation-form1a-text,
+  .court-decree-annotation-form-1a.colb-annotation-form-1a[data-paper-size="a4"] .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-form1a-text {
+    font-size: 11px !important;
+  }
+
+  .court-decree-annotation-form-1a.colb-annotation-form-1a[data-paper-size="short"].annotation-form-1a-print-attachment-only .colb-print-area {
+    max-width: 170mm !important;
+    width: 85% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .court-decree-annotation-form-1a.colb-annotation-form-1a[data-paper-size="short"] .colb-print-area .colb-form1a-full-height,
+  .court-decree-annotation-form-1a.colb-annotation-form-1a[data-paper-size="short"] .colb-print-area img {
+    max-height: 275mm !important;
+  }
+  .court-decree-annotation-form-1a.colb-annotation-form-1a[data-paper-size="short"] .colb-annotation-form1a-text,
+  .court-decree-annotation-form-1a.colb-annotation-form-1a[data-paper-size="short"] .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-form1a-text {
+    font-size: 11px !important;
+  }
+
+  .court-decree-annotation-form-1a.colb-annotation-form-1a[data-paper-size="long"].annotation-form-1a-print-attachment-only .colb-print-area {
+    max-width: 216mm !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  .court-decree-annotation-form-1a.colb-annotation-form-1a[data-paper-size="long"] .colb-print-area .colb-form1a-full-height,
+  .court-decree-annotation-form-1a.colb-annotation-form-1a[data-paper-size="long"] .colb-print-area img {
+    max-height: 320mm !important;
+  }
+  .court-decree-annotation-form-1a.colb-annotation-form-1a[data-paper-size="long"] .colb-annotation-form1a-text,
+  .court-decree-annotation-form-1a.colb-annotation-form-1a[data-paper-size="long"] .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-form1a-text {
+    font-size: 11px !important;
+  }
+
+  /* Annotation Form 2A (Court Decree): same print behavior as Form 1A – certificate + overlay only */
+  .colb-annotation-form-2a.annotation-form-2a-print-attachment-only {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
+  }
+  .colb-annotation-form-2a.annotation-form-2a-print-attachment-only .print-doc-body {
+    padding: 0 !important;
+    margin: 0 !important;
+    flex: none !important;
+    min-height: 0 !important;
+    display: block !important;
+  }
+  .colb-annotation-form-2a.annotation-form-2a-print-attachment-only .print-doc-body > *:not(.colb-print-area) {
+    display: none !important;
+  }
+  .colb-annotation-form-2a.annotation-form-2a-print-attachment-only .colb-print-area {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-height: none !important;
+    max-width: 210mm !important;
+    width: 100% !important;
+    border: none !important;
+    overflow: visible !important;
+  }
+  /* Form 2A: do not use html[data-paper-size]; use only .court-decree-annotation-form-2a[data-paper-size] below */
+  .colb-annotation-form-2a .colb-print-area {
+    position: relative !important;
+  }
+  .colb-annotation-form-2a .colb-print-area img {
+    width: 100% !important;
+    max-height: 275mm !important;
+    object-fit: contain !important;
+    object-position: top !important;
+  }
+  .colb-annotation-form-2a .colb-print-area .colb-form2a-full-height,
+  .colb-annotation-form-2a .colb-print-area img {
+    max-height: 275mm !important;
+  }
+  /* Form 2A: overlay height fits text in print/PDF – no large empty gray area */
+  .colb-annotation-form-2a .colb-print-area .colb-annotation-overlay-remarks {
+    left: var(--colb-overlay-left) !important;
+    top: var(--colb-overlay-top) !important;
+    width: var(--colb-overlay-width) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    bottom: auto !important;
+    right: auto !important;
+    overflow: visible !important;
+    background-color: #e5e7eb !important;
+    padding: 4px 6px !important;
+    box-sizing: border-box !important;
+  }
+  .colb-annotation-form-2a .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-remarks-body {
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    padding: 0 !important;
+  }
+  .colb-annotation-form-2a .colb-annotation-form2a-text,
+  .colb-annotation-form-2a .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-form2a-text {
+    text-align: justify !important;
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+    font-style: italic !important;
+  }
+  .colb-annotation-form-2a.annotation-form-2a-print-attachment-only > header,
+  .colb-annotation-form-2a.annotation-form-2a-print-attachment-only .print-doc-footer-wrap,
+  .colb-annotation-form-2a.annotation-form-2a-print-attachment-only .no-print,
+  .colb-annotation-form-2a.annotation-form-2a-print-attachment-only .colb-print-area > p {
+    display: none !important;
+  }
+  .colb-annotation-form-2a.annotation-form-2a-print-attachment-only .colb-analyzing-overlay {
+    display: none !important;
+  }
+
+  /* Court Decree Annotation Form 2A: separate bond paper sizes (A4, Short, Long) from Form 1A */
+  .court-decree-annotation-form-2a.colb-annotation-form-2a[data-paper-size="a4"].annotation-form-2a-print-attachment-only .colb-print-area {
+    max-width: 190mm !important;
+    width: 90% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .court-decree-annotation-form-2a.colb-annotation-form-2a[data-paper-size="a4"] .colb-print-area .colb-form2a-full-height,
+  .court-decree-annotation-form-2a.colb-annotation-form-2a[data-paper-size="a4"] .colb-print-area img {
+    max-height: 275mm !important;
+  }
+  .court-decree-annotation-form-2a.colb-annotation-form-2a[data-paper-size="a4"] .colb-annotation-form2a-text,
+  .court-decree-annotation-form-2a.colb-annotation-form-2a[data-paper-size="a4"] .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-form2a-text {
+    font-size: 13px !important;
+  }
+
+  .court-decree-annotation-form-2a.colb-annotation-form-2a[data-paper-size="short"].annotation-form-2a-print-attachment-only .colb-print-area {
+    max-width: 170mm !important;
+    width: 85% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .court-decree-annotation-form-2a.colb-annotation-form-2a[data-paper-size="short"] .colb-print-area .colb-form2a-full-height,
+  .court-decree-annotation-form-2a.colb-annotation-form-2a[data-paper-size="short"] .colb-print-area img {
+    max-height: 275mm !important;
+  }
+  .court-decree-annotation-form-2a.colb-annotation-form-2a[data-paper-size="short"] .colb-annotation-form2a-text,
+  .court-decree-annotation-form-2a.colb-annotation-form-2a[data-paper-size="short"] .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-form2a-text {
+    font-size: 13px !important;
+  }
+
+  .court-decree-annotation-form-2a.colb-annotation-form-2a[data-paper-size="long"].annotation-form-2a-print-attachment-only .colb-print-area {
+    max-width: 216mm !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  .court-decree-annotation-form-2a.colb-annotation-form-2a[data-paper-size="long"] .colb-print-area .colb-form2a-full-height,
+  .court-decree-annotation-form-2a.colb-annotation-form-2a[data-paper-size="long"] .colb-print-area img {
+    max-height: 320mm !important;
+  }
+  .court-decree-annotation-form-2a.colb-annotation-form-2a[data-paper-size="long"] .colb-annotation-form2a-text,
+  .court-decree-annotation-form-2a.colb-annotation-form-2a[data-paper-size="long"] .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-form2a-text {
+    font-size: 15px !important;
+  }
 
   /* Legitimation Annotation: TO WHOM IT MAY CONCERN 18px in print PDF */
   .legitimation-annotation-doc .legitimation-annotation-to-whom {
@@ -790,6 +1184,15 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .ausf-only-doc .print-doc-footer {
     margin-top: auto !important;
     flex-shrink: 0;
+  }
+  /* AUSF Only: City Civil Registrar block left-aligned in print/PDF, nudged down */
+  .ausf-only-doc .registrar-signature-zone {
+    align-items: flex-start !important;
+    margin-top: 0.2in !important;
+  }
+  .ausf-only-doc .registrar-signature-zone .city-registrar-signature,
+  .ausf-only-doc .registrar-signature-zone .city-registrar-signature p {
+    text-align: left !important;
   }
 
   /* Legitimation LCR Form 1A only: all content on one page A4/short/long. Sheet grows with content; scale to fit (no clipping). */
@@ -953,7 +1356,11 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     font-size: 21px !important;
   }
   .lcr-a1-print-root .lcr-a1-title {
-    font-size: 21px !important;
+    font-size: 30px !important;
+  }
+  .lcr-a1-print-root .lcr-a1-subtitle,
+  .lcr-a1-print-root .lcr-a1-form-date {
+    font-size: 17px !important;
   }
   .lcr-a1-print-root .lcr-a1-body,
   .lcr-a1-print-root .lcr-a1-body p,
@@ -1002,40 +1409,58 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
   .lcr-a1-print-root .print-doc-footer p,
   .lcr-a1-print-root .print-doc-footer .text-xs {
-    font-size: 20px !important;
+    font-size: 13px !important;
     line-height: 1.35 !important;
   }
 
-  /* LCR A1 elderly-friendly: larger text for all paper sizes */
-  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-header,
-  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-header p,
+  /* LCR A1 form header row: title 30px, subtitle 15px, date 17px for all paper sizes */
   html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-title {
+    font-size: 30px !important;
+  }
+  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-subtitle,
+  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-form-date {
+    font-size: 17px !important;
+  }
+  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-header,
+  html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-header p {
     font-size: 20px !important;
+  }
+  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-title {
+    font-size: 30px !important;
+  }
+  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-subtitle,
+  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-form-date {
+    font-size: 17px !important;
   }
   html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-header,
-  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-header p,
-  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-title {
+  html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-header p {
     font-size: 21px !important;
   }
-  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-header,
-  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-header p,
   html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-title {
+    font-size: 30px !important;
+  }
+  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-subtitle,
+  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-form-date {
+    font-size: 17px !important;
+  }
+  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-header,
+  html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-header p {
     font-size: 20px !important;
   }
-  /* Short: body content 20px (reduced a little) */
+  /* Short: body content 21px */
   html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-body,
   html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-body p,
   html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-remarks p,
   html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-signature p,
   html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-note,
   html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-body * {
-    font-size: 20px !important;
+    font-size: 21px !important;
   }
   html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-table,
   html[data-paper-size="short"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-table td {
-    font-size: 20px !important;
+    font-size: 21px !important;
   }
-  /* A4: body content 21px (unchanged) */
+  /* A4: body content 21px */
   html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-body,
   html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-body p,
   html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-remarks p,
@@ -1048,30 +1473,30 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="a4"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-table td {
     font-size: 21px !important;
   }
-  /* Long: body content 19px (reduced a bit more; A4 and short unchanged) */
+  /* Long: body content 21px */
   html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-body,
   html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-body p,
   html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-remarks p,
   html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-signature p,
   html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-note,
   html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-body * {
-    font-size: 19px !important;
+    font-size: 21px !important;
   }
   html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-table,
   html[data-paper-size="long"] .lcr-a1-print-root .lcr-a1-body .lcr-a1-table td {
-    font-size: 19px !important;
+    font-size: 21px !important;
   }
   html[data-paper-size="short"] .lcr-a1-print-root .print-doc-footer p,
   html[data-paper-size="short"] .lcr-a1-print-root .print-doc-footer .text-xs {
-    font-size: 19px !important;
+    font-size: 13px !important;
   }
   html[data-paper-size="a4"] .lcr-a1-print-root .print-doc-footer p,
   html[data-paper-size="a4"] .lcr-a1-print-root .print-doc-footer .text-xs {
-    font-size: 20px !important;
+    font-size: 13px !important;
   }
   html[data-paper-size="long"] .lcr-a1-print-root .print-doc-footer p,
   html[data-paper-size="long"] .lcr-a1-print-root .print-doc-footer .text-xs {
-    font-size: 19px !important;
+    font-size: 13px !important;
   }
 
   /* Short bond: same output as A4 (same height, scale, and layout) */
@@ -1141,13 +1566,13 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     font-size: 9.5pt !important;
     line-height: 1.45 !important;
   }
-  html[data-paper-size="a4"] .ausf-doc header.mb-4,
-  html[data-paper-size="a4"] .ausf-0-6-doc header.mb-4 {
-    margin-bottom: 0.07in !important;
+  html[data-paper-size="a4"] .ausf-doc .print-doc-header,
+  html[data-paper-size="a4"] .ausf-0-6-doc .print-doc-header {
+    margin-bottom: 0.28in !important;
   }
   html[data-paper-size="a4"] .ausf-doc h2,
   html[data-paper-size="a4"] .ausf-0-6-doc h2 {
-    margin-top: 0.05in !important;
+    margin-top: 0.28in !important;
     margin-bottom: 0.2in !important;
     font-size: 1.05rem !important;
   }
@@ -1188,7 +1613,30 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="a4"] .ausf-0-6-doc .registrar-signature-zone {
     min-height: 1.5rem !important;
   }
-  /* Long bond: transmittal (and all print-doc) – one-page layout, footer as footer at bottom, visible */
+  /* AUSF 07-17 A4: body text 16.4px (print only); footer unchanged */
+  html[data-paper-size="a4"] .ausf-07-17-doc {
+    font-size: 16.4px !important;
+    line-height: 1.45 !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc p,
+  html[data-paper-size="a4"] .ausf-07-17-doc ol,
+  html[data-paper-size="a4"] .ausf-07-17-doc ol li,
+  html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone .text-sm,
+  html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone .text-xs {
+    font-size: 16.4px !important;
+  }
+  /* AUSF 07-17 short bond: main title "AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)" max 20px */
+  html[data-paper-size="short"] .ausf-07-17-doc h2:first-of-type {
+    font-size: 20px !important;
+  }
+  /* AUSF 07-17 short bond: 2-line gap between first Affiant block and SWORN ATTESTATION */
+  html[data-paper-size="short"] .ausf-07-17-doc .text-center.mt-2.mb-3 {
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc h2.my-3 {
+    margin-top: 0.04in !important;
+  }
+  /* Long bond: transmittal (and all print-doc) – one-page layout, footer at bottom, visible */
   html[data-paper-size="long"] .print-doc,
   html[data-paper-size="long"] .print-doc-transmittal {
     display: flex !important;
@@ -1266,9 +1714,9 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
-    width: 113.64% !important; /* 100% / 0.88 so scaled width aligns with date */
+    width: 119.05% !important; /* 100% / 0.84 so scaled width aligns, content fits on bond */
     transform-origin: top left !important;
-    transform: scale(0.88) !important;
+    transform: scale(0.84) !important;
   }
   html[data-paper-size="short"] .court-decree-lcr-form-outer .court-decree-lcr-footer {
     flex-shrink: 0 !important;
@@ -1302,9 +1750,9 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
-    width: 111.11% !important; /* 100% / 0.9 so scaled width aligns with date, content stays inside page */
+    width: 116.28% !important; /* 100% / 0.86 so scaled width aligns, content fits on bond */
     transform-origin: top left !important;
-    transform: scale(0.9) !important;
+    transform: scale(0.86) !important;
   }
   html[data-paper-size="long"] .court-decree-lcr-form-outer .court-decree-lcr-footer {
     flex-shrink: 0 !important;
@@ -1318,11 +1766,43 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .court-decree-lcr-form .court-decree-lcr-table td,
   .court-decree-lcr-form p,
   .court-decree-lcr-form .text-sm {
-    font-size: 15px !important;
+    font-size: 15.2px !important;
     line-height: 1.3 !important;
+  }
+  .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-body,
+  .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table,
+  .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table td,
+  .court-decree-lcr-form.print-doc-lcr-2a p,
+  .court-decree-lcr-form.print-doc-lcr-2a .text-sm {
+    font-size: 21.4px !important;
+  }
+  .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-body,
+  .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table,
+  .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table td,
+  .court-decree-lcr-form.print-doc-lcr-3a p,
+  .court-decree-lcr-form.print-doc-lcr-3a .text-sm {
+    font-size: 16.8px !important;
   }
   .court-decree-lcr-form .court-decree-lcr-table {
     margin-bottom: 0.08in !important;
+  }
+  .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table thead td {
+    color: #000 !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table input,
+  .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table textarea {
+    border-bottom: none !important;
+    box-shadow: none !important;
+  }
+  .court-decree-lcr-form .court-decree-lcr-table input,
+  .court-decree-lcr-form .court-decree-lcr-table textarea {
+    border: none !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    outline: none !important;
   }
   .court-decree-lcr-form .court-decree-lcr-table td {
     padding-top: 0.02in !important;
@@ -1340,19 +1820,55 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .court-decree-lcr-form .print-doc-footer {
     margin-top: auto !important;
   }
+  .court-decree-lcr-form .print-doc-footer p,
+  .court-decree-lcr-form .print-doc-footer .text-xs,
+  .court-decree-lcr-form .court-decree-lcr-footer .print-doc-footer p,
+  .court-decree-lcr-form .court-decree-lcr-footer .print-doc-footer .text-xs {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+  }
+  html[data-paper-size="short"] .court-decree-lcr-form .print-doc-footer p,
+  html[data-paper-size="short"] .court-decree-lcr-form .print-doc-footer .text-xs,
+  html[data-paper-size="short"] .court-decree-lcr-form .court-decree-lcr-footer .print-doc-footer p,
+  html[data-paper-size="short"] .court-decree-lcr-form .court-decree-lcr-footer .print-doc-footer .text-xs,
+  html[data-paper-size="a4"] .court-decree-lcr-form .print-doc-footer p,
+  html[data-paper-size="a4"] .court-decree-lcr-form .print-doc-footer .text-xs,
+  html[data-paper-size="a4"] .court-decree-lcr-form .court-decree-lcr-footer .print-doc-footer p,
+  html[data-paper-size="a4"] .court-decree-lcr-form .court-decree-lcr-footer .print-doc-footer .text-xs,
+  html[data-paper-size="long"] .court-decree-lcr-form .print-doc-footer p,
+  html[data-paper-size="long"] .court-decree-lcr-form .print-doc-footer .text-xs,
+  html[data-paper-size="long"] .court-decree-lcr-form .court-decree-lcr-footer .print-doc-footer p,
+  html[data-paper-size="long"] .court-decree-lcr-form .court-decree-lcr-footer .print-doc-footer .text-xs {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+  }
   html[data-paper-size="a4"] .court-decree-lcr-form .court-decree-lcr-body,
   html[data-paper-size="a4"] .court-decree-lcr-form .court-decree-lcr-table,
   html[data-paper-size="a4"] .court-decree-lcr-form .court-decree-lcr-table td,
   html[data-paper-size="a4"] .court-decree-lcr-form p,
   html[data-paper-size="a4"] .court-decree-lcr-form .text-sm {
-    font-size: 16px !important;
+    font-size: 15.2px !important;
+  }
+  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-body,
+  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table,
+  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table td,
+  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-2a p,
+  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-2a .text-sm {
+    font-size: 21.4px !important;
+  }
+  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-body,
+  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table,
+  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table td,
+  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-3a p,
+  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-3a .text-sm {
+    font-size: 16.8px !important;
   }
   html[data-paper-size="short"] .court-decree-lcr-form .court-decree-lcr-body,
   html[data-paper-size="short"] .court-decree-lcr-form .court-decree-lcr-table,
   html[data-paper-size="short"] .court-decree-lcr-form .court-decree-lcr-table td,
   html[data-paper-size="short"] .court-decree-lcr-form p,
   html[data-paper-size="short"] .court-decree-lcr-form .text-sm {
-    font-size: 17px !important;
+    font-size: 18.2px !important;
     line-height: 1.28 !important;
   }
   html[data-paper-size="short"] .court-decree-lcr-form .court-decree-lcr-table {
@@ -1362,12 +1878,26 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     padding-top: 0.015in !important;
     padding-bottom: 0.015in !important;
   }
+  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-body,
+  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table,
+  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table td,
+  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-2a p,
+  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-2a .text-sm {
+    font-size: 21.4px !important;
+  }
+  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-body,
+  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table,
+  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table td,
+  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-3a p,
+  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-3a .text-sm {
+    font-size: 18.8px !important;
+  }
   html[data-paper-size="long"] .court-decree-lcr-form .court-decree-lcr-body,
   html[data-paper-size="long"] .court-decree-lcr-form .court-decree-lcr-table,
   html[data-paper-size="long"] .court-decree-lcr-form .court-decree-lcr-table td,
   html[data-paper-size="long"] .court-decree-lcr-form p,
   html[data-paper-size="long"] .court-decree-lcr-form .text-sm {
-    font-size: 17px !important;
+    font-size: 18.5px !important;
     line-height: 1.3 !important;
   }
   html[data-paper-size="long"] .court-decree-lcr-form .court-decree-lcr-table {
@@ -1379,6 +1909,20 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
   html[data-paper-size="long"] .court-decree-lcr-form .court-decree-lcr-body-wrap .mb-2 {
     margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-body,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table td,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a p,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a .text-sm {
+    font-size: 22px !important;
+  }
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-body,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table td,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-3a p,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-3a .text-sm {
+    font-size: 19.5px !important;
   }
   html[data-paper-size="a4"] .court-decree-lcr-form {
     min-height: 297mm !important;
@@ -1408,6 +1952,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-bottom: 0.1in !important;
   }
   .ausf-doc h2 {
+    margin-top: 2em !important;
     margin-bottom: 0.28in !important;
     font-size: 21px !important;
   }
@@ -1432,6 +1977,26 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     justify-content: center !important;
     align-items: flex-end !important;
   }
+  /* AUSF-only: override to left-align City Civil Registrar block in print/PDF */
+  .ausf-only-doc.ausf-doc .registrar-signature-zone {
+    align-items: flex-start !important;
+  }
+  .ausf-only-doc.ausf-doc .registrar-signature-zone .city-registrar-signature,
+  .ausf-only-doc.ausf-doc .registrar-signature-zone .city-registrar-signature p {
+    text-align: left !important;
+  }
+  /* AUSF 07-17: left-align City Civil Registrar block in print/PDF */
+  .ausf-07-17-doc.ausf-doc .registrar-signature-zone {
+    align-items: flex-start !important;
+  }
+  .ausf-07-17-doc.ausf-doc .registrar-signature-zone .city-registrar-signature,
+  .ausf-07-17-doc.ausf-doc .registrar-signature-zone .city-registrar-signature p {
+    text-align: left !important;
+  }
+  /* AUSF 07-17 print/PDF only: extra space between SUBSCRIBED AND SWORN and City Civil Registrar block */
+  .ausf-07-17-doc .ausf-subscribed-sworn {
+    margin-bottom: 0.12in !important;
+  }
   .ausf-doc .city-registrar-signature {
     margin-top: 0 !important;
   }
@@ -1442,30 +2007,40 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-top: 0.15in !important;
     margin-bottom: 0.08in !important;
   }
-  .ausf-doc header.mb-4 {
-    margin-bottom: 0.12in !important;
+  /* Four-line gap between Registry Number and AUSF title */
+  .ausf-doc .print-doc-header {
+    margin-bottom: 2em !important;
   }
   .ausf-doc .text-justify {
     text-justify: inter-word;
   }
-  /* Certificate of Registration: same print layout as Certificate of Authenticity (2-space gap between body blocks) */
+  /* Certificate of Registration: 2-line spacing between sections, compact print PDF */
   .print-doc-cert-registration .cert-reg-body {
-    line-height: 1.8 !important;
+    line-height: 1.5 !important;
+    margin-top: 0.05in !important;
   }
   .print-doc-cert-registration .cert-reg-body p,
   .print-doc-cert-registration .cert-reg-justify {
     text-align: justify !important;
     text-justify: inter-word;
-    line-height: 1.8 !important;
+    line-height: 1.5 !important;
   }
   .print-doc-cert-registration .cert-reg-body p + p {
-    margin-top: 2em !important;
+    margin-top: 0.05in !important;
   }
   .print-doc-cert-registration .cert-reg-body .font-bold.mb-2 {
     text-align: left !important;
   }
+  /* Court Decree Certificate of Registration: signatory left-aligned in print/PDF */
+  .print-doc-cert-registration .print-doc-footer-wrap {
+    align-items: flex-start !important;
+  }
+  .print-doc-cert-registration .print-doc-footer-wrap > div:first-child {
+    text-align: left !important;
+    align-items: flex-start !important;
+  }
 
-  /* Registration of AUSF: larger fonts for elderly (print/PDF), same output */
+  /* Registration of AUSF: 20px title, 17px body, 2-line spacing (print/PDF) */
   .ausf-registration-cert.ausf-doc {
     font-size: 13pt !important;
   }
@@ -1475,22 +2050,23 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .ausf-registration-cert > .flex.justify-between.items-center p.text-lg {
     font-size: 14pt !important;
   }
-  .ausf-registration-cert h2 {
-    font-size: 16pt !important;
+  .ausf-registration-cert h2,
+  .ausf-registration-cert .cert-reg-title {
+    font-size: 20px !important;
   }
   .ausf-registration-cert .cert-reg-body p,
-  .ausf-registration-cert .cert-reg-justify {
-    font-size: 13pt !important;
+  .ausf-registration-cert .cert-reg-justify,
+  .ausf-registration-cert .cert-reg-to-whom,
+  .ausf-registration-cert .cert-reg-signatory p {
+    font-size: 17px !important;
     line-height: 1.5 !important;
   }
   .ausf-registration-cert .cert-reg-body > p.font-bold {
-    font-size: 14pt !important;
+    font-size: 17px !important;
   }
-  .ausf-registration-cert .cert-reg-body .text-left p:first-child {
-    font-size: 13pt !important;
-  }
+  .ausf-registration-cert .cert-reg-body .text-left p:first-child,
   .ausf-registration-cert .cert-reg-body .text-left p:last-child {
-    font-size: 12pt !important;
+    font-size: 17px !important;
   }
   .ausf-registration-cert .print-doc-footer p,
   .ausf-registration-cert .print-doc-footer .text-xs {
@@ -1499,22 +2075,26 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .ausf-registration-cert .fill-blank {
     border-bottom-width: 1.5px !important;
   }
-  /* Registration of AUSF: space between sections + signatory lower (print/PDF) */
+  /* Registration of AUSF: ~2-line gaps between sections (print/PDF) */
   .ausf-registration-cert .cert-reg-title {
-    margin-bottom: 0.25in !important;
+    margin-top: 0.05in !important;
+    margin-bottom: 0.05in !important;
   }
   .ausf-registration-cert .cert-reg-to-whom {
-    margin-top: 0.15in !important;
-    margin-bottom: 0.12in !important;
+    margin-top: 0.05in !important;
+    margin-bottom: 0.05in !important;
   }
   .ausf-registration-cert .cert-reg-p {
-    margin-bottom: 0.2in !important;
+    margin-top: 0.05in !important;
+    margin-bottom: 0.05in !important;
   }
   .ausf-registration-cert .cert-reg-signatory-spacer {
-    min-height: 2.2in !important;
+    min-height: 0 !important;
+    flex-grow: 1 !important;
   }
   .ausf-registration-cert .cert-reg-signatory {
-    margin-top: 1.2in !important;
+    margin-top: 0.2in !important;
+    margin-bottom: 0.35in !important;
   }
 
   /* Transmittal: elderly-friendly larger text in print/PDF; header and footer fixed */
@@ -1567,6 +2147,13 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
   .print-doc-cert-auth .cert-auth-body p + p {
     margin-top: 2em !important; /* 2 line heights = gap between blocks, not outside */
+  }
+  .print-doc-cert-auth .print-doc-footer-wrap {
+    align-items: flex-start !important;
+  }
+  .print-doc-cert-auth .print-doc-footer-wrap > div:first-child {
+    text-align: left !important;
+    align-items: flex-start !important;
   }
   /* Limit justified stretch so word spacing stays close to normal (one space) */
   .ausf-doc ol li.text-justify {
@@ -1647,13 +2234,13 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="short"] .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     font-size: 12pt !important;
   }
-  html[data-paper-size="short"] .ausf-doc header.mb-4,
-  html[data-paper-size="short"] .ausf-0-6-doc header.mb-4 {
-    margin-bottom: 0.06in !important;
+  html[data-paper-size="short"] .ausf-doc .print-doc-header,
+  html[data-paper-size="short"] .ausf-0-6-doc .print-doc-header {
+    margin-bottom: 0.28in !important;
   }
   html[data-paper-size="short"] .ausf-doc h2,
   html[data-paper-size="short"] .ausf-0-6-doc h2 {
-    margin-top: 0.05in !important;
+    margin-top: 0.28in !important;
     margin-bottom: 0.18in !important;
     font-size: 1rem !important;
   }
@@ -1715,21 +2302,31 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     page-break-inside: avoid;
   }
 
-  /* AUSF 07-17 short bond: one page (8pt, compact; use A4 or long for best readability) */
+  /* AUSF 07-17 short bond: one page (13.9px body), footer 12px */
   html[data-paper-size="short"] .ausf-07-17-doc {
-    font-size: 8pt !important;
-    line-height: 1.15 !important;
+    font-size: 13.9px !important;
+    line-height: 1.35 !important;
     padding: 0.12in 0.35in 0.1in !important;
   }
-  html[data-paper-size="short"] .ausf-07-17-doc header.mb-4 {
-    margin-bottom: 0.04in !important;
+  html[data-paper-size="short"] .ausf-07-17-doc p,
+  html[data-paper-size="short"] .ausf-07-17-doc ol,
+  html[data-paper-size="short"] .ausf-07-17-doc ol li,
+  html[data-paper-size="short"] .ausf-07-17-doc h2 {
+    font-size: 13.9px !important;
   }
-  html[data-paper-size="short"] .ausf-07-17-doc header.mb-4 hr {
+  /* AUSF 07-17: 2-line gap between Registry Number and AUSF title */
+  html[data-paper-size="short"] .ausf-07-17-doc .print-doc-header {
+    margin-bottom: 0.03in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc h2.mb-2 {
+    margin-top: 0.02in !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc .print-doc-header hr {
     margin-top: 0.02in !important;
     margin-bottom: 0.02in !important;
   }
   html[data-paper-size="short"] .ausf-07-17-doc h2 {
-    font-size: 0.95rem !important;
+    font-size: 13.9px !important;
   }
   html[data-paper-size="short"] .ausf-07-17-doc h2.mb-5.mt-4 {
     margin-top: 0.04in !important;
@@ -1777,8 +2374,10 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="short"] .ausf-07-17-doc .registrar-signature-zone {
     min-height: 1.5rem !important;
   }
-  html[data-paper-size="short"] .ausf-07-17-doc .registrar-signature-zone .text-sm {
-    font-size: 7.5pt !important;
+  html[data-paper-size="short"] .ausf-07-17-doc .text-xs,
+  html[data-paper-size="short"] .ausf-07-17-doc .registrar-signature-zone .text-sm,
+  html[data-paper-size="short"] .ausf-07-17-doc .registrar-signature-zone .text-xs {
+    font-size: 13.9px !important;
   }
   html[data-paper-size="short"] .ausf-07-17-doc .print-doc-footer {
     margin-top: 0.06in !important;
@@ -1787,28 +2386,33 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-top: 0.03in !important;
     margin-bottom: 0.02in !important;
   }
-  html[data-paper-size="short"] .ausf-07-17-doc .print-doc-footer .flex {
-    font-size: 7.5pt !important;
+  html[data-paper-size="short"] .ausf-07-17-doc .print-doc-footer .flex,
+  html[data-paper-size="short"] .ausf-07-17-doc .print-doc-footer p,
+  html[data-paper-size="short"] .ausf-07-17-doc .print-doc-footer .text-xs {
+    font-size: 12px !important;
   }
   html[data-paper-size="short"] .ausf-07-17-doc hr.border-t.mt-6 {
     margin-top: 0.05in !important;
     margin-bottom: 0.04in !important;
   }
   html[data-paper-size="short"] .ausf-07-17-doc .ausf-subscribed-sworn {
-    margin-bottom: 0.03in !important;
+    margin-bottom: 0.12in !important;
   }
 
-  /* AUSF 07-17 A4: elderly-friendly, one page (9.5pt body, 1.3 line-height) */
+  /* AUSF 07-17 A4: one page (15px body), 2-line gap between Registry Number and AUSF title */
   html[data-paper-size="a4"] .ausf-07-17-doc {
-    font-size: 9.5pt !important;
+    font-size: 15px !important;
     line-height: 1.3 !important;
     padding: 0.2in 0.4in 0.15in !important;
   }
-  html[data-paper-size="a4"] .ausf-07-17-doc header.mb-4 {
-    margin-bottom: 0.06in !important;
+  html[data-paper-size="a4"] .ausf-07-17-doc .print-doc-header {
+    margin-bottom: 0.04in !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc h2 {
     font-size: 1.05rem !important;
+  }
+  html[data-paper-size="a4"] .ausf-07-17-doc h2.mb-2.text-center.font-bold {
+    margin-top: 0.02in !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc h2.mb-5.mt-4,
   html[data-paper-size="a4"] .ausf-07-17-doc h2.text-center.font-bold {
@@ -1823,7 +2427,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="a4"] .ausf-07-17-doc p,
   html[data-paper-size="a4"] .ausf-07-17-doc ol,
   html[data-paper-size="a4"] .ausf-07-17-doc ol li {
-    font-size: 9.5pt !important;
+    font-size: 15px !important;
     line-height: 1.3 !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc p.mb-4,
@@ -1846,47 +2450,58 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-bottom: 0.05in !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc .text-xs {
-    font-size: 9pt !important;
+    font-size: 15px !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone {
     min-height: 2rem !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone .font-bold,
   html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone .text-sm {
-    font-size: 9.5pt !important;
+    font-size: 15px !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone .text-xs {
-    font-size: 9pt !important;
+    font-size: 15px !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc .print-doc-footer {
     margin-top: 0.12in !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc .print-doc-footer p,
   html[data-paper-size="a4"] .ausf-07-17-doc .print-doc-footer .text-xs {
-    font-size: 9pt !important;
+    font-size: 12px !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc ol li {
     margin-bottom: 0.04in !important;
   }
 
-  /* AUSF 07-17 long bond: one page, elderly-friendly (10pt, 1.35 line-height) */
+  /* AUSF 07-17 long bond: one page (17px body) */
   html[data-paper-size="long"] .ausf-07-17-doc {
-    font-size: 10pt !important;
+    font-size: 14.8px !important;
     line-height: 1.35 !important;
     padding: 0.22in 0.4in 0.18in !important;
   }
-  html[data-paper-size="long"] .ausf-07-17-doc header.mb-4 {
-    margin-bottom: 0.07in !important;
+  /* AUSF 07-17: 2-line gap between Registry Number and AUSF title */
+  html[data-paper-size="long"] .ausf-07-17-doc .print-doc-header {
+    margin-bottom: 0.05in !important;
+  }
+  /* AUSF 07-17 long bond: 2-line gap between first Affiant block and SWORN ATTESTATION */
+  html[data-paper-size="long"] .ausf-07-17-doc .text-center.mt-2.mb-3 {
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="long"] .ausf-07-17-doc h2.my-3 {
+    margin-top: 0.04in !important;
+  }
+  html[data-paper-size="long"] .ausf-07-17-doc h2.mb-2 {
+    margin-top: 0.02in !important;
   }
   html[data-paper-size="long"] .ausf-07-17-doc h2.mb-5.mt-4 {
     margin-top: 0.06in !important;
     margin-bottom: 0.1in !important;
-    font-size: 1.05rem !important;
+    font-size: 14.8px !important;
   }
   html[data-paper-size="long"] .ausf-07-17-doc h2.my-6 {
     margin-top: 0.1in !important;
     margin-bottom: 0.1in !important;
-    font-size: 1rem !important;
+    font-size: 14.8px !important;
   }
   html[data-paper-size="long"] .ausf-07-17-doc p.mb-4,
   html[data-paper-size="long"] .ausf-07-17-doc ol.mb-4 {
@@ -1915,21 +2530,22 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="long"] .ausf-07-17-doc p,
   html[data-paper-size="long"] .ausf-07-17-doc ol,
   html[data-paper-size="long"] .ausf-07-17-doc ol li {
+    font-size: 14.8px !important;
     line-height: 1.35 !important;
   }
   html[data-paper-size="long"] .ausf-07-17-doc .text-xs {
-    font-size: 9pt !important;
+    font-size: 14.8px !important;
   }
   html[data-paper-size="long"] .ausf-07-17-doc .registrar-signature-zone .font-bold,
   html[data-paper-size="long"] .ausf-07-17-doc .registrar-signature-zone .text-sm {
-    font-size: 10pt !important;
+    font-size: 14.8px !important;
   }
   html[data-paper-size="long"] .ausf-07-17-doc .registrar-signature-zone .text-xs {
-    font-size: 9pt !important;
+    font-size: 14.8px !important;
   }
   html[data-paper-size="long"] .ausf-07-17-doc .print-doc-footer p,
   html[data-paper-size="long"] .ausf-07-17-doc .print-doc-footer .text-xs {
-    font-size: 9pt !important;
+    font-size: 12px !important;
   }
 
   /* Long bond: AUSF 0-6 fits one page (13" height), auto-adjusts with relaxed spacing */
@@ -1938,13 +2554,13 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     font-size: 10.5pt !important;
     line-height: 1.5 !important;
   }
-  html[data-paper-size="long"] .ausf-0-6-doc header.mb-4,
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) header.mb-4 {
-    margin-bottom: 0.1in !important;
+  html[data-paper-size="long"] .ausf-0-6-doc .print-doc-header,
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .print-doc-header {
+    margin-bottom: 0.28in !important;
   }
   html[data-paper-size="long"] .ausf-0-6-doc h2,
   html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) h2 {
-    margin-top: 0.06in !important;
+    margin-top: 0.28in !important;
     margin-bottom: 0.28in !important;
     font-size: 1.1rem !important;
   }
@@ -1994,111 +2610,188 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     line-height: 1.5 !important;
   }
 
-  /* AUSF Only: elderly-friendly, clear text for all paper sizes, one page */
+  /* AUSF Only: 17px body, 12px footer, one page for A4/Short/Long */
   html[data-paper-size="short"] .ausf-only-doc.ausf-doc,
   html[data-paper-size="short"] .ausf-only-doc.ausf-0-6-doc {
-    font-size: 10pt !important;
-    line-height: 1.35 !important;
+    font-size: 17px !important;
+    line-height: 1.3 !important;
   }
   html[data-paper-size="short"] .ausf-only-doc header.mb-4 {
-    margin-bottom: 0.06in !important;
+    margin-bottom: 0.05in !important;
   }
   html[data-paper-size="short"] .ausf-only-doc h2 {
-    margin-top: 0.05in !important;
-    margin-bottom: 0.16in !important;
+    margin-top: 0.04in !important;
+    margin-bottom: 0.12in !important;
     font-size: 1.05rem !important;
   }
   html[data-paper-size="short"] .ausf-only-doc p,
   html[data-paper-size="short"] .ausf-only-doc ol,
   html[data-paper-size="short"] .ausf-only-doc ol li {
-    font-size: 10pt !important;
-    line-height: 1.35 !important;
-    margin-bottom: 0.04in !important;
+    font-size: 17px !important;
+    line-height: 1.3 !important;
+    margin-bottom: 0.03in !important;
   }
   html[data-paper-size="short"] .ausf-only-doc ol {
-    margin-bottom: 0.05in !important;
+    margin-bottom: 0.04in !important;
   }
   html[data-paper-size="short"] .ausf-only-doc ol li {
-    margin-bottom: 0.025in !important;
+    margin-bottom: 0.02in !important;
   }
   html[data-paper-size="short"] .ausf-only-doc .registrar-signature-zone .text-sm,
-  html[data-paper-size="short"] .ausf-only-doc .text-xs.mt-1 {
-    font-size: 9pt !important;
-  }
+  html[data-paper-size="short"] .ausf-only-doc .text-xs.mt-1,
   html[data-paper-size="short"] .ausf-only-doc header .text-sm {
-    font-size: 9.5pt !important;
+    font-size: 17px !important;
   }
   html[data-paper-size="short"] .ausf-only-doc .print-doc-footer p,
   html[data-paper-size="short"] .ausf-only-doc .print-doc-footer .text-xs {
-    font-size: 9pt !important;
+    font-size: 12px !important;
   }
 
   html[data-paper-size="a4"] .ausf-only-doc.ausf-doc,
   html[data-paper-size="a4"] .ausf-only-doc.ausf-0-6-doc {
-    font-size: 10.5pt !important;
-    line-height: 1.4 !important;
+    font-size: 17px !important;
+    line-height: 1.35 !important;
   }
   html[data-paper-size="a4"] .ausf-only-doc header.mb-4 {
-    margin-bottom: 0.07in !important;
+    margin-bottom: 0.06in !important;
   }
   html[data-paper-size="a4"] .ausf-only-doc h2 {
     margin-top: 0.05in !important;
-    margin-bottom: 0.18in !important;
+    margin-bottom: 0.15in !important;
     font-size: 1.1rem !important;
   }
   html[data-paper-size="a4"] .ausf-only-doc p,
   html[data-paper-size="a4"] .ausf-only-doc ol,
   html[data-paper-size="a4"] .ausf-only-doc ol li {
-    font-size: 10.5pt !important;
-    line-height: 1.4 !important;
+    font-size: 17px !important;
+    line-height: 1.35 !important;
   }
   html[data-paper-size="a4"] .ausf-only-doc ol li {
-    margin-bottom: 0.03in !important;
+    margin-bottom: 0.025in !important;
   }
   html[data-paper-size="a4"] .ausf-only-doc .registrar-signature-zone .text-sm,
-  html[data-paper-size="a4"] .ausf-only-doc .text-xs.mt-1 {
-    font-size: 10pt !important;
-  }
+  html[data-paper-size="a4"] .ausf-only-doc .text-xs.mt-1,
   html[data-paper-size="a4"] .ausf-only-doc header .text-sm {
-    font-size: 10pt !important;
+    font-size: 17px !important;
   }
   html[data-paper-size="a4"] .ausf-only-doc .print-doc-footer p,
   html[data-paper-size="a4"] .ausf-only-doc .print-doc-footer .text-xs {
-    font-size: 9.5pt !important;
+    font-size: 12px !important;
   }
 
   html[data-paper-size="long"] .ausf-only-doc.ausf-doc,
   html[data-paper-size="long"] .ausf-only-doc.ausf-0-6-doc {
-    font-size: 11pt !important;
-    line-height: 1.45 !important;
+    font-size: 17px !important;
+    line-height: 1.4 !important;
   }
-  html[data-paper-size="long"] .ausf-only-doc header.mb-4 {
-    margin-bottom: 0.08in !important;
+  html[data-paper-size="long"] .ausf-only-doc .print-doc-header {
+    margin-bottom: 0.28in !important;
   }
   html[data-paper-size="long"] .ausf-only-doc h2 {
-    margin-top: 0.06in !important;
-    margin-bottom: 0.2in !important;
+    margin-top: 0.28in !important;
+    margin-bottom: 0.18in !important;
     font-size: 1.15rem !important;
+  }
+  /* PDF print only: move "AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)" a little higher */
+  html[data-paper-size="a4"] .ausf-0-6-doc.print-doc h2,
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc h2,
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc h2,
+  html[data-paper-size="a4"] .ausf-only-doc.ausf-doc.print-doc h2,
+  html[data-paper-size="short"] .ausf-only-doc.ausf-doc.print-doc h2,
+  html[data-paper-size="long"] .ausf-only-doc.ausf-doc.print-doc h2 {
+    margin-top: 0.05in !important;
   }
   html[data-paper-size="long"] .ausf-only-doc p,
   html[data-paper-size="long"] .ausf-only-doc ol,
   html[data-paper-size="long"] .ausf-only-doc ol li {
-    font-size: 11pt !important;
-    line-height: 1.45 !important;
+    font-size: 17px !important;
+    line-height: 1.4 !important;
   }
   html[data-paper-size="long"] .ausf-only-doc ol li {
-    margin-bottom: 0.04in !important;
+    margin-bottom: 0.03in !important;
   }
   html[data-paper-size="long"] .ausf-only-doc .registrar-signature-zone .text-sm,
-  html[data-paper-size="long"] .ausf-only-doc .text-xs.mt-1 {
-    font-size: 10.5pt !important;
-  }
+  html[data-paper-size="long"] .ausf-only-doc .text-xs.mt-1,
   html[data-paper-size="long"] .ausf-only-doc header .text-sm {
-    font-size: 10.5pt !important;
+    font-size: 17px !important;
   }
   html[data-paper-size="long"] .ausf-only-doc .print-doc-footer p,
   html[data-paper-size="long"] .ausf-only-doc .print-doc-footer .text-xs {
-    font-size: 10pt !important;
+    font-size: 12px !important;
+  }
+
+  /* AUSF 0-6: match AUSF Only layout/text for Short bond (print PDF only) */
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc {
+    font-size: 17px !important;
+    line-height: 1.3 !important;
+  }
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc .print-doc-header {
+    margin-bottom: 0.05in !important;
+  }
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc h2 {
+    margin-top: 0.04in !important;
+    margin-bottom: 0.12in !important;
+    font-size: 1.05rem !important;
+  }
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc p,
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc ol,
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc ol li {
+    font-size: 17px !important;
+    line-height: 1.3 !important;
+    margin-bottom: 0.03in !important;
+  }
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc ol {
+    margin-bottom: 0.04in !important;
+  }
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc ol li {
+    margin-bottom: 0.02in !important;
+  }
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc .registrar-signature-zone .text-sm,
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc .text-xs.mt-1 {
+    font-size: 17px !important;
+  }
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc .print-doc-footer .text-xs {
+    font-size: 12px !important;
+  }
+
+  /* AUSF 0-6: match AUSF Only layout/text for Long bond (print PDF only) */
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc {
+    font-size: 17px !important;
+    line-height: 1.4 !important;
+  }
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc .print-doc-header {
+    margin-bottom: 0.28in !important;
+  }
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc h2 {
+    margin-top: 0.28in !important;
+    margin-bottom: 0.18in !important;
+    font-size: 1.15rem !important;
+  }
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc p,
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc ol,
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc ol li {
+    font-size: 17px !important;
+    line-height: 1.4 !important;
+  }
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc ol li {
+    margin-bottom: 0.03in !important;
+  }
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc .registrar-signature-zone .text-sm,
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc .text-xs.mt-1 {
+    font-size: 17px !important;
+  }
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc .print-doc-footer .text-xs {
+    font-size: 12px !important;
+  }
+  /* AUSF 0-6 Short & Long (print PDF only): City Civil Registrar at bottom, closer to footer, small gap */
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc .registrar-signature-zone,
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc .registrar-signature-zone {
+    margin-top: auto !important;
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+    margin-bottom: 0 !important;
   }
 
   /* AUSF Only: thicker underlines for fill-blanks (elderly readability) */
@@ -2417,6 +3110,152 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
 .legitimation-form-page__modal-dialog {
   animation: modalEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* AUSF form: interactive validation warning modal */
+@keyframes ausfValidationShake {
+  0%, 100% { transform: translateX(0); }
+  12% { transform: translateX(-6px); }
+  36% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  84% { transform: translateX(2px); }
+}
+@keyframes ausfValidationStrip {
+  0%, 100% { background-position: 100% 0; }
+  50% { background-position: 0 0; }
+}
+.ausf-form-page__validation-backdrop {
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(8px);
+}
+.ausf-form-page__validation-modal {
+  max-width: 28rem;
+  width: 100%;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 24px 56px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  animation: ausfValidationShake 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.ausf-form-page__validation-modal-strip {
+  height: 5px;
+  background: linear-gradient(90deg, #f59e0b 0%, #d97706 35%, #b45309 70%, #92400e 100%);
+  background-size: 200% 100%;
+  animation: ausfValidationStrip 3s ease-in-out infinite;
+}
+.ausf-form-page__validation-modal-body {
+  display: flex;
+  gap: 1.25rem;
+  padding: 1.5rem 1.5rem 1.25rem;
+}
+.ausf-form-page__validation-modal-icon {
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(217, 119, 6, 0.12) 100%);
+  color: #b45309;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: ausfValidationShake 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards;
+}
+.ausf-form-page__validation-modal-icon svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+.ausf-form-page__validation-modal-content {
+  flex: 1;
+  min-width: 0;
+}
+.ausf-form-page__validation-modal-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.4rem 0;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+.ausf-form-page__validation-modal-desc {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 1rem 0;
+}
+.ausf-form-page__validation-modal-list-wrap {
+  background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.ausf-form-page__validation-modal-list-wrap:hover {
+  border-color: rgba(217, 119, 6, 0.4);
+  box-shadow: 0 2px 12px rgba(217, 119, 6, 0.08);
+}
+.ausf-form-page__validation-modal-list-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #b45309;
+  margin: 0 0 0.45rem 0;
+}
+.ausf-form-page__validation-modal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.8125rem;
+  color: #475569;
+  line-height: 1.55;
+  max-height: 11rem;
+  overflow-y: auto;
+}
+.ausf-form-page__validation-modal-list li {
+  padding: 0.28rem 0 0.28rem 1.2rem;
+  position: relative;
+}
+.ausf-form-page__validation-modal-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d97706;
+  box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.2);
+}
+.ausf-form-page__validation-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.ausf-form-page__validation-modal-btn {
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.6rem 1.5rem;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(217, 119, 6, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.ausf-form-page__validation-modal-btn:hover {
+  background: linear-gradient(180deg, #d97706 0%, #b45309 50%, #92400e 100%);
+  box-shadow: 0 5px 16px rgba(217, 119, 6, 0.45);
+  transform: translateY(-2px);
+}
+.ausf-form-page__validation-modal-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.5);
+}
+.ausf-form-page__validation-modal-btn:active {
+  transform: translateY(0);
+}
+
 .ausf-form-page__footer-note,
 .court-decree-form-page__footer-note,
 .legitimation-form-page__footer-note {
@@ -2425,4 +3264,693 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   margin-top: 1.25rem;
   padding-top: 0.75rem;
   border-top: 1px solid rgba(30, 58, 95, 0.08);
+}
+
+/* Legitimation form: layout, neutral inputs, primary accents, interactive states */
+.legitimation-form-page__body {
+  padding: 1.5rem 1.75rem 2rem;
+}
+.legitimation-form-page__section {
+  margin-bottom: 0.5rem;
+}
+.legitimation-form-page__section-card {
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(30, 58, 95, 0.06);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.legitimation-form-page__section-card:hover {
+  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.08);
+}
+.legitimation-form-page__section-header {
+  letter-spacing: 0.04em;
+}
+.legitimation-form-page__section-instruction {
+  color: #1e3a5f;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid rgba(30, 58, 95, 0.2);
+  border-top: none;
+  box-shadow: 0 1px 2px rgba(30, 58, 95, 0.06);
+}
+.legitimation-form-page__section-instruction svg {
+  color: var(--primary-blue);
+}
+.legitimation-form-page__input {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.legitimation-form-page__input:hover {
+  border-color: #9ca3af;
+  background-color: #f9fafb;
+}
+.legitimation-form-page__input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.2);
+  background-color: #fff;
+}
+.legitimation-form-page__date-picker-btn {
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.legitimation-form-page__date-picker-btn:hover {
+  background-color: rgba(30, 58, 95, 0.08);
+  color: var(--primary-blue);
+}
+.legitimation-form-page__date-picker-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-blue);
+  border-radius: 0.25rem;
+}
+.legitimation-form-page__radio-group {
+  gap: 1rem;
+}
+.legitimation-form-page__radio-label {
+  cursor: pointer;
+  user-select: none;
+  padding: 0.35rem 0;
+  transition: color 0.15s ease;
+}
+.legitimation-form-page__radio-label:hover {
+  color: var(--primary-blue);
+}
+.legitimation-form-page__radio {
+  accent-color: var(--primary-blue);
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+.legitimation-form-page__radio:focus-visible {
+  outline: none;
+  border-radius: 2px;
+  box-shadow: 0 0 0 2px var(--primary-blue);
+}
+.legitimation-form-page__gender-group {
+  flex-wrap: wrap;
+}
+.legitimation-form-page__gender-chip {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  border: 2px solid #e5e7eb;
+  background: #f9fafb;
+  color: #4b5563;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+.legitimation-form-page__gender-chip:hover {
+  border-color: #d1d5db;
+  background: #f3f4f6;
+  color: #374151;
+}
+.legitimation-form-page__gender-chip--selected {
+  border-color: var(--primary-blue);
+  background: rgba(30, 58, 95, 0.12);
+  color: var(--primary-blue);
+  box-shadow: 0 1px 3px rgba(30, 58, 95, 0.2);
+}
+.legitimation-form-page__gender-chip--selected:hover {
+  background: rgba(30, 58, 95, 0.18);
+  border-color: var(--primary-blue-light);
+}
+.legitimation-form-page__gender-chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.3);
+}
+.legitimation-form-page__gender-chip:active {
+  transform: scale(0.98);
+}
+.legitimation-form-page__btn {
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+.legitimation-form-page__btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.35);
+}
+.legitimation-form-page__btn--primary:focus-visible {
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.4), 0 2px 6px rgba(30, 58, 95, 0.3);
+}
+.legitimation-form-page__btn--secondary:focus-visible {
+  box-shadow: 0 0 0 2px var(--primary-blue);
+}
+.legitimation-form-page__btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(30, 58, 95, 0.35);
+}
+.legitimation-form-page__btn--secondary:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 2px 6px rgba(30, 58, 95, 0.08);
+}
+.legitimation-form-page__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Court Decree form: layout, neutral inputs, interactive links and buttons */
+.court-decree-form-page__body {
+  padding: 1.5rem 1.75rem 2rem;
+}
+.court-decree-form-page__section {
+  margin-bottom: 0.5rem;
+}
+.court-decree-form-page__section-card {
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(30, 58, 95, 0.06);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.court-decree-form-page__section-card:hover {
+  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.08);
+}
+.court-decree-form-page__section-header {
+  letter-spacing: 0.04em;
+}
+.court-decree-form-page .court-decree-form-page__instruction--muted {
+  color: #475569;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  box-shadow: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+}
+.court-decree-form-page .court-decree-form-page__instruction--muted svg {
+  color: #64748b;
+  width: 1rem;
+  height: 1rem;
+}
+.court-decree-form-page__input {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.court-decree-form-page__input:hover {
+  border-color: #9ca3af;
+  background-color: #f9fafb;
+}
+.court-decree-form-page__input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.2);
+  background-color: #fff;
+}
+.court-decree-form-page__date-picker-btn {
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.court-decree-form-page__date-picker-btn:hover {
+  background-color: rgba(30, 58, 95, 0.08);
+  color: var(--primary-blue);
+}
+.court-decree-form-page__date-picker-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-blue);
+  border-radius: 0.25rem;
+}
+.court-decree-form-page__form-links {
+  gap: 0.5rem;
+}
+.court-decree-form-page__form-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary-blue);
+  background: #fff;
+  border: 2px solid rgba(30, 58, 95, 0.25);
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+.court-decree-form-page__form-link:hover {
+  background: rgba(30, 58, 95, 0.08);
+  border-color: var(--primary-blue);
+  color: var(--primary-blue-light);
+}
+.court-decree-form-page__form-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.3);
+}
+.court-decree-form-page__form-link:active {
+  transform: scale(0.98);
+}
+.court-decree-form-page__btn {
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+.court-decree-form-page__btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.35);
+}
+.court-decree-form-page__btn--primary:focus-visible {
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.4), 0 2px 6px rgba(30, 58, 95, 0.3);
+}
+.court-decree-form-page__btn--secondary:focus-visible {
+  box-shadow: 0 0 0 2px var(--primary-blue);
+}
+.court-decree-form-page__btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(30, 58, 95, 0.35);
+}
+.court-decree-form-page__btn--secondary:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 2px 6px rgba(30, 58, 95, 0.08);
+}
+.court-decree-form-page__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+.court-decree-form-page__modal-dialog {
+  border: 1px solid #e5e7eb;
+}
+.court-decree-form-page__actions {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+}
+
+/* Court Decree form: interactive validation warning modal */
+@keyframes courtDecreeValidationShake {
+  0%, 100% { transform: translateX(0); }
+  12% { transform: translateX(-6px); }
+  36% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  84% { transform: translateX(2px); }
+}
+.court-decree-form-page__validation-backdrop {
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(8px);
+}
+.court-decree-form-page__validation-modal {
+  max-width: 28rem;
+  width: 100%;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 24px 56px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  animation: courtDecreeValidationShake 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.court-decree-form-page__validation-strip {
+  height: 5px;
+  background: linear-gradient(90deg, #f59e0b 0%, #d97706 35%, #b45309 70%, #92400e 100%);
+  background-size: 200% 100%;
+  animation: courtDecreeValidationStrip 3s ease-in-out infinite;
+}
+@keyframes courtDecreeValidationStrip {
+  0%, 100% { background-position: 100% 0; }
+  50% { background-position: 0 0; }
+}
+.court-decree-form-page__validation-body {
+  display: flex;
+  gap: 1.25rem;
+  padding: 1.5rem 1.5rem 1.25rem;
+}
+.court-decree-form-page__validation-icon {
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(217, 119, 6, 0.12) 100%);
+  color: #b45309;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: courtDecreeValidationShake 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards;
+}
+.court-decree-form-page__validation-icon svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+.court-decree-form-page__validation-content {
+  flex: 1;
+  min-width: 0;
+}
+.court-decree-form-page__validation-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.4rem 0;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+.court-decree-form-page__validation-desc {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 1rem 0;
+}
+.court-decree-form-page__validation-list-wrap {
+  background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.court-decree-form-page__validation-list-wrap:hover {
+  border-color: rgba(217, 119, 6, 0.4);
+  box-shadow: 0 2px 12px rgba(217, 119, 6, 0.08);
+}
+.court-decree-form-page__validation-list-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #b45309;
+  margin: 0 0 0.45rem 0;
+}
+.court-decree-form-page__validation-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.8125rem;
+  color: #475569;
+  line-height: 1.55;
+  max-height: 11rem;
+  overflow-y: auto;
+}
+.court-decree-form-page__validation-list li {
+  padding: 0.28rem 0 0.28rem 1.2rem;
+  position: relative;
+}
+.court-decree-form-page__validation-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d97706;
+  box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.2);
+}
+.court-decree-form-page__validation-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.court-decree-form-page__validation-btn {
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.6rem 1.5rem;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(217, 119, 6, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.court-decree-form-page__validation-btn:hover {
+  background: linear-gradient(180deg, #d97706 0%, #b45309 50%, #92400e 100%);
+  box-shadow: 0 5px 16px rgba(217, 119, 6, 0.45);
+  transform: translateY(-2px);
+}
+.court-decree-form-page__validation-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.5);
+}
+.court-decree-form-page__validation-btn:active {
+  transform: translateY(0);
+}
+
+/* Legitimation form: interactive validation warning modal */
+@keyframes legitimationValidationShake {
+  0%, 100% { transform: translateX(0); }
+  12% { transform: translateX(-6px); }
+  36% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  84% { transform: translateX(2px); }
+}
+@keyframes legitimationValidationStrip {
+  0%, 100% { background-position: 100% 0; }
+  50% { background-position: 0 0; }
+}
+.legitimation-form-page__validation-backdrop {
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(8px);
+}
+.legitimation-form-page__validation-modal {
+  max-width: 28rem;
+  width: 100%;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 24px 56px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  animation: legitimationValidationShake 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.legitimation-form-page__validation-strip {
+  height: 5px;
+  background: linear-gradient(90deg, #f59e0b 0%, #d97706 35%, #b45309 70%, #92400e 100%);
+  background-size: 200% 100%;
+  animation: legitimationValidationStrip 3s ease-in-out infinite;
+}
+.legitimation-form-page__validation-body {
+  display: flex;
+  gap: 1.25rem;
+  padding: 1.5rem 1.5rem 1.25rem;
+}
+.legitimation-form-page__validation-icon {
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(217, 119, 6, 0.12) 100%);
+  color: #b45309;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: legitimationValidationShake 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards;
+}
+.legitimation-form-page__validation-icon svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+.legitimation-form-page__validation-content {
+  flex: 1;
+  min-width: 0;
+}
+.legitimation-form-page__validation-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.4rem 0;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+.legitimation-form-page__validation-desc {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 1rem 0;
+}
+.legitimation-form-page__validation-list-wrap {
+  background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.legitimation-form-page__validation-list-wrap:hover {
+  border-color: rgba(217, 119, 6, 0.4);
+  box-shadow: 0 2px 12px rgba(217, 119, 6, 0.08);
+}
+.legitimation-form-page__validation-list-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #b45309;
+  margin: 0 0 0.45rem 0;
+}
+.legitimation-form-page__validation-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.8125rem;
+  color: #475569;
+  line-height: 1.55;
+  max-height: 11rem;
+  overflow-y: auto;
+}
+.legitimation-form-page__validation-list li {
+  padding: 0.28rem 0 0.28rem 1.2rem;
+  position: relative;
+}
+.legitimation-form-page__validation-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d97706;
+  box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.2);
+}
+.legitimation-form-page__validation-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.legitimation-form-page__validation-btn {
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.6rem 1.5rem;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(217, 119, 6, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.legitimation-form-page__validation-btn:hover {
+  background: linear-gradient(180deg, #d97706 0%, #b45309 50%, #92400e 100%);
+  box-shadow: 0 5px 16px rgba(217, 119, 6, 0.45);
+  transform: translateY(-2px);
+}
+.legitimation-form-page__validation-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.5);
+}
+.legitimation-form-page__validation-btn:active {
+  transform: translateY(0);
+}
+
+/* AUSF form: layout, neutral inputs, interactive sections and controls */
+.ausf-form-page__body {
+  padding: 1.5rem 1.75rem 2rem;
+}
+.ausf-form-page__section {
+  margin-bottom: 0.5rem;
+}
+.ausf-form-page .form-section {
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(30, 58, 95, 0.06);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.ausf-form-page .form-section:hover {
+  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.08);
+}
+.ausf-form-page .form-section__header {
+  letter-spacing: 0.04em;
+}
+.ausf-form-page .ausf-form-page__instruction--muted {
+  color: #475569;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  box-shadow: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+}
+.ausf-form-page .ausf-form-page__instruction--muted svg {
+  color: #64748b;
+  width: 1rem;
+  height: 1rem;
+}
+.ausf-form-page__note {
+  font-weight: 500;
+}
+.ausf-form-page__colb-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.ausf-form-page__colb-row--second {
+  padding-top: 1.25rem;
+  border-top: 1px solid #e5e7eb;
+}
+.ausf-form-page .form-field__input {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.ausf-form-page .form-field__input:hover {
+  border-color: #9ca3af;
+  background-color: #f9fafb;
+}
+.ausf-form-page .form-field__input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.2);
+  background-color: #fff;
+}
+.ausf-form-page textarea.form-field__input {
+  min-height: 5rem;
+}
+.ausf-form-page__file-input:hover {
+  color: #374151;
+}
+.ausf-form-page__file-input:focus {
+  outline: none;
+}
+.ausf-form-page__file-input::file-selector-button:hover {
+  background-color: #e5e7eb;
+  border-color: #9ca3af;
+}
+.ausf-form-page__file-input::file-selector-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-blue);
+}
+.ausf-form-page .form-field__radio-group {
+  gap: 0.5rem;
+}
+.ausf-form-page .form-field__radio-option {
+  transition: color 0.15s ease;
+}
+.ausf-form-page .form-field__radio-option:hover .form-field__radio-label {
+  border-color: #9ca3af;
+  background-color: #f9fafb;
+}
+.ausf-form-page .form-field__radio-input {
+  accent-color: var(--primary-blue);
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}
+.ausf-form-page .form-field__radio-input:focus-visible {
+  outline: none;
+  border-radius: 2px;
+  box-shadow: 0 0 0 2px var(--primary-blue);
+}
+.ausf-form-page .form-field__radio-input:checked + .form-field__radio-label {
+  border-color: var(--primary-blue);
+  background: rgba(30, 58, 95, 0.1);
+  color: var(--primary-blue);
+  font-weight: 600;
+}
+.ausf-form-page .form-field__radio-option:has(.form-field__radio-input:checked) .form-field__radio-label:hover {
+  background: rgba(30, 58, 95, 0.15);
+}
+.ausf-form-page__btn {
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+.ausf-form-page__btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.35);
+}
+.ausf-form-page__btn--primary:focus-visible {
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.4), 0 2px 6px rgba(30, 58, 95, 0.3);
+}
+.ausf-form-page__btn--secondary:focus-visible {
+  box-shadow: 0 0 0 2px var(--primary-blue);
+}
+.ausf-form-page__btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(30, 58, 95, 0.35);
+}
+.ausf-form-page__btn--secondary:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 2px 6px rgba(30, 58, 95, 0.08);
+}
+.ausf-form-page__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+.ausf-form-page__modal-dialog {
+  border: 1px solid #e5e7eb;
+}
+.ausf-form-page__actions {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
 }

@@ -15,7 +15,7 @@ export default function LcrForm2ADeathAvailable({ data }) {
   const ccrName = data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL'
 
   return (
-    <div className="ausf-doc print-doc court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col">
+    <div className="ausf-doc print-doc print-doc-lcr-2a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col">
       <div className="court-decree-lcr-header shrink-0">
         <PrintHeaderRow />
         <div className="flex justify-between items-start mb-1">

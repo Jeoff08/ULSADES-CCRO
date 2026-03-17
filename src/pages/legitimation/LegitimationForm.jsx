@@ -4,7 +4,59 @@ import { defaultLegitimation } from './lib/legitimationDefaults'
 import { addSavedLegitimation, getLegitimationDraft, updateSavedLegitimation } from './lib/legitimationStorage'
 import { DATE_MONTHS, LEGITIMATION_TYPES } from './constants'
 
-const inputClass = 'w-full border border-orange-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-orange-100 focus:border-[var(--primary-blue)] focus:ring-2 focus:ring-[var(--primary-blue)]/20'
+const inputClass = 'legitimation-form-page__input w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-gray-50 transition-colors duration-150'
+
+function isEmpty(v) {
+  return v == null || String(v).trim() === ''
+}
+
+function getRequiredFields(form) {
+  const base = [
+    { key: 'childFirst', label: "Child's first name" },
+    { key: 'childLast', label: "Child's surname" },
+    { key: 'dateOfBirth', label: "Child's date of birth" },
+    { key: 'sex', label: "Child's sex" },
+    { key: 'placeOfBirthStreet', label: 'Place of birth (street/barangay)' },
+    { key: 'placeOfBirthCity', label: 'Place of birth (city/municipality)' },
+    { key: 'placeOfBirthProvince', label: 'Place of birth (province)' },
+    { key: 'motherFirst', label: "Mother's first name" },
+    { key: 'motherLast', label: "Mother's surname" },
+    { key: 'fatherFirst', label: "Father's first name" },
+    { key: 'fatherLast', label: "Father's surname" },
+    { key: 'affidavitLegitRegistryNo', label: 'Affidavit of legitimation registry number' },
+    { key: 'affidavitLegitDate', label: 'Affidavit of legitimation registration date' },
+    { key: 'marriageRegistryNo', label: 'Marriage registry number' },
+    { key: 'dateOfMarriage', label: 'Date of marriage' },
+    { key: 'placeOfMarriageCity', label: 'Place of marriage (city)' },
+    { key: 'placeOfMarriageProvince', label: 'Place of marriage (province)' },
+    { key: 'placeOfMarriageCountry', label: 'Place of marriage (country)' },
+    { key: 'solemnizingOfficer', label: 'Solemnizing officer' },
+    { key: 'colbRegistryNo', label: 'COLB registry number' },
+    { key: 'colbRegDate', label: 'COLB registration date' },
+    { key: 'colbPageNo', label: 'COLB page number' },
+    { key: 'colbBookNo', label: 'COLB book number' },
+  ]
+  if (form.acknowledgedByFatherInColb === 'NO') {
+    base.push(
+      { key: 'affidavitAckRegistryNo', label: 'Affidavit of acknowledgement registry number' },
+      { key: 'affidavitAckDate', label: 'Affidavit of acknowledgement registration date' }
+    )
+  }
+  if (form.bothParentsAlive === 'NO') {
+    base.push(
+      { key: 'survivingParentFirst', label: 'Surviving parent first name' },
+      { key: 'survivingParentLast', label: 'Surviving parent surname' },
+      { key: 'deceasedParentFirst', label: 'Deceased parent first name' },
+      { key: 'deceasedParentLast', label: 'Deceased parent surname' },
+      { key: 'dateOfDeath', label: 'Date of death' }
+    )
+  }
+  return base
+}
+
+function getMissingFields(form) {
+  return getRequiredFields(form).filter(({ key }) => isEmpty(form[key]))
+}
 
 function formatDigitsToDdMmYyyy(digits) {
   const d = (digits || '').replace(/\D/g, '').slice(0, 8)
@@ -54,7 +106,7 @@ function DateInput({ value, onChange, placeholder = 'dd/mm/yyyy' }) {
       <button
         type="button"
         onClick={() => pickerRef.current?.showPicker?.() || pickerRef.current?.click()}
-        className="absolute right-1.5 p-1 rounded text-gray-500 hover:bg-orange-200/60 focus:ring-2 focus:ring-[var(--primary-blue)]/30"
+        className="legitimation-form-page__date-picker-btn absolute right-1.5 p-1 rounded text-gray-500"
         title="Pick date"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -73,8 +125,8 @@ function DateInput({ value, onChange, placeholder = 'dd/mm/yyyy' }) {
 
 function LegitimationSection({ number, title, children, instruction }) {
   return (
-    <div className="mb-6 rounded-xl overflow-hidden border border-gray-100 bg-[var(--card-bg)] shadow-sm">
-      <div className="bg-[var(--primary-blue)] text-white px-4 py-2.5 font-semibold text-sm uppercase tracking-wide">
+      <div className="legitimation-form-page__section-card mb-6 rounded-xl overflow-hidden border border-gray-200 bg-[var(--card-bg)] shadow-sm">
+      <div className="legitimation-form-page__section-header bg-[var(--primary-blue)] text-white px-4 py-2.5 font-semibold text-sm uppercase tracking-wide">
         {number} {title}
       </div>
       {instruction && (
@@ -99,6 +151,8 @@ export default function LegitimationForm() {
   const editId = searchParams.get('id')
   const isEdit = searchParams.get('edit') === '1'
   const [showConfirm, setShowConfirm] = useState(false)
+  const [showValidationModal, setShowValidationModal] = useState(false)
+  const [missingFields, setMissingFields] = useState([])
 
   const [form, setForm] = useState(() => {
     if (isEdit && editId) {
@@ -114,6 +168,14 @@ export default function LegitimationForm() {
   })
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
+
+  useEffect(() => {
+    setForm((prev) => {
+      const s = (prev.sex || '').toString().trim().toUpperCase()
+      const normalized = s === 'MALE' || s === 'FEMALE' ? s : ''
+      return normalized === (prev.sex || '') ? prev : { ...prev, sex: normalized }
+    })
+  }, [])
 
   const proceedToPrint = () => {
     const formForOutput = { ...form }
@@ -149,27 +211,27 @@ export default function LegitimationForm() {
         <div className="legitimation-form-page__body">
       <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
       <LegitimationSection number="1" title="Birth of child registered in Iligan?" instruction={form.birthRegisteredIligan === 'YES' ? 'Fill-in ITEM 11' : null}>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2"><input type="radio" checked={form.birthRegisteredIligan === 'YES'} onChange={() => update('birthRegisteredIligan', 'YES')} /> YES</label>
-          <label className="flex items-center gap-2"><input type="radio" checked={form.birthRegisteredIligan === 'NO'} onChange={() => update('birthRegisteredIligan', 'NO')} /> NO</label>
+        <div className="legitimation-form-page__radio-group flex gap-4">
+          <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.birthRegisteredIligan === 'YES'} onChange={() => update('birthRegisteredIligan', 'YES')} /> YES</label>
+          <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.birthRegisteredIligan === 'NO'} onChange={() => update('birthRegisteredIligan', 'NO')} /> NO</label>
         </div>
       </LegitimationSection>
       </div>
 
       <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
       <LegitimationSection number="2" title="Acknowledged by father in COLB?" instruction={form.acknowledgedByFatherInColb === 'YES' ? "Don't Fill-in ITEM 8" : null}>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2"><input type="radio" checked={form.acknowledgedByFatherInColb === 'YES'} onChange={() => update('acknowledgedByFatherInColb', 'YES')} /> YES</label>
-          <label className="flex items-center gap-2"><input type="radio" checked={form.acknowledgedByFatherInColb === 'NO'} onChange={() => update('acknowledgedByFatherInColb', 'NO')} /> NO</label>
+        <div className="legitimation-form-page__radio-group flex gap-4">
+          <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.acknowledgedByFatherInColb === 'YES'} onChange={() => update('acknowledgedByFatherInColb', 'YES')} /> YES</label>
+          <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.acknowledgedByFatherInColb === 'NO'} onChange={() => update('acknowledgedByFatherInColb', 'NO')} /> NO</label>
         </div>
       </LegitimationSection>
       </div>
 
       <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
       <LegitimationSection number="3" title="Parent/s minor at the time of birth?">
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2"><input type="radio" checked={form.parentsMinorAtBirth === 'YES'} onChange={() => update('parentsMinorAtBirth', 'YES')} /> YES</label>
-          <label className="flex items-center gap-2"><input type="radio" checked={form.parentsMinorAtBirth === 'NO'} onChange={() => update('parentsMinorAtBirth', 'NO')} /> NO</label>
+        <div className="legitimation-form-page__radio-group flex gap-4">
+          <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.parentsMinorAtBirth === 'YES'} onChange={() => update('parentsMinorAtBirth', 'YES')} /> YES</label>
+          <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.parentsMinorAtBirth === 'NO'} onChange={() => update('parentsMinorAtBirth', 'NO')} /> NO</label>
         </div>
       </LegitimationSection>
       </div>
@@ -192,7 +254,18 @@ export default function LegitimationForm() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Sex</label>
-              <input type="text" value={form.sex} onChange={(e) => update('sex', e.target.value)} placeholder="e.g. MALE" className={inputClass} />
+              <div className="legitimation-form-page__gender-group flex gap-2" role="group" aria-label="Sex">
+                {['MALE', 'FEMALE'].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => update('sex', option)}
+                    className={`legitimation-form-page__gender-chip ${form.sex === option ? 'legitimation-form-page__gender-chip--selected' : ''}`}
+                  >
+                    {option.charAt(0) + option.slice(1).toLowerCase()}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
           <div>
@@ -209,9 +282,9 @@ export default function LegitimationForm() {
 
       <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
       <LegitimationSection number="5" title="Both parent/s alive/present?" instruction={form.bothParentsAlive === 'YES' ? 'Fill-up ITEM 6 ONLY and use JOINT AFFIDAVIT' : null}>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2"><input type="radio" checked={form.bothParentsAlive === 'YES'} onChange={() => update('bothParentsAlive', 'YES')} /> YES</label>
-          <label className="flex items-center gap-2"><input type="radio" checked={form.bothParentsAlive === 'NO'} onChange={() => update('bothParentsAlive', 'NO')} /> NO</label>
+        <div className="legitimation-form-page__radio-group flex gap-4">
+          <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.bothParentsAlive === 'YES'} onChange={() => update('bothParentsAlive', 'YES')} /> YES</label>
+          <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.bothParentsAlive === 'NO'} onChange={() => update('bothParentsAlive', 'NO')} /> NO</label>
         </div>
       </LegitimationSection>
       </div>
@@ -371,12 +444,73 @@ export default function LegitimationForm() {
         </button>
         <button
           type="button"
-          onClick={() => setShowConfirm(true)}
+          onClick={() => {
+            const missing = getMissingFields(form)
+            if (missing.length > 0) {
+              setMissingFields(missing)
+              setShowValidationModal(true)
+              return
+            }
+            setShowConfirm(true)
+          }}
           className="legitimation-form-page__btn legitimation-form-page__btn--primary"
         >
           Done
         </button>
       </div>
+
+      {showValidationModal && (
+        <div
+          className="legitimation-form-page__validation-backdrop legitimation-form-page__modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 no-print"
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="legitimation-validation-title"
+          aria-describedby="legitimation-validation-desc"
+          onClick={() => setShowValidationModal(false)}
+        >
+          <div
+            className="legitimation-form-page__validation-modal legitimation-form-page__modal-dialog no-print"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="legitimation-form-page__validation-strip" aria-hidden />
+            <div className="legitimation-form-page__validation-body">
+              <div className="legitimation-form-page__validation-icon" aria-hidden>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  <path d="M12 16h.01" strokeWidth="2.5" />
+                </svg>
+              </div>
+              <div className="legitimation-form-page__validation-content">
+                <h2 id="legitimation-validation-title" className="legitimation-form-page__validation-title">
+                  All required fields must be filled out
+                </h2>
+                <p id="legitimation-validation-desc" className="legitimation-form-page__validation-desc">
+                  You cannot proceed until every required field is completed. Please review and fill in the items below.
+                </p>
+                {missingFields.length > 0 && (
+                  <div className="legitimation-form-page__validation-list-wrap">
+                    <p className="legitimation-form-page__validation-list-label">Missing ({missingFields.length}):</p>
+                    <ul className="legitimation-form-page__validation-list">
+                      {missingFields.map(({ label }) => (
+                        <li key={label}>{label}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div className="legitimation-form-page__validation-actions">
+                  <button
+                    type="button"
+                    onClick={() => setShowValidationModal(false)}
+                    className="legitimation-form-page__validation-btn"
+                  >
+                    Got it
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 legitimation-form-page__modal-backdrop no-print" onClick={() => setShowConfirm(false)} role="dialog" aria-modal="true" aria-labelledby="legitimation-confirm-title">

@@ -4,6 +4,7 @@ import { getAUSFDraft, saveAUSFDraft } from './lib/ausfStorage'
 import { defaultAUSF } from './lib/ausfDefaults'
 import { TRANSMITTAL_ATTACHMENTS_LOCAL, TRANSMITTAL_ATTACHMENTS_PSA } from '../../components/print'
 import AusfOnly from './print/AusfOnly'
+import Ausf06 from './print/Ausf06'
 import Ausf0717 from './print/Ausf0717'
 import RegistrationOfAusf from './print/RegistrationOfAusf'
 import RegistrationOfAcknowledgement from './print/RegistrationOfAcknowledgement'
@@ -92,16 +93,17 @@ export default function AUSFPrint() {
   const type = displayType || data.formType
 
   let content
-  if (type === 'ausf-only' || type === 'ausf-0-6') content = <AusfOnly data={data} viewType={type} />
+  if (type === 'ausf-only') content = <AusfOnly data={data} />
+  else if (type === 'ausf-0-6') content = <Ausf06 data={data} />
   else if (type === 'ausf-07-17') content = <Ausf0717 data={data} />
   else if (type === 'reg-ausf') content = <RegistrationOfAusf data={data} />
   else if (type === 'reg-ack') content = <RegistrationOfAcknowledgement data={data} />
   else if (type === 'child-ack-lcr') content = <LcrForm1ABirthAvailable data={data} />
   else if (type === 'child-ack-annotation') content = (
     <AnnotationChildAck
-      data={data}
+      data={{ ...data, colbScanDataUrl: data.colbScanDataUrlAck ?? '' }}
       onColbScanChange={(url) => {
-        const next = { ...data, colbScanDataUrl: url }
+        const next = { ...data, colbScanDataUrlAck: url }
         setData(next)
         saveAUSFDraft(next)
       }}
@@ -115,9 +117,9 @@ export default function AUSFPrint() {
   else if (type === 'child-not-ack-lcr') content = <LcrFormA1 data={data} />
   else if (type === 'child-not-ack-annotation') content = (
     <AnnotationChildNotAck
-      data={data}
+      data={{ ...data, colbScanDataUrl: data.colbScanDataUrlNotAck ?? '' }}
       onColbScanChange={(url) => {
-        const next = { ...data, colbScanDataUrl: url }
+        const next = { ...data, colbScanDataUrlNotAck: url }
         setData(next)
         saveAUSFDraft(next)
       }}

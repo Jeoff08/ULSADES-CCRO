@@ -2,14 +2,9 @@ import React from 'react'
 import { formatDateLong, fullName } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter, FILL, FILL_BOLD } from '../../../components/print'
 
-export default function AusfOnly({ data }) {
+export default function Ausf06({ data }) {
   const affiantName = data.applicantName || fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
   const surnameSought = data.fatherLast
-  const affiantWithSurname = (affiantName && surnameSought)
-    ? (affiantName.trim().toUpperCase().endsWith((surnameSought || '').trim().toUpperCase())
-      ? affiantName
-      : `${affiantName.trim()} ${surnameSought.trim()}`.trim())
-    : affiantName
   const dobFormatted = formatDateLong(data.dateOfBirth)
   const colbReg = data.colbRegistryNo
   const colbDate = formatDateLong(data.colbDateOfRegistration)
@@ -22,11 +17,11 @@ export default function AusfOnly({ data }) {
   const placeCityProvince = [data.placeOfBirthCity, data.placeOfBirthProvince].filter(Boolean).join(', ')
 
   return (
-    <div className="ausf-doc print-doc ausf-only-doc flex flex-col min-h-[297mm] bg-white text-black text-[17px] max-w-[210mm] mx-auto px-6 py-4 leading-snug">
+    <div className="ausf-doc ausf-0-6-doc print-doc flex flex-col min-h-[297mm] bg-white text-black text-[17px] max-w-[210mm] mx-auto px-6 py-4 leading-snug">
       <DocumentHeader registryNo={data.ausfRegistryNo} />
       <h2 className="text-center font-bold text-lg uppercase mb-4 mt-0.5">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
       <p className="mb-4 leading-normal text-justify">
-        I, <span className={`${FILL} affiant-name-blank affiant-name-bold-underline uppercase mx-0.5 align-baseline`}><span className="affiant-name-inner">{affiantWithSurname}</span></span>, of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
+        I, <span className={`${FILL} affiant-name-blank affiant-name-bold-underline uppercase mx-0.5 align-baseline`}><span className="affiant-name-inner">{affiantName}</span></span>, of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
       </p>
 
       <ol className="list-decimal list-outside ml-8 mr-0 pl-1 space-y-3 mb-3 mt-4 text-justify leading-normal">
@@ -52,7 +47,7 @@ export default function AusfOnly({ data }) {
 
       <p className="mb-1 leading-normal mt-4 text-justify">IN WITNESS WHEREOF, I have hereunto set my hand this <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> at Iligan City, Philippines.</p>
       <div className="text-center mt-4 mb-4">
-        <p className="fill-blank font-bold uppercase inline-block pb-0.5 border-b border-black min-w-[16rem]">{affiantWithSurname}</p>
+        <p className="fill-blank font-bold uppercase inline-block pb-0.5 border-b border-black min-w-[16rem]">{affiantName}</p>
         <p className="text-xs mt-1">Affiant</p>
       </div>
       <p className="ausf-subscribed-sworn mb-1 leading-normal text-justify">SUBSCRIBED AND SWORN to before me this <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>

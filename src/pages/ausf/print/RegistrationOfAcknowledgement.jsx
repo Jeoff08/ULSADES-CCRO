@@ -23,12 +23,11 @@ export default function RegistrationOfAcknowledgement({ data }) {
         </p>
         <p className="cert-reg-p mb-5 mt-6 text-justify cert-reg-justify">This certification is issued for whatever legal purposes it may serve.</p>
         <p className="cert-reg-p mb-5 mt-6 text-justify cert-reg-justify">Issued this <span className="fill-blank inline-block px-1 min-w-[8rem]">{issuedDate}</span> at Iligan City, Philippines.</p>
-        <div className="cert-reg-signatory-spacer flex-1 min-h-[3rem]" aria-hidden="true" />
-        <div className="cert-reg-signatory text-left mt-8">
+        <div className="cert-reg-signatory-spacer flex-1 min-h-0" aria-hidden="true" />
+        <div className="cert-reg-signatory text-left mt-2">
           <p className="font-bold uppercase text-base">{signatoryName}</p>
           <p className="text-sm text-black mt-0.5">{signatoryTitle}</p>
         </div>
-        <div className="flex-1 min-h-[2rem]" aria-hidden="true" />
       </div>
       <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
     </div>
