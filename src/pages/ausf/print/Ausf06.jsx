@@ -22,11 +22,13 @@ export default function Ausf06({ data }) {
         registryNo={data.ausfRegistryNo}
         headerTextSize="20px"
         juratBlock={
-          <>
-            <p className="mb-0">Republic of the Philippines)</p>
-            <p className="mb-0">City of Iligan) S.S</p>
-            <p className="mb-0 mt-2">x----------------------------------/</p>
-          </>
+          <div className="m-0 leading-none">
+            Republic of the Philippines)
+            <br />
+            City of Iligan) S.S
+            <br />
+            x----------------------------------/
+          </div>
         }
       />
       <h2 className="text-center font-bold text-lg uppercase mb-4 mt-0">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
@@ -56,9 +58,9 @@ export default function Ausf06({ data }) {
       </ol>
 
       <p className="mb-1 leading-normal mt-4 text-justify">IN WITNESS WHEREOF, I have hereunto set my hand this <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> at Iligan City, Philippines.</p>
-      <div className="text-center mt-4 mb-4">
-        <p className="fill-blank font-bold uppercase inline-block pb-0.5 border-b border-black min-w-[16rem]">{affiantName}</p>
-        <p className="text-xs mt-1">Affiant</p>
+      <div className="text-center mt-4 mb-4 leading-none">
+        <div className="fill-blank font-bold uppercase inline-block pb-0 border-b border-black min-w-[16rem]">{affiantName}</div>
+        <div className="text-xs mt-0">Affiant</div>
       </div>
       <p className="ausf-subscribed-sworn mb-1 leading-normal text-justify">SUBSCRIBED AND SWORN to before me this <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
       <div className="registrar-signature-zone flex-1 flex min-h-[3rem] flex-col justify-center items-end">

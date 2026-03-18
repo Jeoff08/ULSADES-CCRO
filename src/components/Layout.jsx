@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -58,32 +58,39 @@ function legalSubLinkClass(isActive) {
   }`
 }
 
+const FILES_SAVED_PATHS = ['/ausf/saved', '/legitimation/saved', '/court-decree/saved']
+
 export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [isExiting, setIsExiting] = useState(false)
-  const legalInstrumentActive =
-    location.pathname.startsWith('/legitimation') ||
-    location.pathname.startsWith('/ausf') ||
-    location.pathname.startsWith('/legal-instrument')
-  const [legalInstrumentOpen, setLegalInstrumentOpen] = useState(true)
 
-  useEffect(() => {
-    if (legalInstrumentActive) setLegalInstrumentOpen(true)
-  }, [legalInstrumentActive])
+  const isFilesSavedPage = FILES_SAVED_PATHS.includes(location.pathname)
+
+  /** Saved lists are separate from Legal Instrument / Court Decree workflows — do not tie sidebar state to them */
+  const legalInstrumentActive =
+    !isFilesSavedPage &&
+    (location.pathname.startsWith('/legitimation') ||
+      (location.pathname.startsWith('/ausf') && location.pathname !== '/ausf/saved') ||
+      location.pathname.startsWith('/legal-instrument'))
+  /** Collapsed by default; stays collapsed on refresh (no auto-expand from route) */
+  const [legalInstrumentOpen, setLegalInstrumentOpen] = useState(false)
 
   const courtDecreeMenuActive =
-    location.pathname.startsWith('/court-decree') && location.pathname !== '/court-decree/saved'
+    location.pathname.startsWith('/court-decree') &&
+    location.pathname !== '/court-decree/saved' &&
+    !isFilesSavedPage
   const courtDecreeMainFormActive =
-    location.pathname.startsWith('/court-decree/form') ||
-    location.pathname.startsWith('/court-decree/print') ||
-    location.pathname.startsWith('/court-decree/instructions')
-  const [courtDecreeOpen, setCourtDecreeOpen] = useState(true)
+    !isFilesSavedPage &&
+    (location.pathname.startsWith('/court-decree/form') ||
+      location.pathname.startsWith('/court-decree/print') ||
+      location.pathname.startsWith('/court-decree/instructions'))
+  const [courtDecreeOpen, setCourtDecreeOpen] = useState(false)
 
-  useEffect(() => {
-    if (courtDecreeMenuActive) setCourtDecreeOpen(true)
-  }, [courtDecreeMenuActive])
+  const legitimationFormActive =
+    location.pathname.startsWith('/legitimation') && location.pathname !== '/legitimation/saved'
+  const ausfFormActive = location.pathname.startsWith('/ausf') && location.pathname !== '/ausf/saved'
 
   const handleLogout = () => {
     if (isExiting) return
@@ -166,14 +173,14 @@ export default function Layout() {
               <div className="space-y-0.5 pb-0.5">
                 <NavLink
                   to="/legitimation/form?type=joint-affidavit"
-                  className={() => legalSubLinkClass(location.pathname.startsWith('/legitimation'))}
+                  className={() => legalSubLinkClass(legitimationFormActive)}
                 >
                   <IconLegalSub />
                   <span>Legitimation</span>
                 </NavLink>
                 <NavLink
                   to="/ausf"
-                  className={() => legalSubLinkClass(location.pathname.startsWith('/ausf'))}
+                  className={() => legalSubLinkClass(ausfFormActive)}
                 >
                   <IconLegalSub />
                   <span>AUSF</span>
@@ -289,15 +296,13 @@ export default function Layout() {
           </div>
           <NavLink
             to="/ausf/saved"
-            end
-            className={({ isActive }) => {
-              const filesSavedActive = isActive || location.pathname === '/court-decree/saved' || location.pathname === '/legitimation/saved'
-              return `${navRowBase} ${
-                filesSavedActive
+            className={() =>
+              `${navRowBase} ${
+                isFilesSavedPage
                   ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
                   : 'text-white/90 hover:bg-white/10 text-white'
               }`
-            }}
+            }
           >
             <IconFolder />
             <span>Files Saved</span>

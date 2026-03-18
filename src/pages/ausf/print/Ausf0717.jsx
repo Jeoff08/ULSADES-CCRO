@@ -25,11 +25,13 @@ export default function Ausf0717({ data }) {
         registryNo={data.ausfRegistryNo}
         headerTextSize="20px"
         juratBlock={
-          <>
-            <p className="mb-0">Republic of the Philippines)</p>
-            <p className="mb-0">City of Iligan) S.S</p>
-            <p className="mb-0 mt-2">x----------------------------------/</p>
-          </>
+          <div className="m-0 leading-none">
+            Republic of the Philippines)
+            <br />
+            City of Iligan) S.S
+            <br />
+            x----------------------------------/
+          </div>
         }
       />
       <h2 className="text-center font-bold text-base uppercase mb-2 mt-0">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
@@ -46,9 +48,9 @@ export default function Ausf0717({ data }) {
         <li className="text-justify">I hereby certify that the statements made herein are true and correct to the best of my knowledge and belief.</li>
       </ol>
       <p className="mb-0.5 text-justify">IN WITNESS WHEREOF, I have hereunto set my hand this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> at Iligan City, Philippines.</p>
-      <div className="text-center mt-2 mb-3">
-        <p className="fill-blank uppercase inline-block pb-0.5">{attestationName}</p>
-        <p className="text-xs mt-0.5">Affiant</p>
+      <div className="text-center mt-2 mb-3 leading-none">
+        <div className="fill-blank uppercase inline-block pb-0">{attestationName}</div>
+        <div className="text-xs mt-0">Affiant</div>
       </div>
 
       <h2 className="text-center font-bold text-sm uppercase my-3">SWORN ATTESTATION</h2>
@@ -60,9 +62,9 @@ export default function Ausf0717({ data }) {
         <li className="text-justify">That my above-named child/ward is fully aware of the consequences of the Affidavit to use the surname of his/her father.</li>
       </ol>
       <p className="mb-0.5 text-justify">IN WITNESS WHEREOF, I have hereunto set my hand this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> at Iligan City, Philippines.</p>
-      <div className="text-center mt-2 mb-2">
-        <p className="fill-blank uppercase inline-block pb-0.5">{affiantName}</p>
-        <p className="text-xs mt-0.5">Affiant</p>
+      <div className="text-center mt-2 mb-2 leading-none">
+        <div className="fill-blank uppercase inline-block pb-0">{affiantName}</div>
+        <div className="text-xs mt-0">Affiant</div>
       </div>
       <p className="ausf-subscribed-sworn mt-0.5 mb-0.5 text-justify leading-snug">SUBSCRIBED AND SWORN to before me this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
       <div className="registrar-signature-zone flex-1 flex min-h-[2rem] flex-col justify-center items-end">
