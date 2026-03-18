@@ -18,8 +18,18 @@ export default function Ausf06({ data }) {
 
   return (
     <div className="ausf-doc ausf-0-6-doc print-doc flex flex-col min-h-[297mm] bg-white text-black text-[17px] max-w-[210mm] mx-auto px-6 py-4 leading-snug">
-      <DocumentHeader registryNo={data.ausfRegistryNo} />
-      <h2 className="text-center font-bold text-lg uppercase mb-4 mt-0.5">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
+      <DocumentHeader
+        registryNo={data.ausfRegistryNo}
+        headerTextSize="20px"
+        juratBlock={
+          <>
+            <p className="mb-0">Republic of the Philippines)</p>
+            <p className="mb-0">City of Iligan) S.S</p>
+            <p className="mb-0 mt-2">x----------------------------------/</p>
+          </>
+        }
+      />
+      <h2 className="text-center font-bold text-lg uppercase mb-4 mt-0">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
       <p className="mb-4 leading-normal text-justify">
         I, <span className={`${FILL} affiant-name-blank affiant-name-bold-underline uppercase mx-0.5 align-baseline`}><span className="affiant-name-inner">{affiantName}</span></span>, of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
       </p>
@@ -51,10 +61,10 @@ export default function Ausf06({ data }) {
         <p className="text-xs mt-1">Affiant</p>
       </div>
       <p className="ausf-subscribed-sworn mb-1 leading-normal text-justify">SUBSCRIBED AND SWORN to before me this <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
-      <div className="registrar-signature-zone flex-1 flex min-h-[3rem] flex-col justify-center items-start">
-        <div className="text-left city-registrar-signature">
-          <p className="font-bold text-left">{data.cityCivilRegistrarName}</p>
-          <p className="text-sm mt-1">City Civil Registrar</p>
+      <div className="registrar-signature-zone flex-1 flex min-h-[3rem] flex-col justify-center items-end">
+        <div className="text-right city-registrar-signature">
+          <p className="font-bold text-right">{data.cityCivilRegistrarName}</p>
+          <p className="text-sm text-right">City Civil Registrar</p>
         </div>
       </div>
       <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />

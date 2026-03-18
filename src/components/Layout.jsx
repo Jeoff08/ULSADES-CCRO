@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -8,14 +8,6 @@ function IconDashboard() {
   return (
     <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-    </svg>
-  )
-}
-
-function IconAUSF() {
-  return (
-    <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
     </svg>
   )
 }
@@ -36,12 +28,34 @@ function IconCourtDecree() {
   )
 }
 
-function IconLegitimation() {
+function IconLegalInstrument() {
   return (
     <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
     </svg>
   )
+}
+
+function IconLegalSub() {
+  return (
+    <svg className="w-4 h-4 shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+    </svg>
+  )
+}
+
+const navRowBase =
+  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition relative'
+
+const legalSubLinkBase =
+  'flex items-center gap-2 pl-3 ml-6 border-l-2 border-white/20 py-2 pr-2 rounded-r-lg text-[13px] font-medium transition'
+
+function legalSubLinkClass(isActive) {
+  return `${legalSubLinkBase} ${
+    isActive
+      ? 'bg-white text-gray-800 border-[var(--primary-green)]'
+      : 'text-white/85 hover:bg-white/10 text-white border-transparent hover:border-white/20'
+  }`
 }
 
 export default function Layout() {
@@ -49,6 +63,27 @@ export default function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [isExiting, setIsExiting] = useState(false)
+  const legalInstrumentActive =
+    location.pathname.startsWith('/legitimation') ||
+    location.pathname.startsWith('/ausf') ||
+    location.pathname.startsWith('/legal-instrument')
+  const [legalInstrumentOpen, setLegalInstrumentOpen] = useState(true)
+
+  useEffect(() => {
+    if (legalInstrumentActive) setLegalInstrumentOpen(true)
+  }, [legalInstrumentActive])
+
+  const courtDecreeMenuActive =
+    location.pathname.startsWith('/court-decree') && location.pathname !== '/court-decree/saved'
+  const courtDecreeMainFormActive =
+    location.pathname.startsWith('/court-decree/form') ||
+    location.pathname.startsWith('/court-decree/print') ||
+    location.pathname.startsWith('/court-decree/instructions')
+  const [courtDecreeOpen, setCourtDecreeOpen] = useState(true)
+
+  useEffect(() => {
+    if (courtDecreeMenuActive) setCourtDecreeOpen(true)
+  }, [courtDecreeMenuActive])
 
   const handleLogout = () => {
     if (isExiting) return
@@ -94,7 +129,7 @@ export default function Layout() {
             to="/"
             end
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition relative ${
+              `${navRowBase} ${
                 isActive
                   ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
                   : 'text-white/90 hover:bg-white/10 text-white'
@@ -104,57 +139,160 @@ export default function Layout() {
             <IconDashboard />
             <span>Dashboard</span>
           </NavLink>
-          <NavLink
-            to="/ausf"
-            end
-            className={({ isActive }) => {
-              const ausfActive = isActive || location.pathname === '/ausf'
-              return `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition relative ${
-                ausfActive
-                  ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
-                  : 'text-white/90 hover:bg-white/10 text-white'
-              }`
-            }}
-          >
-            <IconAUSF />
-            <span>AUSF</span>
-          </NavLink>
-          <NavLink
-            to="/court-decree"
-            end={false}
-            className={({ isActive }) => {
-              const courtActive = isActive && location.pathname !== '/court-decree/saved'
-              return `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition relative ${
-                courtActive
-                  ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
-                  : 'text-white/90 hover:bg-white/10 text-white'
-              }`
-            }}
-          >
-            <IconCourtDecree />
-            <span>Court Decree</span>
-          </NavLink>
-          <NavLink
-            to="/legitimation/form?type=joint-affidavit"
-            end={false}
-            className={({ isActive }) => {
-              const legitActive = isActive && location.pathname !== '/legitimation/saved'
-              return `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition relative ${
-                legitActive
-                  ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
-                  : 'text-white/90 hover:bg-white/10 text-white'
-              }`
-            }}
-          >
-            <IconLegitimation />
-            <span>Legitimation</span>
-          </NavLink>
+
+          <div className="space-y-0.5">
+            <button
+              type="button"
+              onClick={() => setLegalInstrumentOpen((o) => !o)}
+              className={`${navRowBase} w-full text-left text-white/90 hover:bg-white/10 text-white ${
+                legalInstrumentActive && !legalInstrumentOpen
+                  ? 'bg-white/15 border-l-4 border-[var(--primary-green)] pl-[11px]'
+                  : ''
+              }`}
+              aria-expanded={legalInstrumentOpen}
+            >
+              <IconLegalInstrument />
+              <span className="flex-1">Legal Instrument</span>
+              <svg
+                className={`w-4 h-4 shrink-0 transition-transform ${legalInstrumentOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {legalInstrumentOpen && (
+              <div className="space-y-0.5 pb-0.5">
+                <NavLink
+                  to="/legitimation/form?type=joint-affidavit"
+                  className={() => legalSubLinkClass(location.pathname.startsWith('/legitimation'))}
+                >
+                  <IconLegalSub />
+                  <span>Legitimation</span>
+                </NavLink>
+                <NavLink
+                  to="/ausf"
+                  className={() => legalSubLinkClass(location.pathname.startsWith('/ausf'))}
+                >
+                  <IconLegalSub />
+                  <span>AUSF</span>
+                </NavLink>
+                <NavLink
+                  to="/legal-instrument/negative"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>Negative</span>
+                </NavLink>
+                <NavLink
+                  to="/legal-instrument/clear-copy-blurred"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>Clear Copy / Blurred Copy</span>
+                </NavLink>
+                <NavLink
+                  to="/legal-instrument/mc2010-04"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>MC2010-04</span>
+                </NavLink>
+                <NavLink
+                  to="/legal-instrument/supplemental"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>Supplemental</span>
+                </NavLink>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-0.5">
+            <div
+              className={`flex items-stretch rounded-lg overflow-hidden transition relative ${
+                courtDecreeMainFormActive && !courtDecreeOpen
+                  ? ''
+                  : courtDecreeMenuActive && !courtDecreeOpen && !courtDecreeMainFormActive
+                    ? 'ring-1 ring-inset ring-white/20'
+                    : ''
+              }`}
+            >
+              <NavLink
+                to="/court-decree/form?type=cert-authenticity"
+                className={`${navRowBase} flex-1 min-w-0 rounded-l-lg rounded-r-none border-0 ${
+                  courtDecreeMainFormActive
+                    ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] pl-[11px]'
+                    : 'text-white/90 hover:bg-white/10 text-white'
+                }`}
+                title="Open Court Decree forms"
+              >
+                <IconCourtDecree />
+                <span className="truncate">Court Decree</span>
+              </NavLink>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  setCourtDecreeOpen((o) => !o)
+                }}
+                className={`shrink-0 px-2 flex items-center justify-center text-white/90 hover:bg-white/15 border-l border-white/15 transition ${
+                  courtDecreeOpen ? 'bg-white/5' : ''
+                }`}
+                aria-expanded={courtDecreeOpen}
+                aria-label={courtDecreeOpen ? 'Collapse Court Decree menu' : 'Expand Court Decree menu'}
+              >
+                <svg
+                  className={`w-4 h-4 transition-transform ${courtDecreeOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+            {courtDecreeOpen && (
+              <div className="space-y-0.5 pb-0.5">
+                <NavLink
+                  to="/court-decree/workflow/correction-of-entries"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>Correction of entries</span>
+                </NavLink>
+                <NavLink
+                  to="/court-decree/workflow/adoption"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>Adoption</span>
+                </NavLink>
+                <NavLink
+                  to="/court-decree/workflow/nullity-of-marriage"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>Nullity of marriage</span>
+                </NavLink>
+                <NavLink
+                  to="/court-decree/workflow/divorce"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>Divorce</span>
+                </NavLink>
+              </div>
+            )}
+          </div>
           <NavLink
             to="/ausf/saved"
             end
             className={({ isActive }) => {
               const filesSavedActive = isActive || location.pathname === '/court-decree/saved' || location.pathname === '/legitimation/saved'
-              return `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition relative ${
+              return `${navRowBase} ${
                 filesSavedActive
                   ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
                   : 'text-white/90 hover:bg-white/10 text-white'

@@ -109,21 +109,35 @@ body {
 .ausf-only-doc .print-doc-footer .text-xs {
   font-size: 12px;
 }
-/* AUSF-only: City Civil Registrar block left-aligned (screen and print) */
+/* AUSF-only: City Civil Registrar block right-aligned (screen and print) */
 .ausf-only-doc .registrar-signature-zone {
-  align-items: flex-start;
+  align-items: flex-end;
 }
 .ausf-only-doc .registrar-signature-zone .city-registrar-signature,
 .ausf-only-doc .registrar-signature-zone .city-registrar-signature p {
-  text-align: left;
+  text-align: right;
 }
-/* AUSF 07-17: City Civil Registrar block left-aligned (screen and print) */
+/* AUSF 07-17: City Civil Registrar block right-aligned (screen and print) */
 .ausf-07-17-doc .registrar-signature-zone {
-  align-items: flex-start;
+  align-items: flex-end;
 }
 .ausf-07-17-doc .registrar-signature-zone .city-registrar-signature,
 .ausf-07-17-doc .registrar-signature-zone .city-registrar-signature p {
-  text-align: left;
+  text-align: right;
+}
+/* AUSF: City Civil Registrar block – title centered under name (screen) */
+.ausf-only-doc .registrar-signature-zone .city-registrar-signature,
+.ausf-07-17-doc .registrar-signature-zone .city-registrar-signature,
+.ausf-0-6-doc .registrar-signature-zone .city-registrar-signature {
+  display: inline-block;
+  text-align: center;
+  margin-right: 4em;
+}
+.ausf-only-doc .registrar-signature-zone .city-registrar-signature p,
+.ausf-07-17-doc .registrar-signature-zone .city-registrar-signature p,
+.ausf-0-6-doc .registrar-signature-zone .city-registrar-signature p {
+  margin: 0;
+  text-align: center;
 }
 
 /* Login page: split layout, dark blue left panel */
@@ -768,6 +782,8 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
   .print-header-address {
     font-size: 18px !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
   }
   .print-doc-body {
     flex: 1 1 0% !important;
@@ -783,11 +799,11 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .ausf-0-6-doc.print-doc {
     page-break-inside: avoid !important;
   }
-  /* AUSF 0-6 PDF print only: 16.4px body, 12px footer for A4, Short, Long (overrides paper-size pt rules) */
+  /* AUSF 0-6 PDF print only: 15.8px body, 12px footer for A4, Short, Long (overrides paper-size pt rules) */
   html[data-paper-size="a4"] .ausf-0-6-doc.print-doc,
   html[data-paper-size="short"] .ausf-0-6-doc.print-doc,
   html[data-paper-size="long"] .ausf-0-6-doc.print-doc {
-    font-size: 16.4px !important;
+    font-size: 15.8px !important;
   }
   html[data-paper-size="a4"] .ausf-0-6-doc .print-doc-footer,
   html[data-paper-size="a4"] .ausf-0-6-doc .print-doc-footer p,
@@ -803,20 +819,21 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="long"] .ausf-0-6-doc .print-doc-footer * {
     font-size: 12px !important;
   }
-  /* AUSF 0-6 PDF print: City Civil Registrar (name + title) left-aligned, nudged down */
+  /* AUSF 0-6 PDF print: City Civil Registrar (name + title) right-aligned, nudged down */
   .ausf-0-6-doc.print-doc .registrar-signature-zone {
-    align-items: flex-start !important;
+    align-items: flex-end !important;
     justify-content: flex-start !important;
     margin-top: 0.2in !important;
   }
   .ausf-0-6-doc.print-doc .registrar-signature-zone .city-registrar-signature,
   .ausf-0-6-doc.print-doc .registrar-signature-zone .city-registrar-signature p {
-    text-align: left !important;
+    text-align: right !important;
   }
-  /* AUSF 0-6 and AUSF Only PDF print: move main title "AFFIDAVIT TO USE..." a little bit higher */
-  .ausf-0-6-doc.print-doc h2,
-  .ausf-only-doc.ausf-doc.print-doc h2 {
-    margin-top: 0.05in !important;
+  /* AUSF 0-6, 07-17, Only PDF print: no gap between registry row and title */
+  .ausf-0-6-doc.print-doc h2:first-of-type,
+  .ausf-07-17-doc.print-doc h2:first-of-type,
+  .ausf-only-doc.ausf-doc.print-doc h2:first-of-type {
+    margin-top: 0 !important;
   }
 
   /* COLB annotation (Child Not Ack): overlay fits Remarks/Annotations on scanned COLB when printing to PDF */
@@ -1185,14 +1202,14 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-top: auto !important;
     flex-shrink: 0;
   }
-  /* AUSF Only: City Civil Registrar block left-aligned in print/PDF, nudged down */
+  /* AUSF Only: City Civil Registrar block right-aligned in print/PDF, nudged down */
   .ausf-only-doc .registrar-signature-zone {
-    align-items: flex-start !important;
+    align-items: flex-end !important;
     margin-top: 0.2in !important;
   }
   .ausf-only-doc .registrar-signature-zone .city-registrar-signature,
   .ausf-only-doc .registrar-signature-zone .city-registrar-signature p {
-    text-align: left !important;
+    text-align: right !important;
   }
 
   /* Legitimation LCR Form 1A only: all content on one page A4/short/long. Sheet grows with content; scale to fit (no clipping). */
@@ -1613,9 +1630,9 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="a4"] .ausf-0-6-doc .registrar-signature-zone {
     min-height: 1.5rem !important;
   }
-  /* AUSF 07-17 A4: body text 16.4px (print only); footer unchanged */
+  /* AUSF 07-17 A4: body text 15.2px (print only); footer unchanged */
   html[data-paper-size="a4"] .ausf-07-17-doc {
-    font-size: 16.4px !important;
+    font-size: 15.2px !important;
     line-height: 1.45 !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc p,
@@ -1623,7 +1640,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="a4"] .ausf-07-17-doc ol li,
   html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone .text-sm,
   html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone .text-xs {
-    font-size: 16.4px !important;
+    font-size: 15.2px !important;
   }
   /* AUSF 07-17 short bond: main title "AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)" max 20px */
   html[data-paper-size="short"] .ausf-07-17-doc h2:first-of-type {
@@ -1977,21 +1994,21 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     justify-content: center !important;
     align-items: flex-end !important;
   }
-  /* AUSF-only: override to left-align City Civil Registrar block in print/PDF */
+  /* AUSF-only: City Civil Registrar block right-aligned in print/PDF */
   .ausf-only-doc.ausf-doc .registrar-signature-zone {
-    align-items: flex-start !important;
+    align-items: flex-end !important;
   }
   .ausf-only-doc.ausf-doc .registrar-signature-zone .city-registrar-signature,
   .ausf-only-doc.ausf-doc .registrar-signature-zone .city-registrar-signature p {
-    text-align: left !important;
+    text-align: right !important;
   }
-  /* AUSF 07-17: left-align City Civil Registrar block in print/PDF */
+  /* AUSF 07-17: City Civil Registrar block right-aligned in print/PDF */
   .ausf-07-17-doc.ausf-doc .registrar-signature-zone {
-    align-items: flex-start !important;
+    align-items: flex-end !important;
   }
   .ausf-07-17-doc.ausf-doc .registrar-signature-zone .city-registrar-signature,
   .ausf-07-17-doc.ausf-doc .registrar-signature-zone .city-registrar-signature p {
-    text-align: left !important;
+    text-align: right !important;
   }
   /* AUSF 07-17 print/PDF only: extra space between SUBSCRIBED AND SWORN and City Civil Registrar block */
   .ausf-07-17-doc .ausf-subscribed-sworn {
@@ -1999,6 +2016,22 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
   .ausf-doc .city-registrar-signature {
     margin-top: 0 !important;
+    margin-right: 4em !important;
+    display: inline-block !important;
+    text-align: center !important;
+  }
+  .ausf-doc .registrar-signature-zone .city-registrar-signature p {
+    margin: 0 !important;
+    text-align: center !important;
+  }
+  /* Ensure centering wins for each AUSF doc type in print/PDF */
+  .ausf-only-doc.ausf-doc .registrar-signature-zone .city-registrar-signature,
+  .ausf-only-doc.ausf-doc .registrar-signature-zone .city-registrar-signature p,
+  .ausf-07-17-doc.ausf-doc .registrar-signature-zone .city-registrar-signature,
+  .ausf-07-17-doc.ausf-doc .registrar-signature-zone .city-registrar-signature p,
+  .ausf-0-6-doc.print-doc .registrar-signature-zone .city-registrar-signature,
+  .ausf-0-6-doc.print-doc .registrar-signature-zone .city-registrar-signature p {
+    text-align: center !important;
   }
   .ausf-doc .text-xs.mt-6 {
     margin-top: 0.15in !important;
@@ -2007,9 +2040,15 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-top: 0.15in !important;
     margin-bottom: 0.08in !important;
   }
-  /* Four-line gap between Registry Number and AUSF title */
+  /* Four-line gap between Registry Number and AUSF title (excluding jurat-form AUSF docs) */
   .ausf-doc .print-doc-header {
     margin-bottom: 2em !important;
+  }
+  /* AUSF jurat pages (0-6, 07-17, Only): no gap between registry row and title */
+  .ausf-0-6-doc .print-doc-header,
+  .ausf-07-17-doc .print-doc-header,
+  .ausf-only-doc .print-doc-header {
+    margin-bottom: 0 !important;
   }
   .ausf-doc .text-justify {
     text-justify: inter-word;
@@ -2302,9 +2341,9 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     page-break-inside: avoid;
   }
 
-  /* AUSF 07-17 short bond: one page (13.9px body), footer 12px */
+  /* AUSF 07-17 short bond: one page (13.7px body), footer 12px */
   html[data-paper-size="short"] .ausf-07-17-doc {
-    font-size: 13.9px !important;
+    font-size: 13.7px !important;
     line-height: 1.35 !important;
     padding: 0.12in 0.35in 0.1in !important;
   }
@@ -2312,7 +2351,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="short"] .ausf-07-17-doc ol,
   html[data-paper-size="short"] .ausf-07-17-doc ol li,
   html[data-paper-size="short"] .ausf-07-17-doc h2 {
-    font-size: 13.9px !important;
+    font-size: 13.7px !important;
   }
   /* AUSF 07-17: 2-line gap between Registry Number and AUSF title */
   html[data-paper-size="short"] .ausf-07-17-doc .print-doc-header {
@@ -2326,7 +2365,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-bottom: 0.02in !important;
   }
   html[data-paper-size="short"] .ausf-07-17-doc h2 {
-    font-size: 13.9px !important;
+    font-size: 13.7px !important;
   }
   html[data-paper-size="short"] .ausf-07-17-doc h2.mb-5.mt-4 {
     margin-top: 0.04in !important;
@@ -2377,7 +2416,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="short"] .ausf-07-17-doc .text-xs,
   html[data-paper-size="short"] .ausf-07-17-doc .registrar-signature-zone .text-sm,
   html[data-paper-size="short"] .ausf-07-17-doc .registrar-signature-zone .text-xs {
-    font-size: 13.9px !important;
+    font-size: 13.7px !important;
   }
   html[data-paper-size="short"] .ausf-07-17-doc .print-doc-footer {
     margin-top: 0.06in !important;
@@ -2399,9 +2438,9 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-bottom: 0.12in !important;
   }
 
-  /* AUSF 07-17 A4: one page (15px body), 2-line gap between Registry Number and AUSF title */
+  /* AUSF 07-17 A4: one page (15.2px body), 2-line gap between Registry Number and AUSF title */
   html[data-paper-size="a4"] .ausf-07-17-doc {
-    font-size: 15px !important;
+    font-size: 15.2px !important;
     line-height: 1.3 !important;
     padding: 0.2in 0.4in 0.15in !important;
   }
@@ -2409,7 +2448,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-bottom: 0.04in !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc h2 {
-    font-size: 1.05rem !important;
+    font-size: 15.2px !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc h2.mb-2.text-center.font-bold {
     margin-top: 0.02in !important;
@@ -2422,12 +2461,12 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="a4"] .ausf-07-17-doc h2.my-6 {
     margin-top: 0.08in !important;
     margin-bottom: 0.08in !important;
-    font-size: 1rem !important;
+    font-size: 15.2px !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc p,
   html[data-paper-size="a4"] .ausf-07-17-doc ol,
   html[data-paper-size="a4"] .ausf-07-17-doc ol li {
-    font-size: 15px !important;
+    font-size: 15.2px !important;
     line-height: 1.3 !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc p.mb-4,
@@ -2450,17 +2489,17 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-bottom: 0.05in !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc .text-xs {
-    font-size: 15px !important;
+    font-size: 15.2px !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone {
     min-height: 2rem !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone .font-bold,
   html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone .text-sm {
-    font-size: 15px !important;
+    font-size: 15.2px !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc .registrar-signature-zone .text-xs {
-    font-size: 15px !important;
+    font-size: 15.2px !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc .print-doc-footer {
     margin-top: 0.12in !important;
@@ -2473,9 +2512,9 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-bottom: 0.04in !important;
   }
 
-  /* AUSF 07-17 long bond: one page (17px body) */
+  /* AUSF 07-17 long bond: one page (14.9px body), footer 12px */
   html[data-paper-size="long"] .ausf-07-17-doc {
-    font-size: 14.8px !important;
+    font-size: 14.9px !important;
     line-height: 1.35 !important;
     padding: 0.22in 0.4in 0.18in !important;
   }
@@ -2496,12 +2535,12 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="long"] .ausf-07-17-doc h2.mb-5.mt-4 {
     margin-top: 0.06in !important;
     margin-bottom: 0.1in !important;
-    font-size: 14.8px !important;
+    font-size: 14.9px !important;
   }
   html[data-paper-size="long"] .ausf-07-17-doc h2.my-6 {
     margin-top: 0.1in !important;
     margin-bottom: 0.1in !important;
-    font-size: 14.8px !important;
+    font-size: 14.9px !important;
   }
   html[data-paper-size="long"] .ausf-07-17-doc p.mb-4,
   html[data-paper-size="long"] .ausf-07-17-doc ol.mb-4 {
@@ -2530,18 +2569,18 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="long"] .ausf-07-17-doc p,
   html[data-paper-size="long"] .ausf-07-17-doc ol,
   html[data-paper-size="long"] .ausf-07-17-doc ol li {
-    font-size: 14.8px !important;
+    font-size: 14.9px !important;
     line-height: 1.35 !important;
   }
   html[data-paper-size="long"] .ausf-07-17-doc .text-xs {
-    font-size: 14.8px !important;
+    font-size: 14.9px !important;
   }
   html[data-paper-size="long"] .ausf-07-17-doc .registrar-signature-zone .font-bold,
   html[data-paper-size="long"] .ausf-07-17-doc .registrar-signature-zone .text-sm {
-    font-size: 14.8px !important;
+    font-size: 14.9px !important;
   }
   html[data-paper-size="long"] .ausf-07-17-doc .registrar-signature-zone .text-xs {
-    font-size: 14.8px !important;
+    font-size: 14.9px !important;
   }
   html[data-paper-size="long"] .ausf-07-17-doc .print-doc-footer p,
   html[data-paper-size="long"] .ausf-07-17-doc .print-doc-footer .text-xs {
@@ -2610,6 +2649,39 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     line-height: 1.5 !important;
   }
 
+  /* AUSF jurat pages (0-6, 07-17, Only): no gap between registry row and title in print PDF (all paper sizes) */
+  html[data-paper-size="a4"] .ausf-0-6-doc .print-doc-header,
+  html[data-paper-size="a4"] .ausf-07-17-doc .print-doc-header,
+  html[data-paper-size="a4"] .ausf-only-doc .print-doc-header,
+  html[data-paper-size="short"] .ausf-0-6-doc .print-doc-header,
+  html[data-paper-size="short"] .ausf-07-17-doc .print-doc-header,
+  html[data-paper-size="short"] .ausf-only-doc .print-doc-header,
+  html[data-paper-size="long"] .ausf-0-6-doc .print-doc-header,
+  html[data-paper-size="long"] .ausf-07-17-doc .print-doc-header,
+  html[data-paper-size="long"] .ausf-only-doc .print-doc-header {
+    margin-bottom: 0 !important;
+  }
+  html[data-paper-size="a4"] .ausf-0-6-doc.print-doc h2:first-of-type,
+  html[data-paper-size="a4"] .ausf-07-17-doc.print-doc h2:first-of-type,
+  html[data-paper-size="a4"] .ausf-only-doc.print-doc h2:first-of-type,
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc h2:first-of-type,
+  html[data-paper-size="short"] .ausf-07-17-doc.print-doc h2:first-of-type,
+  html[data-paper-size="short"] .ausf-only-doc.print-doc h2:first-of-type,
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc h2:first-of-type,
+  html[data-paper-size="long"] .ausf-07-17-doc.print-doc h2:first-of-type,
+  html[data-paper-size="long"] .ausf-only-doc.print-doc h2:first-of-type {
+    margin-top: 0 !important;
+  }
+
+  /* AUSF Only: 17px body (print/PDF only), header/footer unchanged for A4/Short/Long */
+  html[data-paper-size="a4"] .ausf-only-doc .ausf-only-doc-body,
+  html[data-paper-size="a4"] .ausf-only-doc .ausf-only-doc-body *,
+  html[data-paper-size="short"] .ausf-only-doc .ausf-only-doc-body,
+  html[data-paper-size="short"] .ausf-only-doc .ausf-only-doc-body *,
+  html[data-paper-size="long"] .ausf-only-doc .ausf-only-doc-body,
+  html[data-paper-size="long"] .ausf-only-doc .ausf-only-doc-body * {
+    font-size: 17px !important;
+  }
   /* AUSF Only: 17px body, 12px footer, one page for A4/Short/Long */
   html[data-paper-size="short"] .ausf-only-doc.ausf-doc,
   html[data-paper-size="short"] .ausf-only-doc.ausf-0-6-doc {
@@ -2722,7 +2794,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
 
   /* AUSF 0-6: match AUSF Only layout/text for Short bond (print PDF only) */
   html[data-paper-size="short"] .ausf-0-6-doc.print-doc {
-    font-size: 17px !important;
+    font-size: 15.8px !important;
     line-height: 1.3 !important;
   }
   html[data-paper-size="short"] .ausf-0-6-doc.print-doc .print-doc-header {
@@ -2736,7 +2808,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="short"] .ausf-0-6-doc.print-doc p,
   html[data-paper-size="short"] .ausf-0-6-doc.print-doc ol,
   html[data-paper-size="short"] .ausf-0-6-doc.print-doc ol li {
-    font-size: 17px !important;
+    font-size: 15.8px !important;
     line-height: 1.3 !important;
     margin-bottom: 0.03in !important;
   }
@@ -2748,7 +2820,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
   html[data-paper-size="short"] .ausf-0-6-doc.print-doc .registrar-signature-zone .text-sm,
   html[data-paper-size="short"] .ausf-0-6-doc.print-doc .text-xs.mt-1 {
-    font-size: 17px !important;
+    font-size: 15.8px !important;
   }
   html[data-paper-size="short"] .ausf-0-6-doc.print-doc .print-doc-footer p,
   html[data-paper-size="short"] .ausf-0-6-doc.print-doc .print-doc-footer .text-xs {
@@ -2757,7 +2829,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
 
   /* AUSF 0-6: match AUSF Only layout/text for Long bond (print PDF only) */
   html[data-paper-size="long"] .ausf-0-6-doc.print-doc {
-    font-size: 17px !important;
+    font-size: 15.8px !important;
     line-height: 1.4 !important;
   }
   html[data-paper-size="long"] .ausf-0-6-doc.print-doc .print-doc-header {
@@ -2771,7 +2843,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="long"] .ausf-0-6-doc.print-doc p,
   html[data-paper-size="long"] .ausf-0-6-doc.print-doc ol,
   html[data-paper-size="long"] .ausf-0-6-doc.print-doc ol li {
-    font-size: 17px !important;
+    font-size: 15.8px !important;
     line-height: 1.4 !important;
   }
   html[data-paper-size="long"] .ausf-0-6-doc.print-doc ol li {
@@ -2779,7 +2851,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
   html[data-paper-size="long"] .ausf-0-6-doc.print-doc .registrar-signature-zone .text-sm,
   html[data-paper-size="long"] .ausf-0-6-doc.print-doc .text-xs.mt-1 {
-    font-size: 17px !important;
+    font-size: 15.8px !important;
   }
   html[data-paper-size="long"] .ausf-0-6-doc.print-doc .print-doc-footer p,
   html[data-paper-size="long"] .ausf-0-6-doc.print-doc .print-doc-footer .text-xs {
@@ -2794,10 +2866,51 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-bottom: 0 !important;
   }
 
+  /* AUSF Only: City Civil Registrar block lower (A4 / Short / Long print-PDF) */
+  html[data-paper-size="a4"] .ausf-only-doc .registrar-signature-zone,
+  html[data-paper-size="short"] .ausf-only-doc .registrar-signature-zone,
+  html[data-paper-size="long"] .ausf-only-doc .registrar-signature-zone {
+    margin-top: 0.45in !important;
+    justify-content: flex-end !important;
+  }
+
   /* AUSF Only: thicker underlines for fill-blanks (elderly readability) */
   .ausf-only-doc .fill-blank,
   .ausf-only-doc .border-b.border-black {
     border-bottom-width: 1.5px !important;
+  }
+
+  /* DocumentFooter: all print docs — tight CONTACT DETAILS + tagline (specificity beats .ausf-doc p / .ausf-0-6-doc.print-doc p) */
+  html[data-paper-size="a4"] .print-doc .print-doc-footer p,
+  html[data-paper-size="short"] .print-doc .print-doc-footer p,
+  html[data-paper-size="long"] .print-doc .print-doc-footer p,
+  html[data-paper-size="a4"] .court-decree-lcr-form .print-doc-footer p,
+  html[data-paper-size="short"] .court-decree-lcr-form .print-doc-footer p,
+  html[data-paper-size="long"] .court-decree-lcr-form .print-doc-footer p,
+  html[data-paper-size="a4"] .legitimation-lcr-1a .print-doc-footer p,
+  html[data-paper-size="short"] .legitimation-lcr-1a .print-doc-footer p,
+  html[data-paper-size="long"] .legitimation-lcr-1a .print-doc-footer p,
+  html[data-paper-size="a4"] .registration-of-ack-doc .print-doc-footer p,
+  html[data-paper-size="short"] .registration-of-ack-doc .print-doc-footer p,
+  html[data-paper-size="long"] .registration-of-ack-doc .print-doc-footer p {
+    margin: 0 !important;
+    margin-bottom: 0 !important;
+    line-height: 1.2 !important;
+  }
+  html[data-paper-size="a4"] .print-doc .print-doc-footer .grid,
+  html[data-paper-size="short"] .print-doc .print-doc-footer .grid,
+  html[data-paper-size="long"] .print-doc .print-doc-footer .grid,
+  html[data-paper-size="a4"] .court-decree-lcr-form .print-doc-footer .grid,
+  html[data-paper-size="short"] .court-decree-lcr-form .print-doc-footer .grid,
+  html[data-paper-size="long"] .court-decree-lcr-form .print-doc-footer .grid,
+  html[data-paper-size="a4"] .legitimation-lcr-1a .print-doc-footer .grid,
+  html[data-paper-size="short"] .legitimation-lcr-1a .print-doc-footer .grid,
+  html[data-paper-size="long"] .legitimation-lcr-1a .print-doc-footer .grid,
+  html[data-paper-size="a4"] .registration-of-ack-doc .print-doc-footer .grid,
+  html[data-paper-size="short"] .registration-of-ack-doc .print-doc-footer .grid,
+  html[data-paper-size="long"] .registration-of-ack-doc .print-doc-footer .grid {
+    column-gap: 1rem !important;
+    row-gap: 0.125rem !important;
   }
 }
 

@@ -7,6 +7,8 @@ import Dashboard from './pages/Dashboard'
 import { AUSFForm, AUSFPrint, AUSFSaved } from './pages/ausf'
 import { CourtDecreeForm, CourtDecreeInstructions, CourtDecreePrint, CourtDecreeSaved } from './pages/courtDecree'
 import { LegitimationForm, LegitimationPrint, LegitimationSaved } from './pages/legitimation'
+import LegalInstrumentPage from './pages/LegalInstrumentPage'
+import CourtDecreeWorkflowPage from './pages/CourtDecreeWorkflowPage'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth()
@@ -30,6 +32,7 @@ export default function App() {
         <Route path="ausf" element={<AUSFForm />} />
         <Route path="ausf/print" element={<AUSFPrint />} />
         <Route path="ausf/saved" element={<AUSFSaved />} />
+        <Route path="court-decree/workflow/:slug" element={<CourtDecreeWorkflowPage />} />
         <Route path="court-decree" element={<Navigate to="/court-decree/form?type=cert-authenticity" replace />} />
         <Route path="court-decree/form" element={<CourtDecreeForm />} />
         <Route path="court-decree/print" element={<CourtDecreePrint />} />
@@ -39,6 +42,7 @@ export default function App() {
         <Route path="legitimation/form" element={<LegitimationForm />} />
         <Route path="legitimation/print" element={<LegitimationPrint />} />
         <Route path="legitimation/saved" element={<LegitimationSaved />} />
+        <Route path="legal-instrument/:slug" element={<LegalInstrumentPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
