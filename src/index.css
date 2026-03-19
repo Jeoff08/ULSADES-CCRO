@@ -579,6 +579,18 @@ html[data-paper-size="long"] .ausf-0-6-doc.print-doc {
   margin-top: 2em; /* 2 line heights = 2-space gap between blocks */
 }
 
+/* Court decree CoA/CoR: signatory stack — same tight spacing on screen preview and in print/PDF */
+.print-doc-cert-auth .court-decree-cert-signatory-block p,
+.print-doc-cert-registration .court-decree-cert-signatory-block p {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.1 !important;
+}
+.print-doc-cert-auth .court-decree-cert-signatory-block,
+.print-doc-cert-registration .court-decree-cert-signatory-block {
+  line-height: 1.1;
+}
+
 /* Remove padding/margin during PDF capture so output has no margin */
 body.pdf-capture .print-doc,
 body.pdf-capture .ausf-doc {
@@ -592,6 +604,41 @@ body.pdf-capture .ausf-doc {
 body.pdf-capture .print-doc-cert-auth .cert-auth-body p + p,
 body.pdf-capture .print-doc-cert-registration .cert-reg-body p + p {
   margin-top: 2em !important;
+}
+/* Court Decree CoA / CoR: signatory centered under name + sizes (PDF capture) */
+body.pdf-capture .print-doc-cert-auth .print-doc-footer-wrap > div.court-decree-cert-signatory-block,
+body.pdf-capture .print-doc-cert-registration .print-doc-footer-wrap > div.court-decree-cert-signatory-block {
+  display: inline-flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  margin-left: 2rem !important;
+}
+body.pdf-capture .court-decree-cert-signatory-block .court-decree-cert-signatory-name {
+  font-size: 15px !important;
+  line-height: 1.1 !important;
+}
+body.pdf-capture .court-decree-cert-signatory-block .court-decree-cert-signatory-title {
+  font-size: 13px !important;
+  line-height: 1.1 !important;
+}
+body.pdf-capture .ausf-doc.print-doc.print-doc-cert-auth .court-decree-cert-signatory-block p,
+body.pdf-capture .ausf-doc.print-doc.print-doc-cert-registration .court-decree-cert-signatory-block p {
+  margin: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+  line-height: 1.1 !important;
+}
+body.pdf-capture .legitimation-registrar-footer-print .legitimation-registrar-signatory-block > div:first-child,
+body.pdf-capture .registration-of-ack-doc .legitimation-registrar-signatory-block > div:first-child {
+  font-size: 15px !important;
+  line-height: 1.25 !important;
+}
+body.pdf-capture .legitimation-registrar-footer-print .legitimation-registrar-signatory-block > div:nth-child(2),
+body.pdf-capture .registration-of-ack-doc .legitimation-registrar-signatory-block > div:nth-child(2) {
+  font-size: 13px !important;
+  line-height: 1.25 !important;
 }
 /* Transmittal (court decree): elderly-friendly larger text when capturing to PDF */
 body.pdf-capture .print-doc-transmittal-elderly.ausf-doc {
@@ -2194,6 +2241,57 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     text-align: left !important;
     align-items: flex-start !important;
   }
+  /* Court Decree CoA / CoR only: override above — center title under name, 15px / 13px */
+  .print-doc-cert-auth .print-doc-footer-wrap > div.court-decree-cert-signatory-block,
+  .print-doc-cert-registration .print-doc-footer-wrap > div.court-decree-cert-signatory-block {
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    margin-left: 2rem !important;
+  }
+  .print-doc-cert-auth .court-decree-cert-signatory-block .court-decree-cert-signatory-name,
+  .print-doc-cert-registration .court-decree-cert-signatory-block .court-decree-cert-signatory-name {
+    font-size: 15px !important;
+    line-height: 1.1 !important;
+  }
+  .print-doc-cert-auth .court-decree-cert-signatory-block .court-decree-cert-signatory-title,
+  .print-doc-cert-registration .court-decree-cert-signatory-block .court-decree-cert-signatory-title {
+    font-size: 13px !important;
+    line-height: 1.1 !important;
+  }
+  /* Beat html[data-paper-size] .ausf-doc p and .ausf-doc p margin-bottom in print/PDF */
+  .ausf-doc.print-doc.print-doc-cert-auth .court-decree-cert-signatory-block p,
+  .ausf-doc.print-doc.print-doc-cert-registration .court-decree-cert-signatory-block p {
+    margin: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+    line-height: 1.1 !important;
+  }
+  /* Legitimation registrar footer (Sole Affidavit, Registration of Legitimation, Registration of Acknowledgement) */
+  .legitimation-registrar-footer-print .print-doc-footer-wrap {
+    align-items: flex-end !important;
+  }
+  .legitimation-registrar-footer-print .print-doc-footer-wrap > div:first-child {
+    text-align: right !important;
+    align-items: flex-end !important;
+  }
+  .legitimation-registrar-footer-print .legitimation-registrar-signatory-block {
+    text-align: center !important;
+    align-items: center !important;
+    margin-right: 2.5rem !important;
+  }
+  .legitimation-registrar-footer-print .legitimation-registrar-signatory-block > div:first-child,
+  .registration-of-ack-doc .legitimation-registrar-signatory-block > div:first-child {
+    font-size: 15px !important;
+    line-height: 1.25 !important;
+  }
+  .legitimation-registrar-footer-print .legitimation-registrar-signatory-block > div:nth-child(2),
+  .registration-of-ack-doc .legitimation-registrar-signatory-block > div:nth-child(2) {
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+  }
   /* Limit justified stretch so word spacing stays close to normal (one space) */
   .ausf-doc ol li.text-justify {
     word-spacing: 0.15em;
@@ -3604,6 +3702,16 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
 }
 .court-decree-form-page__form-link:active {
   transform: scale(0.98);
+}
+.court-decree-form-page__form-link--active {
+  background: var(--primary-blue);
+  color: #fff;
+  border-color: var(--primary-blue);
+}
+.court-decree-form-page__form-link--active:hover {
+  color: #fff;
+  background: var(--primary-blue-light, #2a4a75);
+  border-color: var(--primary-blue-light, #2a4a75);
 }
 .court-decree-form-page__btn {
   transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;

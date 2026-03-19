@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -85,8 +85,15 @@ export default function Layout() {
     !isFilesSavedPage &&
     (location.pathname.startsWith('/court-decree/form') ||
       location.pathname.startsWith('/court-decree/print') ||
-      location.pathname.startsWith('/court-decree/instructions'))
+      location.pathname.startsWith('/court-decree/instructions') ||
+      location.pathname.startsWith('/court-decree/workflow/'))
   const [courtDecreeOpen, setCourtDecreeOpen] = useState(false)
+
+  useEffect(() => {
+    if (location.pathname === '/court-decree/workflow/nullity-of-marriage') {
+      setCourtDecreeOpen(true)
+    }
+  }, [location.pathname])
 
   const legitimationFormActive =
     location.pathname.startsWith('/legitimation') && location.pathname !== '/legitimation/saved'

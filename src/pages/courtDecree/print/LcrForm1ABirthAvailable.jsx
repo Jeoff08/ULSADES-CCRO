@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatDateLong, formatDateCert, fullName } from '../../../lib/printUtils'
+import { formatDateLong, formatDateCert, formatLcrFormShortDate, fullName, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 
 /** LCR Form No. 1A (Birth-Available). Data from Legitimation (child, parents, COLB, place/date of birth, marriage of parents). */
@@ -15,7 +15,12 @@ export default function LcrForm1ABirthAvailable({ data }) {
   const colbRegDate = data.colbDateOfRegistration ?? data.colbRegDate
   const dateOfMarriageParents = data.dateOfMarriageOfParents ?? data.dateOfMarriage
   const placeOfMarriageParents = data.placeOfMarriageOfParents ?? [data.placeOfMarriageCity, data.placeOfMarriageProvince, data.placeOfMarriageCountry].filter(Boolean).join(', ')
-  const formDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
+  const formDate = (() => {
+    const raw = data.certificateIssuanceDate
+    const p = parseDdMmYyyyToDate(raw)
+    if (p) return formatDateCert(p.toISOString().slice(0, 10))
+    return formatDateCert(raw) || formatDateCert(new Date())
+  })()
   const regOfficerName = data.certificateSignatoryName || 'SHIRLY L. DEMECILLO'
   const ccrName = data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL'
 
@@ -40,16 +45,16 @@ export default function LcrForm1ABirthAvailable({ data }) {
           <table className="w-full border-collapse text-sm mb-2 border border-black court-decree-lcr-table">
             <tbody>
               <tr><td className="py-1 px-2 border border-black font-medium align-top w-48">LCR Registry Number</td><td className="py-1 px-2 border border-black font-bold text-center">{data.colbRegistryNo || '—'}</td></tr>
-              <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Registration</td><td className="py-1 px-2 border border-black font-bold text-center">{formatDateLong(colbRegDate) || '—'}</td></tr>
+              <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Registration</td><td className="py-1 px-2 border border-black font-bold text-center">{formatLcrFormShortDate(colbRegDate) || formatDateLong(colbRegDate) || '—'}</td></tr>
               <tr><td className="py-1 px-2 border border-black font-medium align-top">Name of Child</td><td className="py-1 px-2 border border-black font-bold text-center">{childFull || '—'}</td></tr>
               <tr><td className="py-1 px-2 border border-black font-medium align-top">Sex</td><td className="py-1 px-2 border border-black font-bold text-center">{data.sex || '—'}</td></tr>
-              <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Birth</td><td className="py-1 px-2 border border-black font-bold text-center">{formatDateLong(data.dateOfBirth) || '—'}</td></tr>
+              <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Birth</td><td className="py-1 px-2 border border-black font-bold text-center">{formatLcrFormShortDate(data.dateOfBirth) || formatDateLong(data.dateOfBirth) || '—'}</td></tr>
               <tr><td className="py-1 px-2 border border-black font-medium align-top">Place of Birth</td><td className="py-1 px-2 border border-black font-bold text-center"><span>{placeOfBirthLine1}</span>{placeOfBirthLine2 && <><br /><span>{placeOfBirthLine2}</span></>}</td></tr>
               <tr><td className="py-1 px-2 border border-black font-medium align-top">Name of Mother</td><td className="py-1 px-2 border border-black font-bold text-center">{motherFull || '—'}</td></tr>
               <tr><td className="py-1 px-2 border border-black font-medium align-top">Citizenship of Mother</td><td className="py-1 px-2 border border-black font-bold text-center">{data.motherCitizenship || '—'}</td></tr>
               <tr><td className="py-1 px-2 border border-black font-medium align-top">Name of Father</td><td className="py-1 px-2 border border-black font-bold text-center">{fatherFull || '—'}</td></tr>
               <tr><td className="py-1 px-2 border border-black font-medium align-top">Citizenship of Father</td><td className="py-1 px-2 border border-black font-bold text-center">{data.fatherCitizenship || '—'}</td></tr>
-              <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Marriage of Parents</td><td className="py-1 px-2 border border-black font-bold text-center">{dateOfMarriageParents ? formatDateLong(dateOfMarriageParents) : '—'}</td></tr>
+              <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Marriage of Parents</td><td className="py-1 px-2 border border-black font-bold text-center">{dateOfMarriageParents ? (formatLcrFormShortDate(dateOfMarriageParents) || formatDateLong(dateOfMarriageParents)) : '—'}</td></tr>
               <tr><td className="py-1 px-2 border border-black font-medium align-top">Place of Marriage of Parents</td><td className="py-1 px-2 border border-black font-bold text-center">{placeOfMarriageParents || '—'}</td></tr>
             </tbody>
           </table>
@@ -61,12 +66,12 @@ export default function LcrForm1ABirthAvailable({ data }) {
           <div className="mb-2 flex justify-between items-end gap-8 court-decree-lcr-body">
             <div className="text-left">
               <p className="font-bold text-sm mb-0.5">Verified by:</p>
-              <p className="font-bold text-sm">{regOfficerName}</p>
-              <p className="text-xs">Registration Officer II</p>
+              <p className="font-bold text-sm border-b border-black inline-block">{regOfficerName}</p>
+              <p className="text-xs mt-0.5">LCR - Staff</p>
             </div>
             <div className="text-right">
-              <p className="font-bold text-sm">{ccrName}</p>
-              <p className="text-xs">City Civil Registrar</p>
+              <p className="font-bold text-sm border-b border-black inline-block">{ccrName}</p>
+              <p className="text-xs mt-0.5">City Civil Registrar</p>
             </div>
           </div>
           <p className="font-bold text-sm mb-2 court-decree-lcr-body">Note: This certification is not valid if it has mark, erasure or alteration of any entry.</p>

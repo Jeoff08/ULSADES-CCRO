@@ -43,9 +43,9 @@ export default function CertRegistrationCourtDecree({ data }) {
       </div>
 
       <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-start flex-shrink-0">
-        <div className="flex flex-col items-start text-left mb-8">
-          <p className="font-bold uppercase">{signatory}</p>
-          <p className="text-base italic">City Civil Registrar</p>
+        <div className="court-decree-cert-signatory-block ml-8 inline-flex flex-col items-center gap-0 leading-none mb-8">
+          <p className="court-decree-cert-signatory-name m-0 font-bold uppercase text-[15px]">{signatory}</p>
+          <p className="court-decree-cert-signatory-title m-0 text-[13px] italic">City Civil Registrar</p>
         </div>
         <div className="w-full">
           <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />

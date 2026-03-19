@@ -3,19 +3,24 @@ import React from 'react'
 /** Instructions page – Adoption (R.A. 11222). Not a print document; viewable reference page. */
 const Bold = ({ children }) => <span className="font-bold">{children}</span>
 
-export default function StandardAnnotationWithInstructions({ onBack }) {
+export default function StandardAnnotationWithInstructions({ onBack, headerRight }) {
   return (
     <div className="instructions-page w-full min-h-screen bg-white">
-      <div className="bg-[var(--primary-blue)] text-white py-6 px-8 flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold uppercase tracking-wide">Standard Annotations with Instructions</h1>
-        {onBack && (
-          <button
-            type="button"
-            onClick={onBack}
-            className="shrink-0 px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-sm font-medium rounded-lg transition"
-          >
-            Back to Print
-          </button>
+      <div className="bg-gray-200 text-black py-6 px-8 flex flex-wrap items-center justify-between gap-4 border-b border-gray-300 print:bg-gray-200 print:text-black">
+        <h1 className="text-2xl font-bold uppercase tracking-wide text-black">Standard Annotations with Instructions</h1>
+        {(headerRight || onBack) && (
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {headerRight}
+            {onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-300 border border-gray-400 text-black text-sm font-medium rounded-lg transition"
+              >
+                Back to Print
+              </button>
+            )}
+          </div>
         )}
       </div>
       <div className="p-8 text-left text-lg leading-relaxed space-y-5">

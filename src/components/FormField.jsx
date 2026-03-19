@@ -1,9 +1,25 @@
 import React from 'react'
+import { commitFirstLetterUpperFromInput } from '../lib/sentenceCase'
 
 const inputClass =
   'form-field__input w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-gray-50 transition-colors duration-150'
 
-export function FormInput({ label, id, value, onChange, type = 'text', placeholder, className = '', labelBelow }) {
+export function FormInput({
+  label,
+  id,
+  value,
+  onChange,
+  type = 'text',
+  placeholder,
+  className = '',
+  labelBelow,
+  /** When true (default), only the first letter is uppercased; rest stays as typed. */
+  capitalizeFirstLetter = true,
+  sentenceCaseOnBlur,
+}) {
+  const cap =
+    sentenceCaseOnBlur !== undefined ? sentenceCaseOnBlur : capitalizeFirstLetter
+  const applyCap = type === 'text' && cap
   return (
     <div className={className}>
       {label && !labelBelow && (
@@ -15,7 +31,11 @@ export function FormInput({ label, id, value, onChange, type = 'text', placehold
         id={id}
         type={type}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={
+          applyCap
+            ? (e) => commitFirstLetterUpperFromInput(e, onChange)
+            : (e) => onChange(e.target.value)
+        }
         placeholder={placeholder}
         className={inputClass}
       />

@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { defaultLegitimation } from './lib/legitimationDefaults'
 import { addSavedLegitimation, getLegitimationDraft, updateSavedLegitimation } from './lib/legitimationStorage'
 import { DATE_MONTHS, LEGITIMATION_TYPES } from './constants'
+import { commitFirstLetterUpperFromInput } from '../../lib/sentenceCase'
 
 const inputClass = 'legitimation-form-page__input w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-gray-50 transition-colors duration-150'
 
@@ -168,6 +169,13 @@ export default function LegitimationForm() {
   })
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
+  const scInput = (key) => (e) => {
+    if (key === 'contactEmail') {
+      update(key, e.target.value)
+      return
+    }
+    commitFirstLetterUpperFromInput(e, (v) => update(key, v))
+  }
 
   useEffect(() => {
     setForm((prev) => {
@@ -242,9 +250,9 @@ export default function LegitimationForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Name of child (First, Middle, Surname)</label>
             <div className="grid grid-cols-3 gap-2">
-              <input type="text" value={form.childFirst} onChange={(e) => update('childFirst', e.target.value)} placeholder="First" className={inputClass} />
-              <input type="text" value={form.childMiddle} onChange={(e) => update('childMiddle', e.target.value)} placeholder="Middle" className={inputClass} />
-              <input type="text" value={form.childLast} onChange={(e) => update('childLast', e.target.value)} placeholder="Surname" className={inputClass} />
+              <input type="text" value={form.childFirst} onChange={scInput('childFirst')} placeholder="First" className={inputClass} />
+              <input type="text" value={form.childMiddle} onChange={scInput('childMiddle')} placeholder="Middle" className={inputClass} />
+              <input type="text" value={form.childLast} onChange={scInput('childLast')} placeholder="Surname" className={inputClass} />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -271,9 +279,9 @@ export default function LegitimationForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Place of birth</label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <input type="text" value={form.placeOfBirthStreet} onChange={(e) => update('placeOfBirthStreet', e.target.value)} placeholder="House/Hospital/Street/Purok/Barangay" className={inputClass} />
-              <input type="text" value={form.placeOfBirthCity} onChange={(e) => update('placeOfBirthCity', e.target.value)} placeholder="City/Municipality" className={inputClass} />
-              <input type="text" value={form.placeOfBirthProvince} onChange={(e) => update('placeOfBirthProvince', e.target.value)} placeholder="Province" className={inputClass} />
+              <input type="text" value={form.placeOfBirthStreet} onChange={scInput('placeOfBirthStreet')} placeholder="House/Hospital/Street/Purok/Barangay" className={inputClass} />
+              <input type="text" value={form.placeOfBirthCity} onChange={scInput('placeOfBirthCity')} placeholder="City/Municipality" className={inputClass} />
+              <input type="text" value={form.placeOfBirthProvince} onChange={scInput('placeOfBirthProvince')} placeholder="Province" className={inputClass} />
             </div>
           </div>
         </div>
@@ -295,20 +303,20 @@ export default function LegitimationForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Mother&apos;s maiden name (First, Middle, Surname)</label>
             <div className="grid grid-cols-3 gap-2">
-              <input type="text" value={form.motherFirst} onChange={(e) => update('motherFirst', e.target.value)} className={inputClass} />
-              <input type="text" value={form.motherMiddle} onChange={(e) => update('motherMiddle', e.target.value)} className={inputClass} />
-              <input type="text" value={form.motherLast} onChange={(e) => update('motherLast', e.target.value)} className={inputClass} />
+              <input type="text" value={form.motherFirst} onChange={scInput('motherFirst')} className={inputClass} />
+              <input type="text" value={form.motherMiddle} onChange={scInput('motherMiddle')} className={inputClass} />
+              <input type="text" value={form.motherLast} onChange={scInput('motherLast')} className={inputClass} />
             </div>
-            <input type="text" value={form.motherCitizenship} onChange={(e) => update('motherCitizenship', e.target.value)} placeholder="Citizenship" className={`${inputClass} mt-2`} />
+            <input type="text" value={form.motherCitizenship} onChange={scInput('motherCitizenship')} placeholder="Citizenship" className={`${inputClass} mt-2`} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Father&apos;s name (First, Middle, Surname)</label>
             <div className="grid grid-cols-3 gap-2">
-              <input type="text" value={form.fatherFirst} onChange={(e) => update('fatherFirst', e.target.value)} className={inputClass} />
-              <input type="text" value={form.fatherMiddle} onChange={(e) => update('fatherMiddle', e.target.value)} className={inputClass} />
-              <input type="text" value={form.fatherLast} onChange={(e) => update('fatherLast', e.target.value)} className={inputClass} />
+              <input type="text" value={form.fatherFirst} onChange={scInput('fatherFirst')} className={inputClass} />
+              <input type="text" value={form.fatherMiddle} onChange={scInput('fatherMiddle')} className={inputClass} />
+              <input type="text" value={form.fatherLast} onChange={scInput('fatherLast')} className={inputClass} />
             </div>
-            <input type="text" value={form.fatherCitizenship} onChange={(e) => update('fatherCitizenship', e.target.value)} placeholder="Citizenship" className={`${inputClass} mt-2`} />
+            <input type="text" value={form.fatherCitizenship} onChange={scInput('fatherCitizenship')} placeholder="Citizenship" className={`${inputClass} mt-2`} />
           </div>
         </div>
       </LegitimationSection>
@@ -320,18 +328,18 @@ export default function LegitimationForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Surviving parent</label>
             <div className="grid grid-cols-3 gap-2">
-              <input type="text" value={form.survivingParentFirst} onChange={(e) => update('survivingParentFirst', e.target.value)} className={inputClass} />
-              <input type="text" value={form.survivingParentMiddle} onChange={(e) => update('survivingParentMiddle', e.target.value)} className={inputClass} />
-              <input type="text" value={form.survivingParentLast} onChange={(e) => update('survivingParentLast', e.target.value)} className={inputClass} />
+              <input type="text" value={form.survivingParentFirst} onChange={scInput('survivingParentFirst')} className={inputClass} />
+              <input type="text" value={form.survivingParentMiddle} onChange={scInput('survivingParentMiddle')} className={inputClass} />
+              <input type="text" value={form.survivingParentLast} onChange={scInput('survivingParentLast')} className={inputClass} />
             </div>
-            <input type="text" value={form.survivingParentCitizenship} onChange={(e) => update('survivingParentCitizenship', e.target.value)} placeholder="Citizenship" className={`${inputClass} mt-2`} />
+            <input type="text" value={form.survivingParentCitizenship} onChange={scInput('survivingParentCitizenship')} placeholder="Citizenship" className={`${inputClass} mt-2`} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Deceased parent</label>
             <div className="grid grid-cols-3 gap-2">
-              <input type="text" value={form.deceasedParentFirst} onChange={(e) => update('deceasedParentFirst', e.target.value)} className={inputClass} />
-              <input type="text" value={form.deceasedParentMiddle} onChange={(e) => update('deceasedParentMiddle', e.target.value)} className={inputClass} />
-              <input type="text" value={form.deceasedParentLast} onChange={(e) => update('deceasedParentLast', e.target.value)} className={inputClass} />
+              <input type="text" value={form.deceasedParentFirst} onChange={scInput('deceasedParentFirst')} className={inputClass} />
+              <input type="text" value={form.deceasedParentMiddle} onChange={scInput('deceasedParentMiddle')} className={inputClass} />
+              <input type="text" value={form.deceasedParentLast} onChange={scInput('deceasedParentLast')} className={inputClass} />
             </div>
             <div className="mt-2">
               <DateInput value={form.dateOfDeath} onChange={(v) => update('dateOfDeath', v)} placeholder="Date of death (dd/mm/yyyy)" />
@@ -346,7 +354,7 @@ export default function LegitimationForm() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Registry number</label>
-            <input type="text" value={form.affidavitAckRegistryNo} onChange={(e) => update('affidavitAckRegistryNo', e.target.value)} className={inputClass} />
+            <input type="text" value={form.affidavitAckRegistryNo} onChange={scInput('affidavitAckRegistryNo')} className={inputClass} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Registration date</label>
@@ -361,7 +369,7 @@ export default function LegitimationForm() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Registry number</label>
-            <input type="text" value={form.affidavitLegitRegistryNo} onChange={(e) => update('affidavitLegitRegistryNo', e.target.value)} placeholder="e.g. 1139" className={inputClass} />
+            <input type="text" value={form.affidavitLegitRegistryNo} onChange={scInput('affidavitLegitRegistryNo')} placeholder="e.g. 1139" className={inputClass} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Registration date</label>
@@ -377,7 +385,7 @@ export default function LegitimationForm() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Registry number</label>
-              <input type="text" value={form.marriageRegistryNo} onChange={(e) => update('marriageRegistryNo', e.target.value)} placeholder="e.g. 2024-13" className={inputClass} />
+              <input type="text" value={form.marriageRegistryNo} onChange={scInput('marriageRegistryNo')} placeholder="e.g. 2024-13" className={inputClass} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Date of marriage</label>
@@ -387,14 +395,14 @@ export default function LegitimationForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Place of marriage</label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <input type="text" value={form.placeOfMarriageCity} onChange={(e) => update('placeOfMarriageCity', e.target.value)} placeholder="City/Municipality" className={inputClass} />
-              <input type="text" value={form.placeOfMarriageProvince} onChange={(e) => update('placeOfMarriageProvince', e.target.value)} placeholder="Province" className={inputClass} />
-              <input type="text" value={form.placeOfMarriageCountry} onChange={(e) => update('placeOfMarriageCountry', e.target.value)} placeholder="Country" className={inputClass} />
+              <input type="text" value={form.placeOfMarriageCity} onChange={scInput('placeOfMarriageCity')} placeholder="City/Municipality" className={inputClass} />
+              <input type="text" value={form.placeOfMarriageProvince} onChange={scInput('placeOfMarriageProvince')} placeholder="Province" className={inputClass} />
+              <input type="text" value={form.placeOfMarriageCountry} onChange={scInput('placeOfMarriageCountry')} placeholder="Country" className={inputClass} />
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Solemnizing officer</label>
-            <input type="text" value={form.solemnizingOfficer} onChange={(e) => update('solemnizingOfficer', e.target.value)} placeholder="e.g. RICHIE GAY T. MENDOZA" className={inputClass} />
+            <input type="text" value={form.solemnizingOfficer} onChange={scInput('solemnizingOfficer')} placeholder="e.g. RICHIE GAY T. MENDOZA" className={inputClass} />
           </div>
         </div>
       </LegitimationSection>
@@ -405,7 +413,7 @@ export default function LegitimationForm() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Registry number</label>
-            <input type="text" value={form.colbRegistryNo} onChange={(e) => update('colbRegistryNo', e.target.value)} placeholder="e.g. 2023-2.146" className={inputClass} />
+            <input type="text" value={form.colbRegistryNo} onChange={scInput('colbRegistryNo')} placeholder="e.g. 2023-2.146" className={inputClass} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Registration date</label>
@@ -413,11 +421,11 @@ export default function LegitimationForm() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Page number</label>
-            <input type="text" value={form.colbPageNo} onChange={(e) => update('colbPageNo', e.target.value)} className={inputClass} />
+            <input type="text" value={form.colbPageNo} onChange={scInput('colbPageNo')} className={inputClass} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Book number</label>
-            <input type="text" value={form.colbBookNo} onChange={(e) => update('colbBookNo', e.target.value)} className={inputClass} />
+            <input type="text" value={form.colbBookNo} onChange={scInput('colbBookNo')} className={inputClass} />
           </div>
         </div>
       </LegitimationSection>

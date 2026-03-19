@@ -34,12 +34,20 @@ const categories = [
     meaning: 'Certificates and annotations for court-ordered civil registry documents (adoption, rescission, annulment, etc.).',
     about: 'Court Decree documents pertain to civil registry records that have been ordered or amended by the court. These include orders of adoption, rescission of adoption, annulment of marriage, legal separation, and other judicial decrees affecting civil registry entries. The Local Civil Registrar issues certificates of authenticity and registration, transmittals, LCR forms, and annotations to reflect these court decisions in the civil registry.',
     path: '/court-decree',
-    files: COURT_DECREE_TYPES.map((t) => ({
-      title: t.title.replace(/^\d+\.\s*/, ''),
-      desc: t.desc,
-      path: '/court-decree/form',
-      type: t.id,
-    })),
+    files: [
+      ...COURT_DECREE_TYPES.map((t) => ({
+        title: t.title.replace(/^\d+\.\s*/, ''),
+        desc: t.desc,
+        path: '/court-decree/form',
+        type: t.id,
+      })),
+      {
+        title: 'Marriage — Nullity / Art. 42',
+        desc: 'Annulment, nullity, or Art. 42 (opens under Nullity of marriage)',
+        to: '/court-decree/workflow/nullity-of-marriage',
+        type: 'nullity-workflow',
+      },
+    ],
   },
   {
     id: 'legitimation',
@@ -145,7 +153,7 @@ export default function Dashboard() {
               {selectedCategory.files.map((f) => (
                 <Link
                   key={f.type}
-                  to={{ pathname: f.path, search: `?type=${f.type}` }}
+                  to={f.to ?? { pathname: f.path, search: `?type=${f.type}` }}
                   onClick={() => setSelectedCategory(null)}
                   className="block w-full px-4 py-2.5 rounded-lg text-left transition focus:bg-gray-100 focus:outline-none"
                 >

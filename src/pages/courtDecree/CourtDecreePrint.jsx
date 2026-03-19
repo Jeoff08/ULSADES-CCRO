@@ -37,6 +37,8 @@ import {
   AnnotationForForm1A,
   AnnotationForForm2A,
   AnnotationForForm3A,
+  MarriageNullityArt42Annotation,
+  MarriageAnnotationModeSidebar,
 } from './print'
 
 function getStoredData() {
@@ -48,6 +50,37 @@ function getStoredData() {
   } catch {
     return null
   }
+}
+
+/** LCR + annotation print types tied to one civil document */
+const LCR_TYPES_BY_AFFECTED = {
+  BIRTH_CERTIFICATE: new Set(['lcr-form-1a', 'annotation-form-1a']),
+  DEATH_CERTIFICATE: new Set(['lcr-form-2a', 'annotation-form-2a']),
+  MARRIAGE_CERTIFICATE: new Set(['lcr-form-3a', 'annotation-form-3a']),
+}
+
+const RESTRICTED_PRINT_IDS = [
+  'lcr-form-1a',
+  'lcr-form-2a',
+  'lcr-form-3a',
+  'annotation-form-1a',
+  'annotation-form-2a',
+  'annotation-form-3a',
+]
+
+function isPrintTypeAllowedForAffected(printTypeId, affectedDocument) {
+  const aff = (affectedDocument || '').trim()
+  if (!aff || !LCR_TYPES_BY_AFFECTED[aff]) return true
+  if (!RESTRICTED_PRINT_IDS.includes(printTypeId)) return true
+  return LCR_TYPES_BY_AFFECTED[aff].has(printTypeId)
+}
+
+function defaultPrintTypeForAffected(affectedDocument) {
+  const aff = (affectedDocument || '').trim()
+  if (aff === 'BIRTH_CERTIFICATE') return 'lcr-form-1a'
+  if (aff === 'DEATH_CERTIFICATE') return 'lcr-form-2a'
+  if (aff === 'MARRIAGE_CERTIFICATE') return 'lcr-form-3a'
+  return 'cert-authenticity'
 }
 
 export default function CourtDecreePrint() {
@@ -64,9 +97,38 @@ export default function CourtDecreePrint() {
     if (stored) setData(stored)
   }, [])
 
-  const validType = COURT_DECREE_TYPES.some((t) => t.id === type) ? type : 'cert-authenticity'
+  /** Not in sidebar — use Court Decree → Nullity of marriage. Direct URL still works. */
+  const validType =
+    type === 'marriage-nullity-art42'
+      ? 'marriage-nullity-art42'
+      : COURT_DECREE_TYPES.some((t) => t.id === type)
+        ? type
+        : 'cert-authenticity'
 
-  // For LCR Form 1A and Annotation Form 1A: same legitimation + remarks
+  useEffect(() => {
+    const aff = (data.affectedDocument || '').trim()
+    if (!aff || !LCR_TYPES_BY_AFFECTED[aff]) return
+    if (!isPrintTypeAllowedForAffected(validType, aff)) {
+      setSearchParams({ type: defaultPrintTypeForAffected(aff) }, { replace: true })
+    }
+  }, [data.affectedDocument, validType, setSearchParams])
+
+  const LCR_1A_FORM_KEYS = [
+    'lcr1aRegistryNumber', 'lcr1aDateRegistration', 'lcr1aNameOfChild', 'lcr1aSex', 'lcr1aDateOfBirth',
+    'lcr1aPlaceOfBirth', 'lcr1aNameOfMother', 'lcr1aMotherCitizenship', 'lcr1aNameOfFather', 'lcr1aFatherCitizenship',
+    'lcr1aDateMarriageParents', 'lcr1aPlaceMarriageParents',
+    'childFirst', 'childMiddle', 'childLast', 'dateOfBirth', 'sex',
+    'placeOfBirthStreet', 'placeOfBirthCity', 'placeOfBirthProvince',
+    'motherFirst', 'motherMiddle', 'motherLast', 'motherCitizenship',
+    'fatherFirst', 'fatherMiddle', 'fatherLast', 'fatherCitizenship',
+    'colbRegistryNo', 'colbRegDate', 'colbPageNo', 'colbBookNo',
+    'dateOfMarriage', 'placeOfMarriageCity', 'placeOfMarriageProvince', 'placeOfMarriageCountry',
+    'placeOfMarriageOfParents',
+    'certificateIssuanceDate', 'cityCivilRegistrarName', 'certificateSignatoryName',
+    'contactPhone', 'contactEmail',
+  ]
+
+  // LCR Form 1A: court-decree form fields override matched legitimation draft
   const dataForLcr1A = useMemo(() => {
     if (validType !== 'lcr-form-1a' && validType !== 'annotation-form-1a') return data
     const ownerName = (data.documentOwnerName || '').trim()
@@ -87,23 +149,141 @@ export default function CourtDecreePrint() {
       }
     }
     if (!ownerData) ownerData = getLegitimationDraft()
-    if (!ownerData) return { ...defaultLegitimation }
-    const leg = ownerData
-    return {
-      ...leg,
-      colbDateOfRegistration: leg.colbRegDate,
-      colbPageNumber: leg.colbPageNo,
-      colbBookNumber: leg.colbBookNo,
-      placeOfBirthAddress: leg.placeOfBirthStreet,
-      dateOfMarriageOfParents: leg.dateOfMarriage,
-      placeOfMarriageOfParents: [leg.placeOfMarriageCity, leg.placeOfMarriageProvince, leg.placeOfMarriageCountry].filter(Boolean).join(', '),
-      remarks: buildLcrRemarks(data, leg, 'BIRTH'),
+    const base = { ...defaultLegitimation, ...(ownerData && typeof ownerData === 'object' ? ownerData : {}) }
+    const out = { ...base }
+    for (const k of LCR_1A_FORM_KEYS) {
+      const v = data[k]
+      if (v != null && String(v).trim() !== '') out[k] = typeof v === 'string' ? v.trim() : v
     }
+    const reg = String(data.colbRegistryNo || '').trim() || String(data.registryNumber || '').trim()
+    if (reg) out.colbRegistryNo = reg
+    const pom = String(data.placeOfMarriageOfParents || '').trim()
+    const pomFallback = [out.placeOfMarriageCity, out.placeOfMarriageProvince, out.placeOfMarriageCountry].filter(Boolean).join(', ')
+    out.placeOfMarriageOfParents = pom || pomFallback
+    const manualRemarks = String(data.lcrForm1aRemarks || '').trim()
+    out.remarks = manualRemarks || buildLcrRemarks(data, out, 'BIRTH')
+    return out
   }, [validType, data])
 
-  // For LCR Form 2A and Annotation Form 2A: same legitimation + remarks (DEATH)
+  const LCR_2A_FORM_KEYS = [
+    'lcr2aRegistryNumber', 'lcr2aDateRegistration', 'lcr2aNameDeceased', 'lcr2aSex', 'lcr2aCivilStatus',
+    'lcr2aCitizenship', 'lcr2aDateDeath', 'lcr2aCitizenshipFather', 'lcr2aPlaceDeath', 'lcr2aCauseDeath',
+    'colbPageNo', 'colbBookNo', 'colbRegistryNo', 'colbRegDate', 'colbDateOfRegistration',
+    'deceasedParentFirst', 'deceasedParentMiddle', 'deceasedParentLast',
+    'documentOwnerName', 'sex', 'civilStatus', 'citizenship', 'dateOfDeath',
+    'citizenshipOfFather', 'placeOfDeath', 'causeOfDeath',
+    'certificateIssuanceDate', 'cityCivilRegistrarName', 'certificateSignatoryName',
+    'contactPhone', 'contactEmail',
+  ]
+
   const dataForLcr2A = useMemo(() => {
-    if (validType !== 'lcr-form-2a' && validType !== 'annotation-form-2a') return data
+    if (validType !== 'lcr-form-2a') return data
+    const ownerName = (data.lcr2aNameDeceased || data.documentOwnerName || '').trim()
+    const normalize = (s) => (s || '').trim().toUpperCase()
+    let ownerData = null
+    if (ownerName) {
+      const draft = getLegitimationDraft()
+      if (draft) {
+        const forDeath = getDocumentOwnerLabelFromLegitimationData(draft, 'DEATH_CERTIFICATE')
+        const forMarriage = getDocumentOwnerLabelFromLegitimationData(draft, 'MARRIAGE_CERTIFICATE')
+        if (normalize(forDeath) === normalize(ownerName) || normalize(forMarriage) === normalize(ownerName)) ownerData = draft
+      }
+      if (!ownerData) {
+        const saved = getSavedLegitimationList()
+        for (const item of saved) {
+          if (!item.data) continue
+          const forDeath = getDocumentOwnerLabelFromLegitimationData(item.data, 'DEATH_CERTIFICATE')
+          const forMarriage = getDocumentOwnerLabelFromLegitimationData(item.data, 'MARRIAGE_CERTIFICATE')
+          if (
+            normalize(forDeath) === normalize(ownerName) ||
+            normalize(forMarriage) === normalize(ownerName) ||
+            normalize(item.label) === normalize(ownerName)
+          ) {
+            ownerData = item.data
+            break
+          }
+        }
+      }
+    }
+    if (!ownerData) ownerData = getLegitimationDraft()
+    const base = { ...defaultLegitimation, ...(ownerData && typeof ownerData === 'object' ? ownerData : {}) }
+    const out = { ...base }
+    for (const k of LCR_2A_FORM_KEYS) {
+      const v = data[k]
+      if (v != null && String(v).trim() !== '') out[k] = typeof v === 'string' ? v.trim() : v
+    }
+    const reg = String(data.lcr2aRegistryNumber || '').trim() || String(data.colbRegistryNo || '').trim()
+    if (reg) out.colbRegistryNo = reg
+    out.remarks = buildLcrRemarks(data, out, 'DEATH')
+    return out
+  }, [validType, data])
+
+  const LCR_3A_FORM_KEYS = [
+    'lcr3aHusbandName', 'lcr3aHusbandDobAge', 'lcr3aHusbandCitizenship', 'lcr3aHusbandCivilStatus',
+    'lcr3aHusbandMother', 'lcr3aHusbandFather', 'lcr3aWifeName', 'lcr3aWifeDobAge', 'lcr3aWifeCitizenship',
+    'lcr3aWifeCivilStatus', 'lcr3aWifeMother', 'lcr3aWifeFather', 'lcr3aRegistryNumber', 'lcr3aDateRegistration',
+    'lcr3aDateMarriage', 'lcr3aPlaceMarriage',
+    'fatherFirst', 'fatherMiddle', 'fatherLast', 'motherFirst', 'motherMiddle', 'motherLast',
+    'husbandDateOfBirth', 'wifeDateOfBirth', 'husbandAge', 'wifeAge',
+    'fatherCitizenship', 'motherCitizenship', 'husbandCivilStatus', 'wifeCivilStatus',
+    'husbandMotherName', 'wifeMotherName', 'husbandFatherName', 'wifeFatherName',
+    'marriageRegistryNo', 'marriageDateOfRegistration', 'dateOfMarriage',
+    'placeOfMarriageCity', 'placeOfMarriageProvince', 'placeOfMarriageCountry',
+    'colbPageNo', 'colbBookNo', 'documentOwnerName',
+    'certificateIssuanceDate', 'cityCivilRegistrarName', 'certificateSignatoryName',
+    'contactPhone', 'contactEmail',
+  ]
+
+  const dataForLcr3A = useMemo(() => {
+    if (validType !== 'lcr-form-3a') return data
+    const normalize = (s) => (s || '').trim().toUpperCase()
+    const ownerName = (data.documentOwnerName || '').trim()
+    const hCourt = (data.lcr3aHusbandName || '').trim()
+    const wCourt = (data.lcr3aWifeName || '').trim()
+    let ownerData = null
+    const matchLeg = (leg) => {
+      if (!leg) return false
+      const ml = (getDocumentOwnerLabelFromLegitimationData(leg, 'MARRIAGE_CERTIFICATE') || '').trim()
+      if (ownerName && ml && normalize(ml) === normalize(ownerName)) return true
+      const legH = [leg.fatherFirst, leg.fatherMiddle, leg.fatherLast].filter(Boolean).join(' ').trim()
+      const legW = [leg.motherFirst, leg.motherMiddle, leg.motherLast].filter(Boolean).join(' ').trim()
+      if (hCourt && wCourt && legH && legW && normalize(legH) === normalize(hCourt) && normalize(legW) === normalize(wCourt)) return true
+      return false
+    }
+    const draft = getLegitimationDraft()
+    if (matchLeg(draft)) ownerData = draft
+    if (!ownerData) {
+      for (const item of getSavedLegitimationList()) {
+        if (item.data && matchLeg(item.data)) {
+          ownerData = item.data
+          break
+        }
+      }
+    }
+    if (!ownerData && ownerName) {
+      for (const item of getSavedLegitimationList()) {
+        if (item.data && normalize(item.label || '') === normalize(ownerName)) {
+          ownerData = item.data
+          break
+        }
+      }
+    }
+    if (!ownerData) ownerData = getLegitimationDraft()
+    const base = { ...defaultLegitimation, ...(ownerData && typeof ownerData === 'object' ? ownerData : {}) }
+    const out = { ...base }
+    for (const k of LCR_3A_FORM_KEYS) {
+      const v = data[k]
+      if (v != null && String(v).trim() !== '') out[k] = typeof v === 'string' ? v.trim() : v
+    }
+    const reg = String(data.lcr3aRegistryNumber || '').trim() || String(data.marriageRegistryNo || '').trim()
+    if (reg) out.marriageRegistryNo = reg
+    out.remarks = buildLcrRemarks(data, out, 'MARRIAGE')
+    return out
+  }, [validType, data])
+
+  /** Remarks for Annotation Form 2A only (legitimation + court merge). */
+  const remarksForAnnotationForm2A = useMemo(() => {
+    if (validType !== 'annotation-form-2a') return ''
     const ownerName = (data.documentOwnerName || '').trim()
     const normalize = (s) => (s || '').trim().toUpperCase()
     let ownerData = null
@@ -129,44 +309,8 @@ export default function CourtDecreePrint() {
       }
     }
     if (!ownerData) ownerData = getLegitimationDraft()
-    if (!ownerData) return { ...defaultLegitimation }
-    const deceasedName = [ownerData.deceasedParentFirst, ownerData.deceasedParentMiddle, ownerData.deceasedParentLast].filter(Boolean).join(' ').trim()
-    return {
-      ...ownerData,
-      documentOwnerName: ownerName || deceasedName,
-      colbDateOfRegistration: ownerData.colbRegDate,
-      colbPageNumber: ownerData.colbPageNo,
-      colbBookNumber: ownerData.colbBookNo,
-      remarks: buildLcrRemarks(data, ownerData, 'DEATH'),
-    }
-  }, [validType, data])
-
-  // For LCR Form 3A (marriage): Legitimation only — no Court Decree or AUSF data
-  const dataForLcr3A = useMemo(() => {
-    if (validType !== 'lcr-form-3a') return data
-    const ownerName = (data.documentOwnerName || '').trim()
-    const normalize = (s) => (s || '').trim().toUpperCase()
-    let ownerData = null
-    if (ownerName) {
-      const draft = getLegitimationDraft()
-      if (draft && normalize(getDocumentOwnerLabelFromLegitimationData(draft, 'MARRIAGE_CERTIFICATE')) === normalize(ownerName)) ownerData = draft
-      if (!ownerData) {
-        const saved = getSavedLegitimationList()
-        for (const item of saved) {
-          if (!item.data) continue
-          if (normalize(getDocumentOwnerLabelFromLegitimationData(item.data, 'MARRIAGE_CERTIFICATE')) === normalize(ownerName) || normalize(item.label) === normalize(ownerName)) {
-            ownerData = item.data
-            break
-          }
-        }
-      }
-    }
-    if (!ownerData) ownerData = getLegitimationDraft()
-    if (!ownerData) return { ...defaultLegitimation }
-    return {
-      ...ownerData,
-      remarks: buildLcrRemarks(data, ownerData, 'MARRIAGE'),
-    }
+    if (!ownerData) return buildLcrRemarks(data, { ...defaultLegitimation }, 'DEATH')
+    return buildLcrRemarks(data, ownerData, 'DEATH')
   }, [validType, data])
 
   const subjectLine = data.caseTitle
@@ -228,7 +372,7 @@ export default function CourtDecreePrint() {
       content = (
         <AnnotationForForm2A
           paperSize={paperSize}
-          data={{ ...data, remarks: dataForLcr2A.remarks }}
+          data={{ ...data, remarks: remarksForAnnotationForm2A }}
           onAttachmentChange={(url) => {
             const next = { ...data, annotationForm2AScanDataUrl: url ?? '' }
             setData(next)
@@ -242,6 +386,31 @@ export default function CourtDecreePrint() {
       break
     case 'annotation-form-3a':
       content = <AnnotationForForm3A data={data} />
+      break
+    case 'marriage-nullity-art42':
+      content = (
+        <MarriageNullityArt42Annotation
+          hugPrintSidebar
+          hideOutputTypeSelector
+          data={data}
+          onAttachmentChange={(url) => {
+            const next = { ...data, marriageNullityScanDataUrl: url ?? '' }
+            setData(next)
+            try {
+              const stored = getCourtDecreeDraft() || {}
+              saveCourtDecreeDraft({ ...stored, marriageNullityScanDataUrl: url ?? '' })
+            } catch (_) {}
+          }}
+          onModeChange={(m) => {
+            const next = { ...data, marriageAnnotationMode: m }
+            setData(next)
+            try {
+              const stored = getCourtDecreeDraft() || {}
+              saveCourtDecreeDraft({ ...stored, marriageAnnotationMode: m })
+            } catch (_) {}
+          }}
+        />
+      )
       break
     default:
       content = <CertAuthenticityCourtDecree data={data} />
@@ -277,11 +446,16 @@ export default function CourtDecreePrint() {
           </button>
         </div>
       </div>
-      <div className="flex gap-6">
+      <div className={validType === 'marriage-nullity-art42' ? 'flex gap-3 items-start' : 'flex gap-6'}>
         <aside className="no-print w-56 shrink-0 flex flex-col gap-3">
           <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">View &amp; Print</h2>
           <div className="flex flex-col gap-2">
-            {COURT_DECREE_TYPES.map((t) => {
+            {(data.affectedDocument || '').trim() && LCR_TYPES_BY_AFFECTED[(data.affectedDocument || '').trim()] ? (
+              <p className="text-xs text-gray-600 leading-snug -mt-1 mb-1">
+                LCR &amp; annotation options match <span className="font-semibold text-gray-800">affected civil document</span> on the form.
+              </p>
+            ) : null}
+            {COURT_DECREE_TYPES.filter((t) => isPrintTypeAllowedForAffected(t.id, data.affectedDocument)).map((t) => {
               const isStandardAnnotation = t.id === 'standard-annotation'
               const isSelected = !isStandardAnnotation && validType === t.id
               const isLcrForm = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a'].includes(t.id)
@@ -302,6 +476,20 @@ export default function CourtDecreePrint() {
               )
             })}
           </div>
+          {validType === 'marriage-nullity-art42' ? (
+            <MarriageAnnotationModeSidebar
+              belowPrintNav
+              data={data}
+              onModeChange={(m) => {
+                const next = { ...data, marriageAnnotationMode: m }
+                setData(next)
+                try {
+                  const stored = getCourtDecreeDraft() || {}
+                  saveCourtDecreeDraft({ ...stored, marriageAnnotationMode: m })
+                } catch (_) {}
+              }}
+            />
+          ) : null}
         </aside>
         <div className="flex-1 min-w-0">
           {content}

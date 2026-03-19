@@ -11,7 +11,7 @@ export default function RegistrationOfAcknowledgement({ data }) {
   const signatory = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
 
   return (
-    <div className="registration-of-ack-doc ausf-doc print-doc bg-white text-black text-base max-w-[210mm] mx-auto px-6 py-4 leading-relaxed flex flex-col min-h-[297mm]">
+    <div className="registration-of-ack-doc ausf-doc print-doc legitimation-registrar-footer-print bg-white text-black text-base max-w-[210mm] mx-auto px-6 py-4 leading-relaxed flex flex-col min-h-[297mm]">
       <header className="print-doc-header mb-4">
         <PrintHeaderRow />
         <hr className="border-black border-t my-2" />
@@ -54,9 +54,13 @@ export default function RegistrationOfAcknowledgement({ data }) {
 
       <div className="min-h-[6rem] flex-1" aria-hidden />
 
-      <div className="mt-auto pt-6 flex flex-col items-end">
-        <p className="font-bold uppercase text-[18px]">{signatory}</p>
-        <p className="text-base">City Civil Registrar</p>
+      <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-end flex-shrink-0">
+        <div className="flex flex-col items-end mb-8">
+          <div className="legitimation-registrar-signatory-block mr-10 inline-flex flex-col items-center leading-none text-center">
+            <div className="font-bold uppercase text-[15px]">{signatory}</div>
+            <div className="text-[13px] italic">City Civil Registrar</div>
+          </div>
+        </div>
         <div className="w-full mt-6">
           <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
         </div>
