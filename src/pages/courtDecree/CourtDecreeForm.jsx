@@ -379,17 +379,6 @@ export default function CourtDecreeForm() {
 
   const proceedToPrint = () => {
     const formForOutput = { ...form }
-    if (form.formType === 'lcr-form-1a') {
-      formForOutput.documentOwnerName = (form.lcr1aNameOfChild || '').trim()
-    }
-    if (form.formType === 'lcr-form-2a') {
-      formForOutput.documentOwnerName = (form.lcr2aNameDeceased || '').trim()
-    }
-    if (form.formType === 'lcr-form-3a') {
-      const h = (form.lcr3aHusbandName || '').trim()
-      const w = (form.lcr3aWifeName || '').trim()
-      formForOutput.documentOwnerName = h && w ? `${h} & ${w}` : h || w || ''
-    }
     COURT_DECREE_DATE_KEYS.forEach((key) => {
       if (formForOutput[key]) formForOutput[key] = dateToOutputFormat(formForOutput[key])
     })
@@ -409,12 +398,6 @@ export default function CourtDecreeForm() {
         const next = { ...prev, formType: type }
         const affected = urlToAffectedDoc(type)
         if (affected) next.affectedDocument = affected
-        if (type === 'cert-authenticity') {
-          const owner = deriveDocumentOwnerFromLcr(next)
-          if (owner && !String(next.documentOwnerName || '').trim()) {
-            next.documentOwnerName = owner
-          }
-        }
         return next
       })
     }
@@ -427,34 +410,12 @@ export default function CourtDecreeForm() {
       const d = getCourtDecreeDraft()
       if (d && typeof d === 'object') {
         const merged = { ...defaultCourtDecree, ...d, formType: 'cert-authenticity' }
-        const owner = deriveDocumentOwnerFromLcr(merged)
-        if (owner && !String(merged.documentOwnerName || '').trim()) {
-          merged.documentOwnerName = owner
-        }
         setForm(merged)
       }
     } finally {
       navigate('/court-decree/form?type=cert-authenticity', { replace: true })
     }
   }, [hydrateDraft, navigate])
-
-  useEffect(() => {
-    if (form.formType !== 'cert-authenticity') return
-    if (String(form.documentOwnerName || '').trim()) return
-    const owner = deriveDocumentOwnerFromLcr(form)
-    if (!owner) return
-    setForm((prev) =>
-      String(prev.documentOwnerName || '').trim() ? prev : { ...prev, documentOwnerName: owner }
-    )
-  }, [
-    form.formType,
-    form.affectedDocument,
-    form.lcr1aNameOfChild,
-    form.lcr2aNameDeceased,
-    form.lcr3aHusbandName,
-    form.lcr3aWifeName,
-    form.documentOwnerName,
-  ])
 
   const handleLcrTableCompleteContinue = () => {
     const missing = getMissingFields(form)
@@ -803,24 +764,7 @@ export default function CourtDecreeForm() {
       <CourtDecreeSection number="2" title="Affected civil document?">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Document Type</label>
-            <select
-              value={form.affectedDocument}
-              onChange={(e) => update('affectedDocument', e.target.value)}
-              className={inputClass}
-            >
-              {AFFECTED_DOCUMENT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-          <div className="court-decree-form-page__instruction court-decree-form-page__instruction--muted flex items-center gap-2 mt-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-            NOTE: Manually fill-up Form 3A
-          </div>
-          <div className="mt-3">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Forms (checked when filled)</label>
             <LcrFormNavLinks form={form} activeType={form.formType} showFullCourtLink={false} />
           </div>
         </div>

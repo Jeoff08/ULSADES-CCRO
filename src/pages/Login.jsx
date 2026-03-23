@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -18,6 +18,13 @@ function IconLock({ className }) {
   )
 }
 
+const MARQUEE_SEGMENTS = [
+  'ULSADES - CCRO: Unified Legal Status Automated Data Entry System — streamlining civil registry documents for the City Civil Registrar’s Office, Iligan City.',
+  'AUSF (Affidavit to Use the Surname of the Father): a legal document that allows a child to use the father’s surname when the parents are not married; it is filed with the Local Civil Registrar and covers AUSF 0-6, AUSF 07-17, registration of AUSF, acknowledgement, LCR forms, annotations, and transmittals.',
+  'Court Decree: certificates and annotations for court-ordered civil registry documents, including adoption, rescission, annulment, and legal separation; the LCR issues certificates of authenticity and registration, transmittals, LCR forms, and annotations to reflect court decisions.',
+  'Legitimation: the process by which a child born to unmarried parents becomes legitimate when the parents later marry; it involves an Affidavit of Legitimation (sole or joint), registration with the Local Civil Registrar, and annotation on the child’s Certificate of Live Birth, giving the child the same rights as those born to married parents.',
+]
+
 const LOGIN_LOADING_MS = 700
 const LOGIN_SUCCESS_DELAY_MS = 500
 const LOGIN_OVERLAY_EXIT_MS = 350
@@ -30,11 +37,24 @@ export default function Login() {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [isOverlayExiting, setIsOverlayExiting] = useState(false)
   const [showError, setShowError] = useState(false)
+  const [marqueeIdx, setMarqueeIdx] = useState(0)
+  const marqueeRef = useRef(null)
   const { login, isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const from = location.state?.from?.pathname || '/'
   const fromLogout = location.state?.fromLogout === true
+
+  // Cycle to next segment the instant the current one finishes scrolling
+  useEffect(() => {
+    const el = marqueeRef.current
+    if (!el) return
+    const handleEnd = () => {
+      setMarqueeIdx((i) => (i + 1) % MARQUEE_SEGMENTS.length)
+    }
+    el.addEventListener('animationend', handleEnd)
+    return () => el.removeEventListener('animationend', handleEnd)
+  }, [marqueeIdx]) // re-attach after each remount caused by key change
 
   if (isAuthenticated && !isLoading && !isTransitioning) {
     navigate(from, { replace: true })
@@ -95,7 +115,7 @@ export default function Login() {
               className="w-32 h-32 md:w-40 md:h-40 object-contain shrink-0"
             />
           </div>
-          <p className="login-brand__acronym text-sm font-bold tracking-wide text-center">ULSADES</p>
+          <p className="login-brand__acronym text-sm font-bold tracking-wide text-center">ULSADES - CCRO</p>
           <p className="login-brand__title text-xs md:text-sm text-center mt-1 text-white/95 max-w-xs">
             Unified Legal Status Automated Data Entry System
           </p>
@@ -183,14 +203,11 @@ export default function Login() {
       </div>
       </div>
 
-      {/* Scrolling text: system meaning, AUSF, Court Decree, Legitimation — right to left; slides in from right when arriving from logout */}
+      {/* Scrolling text — one segment at a time, 1 min each, cycles automatically */}
       <div className={`login-marquee-wrap${fromLogout ? ' login-marquee-wrap--from-logout' : ''}`} aria-hidden>
-        <div className="login-marquee">
+        <div className="login-marquee" key={marqueeIdx} ref={marqueeRef}>
           <span className="login-marquee__text">
-            ULSADES: Unified Legal Status Automated Data Entry System — streamlining civil registry documents for the City Civil Registrar&apos;s Office, Iligan City.
-            AUSF (Affidavit to Use the Surname of the Father): a legal document that allows a child to use the father&apos;s surname when the parents are not married; it is filed with the Local Civil Registrar and covers AUSF 0-6, AUSF 07-17, registration of AUSF, acknowledgement, LCR forms, annotations, and transmittals.
-            Court Decree: certificates and annotations for court-ordered civil registry documents, including adoption, rescission, annulment, and legal separation; the LCR issues certificates of authenticity and registration, transmittals, LCR forms, and annotations to reflect court decisions.
-            Legitimation: the process by which a child born to unmarried parents becomes legitimate when the parents later marry; it involves an Affidavit of Legitimation (sole or joint), registration with the Local Civil Registrar, and annotation on the child&apos;s Certificate of Live Birth, giving the child the same rights as those born to married parents.
+            {MARQUEE_SEGMENTS[marqueeIdx]}
           </span>
         </div>
       </div>

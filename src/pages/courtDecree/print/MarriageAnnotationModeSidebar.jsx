@@ -13,18 +13,26 @@ const OPTIONS = [
   [M.art42, 'Termination (subsequent marriage) — Art. 42'],
 ]
 
-/** Stacked controls matching View & Print sidebar (LCR-style). belowPrintNav: divider under main print list. */
-export default function MarriageAnnotationModeSidebar({ data, onModeChange, belowPrintNav = false }) {
+/** Stacked controls matching View & Print sidebar (LCR-style). belowPrintNav: divider under main print list.
+ *  allowedModes: if set, only those output types are listed (e.g. divorce-only workflow page). */
+export default function MarriageAnnotationModeSidebar({ data, onModeChange, belowPrintNav = false, allowedModes = null }) {
   const mode = resolveMarriageAnnotationMode(data?.marriageAnnotationMode)
+  const options = allowedModes?.length
+    ? OPTIONS.filter(([id]) => allowedModes.includes(id))
+    : OPTIONS
 
   return (
     <div
       className={`flex flex-col gap-2 ${belowPrintNav ? 'border-t border-gray-200 pt-3 mt-2' : ''}`}
     >
       <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">12. Marriage output</h2>
-      <p className="text-xs text-gray-600 leading-snug -mt-1 mb-0.5">Nullity, divorce, or Art. 42 termination.</p>
+      <p className="text-xs text-gray-600 leading-snug -mt-1 mb-0.5">
+        {options.length === 1 && options[0][0] === M.divorce
+          ? 'Divorce certificate output.'
+          : 'Nullity, divorce, or Art. 42 termination.'}
+      </p>
       <div className="flex flex-col gap-2">
-        {OPTIONS.map(([id, label]) => (
+        {options.map(([id, label]) => (
           <button
             key={id}
             type="button"

@@ -22,6 +22,16 @@ body {
   background: var(--main-bg);
 }
 
+@keyframes toastProgress {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+.toast-progress {
+  transform-origin: left;
+  animation: toastProgress 5s linear forwards;
+}
+
 /* Fill-in blanks: single line only (border-bottom). No text-decoration: underline to avoid double line. */
 .fill-blank {
   border-bottom: 1px solid #000;
@@ -201,7 +211,7 @@ body {
 .login-marquee {
   display: flex;
   width: max-content;
-  animation: login-marquee-scroll 122s linear infinite;
+  animation: login-marquee-scroll 45s linear forwards;
 }
 .login-marquee__text {
   padding: 0 2rem;
@@ -213,7 +223,7 @@ body {
 }
 @keyframes login-marquee-scroll {
   0% {
-    transform: translateX(100%);
+    transform: translateX(100vw);
   }
   98.36% {
     transform: translateX(-100%);

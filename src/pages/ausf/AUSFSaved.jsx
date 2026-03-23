@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getSavedAUSFList, loadSavedAUSFToDraft, deleteSavedAUSF, restoreSavedAUSF } from './lib/ausfStorage'
+import { hasAnyUploadsForRecord } from '../../lib/uploadedFileStore'
+import hasUploadedFilesIcon from '../../assets/has-uploaded-files-icon.svg'
 
 const FORM_TYPE_LABELS = {
   'ausf-only': 'AUSF only',
@@ -57,6 +59,7 @@ function sortAusfSavedList(items) {
 
 export default function AUSFSaved() {
   const [list, setList] = useState(() => sortAusfSavedList(getAusfSavedListForDisplay()))
+  const [uploadsRev, setUploadsRev] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [toastVisible, setToastVisible] = useState(false)
@@ -67,6 +70,12 @@ export default function AUSFSaved() {
 
   useEffect(() => {
     setList(sortAusfSavedList(getAusfSavedListForDisplay()))
+  }, [])
+
+  useEffect(() => {
+    const onFocus = () => setUploadsRev((v) => v + 1)
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
   }, [])
 
   useEffect(() => {
@@ -86,7 +95,7 @@ export default function AUSFSaved() {
   }, [toastVisible])
 
   const handleViewPrint = (item) => {
-    if (loadSavedAUSFToDraft(item.id)) navigate('/ausf/print')
+    if (loadSavedAUSFToDraft(item.id)) navigate(`/ausf/print?id=${encodeURIComponent(item.id)}`)
   }
 
   const handleEdit = (item) => {
@@ -198,12 +207,28 @@ export default function AUSFSaved() {
               style={{ animationDelay: `${0.2 + idx * 0.05}s` }}
             >
               <div className="min-w-0">
-                <p className="font-medium text-gray-800 truncate">{item.label}</p>
+                <p className="font-medium text-gray-800 truncate">
+                  <span className="truncate">{item.label}</span>
+                </p>
                 <p className="text-xs text-gray-500 mt-0.5">
                   {FORM_TYPE_LABELS[item.formType] || item.formType} · {formatSavedAt(item.savedAt)}
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                {hasAnyUploadsForRecord('ausf', item.id) ? (
+                  <span
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-amber-50/90 border border-amber-200/90"
+                    title="Has uploaded file(s)"
+                    aria-label="Has uploaded file(s)"
+                  >
+                    <img
+                      src={hasUploadedFilesIcon}
+                      alt=""
+                      className="w-7 h-7 object-contain select-none pointer-events-none"
+                      draggable={false}
+                    />
+                  </span>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => handleEdit(item)}

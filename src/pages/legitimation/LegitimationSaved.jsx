@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getSavedLegitimationList, loadSavedLegitimationToDraft, deleteSavedLegitimation, restoreSavedLegitimation } from './lib/legitimationStorage'
+import { hasAnyUploadsForRecord } from '../../lib/uploadedFileStore'
+import hasUploadedFilesIcon from '../../assets/has-uploaded-files-icon.svg'
 
 const LEGITIMATION_TYPE_LABELS = {
   'sole-affidavit': 'Sole Affidavit Legitimation',
@@ -36,6 +38,7 @@ function matchesSearch(item, query, formTypeLabels) {
 
 export default function LegitimationSaved() {
   const [list, setList] = useState(() => getSavedLegitimationList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+  const [uploadsRev, setUploadsRev] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [toastVisible, setToastVisible] = useState(false)
@@ -46,6 +49,12 @@ export default function LegitimationSaved() {
 
   useEffect(() => {
     setList(getSavedLegitimationList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+  }, [])
+
+  useEffect(() => {
+    const onFocus = () => setUploadsRev((v) => v + 1)
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
   }, [])
 
   useEffect(() => {
@@ -63,7 +72,7 @@ export default function LegitimationSaved() {
   }, [toastVisible])
 
   const handleViewPrint = (item) => {
-    if (loadSavedLegitimationToDraft(item.id)) navigate(`/legitimation/print?type=${item.formType || 'joint-affidavit'}`)
+    if (loadSavedLegitimationToDraft(item.id)) navigate(`/legitimation/print?type=${item.formType || 'joint-affidavit'}&id=${encodeURIComponent(item.id)}`)
   }
 
   const handleEdit = (item) => {
@@ -176,12 +185,28 @@ export default function LegitimationSaved() {
               style={{ animationDelay: `${0.2 + idx * 0.05}s` }}
             >
               <div className="min-w-0">
-                <p className="font-medium text-gray-800 truncate">{item.label}</p>
+                <p className="font-medium text-gray-800 truncate">
+                  <span className="truncate">{item.label}</span>
+                </p>
                 <p className="text-xs text-gray-500 mt-0.5">
                   {LEGITIMATION_TYPE_LABELS[item.formType] || item.formType} · {formatSavedAt(item.savedAt)}
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                {hasAnyUploadsForRecord('legitimation', item.id) ? (
+                  <span
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-amber-50/90 border border-amber-200/90"
+                    title="Has uploaded file(s)"
+                    aria-label="Has uploaded file(s)"
+                  >
+                    <img
+                      src={hasUploadedFilesIcon}
+                      alt=""
+                      className="w-7 h-7 object-contain select-none pointer-events-none"
+                      draggable={false}
+                    />
+                  </span>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => handleEdit(item)}

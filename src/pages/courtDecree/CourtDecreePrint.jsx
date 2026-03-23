@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { defaultCourtDecree } from './lib/courtDecreeDefaults'
 import { saveCourtDecreeDraft, getCourtDecreeDraft } from './lib/courtDecreeStorage'
@@ -7,6 +7,10 @@ import { defaultLegitimation } from '../legitimation/lib/legitimationDefaults'
 import { buildLcrRemarks } from './lib/lcrRemarks'
 import { COURT_DECREE_TYPES } from './constants'
 import { PAPER_SIZES } from '../../components/print'
+import { getUploadedFile, restoreUploadedFileFromTrash } from '../../lib/uploadedFileStore'
+import UploadFileModal from '../../components/upload/UploadFileModal'
+import ToastHost from '../../components/toast/ToastHost'
+import { useToasts } from '../../components/toast/useToasts'
 
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-court'
 
@@ -68,15 +72,26 @@ const RESTRICTED_PRINT_IDS = [
   'annotation-form-3a',
 ]
 
-function isPrintTypeAllowedForAffected(printTypeId, affectedDocument) {
-  const aff = (affectedDocument || '').trim()
+function normalizeAffectedList(data) {
+  const arr = Array.isArray(data?.affectedDocuments) ? data.affectedDocuments : []
+  const legacy = String(data?.affectedDocument || '').trim()
+  const out = arr.filter(Boolean).map((s) => String(s).trim()).filter(Boolean)
+  if (out.length) return out
+  return legacy ? [legacy] : []
+}
+
+function isPrintTypeAllowedForAffected(printTypeId, affectedDocuments) {
+  const list = Array.isArray(affectedDocuments) ? affectedDocuments : [affectedDocuments].filter(Boolean)
+  if (list.length !== 1) return true
+  const aff = String(list[0] || '').trim()
   if (!aff || !LCR_TYPES_BY_AFFECTED[aff]) return true
   if (!RESTRICTED_PRINT_IDS.includes(printTypeId)) return true
   return LCR_TYPES_BY_AFFECTED[aff].has(printTypeId)
 }
 
-function defaultPrintTypeForAffected(affectedDocument) {
-  const aff = (affectedDocument || '').trim()
+function defaultPrintTypeForAffected(affectedDocuments) {
+  const list = Array.isArray(affectedDocuments) ? affectedDocuments : [affectedDocuments].filter(Boolean)
+  const aff = String(list[0] || '').trim()
   if (aff === 'BIRTH_CERTIFICATE') return 'lcr-form-1a'
   if (aff === 'DEATH_CERTIFICATE') return 'lcr-form-2a'
   if (aff === 'MARRIAGE_CERTIFICATE') return 'lcr-form-3a'
@@ -88,7 +103,13 @@ export default function CourtDecreePrint() {
   const navigate = useNavigate()
   const [paperSize, setPaperSize] = useState('a4')
   const type = searchParams.get('type') || 'cert-authenticity'
+  const recordId = searchParams.get('id') || 'draft'
   const [data, setData] = useState(() => getStoredData() || defaultCourtDecree)
+  const uploadInputRef = useRef(null)
+  const uploadScopeRef = useRef('')
+  const [uploadTick, setUploadTick] = useState(0)
+  const [modal, setModal] = useState({ open: false, key: '', title: '' })
+  const { toasts, show, dismiss } = useToasts()
 
   usePrintPageSize(paperSize)
 
@@ -106,10 +127,12 @@ export default function CourtDecreePrint() {
         : 'cert-authenticity'
 
   useEffect(() => {
-    const aff = (data.affectedDocument || '').trim()
+    const docs = normalizeAffectedList(data)
+    if (docs.length !== 1) return
+    const aff = String(docs[0] || '').trim()
     if (!aff || !LCR_TYPES_BY_AFFECTED[aff]) return
-    if (!isPrintTypeAllowedForAffected(validType, aff)) {
-      setSearchParams({ type: defaultPrintTypeForAffected(aff) }, { replace: true })
+    if (!isPrintTypeAllowedForAffected(validType, docs)) {
+      setSearchParams({ type: defaultPrintTypeForAffected(docs) }, { replace: true })
     }
   }, [data.affectedDocument, validType, setSearchParams])
 
@@ -317,6 +340,8 @@ export default function CourtDecreePrint() {
     ? `SUBJECT: IN RE: ${(data.caseTitle || '').toUpperCase()}`
     : `SUBJECT: IN RE: JOINT PETITION TO APPROVE AND REGISTER THE DIVORCE OF SPOUSES ${(data.documentOwnerName || '').toUpperCase()}`
 
+  const affectedDocs = normalizeAffectedList(data)
+
   let content
   switch (validType) {
     case 'cert-authenticity':
@@ -332,25 +357,52 @@ export default function CourtDecreePrint() {
       content = <OutOfTownTransmittal data={data} subjectLine={subjectLine} />
       break
     case 'lcr-form-1a':
-      content = (
-        <div className="court-decree-lcr-form-outer">
-          <LcrForm1ABirthAvailable data={dataForLcr1A} />
-        </div>
-      )
+      content =
+        affectedDocs.length <= 1
+          ? (
+              <div className="court-decree-lcr-form-outer">
+                <LcrForm1ABirthAvailable data={dataForLcr1A} />
+              </div>
+            )
+          : (
+              <div className="court-decree-lcr-form-outer space-y-6">
+                {affectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
+                {affectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
+                {affectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
+              </div>
+            )
       break
     case 'lcr-form-2a':
-      content = (
-        <div className="court-decree-lcr-form-outer">
-          <LcrForm2ADeathAvailable data={dataForLcr2A} />
-        </div>
-      )
+      content =
+        affectedDocs.length <= 1
+          ? (
+              <div className="court-decree-lcr-form-outer">
+                <LcrForm2ADeathAvailable data={dataForLcr2A} />
+              </div>
+            )
+          : (
+              <div className="court-decree-lcr-form-outer space-y-6">
+                {affectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
+                {affectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
+                {affectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
+              </div>
+            )
       break
     case 'lcr-form-3a':
-      content = (
-        <div className="court-decree-lcr-form-outer">
-          <LcrForm3AMarriageAvailable data={dataForLcr3A} />
-        </div>
-      )
+      content =
+        affectedDocs.length <= 1
+          ? (
+              <div className="court-decree-lcr-form-outer">
+                <LcrForm3AMarriageAvailable data={dataForLcr3A} />
+              </div>
+            )
+          : (
+              <div className="court-decree-lcr-form-outer space-y-6">
+                {affectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
+                {affectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
+                {affectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
+              </div>
+            )
       break
     case 'annotation-form-1a':
       content = (
@@ -456,23 +508,61 @@ export default function CourtDecreePrint() {
               </p>
             ) : null}
             {COURT_DECREE_TYPES.filter((t) => isPrintTypeAllowedForAffected(t.id, data.affectedDocument)).map((t) => {
-              const isStandardAnnotation = t.id === 'standard-annotation'
-              const isSelected = !isStandardAnnotation && validType === t.id
+              const isSelected = validType === t.id
               const isLcrForm = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a'].includes(t.id)
               const btnClass = [
                 'text-left px-3 py-2.5 text-sm font-medium transition text-white rounded-lg',
                 isLcrForm ? 'bg-[#283750] hover:bg-[#1e2d42]' : 'bg-[var(--primary-blue)]/80 hover:bg-[var(--primary-blue)]',
                 isSelected ? 'ring-2 ring-offset-1 ring-[var(--primary-blue)]' : '',
               ].filter(Boolean).join(' ')
+              const key = `court-decree:${recordId}:${t.id}`
+              const uploaded = !!getUploadedFile(key)
               return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => (isStandardAnnotation ? navigate('/court-decree/instructions') : setSearchParams({ type: t.id }))}
-                  className={btnClass}
-                >
-                  {t.title}
-                </button>
+                <div key={t.id} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setSearchParams({ type: t.id })}
+                    className={[btnClass, 'w-full pr-[5.75rem]'].join(' ')}
+                  >
+                    {String(t.title || '').replace(/^\s*\d+\.\s*/, '')}
+                  </button>
+                  <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                    {!uploaded ? (
+                      <button
+                        type="button"
+                        onClick={() => setModal({ open: true, key, title: `Court Decree – ${t.title}` })}
+                        className="relative inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                        aria-label="Upload file"
+                        title="Upload file"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" aria-hidden>
+                          <path d="M12 16V4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                          <path d="M8 8l4-4 4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M4 20h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/uploaded/${encodeURIComponent(key)}`)}
+                        className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                        aria-label="View uploaded file"
+                        title="View uploaded file"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" aria-hidden>
+                          <path
+                            d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinejoin="round"
+                          />
+                          <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" strokeWidth="2" />
+                        </svg>
+                      </button>
+                    )}
+                    {uploaded ? <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" title="File uploaded" aria-label="File uploaded" /> : null}
+                  </div>
+                </div>
               )
             })}
           </div>
@@ -495,6 +585,32 @@ export default function CourtDecreePrint() {
           {content}
         </div>
       </div>
+      <UploadFileModal
+        open={modal.open}
+        scopeKey={modal.key}
+        title={modal.title}
+        onClose={() => setModal({ open: false, key: '', title: '' })}
+        onChanged={(evt) => {
+          setUploadTick((t) => t + 1)
+          if (evt?.kind === 'uploaded') {
+            show({ type: 'success', title: 'File uploaded', message: evt.fileName ? `Saved: ${evt.fileName}` : '' })
+          }
+          if (evt?.kind === 'removed') {
+            const key = evt.scopeKey
+            show({
+              type: 'info',
+              title: 'File removed',
+              message: 'You can undo within 5 seconds.',
+              actionLabel: 'Undo',
+              onAction: () => {
+                restoreUploadedFileFromTrash(key)
+                setUploadTick((t) => t + 1)
+              },
+            })
+          }
+        }}
+      />
+      <ToastHost toasts={toasts} onDismiss={dismiss} />
     </div>
   )
 }

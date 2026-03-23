@@ -5,6 +5,7 @@ export const defaultCourtDecree = {
   courtOrRacco: '',
   // Section 2: Affected civil document
   affectedDocument: 'MARRIAGE_CERTIFICATE',
+  affectedDocuments: ['MARRIAGE_CERTIFICATE'],
   // Section 3: Document owner/s
   documentOwnerName: '',
   // Section 4: Court decree details

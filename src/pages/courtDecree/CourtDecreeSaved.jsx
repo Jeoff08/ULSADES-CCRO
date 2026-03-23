@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getSavedCourtDecreeList, loadSavedCourtDecreeToDraft, deleteSavedCourtDecree, restoreSavedCourtDecree } from './lib/courtDecreeStorage'
+import { hasAnyUploadsForRecord } from '../../lib/uploadedFileStore'
+import hasUploadedFilesIcon from '../../assets/has-uploaded-files-icon.svg'
 
 const COURT_DECREE_TYPE_LABELS = {
   'cert-authenticity': 'Certificate of authenticity',
@@ -10,7 +12,6 @@ const COURT_DECREE_TYPE_LABELS = {
   'lcr-form-1a': 'LCR FORM 1A',
   'lcr-form-2a': 'LCR FORM 2A',
   'lcr-form-3a': 'LCR FORM 3A',
-  'standard-annotation': 'Standard annotation with instructions (x)',
   'annotation-form-1a': 'ANNOTATION FOR FORM 1A',
   'annotation-form-2a': 'ANNOTATION FOR FORM 2A',
   'annotation-form-3a': 'ANNOTATION FOR FORM 3A',
@@ -39,6 +40,7 @@ function matchesSearch(item, query, formTypeLabels) {
 
 export default function CourtDecreeSaved() {
   const [list, setList] = useState(() => getSavedCourtDecreeList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+  const [uploadsRev, setUploadsRev] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [toastVisible, setToastVisible] = useState(false)
@@ -49,6 +51,12 @@ export default function CourtDecreeSaved() {
 
   useEffect(() => {
     setList(getSavedCourtDecreeList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
+  }, [])
+
+  useEffect(() => {
+    const onFocus = () => setUploadsRev((v) => v + 1)
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
   }, [])
 
   useEffect(() => {
@@ -66,7 +74,7 @@ export default function CourtDecreeSaved() {
   }, [toastVisible])
 
   const handleViewPrint = (item) => {
-    if (loadSavedCourtDecreeToDraft(item.id)) navigate(`/court-decree/print?type=${item.formType || 'cert-authenticity'}`)
+    if (loadSavedCourtDecreeToDraft(item.id)) navigate(`/court-decree/print?type=${item.formType || 'cert-authenticity'}&id=${encodeURIComponent(item.id)}`)
   }
 
   const handleEdit = (item) => {
@@ -179,12 +187,28 @@ export default function CourtDecreeSaved() {
               style={{ animationDelay: `${0.2 + idx * 0.05}s` }}
             >
               <div className="min-w-0">
-                <p className="font-medium text-gray-800 truncate">{item.label}</p>
+                <p className="font-medium text-gray-800 truncate">
+                  <span className="truncate">{item.label}</span>
+                </p>
                 <p className="text-xs text-gray-500 mt-0.5">
                   {COURT_DECREE_TYPE_LABELS[item.formType] || item.formType} · {formatSavedAt(item.savedAt)}
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                {hasAnyUploadsForRecord('court-decree', item.id) ? (
+                  <span
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-amber-50/90 border border-amber-200/90"
+                    title="Has uploaded file(s)"
+                    aria-label="Has uploaded file(s)"
+                  >
+                    <img
+                      src={hasUploadedFilesIcon}
+                      alt=""
+                      className="w-7 h-7 object-contain select-none pointer-events-none"
+                      draggable={false}
+                    />
+                  </span>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => handleEdit(item)}

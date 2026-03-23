@@ -9,6 +9,8 @@ import { CourtDecreeForm, CourtDecreeInstructions, CourtDecreePrint, CourtDecree
 import { LegitimationForm, LegitimationPrint, LegitimationSaved } from './pages/legitimation'
 import LegalInstrumentPage from './pages/LegalInstrumentPage'
 import CourtDecreeWorkflowPage from './pages/CourtDecreeWorkflowPage'
+import UploadedFileViewer from './pages/UploadedFileViewer'
+import Log from './pages/Log'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth()
@@ -43,6 +45,8 @@ export default function App() {
         <Route path="legitimation/print" element={<LegitimationPrint />} />
         <Route path="legitimation/saved" element={<LegitimationSaved />} />
         <Route path="legal-instrument/:slug" element={<LegalInstrumentPage />} />
+        <Route path="uploaded/:scope" element={<UploadedFileViewer />} />
+        <Route path="logs" element={<Log />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

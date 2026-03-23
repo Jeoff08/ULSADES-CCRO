@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useRef, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getAUSFDraft, saveAUSFDraft } from './lib/ausfStorage'
 import { defaultAUSF } from './lib/ausfDefaults'
 import { TRANSMITTAL_ATTACHMENTS_LOCAL, TRANSMITTAL_ATTACHMENTS_PSA } from '../../components/print'
+import { getUploadedFile, restoreUploadedFileFromTrash } from '../../lib/uploadedFileStore'
+import UploadFileModal from '../../components/upload/UploadFileModal'
+import ToastHost from '../../components/toast/ToastHost'
+import { useToasts } from '../../components/toast/useToasts'
 import AusfOnly from './print/AusfOnly'
 import Ausf06 from './print/Ausf06'
 import Ausf0717 from './print/Ausf0717'
@@ -59,6 +63,13 @@ export default function AUSFPrint() {
   const [displayType, setDisplayType] = useState(null)
   const [paperSize, setPaperSize] = useState('a4')
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const recordId = searchParams.get('id') || 'draft'
+  const uploadInputRef = useRef(null)
+  const uploadScopeRef = useRef('')
+  const [uploadTick, setUploadTick] = useState(0)
+  const [modal, setModal] = useState({ open: false, key: '', title: '' })
+  const { toasts, show, dismiss } = useToasts()
 
   usePrintPageSize(paperSize)
 
@@ -80,6 +91,9 @@ export default function AUSFPrint() {
   }, [])
 
   const handlePrint = () => window.print()
+  const scopeKey = (typeId) => `ausf:${recordId}:${typeId}`
+  const titleFor = (opt) => `AUSF – ${opt.label || opt.type}`
+  const hasUploadFor = (typeId) => !!getUploadedFile(scopeKey(typeId))
 
   if (data === null) {
     return (
@@ -172,22 +186,60 @@ export default function AUSFPrint() {
                 isLcrButton ? 'bg-[#283750] hover:bg-[#1e2d42]' : 'bg-[var(--primary-blue)]/80 hover:bg-[var(--primary-blue)]',
                 isSelected ? 'ring-2 ring-offset-1 ring-[var(--primary-blue)]' : '',
               ].filter(Boolean).join(' ')
+              const uploaded = hasUploadFor(opt.type)
               return (
-                <button
-                  key={opt.type}
-                  type="button"
-                  onClick={() => setDisplayType(opt.type)}
-                  className={btnClass}
-                >
-                  {opt.labelLine1 != null ? (
-                    <>
-                      <span className="block leading-tight">{opt.labelLine1}</span>
-                      <span className="block leading-tight">{opt.labelLine2}</span>
-                    </>
-                  ) : (
-                    opt.label
-                  )}
-                </button>
+                <div key={opt.type} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setDisplayType(opt.type)}
+                    className={[btnClass, 'w-full pr-[5.75rem]'].join(' ')}
+                  >
+                    {opt.labelLine1 != null ? (
+                      <>
+                        <span className="block leading-tight">{opt.labelLine1}</span>
+                        <span className="block leading-tight">{opt.labelLine2}</span>
+                      </>
+                    ) : (
+                      opt.label
+                    )}
+                  </button>
+                  <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                    {!uploaded ? (
+                      <button
+                        type="button"
+                        onClick={() => setModal({ open: true, key: scopeKey(opt.type), title: titleFor(opt) })}
+                        className="relative inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                        aria-label="Upload file"
+                        title="Upload file"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" aria-hidden>
+                          <path d="M12 16V4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                          <path d="M8 8l4-4 4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M4 20h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/uploaded/${encodeURIComponent(scopeKey(opt.type))}`)}
+                        className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                        aria-label="View uploaded file"
+                        title="View uploaded file"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" aria-hidden>
+                          <path
+                            d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinejoin="round"
+                          />
+                          <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" strokeWidth="2" />
+                        </svg>
+                      </button>
+                    )}
+                    {uploaded ? <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" title="File uploaded" aria-label="File uploaded" /> : null}
+                  </div>
+                </div>
               )
             })}
           </div>
@@ -199,6 +251,32 @@ export default function AUSFPrint() {
           {content}
         </div>
       </div>
+      <UploadFileModal
+        open={modal.open}
+        scopeKey={modal.key}
+        title={modal.title}
+        onClose={() => setModal({ open: false, key: '', title: '' })}
+        onChanged={(evt) => {
+          setUploadTick((t) => t + 1)
+          if (evt?.kind === 'uploaded') {
+            show({ type: 'success', title: 'File uploaded', message: evt.fileName ? `Saved: ${evt.fileName}` : '' })
+          }
+          if (evt?.kind === 'removed') {
+            const key = evt.scopeKey
+            show({
+              type: 'info',
+              title: 'File removed',
+              message: 'You can undo within 5 seconds.',
+              actionLabel: 'Undo',
+              onAction: () => {
+                restoreUploadedFileFromTrash(key)
+                setUploadTick((t) => t + 1)
+              },
+            })
+          }
+        }}
+      />
+      <ToastHost toasts={toasts} onDismiss={dismiss} />
     </div>
   )
 }

@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { defaultLegitimation } from './lib/legitimationDefaults'
 import { LEGITIMATION_TYPES } from './constants'
 import { PAPER_SIZES } from '../../components/print'
+import { getUploadedFile, restoreUploadedFileFromTrash } from '../../lib/uploadedFileStore'
+import UploadFileModal from '../../components/upload/UploadFileModal'
+import ToastHost from '../../components/toast/ToastHost'
+import { useToasts } from '../../components/toast/useToasts'
 import {
   SoleAffidavitLegitimation,
   JointAffidavitLegitimation,
@@ -49,7 +53,13 @@ export default function LegitimationPrint() {
   const navigate = useNavigate()
   const [paperSize, setPaperSize] = useState('a4')
   const type = searchParams.get('type') || 'joint-affidavit'
+  const recordId = searchParams.get('id') || 'draft'
   const [data, setData] = useState(() => getStoredData() || defaultLegitimation)
+  const uploadInputRef = useRef(null)
+  const uploadScopeRef = useRef('')
+  const [uploadTick, setUploadTick] = useState(0)
+  const [modal, setModal] = useState({ open: false, key: '', title: '' })
+  const { toasts, show, dismiss } = useToasts()
 
   usePrintPageSize(paperSize)
 
@@ -127,15 +137,54 @@ export default function LegitimationPrint() {
           <div className="flex flex-col gap-2">
             {LEGITIMATION_TYPES.map((t) => {
               const isSelected = validType === t.id
+              const key = `legitimation:${recordId}:${t.id}`
+              const uploaded = !!getUploadedFile(key)
               return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setSearchParams({ type: t.id })}
-                  className={`text-left px-3 py-2.5 text-sm font-medium transition text-white rounded-lg bg-[#283750] hover:bg-[#1e2d42] ${isSelected ? 'ring-2 ring-offset-1 ring-gray-400' : ''}`}
-                >
-                  {t.title}
-                </button>
+                <div key={t.id} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setSearchParams({ type: t.id })}
+                    className={`text-left px-3 py-2.5 text-sm font-medium transition text-white rounded-lg bg-[#283750] hover:bg-[#1e2d42] w-full pr-[5.75rem] ${isSelected ? 'ring-2 ring-offset-1 ring-gray-400' : ''}`}
+                  >
+                    {String(t.title || '').replace(/^\s*\d+\.\s*/, '')}
+                  </button>
+                  <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                    {!uploaded ? (
+                      <button
+                        type="button"
+                        onClick={() => setModal({ open: true, key, title: `Legitimation – ${t.title}` })}
+                        className="relative inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                        aria-label="Upload file"
+                        title="Upload file"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" aria-hidden>
+                          <path d="M12 16V4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                          <path d="M8 8l4-4 4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M4 20h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/uploaded/${encodeURIComponent(key)}`)}
+                        className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                        aria-label="View uploaded file"
+                        title="View uploaded file"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" aria-hidden>
+                          <path
+                            d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinejoin="round"
+                          />
+                          <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" strokeWidth="2" />
+                        </svg>
+                      </button>
+                    )}
+                    {uploaded ? <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" title="File uploaded" aria-label="File uploaded" /> : null}
+                  </div>
+                </div>
               )
             })}
           </div>
@@ -144,6 +193,32 @@ export default function LegitimationPrint() {
           {content}
         </div>
       </div>
+      <UploadFileModal
+        open={modal.open}
+        scopeKey={modal.key}
+        title={modal.title}
+        onClose={() => setModal({ open: false, key: '', title: '' })}
+        onChanged={(evt) => {
+          setUploadTick((t) => t + 1)
+          if (evt?.kind === 'uploaded') {
+            show({ type: 'success', title: 'File uploaded', message: evt.fileName ? `Saved: ${evt.fileName}` : '' })
+          }
+          if (evt?.kind === 'removed') {
+            const key = evt.scopeKey
+            show({
+              type: 'info',
+              title: 'File removed',
+              message: 'You can undo within 5 seconds.',
+              actionLabel: 'Undo',
+              onAction: () => {
+                restoreUploadedFileFromTrash(key)
+                setUploadTick((t) => t + 1)
+              },
+            })
+          }
+        }}
+      />
+      <ToastHost toasts={toasts} onDismiss={dismiss} />
     </div>
   )
 }
