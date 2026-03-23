@@ -1,14 +1,17 @@
 import Database from 'better-sqlite3'
+import { mkdirSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const DB_PATH = join(__dirname, 'ulsades.db')
+const defaultDbDir = process.env.ULSADES_USER_DATA || __dirname
+const DB_PATH = process.env.ULSADES_DB_PATH || join(defaultDbDir, 'ulsades.db')
 
 let db = null
 
 function getDb() {
   if (!db) {
+    mkdirSync(dirname(DB_PATH), { recursive: true })
     db = new Database(DB_PATH)
     db.pragma('journal_mode = WAL')
     initSchema(db)

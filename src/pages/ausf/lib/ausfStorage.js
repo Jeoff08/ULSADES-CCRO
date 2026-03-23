@@ -1,5 +1,50 @@
 const KEY = 'ulsades_ausf_draft'
 const KEY_SAVED = 'ulsades_ausf_saved'
+const BASE = import.meta.env.VITE_API_URL || ''
+const AUSF_FORM_TYPES = new Set([
+  'ausf-only',
+  'ausf-0-6',
+  'ausf-07-17',
+  'reg-ausf',
+  'reg-ack',
+  'child-ack',
+  'child-ack-lcr',
+  'child-ack-annotation',
+  'child-not-ack',
+  'child-not-ack-lcr',
+  'child-not-ack-annotation',
+  'child-not-ack-transmittal',
+  'out-of-town',
+])
+
+function isAUSFRecord(item) {
+  return AUSF_FORM_TYPES.has(item?.formType)
+}
+
+async function apiGet(path) {
+  const res = await fetch(`${BASE}${path}`)
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(json.error || res.statusText)
+  return json
+}
+
+async function apiPost(path, body) {
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(json.error || res.statusText)
+  return json
+}
+
+async function apiDelete(path) {
+  const res = await fetch(`${BASE}${path}`, { method: 'DELETE' })
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(json.error || res.statusText)
+  return json
+}
 
 /** Build document owner label from AUSF data (for birth: SPS. Father AND Mother, or child/applicant name). */
 export function getDocumentOwnerLabelFromAUSFData(data) {
@@ -30,6 +75,19 @@ export function getAUSFDraft() {
   }
 }
 
+export async function loadAUSFDraftFromApi() {
+  const { data } = await apiGet('/api/draft')
+  if (!data || !isAUSFRecord(data)) return null
+  localStorage.setItem(KEY, JSON.stringify(data))
+  return data
+}
+
+export async function saveAUSFDraftToApi(data) {
+  await apiPost('/api/draft', data)
+  saveAUSFDraft(data)
+  return true
+}
+
 export function clearAUSFDraft() {
   try {
     localStorage.removeItem(KEY)
@@ -44,6 +102,13 @@ export function getSavedAUSFList() {
   } catch {
     return []
   }
+}
+
+export async function loadSavedAUSFListFromApi() {
+  const { list } = await apiGet('/api/saved')
+  const ausfList = (Array.isArray(list) ? list : []).filter(isAUSFRecord)
+  localStorage.setItem(KEY_SAVED, JSON.stringify(ausfList))
+  return ausfList
 }
 
 export function addSavedAUSF(data) {
@@ -80,11 +145,23 @@ export function addSavedAUSF(data) {
   }
 }
 
+export async function addSavedAUSFToApi(data) {
+  const payload = { ...data, formType: data.formType || 'ausf-0-6' }
+  const { id } = await apiPost('/api/saved', payload)
+  await loadSavedAUSFListFromApi()
+  return id
+}
+
 export function deleteSavedAUSF(id) {
   try {
     const list = getSavedAUSFList().filter((item) => item.id !== id)
     localStorage.setItem(KEY_SAVED, JSON.stringify(list))
   } catch {}
+}
+
+export async function deleteSavedAUSFToApi(id) {
+  await apiDelete(`/api/saved/${id}`)
+  await loadSavedAUSFListFromApi()
 }
 
 export function restoreSavedAUSF(item) {
@@ -111,6 +188,13 @@ export function loadSavedAUSFToDraft(id) {
   if (!item || !item.data) return false
   saveAUSFDraft(item.data)
   return true
+}
+
+export async function loadSavedAUSFToDraftApi(id) {
+  const { loaded } = await apiPost(`/api/saved/${id}/load`, {})
+  if (!loaded) return false
+  const d = await loadAUSFDraftFromApi()
+  return !!d
 }
 
 export function updateSavedAUSF(id, data) {
@@ -146,4 +230,12 @@ export function updateSavedAUSF(id, data) {
   } catch {
     return false
   }
+}
+
+export async function updateSavedAUSFToApi(id, data) {
+  await apiDelete(`/api/saved/${id}`)
+  const payload = { ...data, formType: data.formType || 'ausf-0-6' }
+  const { id: newId } = await apiPost('/api/saved', payload)
+  await loadSavedAUSFListFromApi()
+  return newId
 }

@@ -11,6 +11,7 @@ import { getUploadedFile, restoreUploadedFileFromTrash } from '../../lib/uploade
 import UploadFileModal from '../../components/upload/UploadFileModal'
 import ToastHost from '../../components/toast/ToastHost'
 import { useToasts } from '../../components/toast/useToasts'
+import { saveCurrentViewAsPdf } from '../../lib/savePdf'
 
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-court'
 
@@ -110,6 +111,22 @@ export default function CourtDecreePrint() {
   const [uploadTick, setUploadTick] = useState(0)
   const [modal, setModal] = useState({ open: false, key: '', title: '' })
   const { toasts, show, dismiss } = useToasts()
+  const handleSavePdf = async () => {
+    try {
+      const result = await saveCurrentViewAsPdf(`CourtDecree-${validType}`)
+      if (result?.ok) {
+        show({ type: 'success', title: 'PDF saved', message: result.filePath || '' })
+        return
+      }
+      if (result?.cancelled) {
+        show({ type: 'info', title: 'Save cancelled', message: 'No PDF file was created.' })
+        return
+      }
+      show({ type: 'error', title: 'Save failed', message: result?.reason || 'Unable to save PDF.' })
+    } catch (err) {
+      show({ type: 'error', title: 'Save failed', message: err?.message || 'Unable to save PDF.' })
+    }
+  }
 
   usePrintPageSize(paperSize)
 
@@ -491,10 +508,10 @@ export default function CourtDecreePrint() {
           </select>
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={handleSavePdf}
             className="px-3 py-2.5 bg-gray-700 text-white rounded-lg text-sm font-medium hover:bg-gray-800"
           >
-            Print
+            Save
           </button>
         </div>
       </div>

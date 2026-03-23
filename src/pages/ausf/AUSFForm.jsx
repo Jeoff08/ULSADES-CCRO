@@ -3,7 +3,17 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import FormSection from '../../components/FormSection'
 import { FormInput, FormSelect, FormRadioGroup } from '../../components/FormField'
 import { defaultAUSF } from './lib/ausfDefaults'
-import { saveAUSFDraft, getAUSFDraft, clearAUSFDraft, addSavedAUSF, updateSavedAUSF } from './lib/ausfStorage'
+import {
+  saveAUSFDraft,
+  getAUSFDraft,
+  clearAUSFDraft,
+  addSavedAUSF,
+  updateSavedAUSF,
+  loadAUSFDraftFromApi,
+  saveAUSFDraftToApi,
+  addSavedAUSFToApi,
+  updateSavedAUSFToApi,
+} from './lib/ausfStorage'
 
 const RELATIONSHIP_OPTIONS = [
   { value: '', label: '—' },
@@ -136,6 +146,20 @@ export default function AUSFForm() {
     }
   }, [searchParams])
 
+  useEffect(() => {
+    let mounted = true
+    loadAUSFDraftFromApi()
+      .then((draft) => {
+        if (!mounted || !draft) return
+        const isEdit = searchParams.get('edit') === '1'
+        if (isEdit) setForm((prev) => ({ ...prev, ...draft }))
+      })
+      .catch(() => {})
+    return () => {
+      mounted = false
+    }
+  }, [searchParams])
+
   const showItems4to7 = form.childAlreadyAcknowledged === 'NO' || form.childAlreadyAcknowledged === 'YES' || form.formType === 'child-not-ack-transmittal' || form.formType === 'out-of-town' || form.formType === 'child-ack-annotation'
   const isAUSF06 = form.formType === 'ausf-0-6' || form.formType === 'ausf-07-17'
 
@@ -152,14 +176,23 @@ export default function AUSFForm() {
     }
     setShowConfirmModal(true)
   }
-  const handleConfirmDone = () => {
+  const handleConfirmDone = async () => {
     const editId = searchParams.get('id')
     const isEdit = searchParams.get('edit') === '1'
     saveAUSFDraft(form)
-    if (isEdit && editId) {
-      updateSavedAUSF(editId, form)
-    } else {
-      addSavedAUSF(form)
+    try {
+      await saveAUSFDraftToApi(form)
+      if (isEdit && editId) {
+        await updateSavedAUSFToApi(editId, form)
+      } else {
+        await addSavedAUSFToApi(form)
+      }
+    } catch {
+      if (isEdit && editId) {
+        updateSavedAUSF(editId, form)
+      } else {
+        addSavedAUSF(form)
+      }
     }
     setShowConfirmModal(false)
     navigate('/ausf/print')

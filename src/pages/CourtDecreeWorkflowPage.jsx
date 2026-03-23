@@ -7,6 +7,7 @@ import MarriageNullityArt42Annotation from './courtDecree/print/MarriageNullityA
 import MarriageAnnotationModeSidebar from './courtDecree/print/MarriageAnnotationModeSidebar'
 import StandardAnnotationWithInstructions from './courtDecree/print/StandardAnnotationWithInstructions'
 import { PAPER_SIZES } from '../components/print'
+import { saveCurrentViewAsPdf } from '../lib/savePdf'
 
 const TITLES = {
   'correction-of-entries': 'Correction of entries',
@@ -84,7 +85,7 @@ function NullityOfMarriageWorkflow() {
           </select>
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={() => saveCurrentViewAsPdf('CourtDecree-NullityOfMarriage')}
             className="px-4 py-2.5 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-900"
           >
             Print / Save as PDF
@@ -162,7 +163,7 @@ function DivorceWorkflow() {
           </select>
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={() => saveCurrentViewAsPdf('CourtDecree-Divorce')}
             className="px-4 py-2.5 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-900"
           >
             Print / Save as PDF

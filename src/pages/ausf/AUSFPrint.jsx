@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { getAUSFDraft, saveAUSFDraft } from './lib/ausfStorage'
+import { getAUSFDraft, saveAUSFDraft, loadAUSFDraftFromApi, saveAUSFDraftToApi } from './lib/ausfStorage'
 import { defaultAUSF } from './lib/ausfDefaults'
 import { TRANSMITTAL_ATTACHMENTS_LOCAL, TRANSMITTAL_ATTACHMENTS_PSA } from '../../components/print'
 import { getUploadedFile, restoreUploadedFileFromTrash } from '../../lib/uploadedFileStore'
 import UploadFileModal from '../../components/upload/UploadFileModal'
 import ToastHost from '../../components/toast/ToastHost'
 import { useToasts } from '../../components/toast/useToasts'
+import { saveCurrentViewAsPdf } from '../../lib/savePdf'
 import AusfOnly from './print/AusfOnly'
 import Ausf06 from './print/Ausf06'
 import Ausf0717 from './print/Ausf0717'
@@ -82,6 +83,14 @@ export default function AUSFPrint() {
     } else {
       setData(null)
     }
+    loadAUSFDraftFromApi()
+      .then((apiDraft) => {
+        if (!apiDraft) return
+        const loaded = { ...defaultAUSF, ...apiDraft }
+        setData(loaded)
+        setDisplayType((prev) => prev ?? loaded.formType)
+      })
+      .catch(() => {})
   }, [])
 
   const defaultTitle = 'ULSADES - Unified Legal Status Automated Data Entry System | Iligan City Civil Registrar'
@@ -90,7 +99,22 @@ export default function AUSFPrint() {
     return () => { document.title = defaultTitle }
   }, [])
 
-  const handlePrint = () => window.print()
+  const handlePrint = async () => {
+    try {
+      const result = await saveCurrentViewAsPdf(`AUSF-${type}`)
+      if (result?.ok) {
+        show({ type: 'success', title: 'PDF saved', message: result.filePath || '' })
+        return
+      }
+      if (result?.cancelled) {
+        show({ type: 'info', title: 'Save cancelled', message: 'No PDF file was created.' })
+        return
+      }
+      show({ type: 'error', title: 'Save failed', message: result?.reason || 'Unable to save PDF.' })
+    } catch (err) {
+      show({ type: 'error', title: 'Save failed', message: err?.message || 'Unable to save PDF.' })
+    }
+  }
   const scopeKey = (typeId) => `ausf:${recordId}:${typeId}`
   const titleFor = (opt) => `AUSF – ${opt.label || opt.type}`
   const hasUploadFor = (typeId) => !!getUploadedFile(scopeKey(typeId))
@@ -120,11 +144,13 @@ export default function AUSFPrint() {
         const next = { ...data, colbScanDataUrlAck: url }
         setData(next)
         saveAUSFDraft(next)
+        saveAUSFDraftToApi(next).catch(() => {})
       }}
       onAnnotationChange={(text) => {
         const next = { ...data, annotationChildAckText: text }
         setData(next)
         saveAUSFDraft(next)
+        saveAUSFDraftToApi(next).catch(() => {})
       }}
     />
   )
@@ -136,11 +162,13 @@ export default function AUSFPrint() {
         const next = { ...data, colbScanDataUrlNotAck: url }
         setData(next)
         saveAUSFDraft(next)
+        saveAUSFDraftToApi(next).catch(() => {})
       }}
       onAnnotationChange={(text) => {
         const next = { ...data, annotationChildAckText: text }
         setData(next)
         saveAUSFDraft(next)
+        saveAUSFDraftToApi(next).catch(() => {})
       }}
     />
   )
@@ -170,7 +198,7 @@ export default function AUSFPrint() {
             ))}
           </select>
           <button type="button" onClick={handlePrint} className="px-3 py-2.5 bg-gray-700 text-white rounded-lg text-sm font-medium hover:bg-gray-800">
-            Print
+            Save
           </button>
         </div>
       </div>

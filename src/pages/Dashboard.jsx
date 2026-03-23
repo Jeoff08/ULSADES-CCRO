@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { COURT_DECREE_TYPES } from './courtDecree/constants'
 import { LEGITIMATION_TYPES } from './legitimation/constants'
-import { getSavedAUSFList } from './ausf/lib/ausfStorage'
+import { getSavedAUSFList, loadSavedAUSFListFromApi } from './ausf/lib/ausfStorage'
 import { getSavedCourtDecreeList } from './courtDecree/lib/courtDecreeStorage'
 import { getSavedLegitimationList } from './legitimation/lib/legitimationStorage'
 
@@ -66,14 +66,21 @@ const categories = [
 
 export default function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState(null)
+  const [ausfCount, setAusfCount] = useState(() => getSavedAUSFList().length)
 
   const showDetail = !!selectedCategory
 
   const totalCounts = {
-    ausf: getSavedAUSFList().length,
+    ausf: ausfCount,
     'court-decree': getSavedCourtDecreeList().length,
     legitimation: getSavedLegitimationList().length,
   }
+
+  React.useEffect(() => {
+    loadSavedAUSFListFromApi()
+      .then((list) => setAusfCount(list.length))
+      .catch(() => {})
+  }, [])
 
   return (
     <div className="relative min-h-full overflow-hidden">

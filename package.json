@@ -2,12 +2,19 @@
   "name": "ulsades",
   "private": true,
   "version": "1.0.0",
+  "description": "ULSADES — Unified Legal Status Automated Data Entry System",
+  "author": "Iligan City Civil Registrar",
   "type": "module",
+  "main": "electron/main.mjs",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 5173 --strictPort",
     "build": "vite build",
     "preview": "vite preview",
-    "server": "node server/index.js"
+    "server": "node server/index.js",
+    "electron": "electron .",
+    "electron:dev": "concurrently -k \"vite --port 5173 --strictPort\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "vite build && electron-builder",
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "better-sqlite3": "^12.6.2",
@@ -24,7 +31,27 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
     "@vitejs/plugin-react": "^4.3.3",
+    "concurrently": "^9.1.2",
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8",
     "tailwindcss": "^4.0.0",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.iligan.ulsades",
+    "productName": "ULSADES",
+    "directories": {
+      "output": "release"
+    },
+    "asarUnpack": [
+      "**/node_modules/better-sqlite3/**"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "signAndEditExecutable": false
+    }
   }
 }

@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { getSavedAUSFList, loadSavedAUSFToDraft, deleteSavedAUSF, restoreSavedAUSF } from './lib/ausfStorage'
+import {
+  getSavedAUSFList,
+  loadSavedAUSFToDraft,
+  deleteSavedAUSF,
+  restoreSavedAUSF,
+  loadSavedAUSFListFromApi,
+  loadSavedAUSFToDraftApi,
+  deleteSavedAUSFToApi,
+} from './lib/ausfStorage'
 import { hasAnyUploadsForRecord } from '../../lib/uploadedFileStore'
 import hasUploadedFilesIcon from '../../assets/has-uploaded-files-icon.svg'
 
@@ -70,6 +78,9 @@ export default function AUSFSaved() {
 
   useEffect(() => {
     setList(sortAusfSavedList(getAusfSavedListForDisplay()))
+    loadSavedAUSFListFromApi()
+      .then((items) => setList(sortAusfSavedList(items.filter((item) => item.formType !== FORM_TYPE_HIDDEN_IN_AUSF_SAVED))))
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -94,23 +105,41 @@ export default function AUSFSaved() {
     return () => clearInterval(id)
   }, [toastVisible])
 
-  const handleViewPrint = (item) => {
-    if (loadSavedAUSFToDraft(item.id)) navigate(`/ausf/print?id=${encodeURIComponent(item.id)}`)
+  const handleViewPrint = async (item) => {
+    let loaded = false
+    try {
+      loaded = await loadSavedAUSFToDraftApi(item.id)
+    } catch {
+      loaded = loadSavedAUSFToDraft(item.id)
+    }
+    if (loaded) navigate(`/ausf/print?id=${encodeURIComponent(item.id)}`)
   }
 
-  const handleEdit = (item) => {
-    if (loadSavedAUSFToDraft(item.id)) navigate(`/ausf?edit=1&id=${encodeURIComponent(item.id)}`)
+  const handleEdit = async (item) => {
+    let loaded = false
+    try {
+      loaded = await loadSavedAUSFToDraftApi(item.id)
+    } catch {
+      loaded = loadSavedAUSFToDraft(item.id)
+    }
+    if (loaded) navigate(`/ausf?edit=1&id=${encodeURIComponent(item.id)}`)
   }
 
   const openDeleteConfirm = (id) => setConfirmDeleteId(id)
   const closeDeleteConfirm = () => setConfirmDeleteId(null)
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!confirmDeleteId) return
     const item = list.find((x) => x.id === confirmDeleteId)
     if (item) setLastDeletedItem({ ...item, data: item.data ? { ...item.data } : undefined })
-    deleteSavedAUSF(confirmDeleteId)
-    setList(sortAusfSavedList(getAusfSavedListForDisplay()))
+    try {
+      await deleteSavedAUSFToApi(confirmDeleteId)
+      const items = await loadSavedAUSFListFromApi()
+      setList(sortAusfSavedList(items.filter((x) => x.formType !== FORM_TYPE_HIDDEN_IN_AUSF_SAVED)))
+    } catch {
+      deleteSavedAUSF(confirmDeleteId)
+      setList(sortAusfSavedList(getAusfSavedListForDisplay()))
+    }
     setConfirmDeleteId(null)
     setToastVisible(true)
   }
