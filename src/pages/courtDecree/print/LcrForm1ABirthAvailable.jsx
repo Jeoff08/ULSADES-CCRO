@@ -1,20 +1,13 @@
 import React from 'react'
-import { formatDateLong, formatDateCert, formatLcrFormShortDate, fullName, parseDdMmYyyyToDate } from '../../../lib/printUtils'
+import { formatDateCert, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
+import { buildLcr1aTableDisplay } from '../lib/lcr1aTable'
 
-/** LCR Form No. 1A (Birth-Available). Data from Legitimation (child, parents, COLB, place/date of birth, marriage of parents). */
+/** LCR Form No. 1A (Birth-Available). Uses Court Decree Form 1A fields as primary source. */
 export default function LcrForm1ABirthAvailable({ data }) {
-  const childFull = fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.childFirst, data.childMiddle, data.childLast)
-  const motherFull = fullName(data.motherFirst, data.motherMiddle, data.motherLast)
-  const fatherFull = fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
-  const placeOfBirthAddr = data.placeOfBirthAddress ?? data.placeOfBirthStreet
-  const placeOfBirthLine1 = [placeOfBirthAddr, data.placeOfBirthCity].filter(Boolean).join(' ') || '—'
-  const placeOfBirthLine2 = data.placeOfBirthProvince || ''
+  const table = buildLcr1aTableDisplay(data)
   const colbPage = data.colbPageNumber ?? data.colbPageNo
   const colbBook = data.colbBookNumber ?? data.colbBookNo
-  const colbRegDate = data.colbDateOfRegistration ?? data.colbRegDate
-  const dateOfMarriageParents = data.dateOfMarriageOfParents ?? data.dateOfMarriage
-  const placeOfMarriageParents = data.placeOfMarriageOfParents ?? [data.placeOfMarriageCity, data.placeOfMarriageProvince, data.placeOfMarriageCountry].filter(Boolean).join(', ')
   const formDate = (() => {
     const raw = data.certificateIssuanceDate
     const p = parseDdMmYyyyToDate(raw)
@@ -22,6 +15,7 @@ export default function LcrForm1ABirthAvailable({ data }) {
     return formatDateCert(raw) || formatDateCert(new Date())
   })()
   const regOfficerName = data.certificateSignatoryName || 'SHIRLY L. DEMECILLO'
+  const regOfficerTitle = data.certificateSignatoryTitle || 'Registration Officer II'
   const ccrName = data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL'
 
   return (
@@ -44,21 +38,21 @@ export default function LcrForm1ABirthAvailable({ data }) {
           </p>
           <table className="w-full border-collapse text-sm mb-2 border border-black court-decree-lcr-table">
             <tbody>
-              <tr><td className="py-1 px-2 border border-black font-medium align-top w-48">LCR Registry Number</td><td className="py-1 px-2 border border-black font-bold text-center">{data.colbRegistryNo || '—'}</td></tr>
-              <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Registration</td><td className="py-1 px-2 border border-black font-bold text-center">{formatLcrFormShortDate(colbRegDate) || formatDateLong(colbRegDate) || '—'}</td></tr>
-              <tr><td className="py-1 px-2 border border-black font-medium align-top">Name of Child</td><td className="py-1 px-2 border border-black font-bold text-center">{childFull || '—'}</td></tr>
-              <tr><td className="py-1 px-2 border border-black font-medium align-top">Sex</td><td className="py-1 px-2 border border-black font-bold text-center">{data.sex || '—'}</td></tr>
-              <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Birth</td><td className="py-1 px-2 border border-black font-bold text-center">{formatLcrFormShortDate(data.dateOfBirth) || formatDateLong(data.dateOfBirth) || '—'}</td></tr>
-              <tr><td className="py-1 px-2 border border-black font-medium align-top">Place of Birth</td><td className="py-1 px-2 border border-black font-bold text-center"><span>{placeOfBirthLine1}</span>{placeOfBirthLine2 && <><br /><span>{placeOfBirthLine2}</span></>}</td></tr>
-              <tr><td className="py-1 px-2 border border-black font-medium align-top">Name of Mother</td><td className="py-1 px-2 border border-black font-bold text-center">{motherFull || '—'}</td></tr>
-              <tr><td className="py-1 px-2 border border-black font-medium align-top">Citizenship of Mother</td><td className="py-1 px-2 border border-black font-bold text-center">{data.motherCitizenship || '—'}</td></tr>
-              <tr><td className="py-1 px-2 border border-black font-medium align-top">Name of Father</td><td className="py-1 px-2 border border-black font-bold text-center">{fatherFull || '—'}</td></tr>
-              <tr><td className="py-1 px-2 border border-black font-medium align-top">Citizenship of Father</td><td className="py-1 px-2 border border-black font-bold text-center">{data.fatherCitizenship || '—'}</td></tr>
-              <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Marriage of Parents</td><td className="py-1 px-2 border border-black font-bold text-center">{dateOfMarriageParents ? (formatLcrFormShortDate(dateOfMarriageParents) || formatDateLong(dateOfMarriageParents)) : '—'}</td></tr>
-              <tr><td className="py-1 px-2 border border-black font-medium align-top">Place of Marriage of Parents</td><td className="py-1 px-2 border border-black font-bold text-center">{placeOfMarriageParents || '—'}</td></tr>
+              <tr><td className="py-1 px-2 border border-black font-medium align-top w-48">LCR Registry Number</td><td className="py-1 px-2 border border-black font-bold text-center">{table.registry}</td></tr>
+              <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Registration</td><td className="py-1 px-2 border border-black font-bold text-center">{table.dateReg}</td></tr>
+              <tr><td className="py-1 px-2 border border-black font-medium align-top">Name of Child</td><td className="py-1 px-2 border border-black font-bold text-center">{table.nameChild}</td></tr>
+              <tr><td className="py-1 px-2 border border-black font-medium align-top">Sex</td><td className="py-1 px-2 border border-black font-bold text-center">{table.sex}</td></tr>
+              <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Birth</td><td className="py-1 px-2 border border-black font-bold text-center">{table.dob}</td></tr>
+              <tr><td className="py-1 px-2 border border-black font-medium align-top">Place of Birth</td><td className="py-1 px-2 border border-black font-bold text-center">{table.pob}</td></tr>
+              <tr><td className="py-1 px-2 border border-black font-medium align-top">Name of Mother</td><td className="py-1 px-2 border border-black font-bold text-center">{table.mother}</td></tr>
+              <tr><td className="py-1 px-2 border border-black font-medium align-top">Citizenship of Mother</td><td className="py-1 px-2 border border-black font-bold text-center">{table.motherCit}</td></tr>
+              <tr><td className="py-1 px-2 border border-black font-medium align-top">Name of Father</td><td className="py-1 px-2 border border-black font-bold text-center">{table.father}</td></tr>
+              <tr><td className="py-1 px-2 border border-black font-medium align-top">Citizenship of Father</td><td className="py-1 px-2 border border-black font-bold text-center">{table.fatherCit}</td></tr>
+              <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Marriage of Parents</td><td className="py-1 px-2 border border-black font-bold text-center">{table.dom}</td></tr>
+              <tr><td className="py-1 px-2 border border-black font-medium align-top">Place of Marriage of Parents</td><td className="py-1 px-2 border border-black font-bold text-center">{table.pom}</td></tr>
             </tbody>
           </table>
-          <p className="mb-2 text-sm italic court-decree-lcr-body">This certification is issued upon the request of OCRG/OWNER/PARENTS/GUARDIAN for any legal purposes.</p>
+          <p className="mb-2 text-sm court-decree-lcr-body">This certification is issued upon the request of OCRG/OWNER/PARENTS/GUARDIAN for any legal purposes.</p>
           <div className="mb-2 court-decree-lcr-body">
             <p className="font-bold text-sm mb-0.5">REMARKS:</p>
             <p className="text-sm text-justify">{data.remarks || ''}</p>
@@ -67,7 +61,7 @@ export default function LcrForm1ABirthAvailable({ data }) {
             <div className="text-left">
               <p className="font-bold text-sm mb-0.5">Verified by:</p>
               <p className="font-bold text-sm border-b border-black inline-block">{regOfficerName}</p>
-              <p className="text-xs mt-0.5">LCR - Staff</p>
+              <p className="text-xs mt-0.5">{regOfficerTitle}</p>
             </div>
             <div className="text-right">
               <p className="font-bold text-sm border-b border-black inline-block">{ccrName}</p>

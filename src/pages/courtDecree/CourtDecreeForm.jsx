@@ -320,6 +320,64 @@ function deriveDocumentOwnerFromLcr(f) {
   return ''
 }
 
+function hasValue(v) {
+  return v != null && String(v).trim() !== ''
+}
+
+function deriveAffectedDocumentsForPrint(form) {
+  if (!form || typeof form !== 'object') return []
+  const selected = []
+  const hasBirth = [
+    'lcr1aRegistryNumber',
+    'lcr1aDateRegistration',
+    'lcr1aNameOfChild',
+    'lcr1aSex',
+    'lcr1aDateOfBirth',
+    'lcr1aPlaceOfBirth',
+    'lcr1aNameOfMother',
+    'lcr1aMotherCitizenship',
+    'lcr1aNameOfFather',
+    'lcr1aFatherCitizenship',
+    'lcr1aDateMarriageParents',
+    'lcr1aPlaceMarriageParents',
+  ].some((k) => hasValue(form[k]))
+  const hasDeath = [
+    'lcr2aRegistryNumber',
+    'lcr2aDateRegistration',
+    'lcr2aNameDeceased',
+    'lcr2aSex',
+    'lcr2aCivilStatus',
+    'lcr2aCitizenship',
+    'lcr2aDateDeath',
+    'lcr2aCitizenshipFather',
+    'lcr2aPlaceDeath',
+    'lcr2aCauseDeath',
+  ].some((k) => hasValue(form[k]))
+  const hasMarriage = [
+    'lcr3aHusbandName',
+    'lcr3aWifeName',
+    'lcr3aRegistryNumber',
+    'lcr3aDateRegistration',
+    'lcr3aDateMarriage',
+    'lcr3aPlaceMarriage',
+  ].some((k) => hasValue(form[k]))
+
+  if (hasBirth) selected.push('BIRTH_CERTIFICATE')
+  if (hasDeath) selected.push('DEATH_CERTIFICATE')
+  if (hasMarriage) selected.push('MARRIAGE_CERTIFICATE')
+
+  if (selected.length > 0) return selected
+  if (hasValue(form.affectedDocument)) return [String(form.affectedDocument).trim()]
+  return []
+}
+
+function mapAffectedToLcrPrintType(doc) {
+  if (doc === 'BIRTH_CERTIFICATE') return 'lcr-form-1a'
+  if (doc === 'DEATH_CERTIFICATE') return 'lcr-form-2a'
+  if (doc === 'MARRIAGE_CERTIFICATE') return 'lcr-form-3a'
+  return ''
+}
+
 function CourtDecreeSection({ number, title, children }) {
   return (
     <div className="court-decree-form-page__section-card mb-6 rounded-xl overflow-hidden border border-gray-200 bg-[var(--card-bg)] shadow-sm">
@@ -379,6 +437,17 @@ export default function CourtDecreeForm() {
 
   const proceedToPrint = () => {
     const formForOutput = { ...form }
+    const affectedDocuments = deriveAffectedDocumentsForPrint(formForOutput)
+    let nextPrintType = form.formType
+    if (affectedDocuments.length > 0) {
+      formForOutput.affectedDocuments = affectedDocuments
+      formForOutput.affectedDocument = affectedDocuments[0]
+      // If only one LCR table was filled, always open print view on that specific LCR output.
+      if (!LCR_FORM_TYPES.includes(form.formType) && affectedDocuments.length === 1) {
+        const mapped = mapAffectedToLcrPrintType(affectedDocuments[0])
+        if (mapped) nextPrintType = mapped
+      }
+    }
     COURT_DECREE_DATE_KEYS.forEach((key) => {
       if (formForOutput[key]) formForOutput[key] = dateToOutputFormat(formForOutput[key])
     })
@@ -387,7 +456,7 @@ export default function CourtDecreeForm() {
     } else {
       addSavedCourtDecree(formForOutput)
     }
-    navigate(`/court-decree/print?type=${form.formType}`)
+    navigate(`/court-decree/print?type=${nextPrintType}`)
   }
 
   useEffect(() => {

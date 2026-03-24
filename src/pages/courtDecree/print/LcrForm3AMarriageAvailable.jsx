@@ -116,8 +116,8 @@ export default function LcrForm3AMarriageAvailable({ data }) {
               </tr>
             </tbody>
           </table>
-          <p className="mb-2 text-sm italic court-decree-lcr-body">
-            This certification is issued upon the request of OCRG/OWNER/PARENTS/GUARDIAN for any legal purposes.
+          <p className="mb-2 text-sm court-decree-lcr-body">
+            This certification is issued upon the request of OCRG/DOCUMENT OWNER for any legal purposes.
           </p>
           <div className="mb-2 court-decree-lcr-body">
             <p className="font-bold text-sm mb-0.5">REMARKS:</p>

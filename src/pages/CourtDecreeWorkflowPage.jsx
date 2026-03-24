@@ -48,7 +48,7 @@ function mergeMarriageWorkflowDraft(mode) {
 
 function NullityOfMarriageWorkflow() {
   const [data, setData] = useState(() => mergeMarriageWorkflowDraft(MODES.nullity))
-  const [paperSize, setPaperSize] = useState('a4')
+  const [paperSize, setPaperSize] = useState('legal')
 
   useWorkflowPrintSize(paperSize)
 
@@ -126,7 +126,7 @@ function NullityOfMarriageWorkflow() {
 
 function DivorceWorkflow() {
   const [data, setData] = useState(() => mergeMarriageWorkflowDraft(MODES.divorce))
-  const [paperSize, setPaperSize] = useState('a4')
+  const [paperSize, setPaperSize] = useState('legal')
 
   useWorkflowPrintSize(paperSize)
 

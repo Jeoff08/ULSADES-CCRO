@@ -22,6 +22,8 @@ export const PAPER_SIZES = [
   { id: 'a4', label: 'A4 (210 × 297 mm)', size: '210mm 297mm', widthMm: 210, heightMm: 297 },
   { id: 'short', label: 'Short bond (8.5" × 11")', size: '8.5in 11in', widthMm: 215.9, heightMm: 279.4 },
   { id: 'long', label: 'Long (8.5" × 13")', size: '8.5in 13in', widthMm: 215.9, heightMm: 330.2 },
+  /** US Legal — standard for annotation outputs */
+  { id: 'legal', label: 'Legal (8.5" × 14")', size: '8.5in 14in', widthMm: 215.9, heightMm: 355.6 },
 ]
 
 /** Transmittal (local) – first image: 6 items */

@@ -24,9 +24,9 @@ export default function LcrForm1ATableOnly({ data }) {
         <tbody>
           {rows.map(([label, val, isDate]) => (
             <tr key={label}>
-              <td className="py-2 px-3 border border-black font-medium align-top w-[42%]">{label}</td>
+              <td className="py-1 px-3 border border-black font-medium align-top w-[42%]">{label}</td>
               <td
-                className={`py-2 px-3 border border-black text-center font-bold ${
+                className={`py-1 px-3 border border-black text-center font-bold ${
                   isDate ? '' : 'uppercase'
                 }`}
               >

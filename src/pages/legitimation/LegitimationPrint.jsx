@@ -55,6 +55,8 @@ export default function LegitimationPrint() {
   const [paperSize, setPaperSize] = useState('a4')
   const type = searchParams.get('type') || 'joint-affidavit'
   const recordId = searchParams.get('id') || 'draft'
+  const validType = LEGITIMATION_TYPES.some((t) => t.id === type) ? type : 'joint-affidavit'
+  const pageSizeForPrint = validType === 'annotation' ? 'legal' : paperSize
   const [data, setData] = useState(() => getStoredData() || defaultLegitimation)
   const uploadInputRef = useRef(null)
   const uploadScopeRef = useRef('')
@@ -78,14 +80,20 @@ export default function LegitimationPrint() {
     }
   }
 
-  usePrintPageSize(paperSize)
+  usePrintPageSize(pageSizeForPrint)
 
   useEffect(() => {
     const stored = getStoredData()
     if (stored) setData(stored)
   }, [])
 
-  const validType = LEGITIMATION_TYPES.some((t) => t.id === type) ? type : 'joint-affidavit'
+  useEffect(() => {
+    if (validType === 'annotation') {
+      setPaperSize('legal')
+    } else {
+      setPaperSize((prev) => (prev === 'legal' ? 'a4' : prev))
+    }
+  }, [validType])
 
   const childFull = [data.childFirst, data.childMiddle, data.childLast].filter(Boolean).join(' ')
   const fatherFull = [data.fatherFirst, data.fatherMiddle, data.fatherLast].filter(Boolean).join(' ')
@@ -137,7 +145,13 @@ export default function LegitimationPrint() {
             id="legitimation-paper-size"
             value={paperSize}
             onChange={(e) => setPaperSize(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+            disabled={validType === 'annotation'}
+            title={
+              validType === 'annotation'
+                ? 'Annotation outputs are fixed to Legal (8.5" × 14") for printing'
+                : undefined
+            }
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {PAPER_SIZES.map((p) => (
               <option key={p.id} value={p.id}>{p.label}</option>

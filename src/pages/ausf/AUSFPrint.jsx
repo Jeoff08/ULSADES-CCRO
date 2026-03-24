@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getAUSFDraft, saveAUSFDraft, loadAUSFDraftFromApi, saveAUSFDraftToApi } from './lib/ausfStorage'
 import { defaultAUSF } from './lib/ausfDefaults'
-import { TRANSMITTAL_ATTACHMENTS_LOCAL, TRANSMITTAL_ATTACHMENTS_PSA } from '../../components/print'
+import { TRANSMITTAL_ATTACHMENTS_LOCAL, TRANSMITTAL_ATTACHMENTS_PSA, PAPER_SIZES } from '../../components/print'
 import { getUploadedFile, restoreUploadedFileFromTrash } from '../../lib/uploadedFileStore'
 import UploadFileModal from '../../components/upload/UploadFileModal'
 import ToastHost from '../../components/toast/ToastHost'
@@ -34,13 +34,10 @@ const VIEW_PRINT_OPTIONS = [
   { label: 'Out-of-Town Transmittal', type: 'out-of-town' },
 ]
 
-const PAPER_SIZES = [
-  { id: 'a4', label: 'A4 (210 × 297 mm)', size: '210mm 297mm', widthMm: 210, heightMm: 297 },
-  { id: 'short', label: 'Short bond (8.5" × 11")', size: '8.5in 11in', widthMm: 215.9, heightMm: 279.4 },
-  { id: 'long', label: 'Long (8.5" × 13")', size: '8.5in 13in', widthMm: 215.9, heightMm: 330.2 },
-]
-
 const PRINT_SIZE_STYLE_ID = 'print-paper-size'
+
+/** AUSF annotation views — Legal bond (8.5" × 14") */
+const AUSF_ANNOTATION_TYPES = new Set(['child-ack-annotation', 'child-not-ack-annotation'])
 
 function usePrintPageSize(paperId) {
   useEffect(() => {
@@ -72,7 +69,19 @@ export default function AUSFPrint() {
   const [modal, setModal] = useState({ open: false, key: '', title: '' })
   const { toasts, show, dismiss } = useToasts()
 
-  usePrintPageSize(paperSize)
+  const activePrintType = displayType ?? data?.formType
+  const pageSizeForPrint =
+    activePrintType && AUSF_ANNOTATION_TYPES.has(activePrintType) ? 'legal' : paperSize
+  usePrintPageSize(pageSizeForPrint)
+
+  useEffect(() => {
+    if (!activePrintType) return
+    if (AUSF_ANNOTATION_TYPES.has(activePrintType)) {
+      setPaperSize('legal')
+    } else {
+      setPaperSize((prev) => (prev === 'legal' ? 'a4' : prev))
+    }
+  }, [activePrintType])
 
   useEffect(() => {
     const draft = getAUSFDraft()
@@ -191,7 +200,13 @@ export default function AUSFPrint() {
             id="paper-size-select"
             value={paperSize}
             onChange={(e) => setPaperSize(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+            disabled={!!activePrintType && AUSF_ANNOTATION_TYPES.has(activePrintType)}
+            title={
+              activePrintType && AUSF_ANNOTATION_TYPES.has(activePrintType)
+                ? 'Annotation outputs are fixed to Legal (8.5" × 14") for printing'
+                : undefined
+            }
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {PAPER_SIZES.map((p) => (
               <option key={p.id} value={p.id}>{p.label}</option>
@@ -275,8 +290,10 @@ export default function AUSFPrint() {
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">To remove date, title, and URL from the printed page, uncheck &quot;Headers and footers&quot; in the print dialog.</p>
           </div>
         </aside>
-        <div className="flex-1 min-w-0">
-          {content}
+        <div className="flex-1 min-w-0 ausf-print-preview-pane">
+          <div className="ausf-print-preview-scale">
+            {content}
+          </div>
         </div>
       </div>
       <UploadFileModal

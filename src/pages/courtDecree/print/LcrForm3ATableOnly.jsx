@@ -4,9 +4,9 @@ import { buildLcr3aTableDisplay } from '../lib/lcr3aTable'
 /** LCR Form No. 3A — marriage facts table only (court decree). Form + continue flow: CourtDecreeForm.jsx. */
 export default function LcrForm3ATableOnly({ data }) {
   const t = buildLcr3aTableDisplay(data)
-  const cell = 'py-2 px-2 border border-black text-center font-bold text-sm align-top'
-  const label = 'py-2 px-2 border border-black font-medium align-top w-[28%]'
-  const head = 'py-2 px-2 border border-black font-bold text-center bg-gray-800 text-white'
+  const cell = 'py-1 px-2 border border-black text-center font-bold text-sm align-top'
+  const label = 'py-1 px-2 border border-black font-medium align-top w-[28%]'
+  const head = 'py-1 px-2 border border-black font-bold text-center bg-gray-800 text-white'
 
   return (
     <div className="lcr-form-3a-table-only bg-white text-black text-sm max-w-[210mm] mx-auto p-6 print:p-4">

@@ -12,6 +12,7 @@ import UploadFileModal from '../../components/upload/UploadFileModal'
 import ToastHost from '../../components/toast/ToastHost'
 import { useToasts } from '../../components/toast/useToasts'
 import { saveCurrentViewAsPdf } from '../../lib/savePdf'
+import { isLcr1aTableComplete } from './lib/courtDecreeLcrCompletion'
 
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-court'
 
@@ -83,11 +84,13 @@ function normalizeAffectedList(data) {
 
 function isPrintTypeAllowedForAffected(printTypeId, affectedDocuments) {
   const list = Array.isArray(affectedDocuments) ? affectedDocuments : [affectedDocuments].filter(Boolean)
-  if (list.length !== 1) return true
-  const aff = String(list[0] || '').trim()
-  if (!aff || !LCR_TYPES_BY_AFFECTED[aff]) return true
   if (!RESTRICTED_PRINT_IDS.includes(printTypeId)) return true
-  return LCR_TYPES_BY_AFFECTED[aff].has(printTypeId)
+  if (list.length === 0) return true
+  return list.some((doc) => {
+    const aff = String(doc || '').trim()
+    if (!aff || !LCR_TYPES_BY_AFFECTED[aff]) return false
+    return LCR_TYPES_BY_AFFECTED[aff].has(printTypeId)
+  })
 }
 
 function defaultPrintTypeForAffected(affectedDocuments) {
@@ -99,12 +102,98 @@ function defaultPrintTypeForAffected(affectedDocuments) {
   return 'cert-authenticity'
 }
 
+function hasAnyLcr1AData(form) {
+  if (!form || typeof form !== 'object') return false
+  const keys = [
+    'lcr1aRegistryNumber',
+    'lcr1aDateRegistration',
+    'lcr1aNameOfChild',
+    'lcr1aSex',
+    'lcr1aDateOfBirth',
+    'lcr1aPlaceOfBirth',
+    'lcr1aNameOfMother',
+    'lcr1aNameOfFather',
+    'lcr1aDateMarriageParents',
+    'lcr1aPlaceMarriageParents',
+  ]
+  return keys.some((k) => {
+    const v = form[k]
+    return v != null && String(v).trim() !== ''
+  })
+}
+
+function hasAnyLcr2AData(form) {
+  if (!form || typeof form !== 'object') return false
+  const keys = [
+    'lcr2aRegistryNumber',
+    'lcr2aDateRegistration',
+    'lcr2aNameDeceased',
+    'lcr2aSex',
+    'lcr2aCivilStatus',
+    'lcr2aDateDeath',
+    'lcr2aPlaceDeath',
+    'lcr2aCauseDeath',
+  ]
+  return keys.some((k) => {
+    const v = form[k]
+    return v != null && String(v).trim() !== ''
+  })
+}
+
+function hasAnyLcr3AData(form) {
+  if (!form || typeof form !== 'object') return false
+  const keys = [
+    'lcr3aHusbandName',
+    'lcr3aWifeName',
+    'lcr3aRegistryNumber',
+    'lcr3aDateRegistration',
+    'lcr3aDateMarriage',
+    'lcr3aPlaceMarriage',
+    'lcr3aHusbandMother',
+    'lcr3aHusbandFather',
+    'lcr3aWifeMother',
+    'lcr3aWifeFather',
+    'husbandDateOfBirth',
+    'wifeDateOfBirth',
+    'husbandAge',
+    'wifeAge',
+  ]
+  return keys.some((k) => {
+    const v = form[k]
+    return v != null && String(v).trim() !== ''
+  })
+}
+
+function deriveFilledAffectedDocuments(form) {
+  const out = []
+  if (hasAnyLcr1AData(form)) out.push('BIRTH_CERTIFICATE')
+  if (hasAnyLcr2AData(form)) out.push('DEATH_CERTIFICATE')
+  if (hasAnyLcr3AData(form)) out.push('MARRIAGE_CERTIFICATE')
+  return out
+}
+
+/** Annotation / marriage annotation print — Legal 8.5" × 14" for @page (print/PDF only via usePrintPageSize) */
+const COURT_DECREE_ANNOTATION_TYPES = new Set([
+  'annotation-form-1a',
+  'annotation-form-2a',
+  'annotation-form-3a',
+  'marriage-nullity-art42',
+])
+
 export default function CourtDecreePrint() {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const [paperSize, setPaperSize] = useState('a4')
   const type = searchParams.get('type') || 'cert-authenticity'
   const recordId = searchParams.get('id') || 'draft'
+  /** Not in sidebar — use Court Decree → Nullity of marriage. Direct URL still works. */
+  const validType =
+    type === 'marriage-nullity-art42'
+      ? 'marriage-nullity-art42'
+      : COURT_DECREE_TYPES.some((t) => t.id === type)
+        ? type
+        : 'cert-authenticity'
+  const pageSizeForPrint = COURT_DECREE_ANNOTATION_TYPES.has(validType) ? 'legal' : paperSize
   const [data, setData] = useState(() => getStoredData() || defaultCourtDecree)
   const uploadInputRef = useRef(null)
   const uploadScopeRef = useRef('')
@@ -113,7 +202,13 @@ export default function CourtDecreePrint() {
   const { toasts, show, dismiss } = useToasts()
   const handleSavePdf = async () => {
     try {
-      const result = await saveCurrentViewAsPdf(`CourtDecree-${validType}`)
+      const outputType = validType
+      if (outputType !== validType) {
+        setSearchParams({ type: outputType }, { replace: true })
+        // Wait for the view to switch so PDF capture uses the intended output.
+        await new Promise((resolve) => requestAnimationFrame(() => resolve()))
+      }
+      const result = await saveCurrentViewAsPdf(`CourtDecree-${outputType}`)
       if (result?.ok) {
         show({ type: 'success', title: 'PDF saved', message: result.filePath || '' })
         return
@@ -128,30 +223,34 @@ export default function CourtDecreePrint() {
     }
   }
 
-  usePrintPageSize(paperSize)
+  usePrintPageSize(pageSizeForPrint)
 
   useEffect(() => {
     const stored = getStoredData()
     if (stored) setData(stored)
   }, [])
 
-  /** Not in sidebar — use Court Decree → Nullity of marriage. Direct URL still works. */
-  const validType =
-    type === 'marriage-nullity-art42'
-      ? 'marriage-nullity-art42'
-      : COURT_DECREE_TYPES.some((t) => t.id === type)
-        ? type
-        : 'cert-authenticity'
+  const affectedDocs = normalizeAffectedList(data)
+  const filledAffectedDocs = useMemo(() => deriveFilledAffectedDocuments(data), [data])
+  const effectiveAffectedDocs = filledAffectedDocs.length === 1 ? filledAffectedDocs : affectedDocs
 
   useEffect(() => {
-    const docs = normalizeAffectedList(data)
+    const docs = effectiveAffectedDocs
     if (docs.length !== 1) return
     const aff = String(docs[0] || '').trim()
     if (!aff || !LCR_TYPES_BY_AFFECTED[aff]) return
     if (!isPrintTypeAllowedForAffected(validType, docs)) {
       setSearchParams({ type: defaultPrintTypeForAffected(docs) }, { replace: true })
     }
-  }, [data.affectedDocument, validType, setSearchParams])
+  }, [effectiveAffectedDocs, validType, setSearchParams])
+
+  useEffect(() => {
+    if (COURT_DECREE_ANNOTATION_TYPES.has(validType)) {
+      setPaperSize('legal')
+    } else {
+      setPaperSize((prev) => (prev === 'legal' ? 'a4' : prev))
+    }
+  }, [validType])
 
   const LCR_1A_FORM_KEYS = [
     'lcr1aRegistryNumber', 'lcr1aDateRegistration', 'lcr1aNameOfChild', 'lcr1aSex', 'lcr1aDateOfBirth',
@@ -357,8 +456,6 @@ export default function CourtDecreePrint() {
     ? `SUBJECT: IN RE: ${(data.caseTitle || '').toUpperCase()}`
     : `SUBJECT: IN RE: JOINT PETITION TO APPROVE AND REGISTER THE DIVORCE OF SPOUSES ${(data.documentOwnerName || '').toUpperCase()}`
 
-  const affectedDocs = normalizeAffectedList(data)
-
   let content
   switch (validType) {
     case 'cert-authenticity':
@@ -375,7 +472,7 @@ export default function CourtDecreePrint() {
       break
     case 'lcr-form-1a':
       content =
-        affectedDocs.length <= 1
+        effectiveAffectedDocs.length <= 1
           ? (
               <div className="court-decree-lcr-form-outer">
                 <LcrForm1ABirthAvailable data={dataForLcr1A} />
@@ -383,31 +480,22 @@ export default function CourtDecreePrint() {
             )
           : (
               <div className="court-decree-lcr-form-outer space-y-6">
-                {affectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
-                {affectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
-                {affectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
+                {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
+                {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
+                {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
               </div>
             )
       break
     case 'lcr-form-2a':
-      content =
-        affectedDocs.length <= 1
-          ? (
-              <div className="court-decree-lcr-form-outer">
-                <LcrForm2ADeathAvailable data={dataForLcr2A} />
-              </div>
-            )
-          : (
-              <div className="court-decree-lcr-form-outer space-y-6">
-                {affectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
-                {affectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
-                {affectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
-              </div>
-            )
+      content = (
+        <div className="court-decree-lcr-form-outer">
+          <LcrForm2ADeathAvailable data={dataForLcr2A} />
+        </div>
+      )
       break
     case 'lcr-form-3a':
       content =
-        affectedDocs.length <= 1
+        effectiveAffectedDocs.length <= 1
           ? (
               <div className="court-decree-lcr-form-outer">
                 <LcrForm3AMarriageAvailable data={dataForLcr3A} />
@@ -415,9 +503,9 @@ export default function CourtDecreePrint() {
             )
           : (
               <div className="court-decree-lcr-form-outer space-y-6">
-                {affectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
-                {affectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
-                {affectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
+                {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
+                {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
+                {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
               </div>
             )
       break
@@ -500,7 +588,13 @@ export default function CourtDecreePrint() {
             id="court-decree-paper-size"
             value={paperSize}
             onChange={(e) => setPaperSize(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+            disabled={COURT_DECREE_ANNOTATION_TYPES.has(validType)}
+            title={
+              COURT_DECREE_ANNOTATION_TYPES.has(validType)
+                ? 'Annotation outputs are fixed to Legal (8.5" × 14") for printing'
+                : undefined
+            }
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {PAPER_SIZES.map((p) => (
               <option key={p.id} value={p.id}>{p.label}</option>
@@ -519,12 +613,12 @@ export default function CourtDecreePrint() {
         <aside className="no-print w-56 shrink-0 flex flex-col gap-3">
           <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">View &amp; Print</h2>
           <div className="flex flex-col gap-2">
-            {(data.affectedDocument || '').trim() && LCR_TYPES_BY_AFFECTED[(data.affectedDocument || '').trim()] ? (
+            {effectiveAffectedDocs.length > 0 ? (
               <p className="text-xs text-gray-600 leading-snug -mt-1 mb-1">
-                LCR &amp; annotation options match <span className="font-semibold text-gray-800">affected civil document</span> on the form.
+                LCR and annotation options are limited to the civil document forms you filled out.
               </p>
             ) : null}
-            {COURT_DECREE_TYPES.filter((t) => isPrintTypeAllowedForAffected(t.id, data.affectedDocument)).map((t) => {
+            {COURT_DECREE_TYPES.filter((t) => isPrintTypeAllowedForAffected(t.id, effectiveAffectedDocs)).map((t) => {
               const isSelected = validType === t.id
               const isLcrForm = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a'].includes(t.id)
               const btnClass = [

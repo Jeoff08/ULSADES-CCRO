@@ -13,6 +13,12 @@ const API_PORT = Number(process.env.PORT) || 3001
 /** @type {import('http').Server | null} */
 let httpServer = null
 
+function sanitizeFileName(name) {
+  return String(name || 'document')
+    .replace(/[<>:"/\\|?*\u0000-\u001F]/g, '_')
+    .trim() || 'document'
+}
+
 async function startBackend() {
   const { startServer } = await import('../server/http-server.js')
   const staticDir = isDev ? null : join(rootDir, 'dist')
@@ -64,6 +70,27 @@ ipcMain.handle('pdf:save-current-window', async (event, suggestedFileName = 'doc
   const { writeFile } = await import('fs/promises')
   await writeFile(filePath, pdfData)
   return { ok: true, filePath }
+})
+
+ipcMain.handle('pdf:preview-current-window', async (event, suggestedFileName = 'document-preview.pdf') => {
+  const win = BrowserWindow.fromWebContents(event.sender)
+  if (!win || win.isDestroyed()) {
+    return { ok: false, reason: 'Window unavailable' }
+  }
+
+  const safeFileName = sanitizeFileName(suggestedFileName).toLowerCase().endsWith('.pdf')
+    ? sanitizeFileName(suggestedFileName)
+    : `${sanitizeFileName(suggestedFileName)}.pdf`
+  const tempPath = join(app.getPath('temp'), `ulsades-preview-${Date.now()}-${safeFileName}`)
+
+  const pdfData = await win.webContents.printToPDF({
+    printBackground: true,
+    preferCSSPageSize: true,
+  })
+
+  const { writeFile } = await import('fs/promises')
+  await writeFile(tempPath, pdfData)
+  return { ok: true, filePath: tempPath }
 })
 
 app.whenReady().then(async () => {

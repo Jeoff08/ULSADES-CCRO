@@ -14,3 +14,14 @@ export async function saveCurrentViewAsPdf(suggestedBaseName = 'document') {
   if (!result) return { ok: false, cancelled: true, reason: 'Unknown response from main process' }
   return result
 }
+
+export async function previewCurrentViewAsPdf(suggestedBaseName = 'document-preview') {
+  const fileName = `${sanitizeFileName(suggestedBaseName)}.pdf`
+  const bridge = window?.electronAPI
+  if (!bridge || typeof bridge.previewPdf !== 'function') {
+    throw new Error('PDF preview bridge is unavailable. Run the app in Electron.')
+  }
+  const result = await bridge.previewPdf(fileName)
+  if (!result) return { ok: false, reason: 'Unknown response from main process' }
+  return result
+}
