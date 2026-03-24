@@ -721,8 +721,8 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   flex: 1;
   min-height: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-end;
+  justify-content: flex-end;
   padding: 0.25rem 0.4rem 0.35rem;
   background: white;
 }
@@ -742,6 +742,19 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
 }
 .colb-annotation-ack .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-remarks-text br + span {
   display: block;
+}
+
+/* AUSF Annotation (Child Not Ack): fixed REMARKS rect from 2550×4200 layout (CSS vars from colbRemarksLayout.js) */
+.colb-annotation-ack .colb-print-area .colb-annotation-overlay-remarks.colb-annotation-overlay-dynamic {
+  left: var(--colb-overlay-left);
+  top: var(--colb-overlay-top);
+  width: var(--colb-overlay-width);
+  height: var(--colb-overlay-height);
+  bottom: auto;
+  right: auto;
+  max-height: none;
+  border: none;
+  background: white;
 }
 
 /* Annotation for Form 1A (Court Decree): REMARKS overlay on Form 102 scan – gray box edge-to-edge with text, justified, italic, 12px */
@@ -1028,10 +1041,15 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     flex: 1 !important;
     min-height: 0 !important;
     display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    align-items: flex-end !important;
+    justify-content: flex-end !important;
     padding: 0.2rem 0.35rem !important;
     background: transparent !important;
+  }
+  .colb-annotation-ack .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-remarks-body {
+    align-items: flex-end !important;
+    justify-content: flex-end !important;
+    padding: 0 !important;
   }
   .colb-annotation-overlay-remarks .colb-annotation-remarks-text {
     font-size: 10px !important;
@@ -1046,6 +1064,20 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
     text-align: center !important;
+  }
+  .colb-annotation-ack .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-remarks-text {
+    padding: 0 !important;
+  }
+  .colb-annotation-ack .colb-print-area .colb-annotation-overlay-remarks.colb-annotation-overlay-dynamic {
+    left: var(--colb-overlay-left) !important;
+    top: var(--colb-overlay-top) !important;
+    width: var(--colb-overlay-width) !important;
+    height: var(--colb-overlay-height) !important;
+    bottom: auto !important;
+    right: auto !important;
+    max-height: none !important;
+    border: none !important;
+    background: white !important;
   }
   /* Form 1A: keep dynamic rect (detection or FORM_102 fallback) in print */
   /* Form 1A: overlay height fits text in print/PDF – no large empty gray area */
