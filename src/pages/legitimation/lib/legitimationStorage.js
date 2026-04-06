@@ -2,14 +2,15 @@ const KEY_DRAFT = 'legitimationDraft'
 const KEY_SAVED = 'ulsades_legitimation_saved'
 
 const FORM_TYPE_LABELS = {
-  'sole-affidavit': 'Sole Affidavit Legitimation',
-  'joint-affidavit': 'Joint Affidavit Legitimation',
+  'sole-affidavit': 'Affidavit Legitimation',
+  'joint-affidavit': 'Affidavit Legitimation',
   'registration-legitimation': 'Registration of Legitimation',
   'registration-acknowledgement': 'Registration of Acknowledgement',
   'lcr-form-1a': 'LCR Form 1A',
   'transmittal': 'Transmittal',
   'out-of-town-transmittal': 'Out of Town Transmittal',
   'annotation': 'Annotation',
+  'supplemental-report': 'Affidavit for Supplemental Report',
 }
 
 function getLabel(data) {

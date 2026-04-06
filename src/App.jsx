@@ -8,6 +8,8 @@ import { AUSFForm, AUSFPrint, AUSFSaved } from './pages/ausf'
 import { CourtDecreeForm, CourtDecreeInstructions, CourtDecreePrint, CourtDecreeSaved } from './pages/courtDecree'
 import { LegitimationForm, LegitimationPrint, LegitimationSaved } from './pages/legitimation'
 import LegalInstrumentPage from './pages/LegalInstrumentPage'
+import SupplementalPrint from './pages/legalInstrument/SupplementalPrint'
+import SupplementalSaved from './pages/legalInstrument/SupplementalSaved'
 import CourtDecreeWorkflowPage from './pages/CourtDecreeWorkflowPage'
 import UploadedFileViewer from './pages/UploadedFileViewer'
 import Log from './pages/Log'
@@ -45,6 +47,8 @@ export default function App() {
         <Route path="legitimation/print" element={<LegitimationPrint />} />
         <Route path="legitimation/saved" element={<LegitimationSaved />} />
         <Route path="legal-instrument/:slug" element={<LegalInstrumentPage />} />
+        <Route path="legal-instrument/supplemental/print" element={<SupplementalPrint />} />
+        <Route path="legal-instrument/supplemental/saved" element={<SupplementalSaved />} />
         <Route path="uploaded/:scope" element={<UploadedFileViewer />} />
         <Route path="logs" element={<Log />} />
       </Route>

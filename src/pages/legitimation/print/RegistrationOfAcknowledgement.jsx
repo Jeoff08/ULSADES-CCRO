@@ -31,7 +31,7 @@ export default function RegistrationOfAcknowledgement({ data }) {
             value={registeredDate}
             onChange={(e) => setRegisteredDate(e.target.value)}
             placeholder=""
-            className="registration-of-ack-input inline-block border-0 border-b border-black bg-transparent outline-none min-w-[18ch] max-w-[22ch] align-baseline text-inherit font-inherit p-0"
+            className="registration-of-ack-input inline-block border-0 border-b border-black bg-transparent outline-none min-w-[12ch] max-w-[16ch] align-baseline text-inherit font-inherit text-center font-bold p-0"
             aria-label="Registration date"
           />{' '}
           under Registry Number{' '}
@@ -40,7 +40,7 @@ export default function RegistrationOfAcknowledgement({ data }) {
             value={registryNo}
             onChange={(e) => setRegistryNo(e.target.value)}
             placeholder=""
-            className="registration-of-ack-input registration-of-ack-registry inline-block border-0 border-b border-black bg-transparent outline-none min-w-[10ch] max-w-[14ch] align-baseline text-inherit font-inherit p-0"
+            className="registration-of-ack-input registration-of-ack-registry inline-block border-0 border-b border-black bg-transparent outline-none min-w-[8ch] max-w-[12ch] align-baseline text-inherit font-inherit text-center font-bold p-0"
             aria-label="Registry number"
           />.
         </p>
@@ -68,13 +68,17 @@ export default function RegistrationOfAcknowledgement({ data }) {
 
       <style>{`
         .registration-of-ack-doc .print-doc-footer .text-right p { color: #2563eb; }
-        .registration-of-ack-doc .registration-of-ack-input { min-width: 18ch; }
-        .registration-of-ack-doc .registration-of-ack-registry { min-width: 10ch; }
+        .registration-of-ack-doc .registration-of-ack-input { min-width: 12ch; max-width: 16ch; }
+        .registration-of-ack-doc .registration-of-ack-registry { min-width: 8ch; max-width: 12ch; }
+        .registration-of-ack-doc .registration-of-ack-input {
+          text-align: center;
+        }
         @media print {
           .registration-of-ack-doc .registration-of-ack-input {
             -webkit-appearance: none;
             appearance: none;
             background: transparent !important;
+            text-align: center !important;
           }
         }
       `}</style>

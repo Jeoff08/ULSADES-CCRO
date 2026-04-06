@@ -5,14 +5,15 @@ import { hasAnyUploadsForRecord } from '../../lib/uploadedFileStore'
 import hasUploadedFilesIcon from '../../assets/has-uploaded-files-icon.svg'
 
 const LEGITIMATION_TYPE_LABELS = {
-  'sole-affidavit': 'Sole Affidavit Legitimation',
-  'joint-affidavit': 'Joint Affidavit Legitimation',
+  'sole-affidavit': 'Affidavit Legitimation',
+  'joint-affidavit': 'Affidavit Legitimation',
   'registration-legitimation': 'Registration of Legitimation',
   'registration-acknowledgement': 'Registration of Acknowledgement',
   'lcr-form-1a': 'LCR Form 1A',
   'transmittal': 'Transmittal',
   'out-of-town-transmittal': 'Out of Town Transmittal',
   'annotation': 'Annotation',
+  'supplemental-report': 'Affidavit for Supplemental Report',
 }
 
 function formatSavedAt(iso) {
@@ -124,6 +125,13 @@ export default function LegitimationSaved() {
           style={{ animationDelay: '0.1s' }}
         >
           Court Decree saved
+        </Link>
+        <Link
+          to="/legal-instrument/supplemental/saved"
+          className="legitimation-saved-anim-action inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all duration-200 ease-out hover:shadow-md active:scale-[0.98] opacity-0 no-underline"
+          style={{ animationDelay: '0.12s' }}
+        >
+          Supplemental saved
         </Link>
         <Link
           to="/legitimation/form?type=joint-affidavit"

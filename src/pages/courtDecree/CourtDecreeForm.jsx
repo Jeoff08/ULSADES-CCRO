@@ -817,13 +817,15 @@ export default function CourtDecreeForm() {
           </div>
           <div>
             <div className="court-decree-form-page__label-tag">Court or Racco?</div>
-            <input
-              type="text"
+            <select
               value={form.courtOrRacco}
-              onChange={scInput('courtOrRacco')}
-              placeholder="e.g. 2012-02"
+              onChange={(e) => update('courtOrRacco', e.target.value)}
               className={inputClass}
-            />
+            >
+              <option value="">Select option</option>
+              <option value="2024-05">Racco is (2024-05) adoption</option>
+              <option value="2012-02">Court is (2012-02) divorce, nullity, and marraige</option>
+            </select>
           </div>
         </div>
       </CourtDecreeSection>
@@ -878,7 +880,15 @@ export default function CourtDecreeForm() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Type of Case</label>
-            <input type="text" value={form.typeOfCase} onChange={scInput('typeOfCase')} placeholder="e.g. Civil Case No." className={inputClass} />
+            <select
+              value={form.typeOfCase}
+              onChange={(e) => update('typeOfCase', e.target.value)}
+              className={inputClass}
+            >
+              <option value="Civil Case No.">Civil Case No.</option>
+              <option value="S.P. No">S.P. No</option>
+              <option value="RACCO">RACCO</option>
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Case No</label>

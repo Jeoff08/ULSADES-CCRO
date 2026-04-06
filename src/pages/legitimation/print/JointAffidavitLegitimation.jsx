@@ -2,7 +2,7 @@ import React from 'react'
 import { formatDateCert, fullName } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter } from '../../../components/print'
 
-/** JOINT AFFIDAVIT LEGITIMATION – legitimation form print (layout matches Certificate of Authenticity). */
+/** AFFIDAVIT LEGITIMATION – legitimation form print (layout matches Certificate of Authenticity). */
 export default function JointAffidavitLegitimation({ data }) {
   const childFull = fullName(data.childFirst, data.childMiddle, data.childLast)
   const motherFull = fullName(data.motherFirst, data.motherMiddle, data.motherLast)
@@ -15,13 +15,13 @@ export default function JointAffidavitLegitimation({ data }) {
       <DocumentHeader registryNo={data.affidavitLegitRegistryNo} />
 
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
-        <h2 className="text-center font-bold text-[30px] uppercase mb-6 tracking-tight">JOINT AFFIDAVIT LEGITIMATION</h2>
+        <h2 className="text-center font-bold text-[30px] uppercase mb-6 tracking-tight">AFFIDAVIT LEGITIMATION</h2>
 
         <p className="font-bold text-[18px] mb-4">TO WHOM IT MAY CONCERN:</p>
 
         <div className="cert-auth-body cert-auth-body-gaps text-justify text-[18px] leading-[1.8]">
           <p>
-            This is the Joint Affidavit Legitimation form for the child <span className="font-bold underline">{childFull || '—'}</span>,
+            This is the Affidavit Legitimation form for the child <span className="font-bold underline">{childFull || '—'}</span>,
             parents <span className="font-bold underline">{fatherFull || '—'}</span> and <span className="font-bold underline">{motherFull || '—'}</span>.
           </p>
           <p>

@@ -300,7 +300,7 @@ export default function CourtDecreePrint() {
     const pomFallback = [out.placeOfMarriageCity, out.placeOfMarriageProvince, out.placeOfMarriageCountry].filter(Boolean).join(', ')
     out.placeOfMarriageOfParents = pom || pomFallback
     const manualRemarks = String(data.lcrForm1aRemarks || '').trim()
-    out.remarks = manualRemarks || buildLcrRemarks(data, out, 'BIRTH')
+    out.remarks = manualRemarks
     return out
   }, [validType, data])
 
@@ -353,7 +353,8 @@ export default function CourtDecreePrint() {
     }
     const reg = String(data.lcr2aRegistryNumber || '').trim() || String(data.colbRegistryNo || '').trim()
     if (reg) out.colbRegistryNo = reg
-    out.remarks = buildLcrRemarks(data, out, 'DEATH')
+    const manualRemarks = String(data.lcrForm2aRemarks || '').trim()
+    out.remarks = manualRemarks
     return out
   }, [validType, data])
 
@@ -416,7 +417,8 @@ export default function CourtDecreePrint() {
     }
     const reg = String(data.lcr3aRegistryNumber || '').trim() || String(data.marriageRegistryNo || '').trim()
     if (reg) out.marriageRegistryNo = reg
-    out.remarks = buildLcrRemarks(data, out, 'MARRIAGE')
+    const manualRemarks = String(data.lcrForm3aRemarks || '').trim()
+    out.remarks = manualRemarks
     return out
   }, [validType, data])
 

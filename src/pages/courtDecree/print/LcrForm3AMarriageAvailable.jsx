@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { formatDateCert, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { buildLcr3aTableDisplay } from '../lib/lcr3aTable'
@@ -6,6 +6,11 @@ import { buildLcr3aTableDisplay } from '../lib/lcr3aTable'
 /** LCR Form No. 3A (Marriage-Available). Full print; table via buildLcr3aTableDisplay. */
 export default function LcrForm3AMarriageAvailable({ data }) {
   const t = buildLcr3aTableDisplay(data)
+  const [editableRemarks, setEditableRemarks] = useState(data?.remarks || '')
+
+  useEffect(() => {
+    setEditableRemarks(data?.remarks || '')
+  }, [data?.remarks])
   const colbPage = data.colbPageNumber ?? data.colbPageNo
   const colbBook = data.colbBookNumber ?? data.colbBookNo
   const formDate = (() => {
@@ -31,7 +36,7 @@ export default function LcrForm3AMarriageAvailable({ data }) {
         </div>
       </div>
       <div className="court-decree-lcr-body-wrap flex-1 min-h-0 flex flex-col">
-        <div className="court-decree-lcr-body-scaled">
+        <div className="court-decree-lcr-body-scaled flex flex-col h-full">
           <p className="font-bold mb-1">TO WHOM IT MAY CONCERN:</p>
           <p className="mb-2 text-left court-decree-lcr-body">
             <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of marriage appear in our Register of Marriages on Page{' '}
@@ -121,25 +126,38 @@ export default function LcrForm3AMarriageAvailable({ data }) {
           </p>
           <div className="mb-2 court-decree-lcr-body">
             <p className="font-bold text-sm mb-0.5">REMARKS:</p>
-            <p className="text-sm text-justify min-h-[1.5rem]">{data.remarks || ''}</p>
-          </div>
-          <div className="mb-2 flex justify-between items-end gap-8 court-decree-lcr-body">
-            <div className="text-left">
-              <p className="text-sm mb-0.5">Verified by:</p>
-              <p className="font-bold text-sm border-b border-black inline-block uppercase">{regOfficer}</p>
-              <p className="text-xs mt-0.5">LCRO - Staff</p>
+            <div className="no-print mb-1">
+              <textarea
+                value={editableRemarks}
+                onChange={(e) => setEditableRemarks(e.target.value)}
+                rows={3}
+                className="w-full border border-gray-300 rounded px-2 py-1 text-[14px]"
+                placeholder="Type or edit remarks here..."
+              />
             </div>
-            <div className="text-right">
-              <p className="font-bold text-sm border-b border-black inline-block uppercase">{ccrName}</p>
-              <p className="text-xs mt-0.5 italic">City Civil Registrar</p>
-            </div>
+            <p className="text-[14px] leading-[1.35] text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] min-h-[1.5rem]">
+              {editableRemarks}
+            </p>
           </div>
-          <p className="font-bold text-sm mb-2 court-decree-lcr-body">
-            Note: This certification is not valid if it has mark, erasure or alteration of any entry.
-          </p>
         </div>
       </div>
       <div className="court-decree-lcr-footer mt-auto shrink-0">
+        <div className="court-decree-lcr-body mb-1">
+          <div className="mb-1 flex justify-between items-end gap-0">
+            <div className="flex flex-col items-center text-center">
+              <p className="text-sm mb-0.5 self-start">Verified by:</p>
+              <p className="font-bold text-sm border-b border-black inline-block uppercase">{regOfficer}</p>
+              <p className="text-xs mt-0">LCRO - Staff</p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <p className="font-bold text-sm border-b border-black inline-block uppercase">{ccrName}</p>
+              <p className="text-xs mt-0 italic">City Civil Registrar</p>
+            </div>
+          </div>
+          <p className="font-bold text-sm mb-1">
+            Note: This certification is not valid if it has mark, erasure or alteration of any entry.
+          </p>
+        </div>
         <DocumentFooter contactPhone={data?.contactPhone} contactEmail={data?.contactEmail} sloganBlue />
       </div>
     </div>

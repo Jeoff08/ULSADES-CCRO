@@ -5,7 +5,7 @@
 export const COLB_LAYOUT_DOC_PX = { width: 2550, height: 4200 }
 
 /** REMARKS/ANNOTATIONS region on the layout (pixels, top-left origin). */
-export const COLB_REMARKS_NOT_ACK_RECT_PX = { x: 246, y: 3600, width: 2292 }
+export const COLB_REMARKS_NOT_ACK_RECT_PX = { x: 519, y: 3306, width: 2292 }
 
 /**
  * @param {{ x: number, y: number, width: number, height: number }} rectPx

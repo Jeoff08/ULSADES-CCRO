@@ -97,6 +97,8 @@ export const defaultCourtDecree = {
   dateOfMarriage: '',
   placeOfMarriageOfParents: '',
   lcrForm1aRemarks: '',
+  lcrForm2aRemarks: '',
+  lcrForm3aRemarks: '',
   certificateSignatoryName: 'SHIRLY L. DEMECILLO',
   contactPhone: '(063) 227 - 2806',
   contactEmail: 'civilregistrar.iligan@gmail.com',

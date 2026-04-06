@@ -289,7 +289,7 @@ export default function LegitimationForm() {
       </div>
 
       <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
-      <LegitimationSection number="5" title="Both parent/s alive/present?" instruction={form.bothParentsAlive === 'YES' ? 'Fill-up ITEM 6 ONLY and use JOINT AFFIDAVIT' : null}>
+      <LegitimationSection number="5" title="Both parent/s alive/present?" instruction={form.bothParentsAlive === 'YES' ? 'Fill-up ITEM 6 ONLY and use AFFIDAVIT LEGITIMATION' : null}>
         <div className="legitimation-form-page__radio-group flex gap-4">
           <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.bothParentsAlive === 'YES'} onChange={() => update('bothParentsAlive', 'YES')} /> YES</label>
           <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.bothParentsAlive === 'NO'} onChange={() => update('bothParentsAlive', 'NO')} /> NO</label>
@@ -303,18 +303,18 @@ export default function LegitimationForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Mother&apos;s maiden name (First, Middle, Surname)</label>
             <div className="grid grid-cols-3 gap-2">
-              <input type="text" value={form.motherFirst} onChange={scInput('motherFirst')} className={inputClass} />
-              <input type="text" value={form.motherMiddle} onChange={scInput('motherMiddle')} className={inputClass} />
-              <input type="text" value={form.motherLast} onChange={scInput('motherLast')} className={inputClass} />
+              <input type="text" value={form.motherFirst} onChange={scInput('motherFirst')} className={inputClass}  placeholder='First'/>
+              <input type="text" value={form.motherMiddle} onChange={scInput('motherMiddle')} className={inputClass}  placeholder='Middle'/>
+              <input type="text" value={form.motherLast} onChange={scInput('motherLast')} className={inputClass}  placeholder='Surname'/>
             </div>
             <input type="text" value={form.motherCitizenship} onChange={scInput('motherCitizenship')} placeholder="Citizenship" className={`${inputClass} mt-2`} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Father&apos;s name (First, Middle, Surname)</label>
             <div className="grid grid-cols-3 gap-2">
-              <input type="text" value={form.fatherFirst} onChange={scInput('fatherFirst')} className={inputClass} />
-              <input type="text" value={form.fatherMiddle} onChange={scInput('fatherMiddle')} className={inputClass} />
-              <input type="text" value={form.fatherLast} onChange={scInput('fatherLast')} className={inputClass} />
+              <input type="text" value={form.fatherFirst} onChange={scInput('fatherFirst')} className={inputClass}  placeholder='First'/>
+              <input type="text" value={form.fatherMiddle} onChange={scInput('fatherMiddle')} className={inputClass}  placeholder='Middle'/>
+              <input type="text" value={form.fatherLast} onChange={scInput('fatherLast')} className={inputClass}  placeholder='Surname'/>
             </div>
             <input type="text" value={form.fatherCitizenship} onChange={scInput('fatherCitizenship')} placeholder="Citizenship" className={`${inputClass} mt-2`} />
           </div>
@@ -328,18 +328,18 @@ export default function LegitimationForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Surviving parent</label>
             <div className="grid grid-cols-3 gap-2">
-              <input type="text" value={form.survivingParentFirst} onChange={scInput('survivingParentFirst')} className={inputClass} />
-              <input type="text" value={form.survivingParentMiddle} onChange={scInput('survivingParentMiddle')} className={inputClass} />
-              <input type="text" value={form.survivingParentLast} onChange={scInput('survivingParentLast')} className={inputClass} />
+              <input type="text" value={form.survivingParentFirst} onChange={scInput('survivingParentFirst')} className={inputClass}  placeholder='First'/>
+              <input type="text" value={form.survivingParentMiddle} onChange={scInput('survivingParentMiddle')} className={inputClass}  placeholder='Middle'/>
+              <input type="text" value={form.survivingParentLast} onChange={scInput('survivingParentLast')} className={inputClass}  placeholder='Surname'/>
             </div>
             <input type="text" value={form.survivingParentCitizenship} onChange={scInput('survivingParentCitizenship')} placeholder="Citizenship" className={`${inputClass} mt-2`} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Deceased parent</label>
             <div className="grid grid-cols-3 gap-2">
-              <input type="text" value={form.deceasedParentFirst} onChange={scInput('deceasedParentFirst')} className={inputClass} />
-              <input type="text" value={form.deceasedParentMiddle} onChange={scInput('deceasedParentMiddle')} className={inputClass} />
-              <input type="text" value={form.deceasedParentLast} onChange={scInput('deceasedParentLast')} className={inputClass} />
+              <input type="text" value={form.deceasedParentFirst} onChange={scInput('deceasedParentFirst')} className={inputClass}  placeholder='First'/>
+              <input type="text" value={form.deceasedParentMiddle} onChange={scInput('deceasedParentMiddle')} className={inputClass}  placeholder='Middle'/>
+              <input type="text" value={form.deceasedParentLast} onChange={scInput('deceasedParentLast')} className={inputClass}  placeholder='Surname'/>
             </div>
             <div className="mt-2">
               <DateInput value={form.dateOfDeath} onChange={(v) => update('dateOfDeath', v)} placeholder="Date of death (dd/mm/yyyy)" />
@@ -354,7 +354,7 @@ export default function LegitimationForm() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Registry number</label>
-            <input type="text" value={form.affidavitAckRegistryNo} onChange={scInput('affidavitAckRegistryNo')} className={inputClass} />
+            <input type="text" value={form.affidavitAckRegistryNo} onChange={scInput('affidavitAckRegistryNo')} className={inputClass} placeholder='e.g. 1139' />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Registration date</label>
@@ -421,11 +421,11 @@ export default function LegitimationForm() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Page number</label>
-            <input type="text" value={form.colbPageNo} onChange={scInput('colbPageNo')} className={inputClass} />
+            <input type="text" value={form.colbPageNo} onChange={scInput('colbPageNo')} className={inputClass} placeholder='e.g. 146' />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Book number</label>
-            <input type="text" value={form.colbBookNo} onChange={scInput('colbBookNo')} className={inputClass} />
+            <input type="text" value={form.colbBookNo} onChange={scInput('colbBookNo')} className={inputClass} placeholder='e.g. 2' />
           </div>
         </div>
       </LegitimationSection>

@@ -856,6 +856,9 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .ausf-doc {
     font-family: 'Times New Roman', Times, serif !important;
   }
+  .supplemental-report-doc {
+    font-family: Arial, sans-serif !important;
+  }
   .print-doc {
     max-width: 100% !important;
     box-shadow: none !important;
@@ -863,6 +866,77 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     page-break-inside: avoid;
     display: flex !important;
     flex-direction: column !important;
+  }
+  /* Supplemental middle-name footer: keep compact and visible in saved PDF */
+  .supplemental-report-doc.print-doc {
+    page-break-inside: auto !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  .supplemental-report-doc .supplemental-bottom-wrap {
+    margin-top: 0 !important;
+    padding-top: 0.02in !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+  .supplemental-report-doc .supplemental-bottom-wrap p {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.05 !important;
+  }
+  .supplemental-report-doc .supplemental-bottom-wrap .grid {
+    gap: 0 !important;
+  }
+  /* Long bondpaper only: push supplemental contact/slogan block to page bottom */
+  html[data-paper-size="long"] .supplemental-report-doc .supplemental-bottom-wrap {
+    margin-top: auto !important;
+    padding-top: 0 !important;
+  }
+  /* Short bondpaper: keep supplemental footer at page bottom */
+  html[data-paper-size="short"] .supplemental-report-doc {
+    min-height: 11in !important;
+    max-height: none !important;
+    background: transparent !important;
+  }
+  html[data-paper-size="short"] .supplemental-report-doc .supplemental-bottom-wrap {
+    margin-top: auto !important;
+    padding-top: 0 !important;
+  }
+  /* Supplemental (A4 + Short): 15px text and double-space for items 1-7 */
+  html[data-paper-size="a4"] .supplemental-report-doc,
+  html[data-paper-size="short"] .supplemental-report-doc,
+  html[data-paper-size="a4"] .supplemental-report-doc p,
+  html[data-paper-size="short"] .supplemental-report-doc p,
+  html[data-paper-size="a4"] .supplemental-report-doc li,
+  html[data-paper-size="short"] .supplemental-report-doc li,
+  html[data-paper-size="a4"] .supplemental-report-doc span,
+  html[data-paper-size="short"] .supplemental-report-doc span,
+  html[data-paper-size="a4"] .supplemental-report-doc div,
+  html[data-paper-size="short"] .supplemental-report-doc div {
+    font-size: 15px !important;
+  }
+  /* Supplemental middle-name header sizing in saved PDF */
+  html[data-paper-size="a4"] .supplemental-report-doc .supplemental-header-main p,
+  html[data-paper-size="short"] .supplemental-report-doc .supplemental-header-main p {
+    font-size: 20px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  html[data-paper-size="a4"] .supplemental-report-doc .supplemental-header-main .supplemental-header-address,
+  html[data-paper-size="short"] .supplemental-report-doc .supplemental-header-main .supplemental-header-address {
+    font-size: 16px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  html[data-paper-size="a4"] .supplemental-report-doc .supplemental-numbered-items,
+  html[data-paper-size="short"] .supplemental-report-doc .supplemental-numbered-items,
+  html[data-paper-size="a4"] .supplemental-report-doc .supplemental-numbered-items li,
+  html[data-paper-size="short"] .supplemental-report-doc .supplemental-numbered-items li {
+    line-height: 2 !important;
   }
   /* Print PDF only: header and footer fixed; only body content is flexible */
   .print-doc-header {
@@ -1898,7 +1972,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table td,
   .court-decree-lcr-form.print-doc-lcr-2a p,
   .court-decree-lcr-form.print-doc-lcr-2a .text-sm {
-    font-size: 21.4px !important;
+    font-size: 16.8px !important;
   }
   .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-body,
   .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table,
@@ -1978,7 +2052,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table td,
   html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-2a p,
   html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-2a .text-sm {
-    font-size: 21.4px !important;
+    font-size: 16.8px !important;
   }
   html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-body,
   html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table,
@@ -2007,7 +2081,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table td,
   html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-2a p,
   html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-2a .text-sm {
-    font-size: 21.4px !important;
+    font-size: 18.8px !important;
   }
   html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-body,
   html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table,
@@ -2039,7 +2113,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table td, html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table td
   html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a p, html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-2a p
   html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a .text-sm , html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-2a .text-sm {
-    font-size: 22px !important;
+    font-size: 19.5px !important;
   }
   html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-body, html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-body
   html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table, html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table

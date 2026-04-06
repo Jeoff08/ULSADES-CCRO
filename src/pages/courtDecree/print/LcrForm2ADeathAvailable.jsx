@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { formatDateCert, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { buildLcr2aTableDisplay } from '../lib/lcr2aTable'
@@ -6,6 +6,11 @@ import { buildLcr2aTableDisplay } from '../lib/lcr2aTable'
 /** LCR Form No. 2A (Death-Available). Full print layout; table from buildLcr2aTableDisplay (court + legitimation). */
 export default function LcrForm2ADeathAvailable({ data }) {
   const t = buildLcr2aTableDisplay(data)
+  const [editableRemarks, setEditableRemarks] = useState(data?.remarks || '')
+
+  useEffect(() => {
+    setEditableRemarks(data?.remarks || '')
+  }, [data?.remarks])
   const colbPage = data.colbPageNumber ?? data.colbPageNo
   const colbBook = data.colbBookNumber ?? data.colbBookNo
   const formDate = (() => {
@@ -18,12 +23,11 @@ export default function LcrForm2ADeathAvailable({ data }) {
   const ccrName = data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL'
   const blankIfDash = (v) => (String(v || '').trim() === '—' ? '' : v)
   const causeText = blankIfDash(t.causeOfDeath)
-  const causeLines = 9
   const labelCell = 'py-0.5 px-2 border border-black align-top leading-tight'
-  const valueCell = 'py-0.5 px-2 border border-black text-left leading-tight'
+  const valueCell = 'py-0.5 px-2 border border-black text-center font-bold leading-tight'
 
   return (
-    <div className="ausf-doc print-doc print-doc-lcr-2a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col">
+    <div className="ausf-doc print-doc print-doc-lcr-2a print-doc-lcr-3a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col">
       <div className="court-decree-lcr-header shrink-0">
         <PrintHeaderRow />
         <div className="flex justify-between items-start mb-1">
@@ -31,11 +35,11 @@ export default function LcrForm2ADeathAvailable({ data }) {
             <p className="font-bold text-base">LCR Form No. 2A</p>
             <p className="text-sm">(Death-Available)</p>
           </div>
-          <p className="text-sm font-bold">{formDate}</p>
+          <p className="text-sm font-bold min-w-[8rem] text-right">{formDate}</p>
         </div>
       </div>
       <div className="court-decree-lcr-body-wrap flex-1 min-h-0 flex flex-col">
-        <div className="court-decree-lcr-body-scaled">
+        <div className="court-decree-lcr-body-scaled flex flex-col h-full">
           <p className="font-bold mb-1">TO WHOM IT MAY CONCERN:</p>
           <p className="mb-2 text-left court-decree-lcr-body">
             <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of death appear in our Register of Deaths on Page{' '}
@@ -85,44 +89,52 @@ export default function LcrForm2ADeathAvailable({ data }) {
                 <td className={`${valueCell} uppercase whitespace-pre-wrap min-h-[2.2rem]`}>{blankIfDash(t.placeDeath)}</td>
               </tr>
               <tr>
-                <td className="py-0.5 px-2 border border-black align-top text-center leading-tight" rowSpan={causeLines}>
+                <td className="py-0.5 px-2 border border-black align-top text-center leading-tight">
                   Cause of Death
                 </td>
-                <td className="py-0.5 px-2 border border-black text-left align-top whitespace-pre-wrap leading-tight">
+                <td className="py-0.5 px-2 border border-black text-center font-bold align-top whitespace-pre-wrap leading-tight">
                   {causeText}
                 </td>
               </tr>
-              {Array.from({ length: causeLines - 1 }).map((_, idx) => (
-                <tr key={`cause-line-${idx}`}>
-                  <td className="py-0.5 px-2 border border-black">&nbsp;</td>
-                </tr>
-              ))}
             </tbody>
           </table>
           <p className="mb-2 text-sm court-decree-lcr-body">
-            This certification is issued upon the request of OCRG/OWNER/PARENTS/GUARDIAN for any legal purposes.
+            This certification is issued upon the request of OCRG/DOCUMENT OWNER for any legal purposes.
           </p>
           <div className="mb-2 court-decree-lcr-body">
             <p className="font-bold text-sm mb-0.5">REMARKS:</p>
-            <p className="text-sm text-justify min-h-[1.5rem]">{data.remarks || ''}</p>
-          </div>
-          <div className="mb-2 flex justify-between items-end gap-8 court-decree-lcr-body">
-            <div className="text-left">
-              <p className="text-sm mb-0.5">Verified by:</p>
-              <p className="font-bold text-sm border-b border-black inline-block uppercase">{regOfficer}</p>
-              <p className="text-xs mt-0.5">LCRO - Staff</p>
+            <div className="no-print mb-1">
+              <textarea
+                value={editableRemarks}
+                onChange={(e) => setEditableRemarks(e.target.value)}
+                rows={3}
+                className="w-full border border-gray-300 rounded px-2 py-1 text-[14px]"
+                placeholder="Type or edit remarks here..."
+              />
             </div>
-            <div className="text-right">
-              <p className="font-bold text-sm border-b border-black inline-block uppercase">{ccrName}</p>
-              <p className="text-xs mt-0.5 italic">City Civil Registrar</p>
-            </div>
+            <p className="text-[14px] leading-[1.35] text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] min-h-[1.5rem]">
+              {editableRemarks}
+            </p>
           </div>
-          <p className="font-bold text-sm mb-2 court-decree-lcr-body">
-            Note: This certification is not valid if it has mark, erasure or alteration of any entry.
-          </p>
         </div>
       </div>
       <div className="court-decree-lcr-footer mt-auto shrink-0">
+        <div className="court-decree-lcr-body mb-1">
+          <div className="mb-1 flex justify-between items-end gap-0">
+            <div className="flex flex-col items-center text-center">
+              <p className="text-sm mb-0.5 self-start">Verified by:</p>
+              <p className="font-bold text-sm border-b border-black inline-block uppercase">{regOfficer}</p>
+              <p className="text-xs mt-0">LCRO - Staff</p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <p className="font-bold text-sm border-b border-black inline-block uppercase">{ccrName}</p>
+              <p className="text-xs mt-0 italic">City Civil Registrar</p>
+            </div>
+          </div>
+          <p className="font-bold text-sm mb-1">
+            Note: This certification is not valid if it has mark, erasure or alteration of any entry.
+          </p>
+        </div>
         <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} sloganBlue />
       </div>
     </div>

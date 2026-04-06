@@ -186,6 +186,13 @@ export default function AUSFSaved() {
         >
           Legitimation saved
         </Link>
+        <Link
+          to="/legal-instrument/supplemental/saved"
+          className="ausf-saved-anim-action inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all duration-200 ease-out hover:shadow-md active:scale-[0.98] opacity-0 no-underline"
+          style={{ animationDelay: '0.2s' }}
+        >
+          Supplemental saved
+        </Link>
       </div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 inline-block" aria-label={`AUSF total: ${ausfTotal}`}>
