@@ -1,6 +1,12 @@
 import React, { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { deleteSavedSupplemental, getSavedSupplementalList, loadSavedSupplementalToDraft } from './lib/supplementalSavedStorage'
+import {
+  clearSupplementalActive,
+  clearSupplementalDraft,
+  deleteSavedSupplemental,
+  getSavedSupplementalList,
+  loadSavedSupplementalToDraft,
+} from './lib/supplementalSavedStorage'
 
 function formatSavedAt(iso) {
   if (!iso) return ''
@@ -35,11 +41,43 @@ export default function SupplementalSaved() {
     <div className="p-6">
       <h1 className="text-base font-bold text-gray-800 mb-1">Supplemental – Files Saved</h1>
       <p className="text-sm text-gray-500 mb-4">Supplemental reports saved from the form appear here.</p>
-      <div className="flex flex-wrap gap-3 mb-3">
-        <Link to="/ausf/saved" className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 no-underline">AUSF saved</Link>
-        <Link to="/court-decree/saved" className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 no-underline">Court Decree saved</Link>
-        <Link to="/legitimation/saved" className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 no-underline">Legitimation saved</Link>
-        <Link to="/legal-instrument/supplemental" className="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:bg-[var(--primary-blue-light)] no-underline">New Supplemental</Link>
+      <div className="mb-3 space-y-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Link
+            to="/ausf/saved"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 no-underline text-center min-h-[2.75rem]"
+          >
+            AUSF saved
+          </Link>
+          <Link
+            to="/court-decree/saved"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 no-underline text-center min-h-[2.75rem]"
+          >
+            Court Decree saved
+          </Link>
+          <Link
+            to="/legitimation/saved"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 no-underline text-center min-h-[2.75rem]"
+          >
+            Legitimation saved
+          </Link>
+          <span
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-emerald-600 bg-emerald-50 text-emerald-900 text-sm font-semibold rounded-lg text-center min-h-[2.75rem] cursor-default"
+            aria-current="page"
+          >
+            Supplemental saved
+          </span>
+        </div>
+        <Link
+          to="/legal-instrument/supplemental"
+          onClick={() => {
+            clearSupplementalActive()
+            clearSupplementalDraft()
+          }}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:bg-[var(--primary-blue-light)] no-underline w-full sm:w-auto justify-center"
+        >
+          New Supplemental
+        </Link>
       </div>
 
       {list.length === 0 ? (
@@ -61,6 +99,15 @@ export default function SupplementalSaved() {
                 <button
                   type="button"
                   onClick={() => {
+                    if (loadSavedSupplementalToDraft(item.id)) navigate('/legal-instrument/supplemental')
+                  }}
+                  className="px-3 py-1.5 border border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
                     if (loadSavedSupplementalToDraft(item.id)) navigate('/legal-instrument/supplemental/print')
                   }}
                   className="px-3 py-1.5 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:bg-[var(--primary-blue-light)]"
@@ -70,6 +117,11 @@ export default function SupplementalSaved() {
                 <button
                   type="button"
                   onClick={() => {
+                    const label = item.label || 'this saved supplemental report'
+                    const ok = window.confirm(
+                      `Delete "${label}"?\n\nThis removes the saved file from this device. You cannot undo this action.`
+                    )
+                    if (!ok) return
                     deleteSavedSupplemental(item.id)
                     setRev((v) => v + 1)
                   }}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { clearSupplementalActive, clearSupplementalDraft } from '../pages/legalInstrument/lib/supplementalSavedStorage'
 
 const LOGOUT_EXIT_MS = 450
 
@@ -186,6 +187,18 @@ export default function Layout() {
                   <span>Legitimation</span>
                 </NavLink>
                 <NavLink
+                  to="/legal-instrument/supplemental"
+                  onClick={() => {
+                    // Sidebar Supplemental acts as "new form".
+                    clearSupplementalActive()
+                    clearSupplementalDraft()
+                  }}
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>Supplemental</span>
+                </NavLink>
+                <NavLink
                   to="/ausf"
                   className={() => legalSubLinkClass(ausfFormActive)}
                 >
@@ -212,13 +225,6 @@ export default function Layout() {
                 >
                   <IconLegalSub />
                   <span>MC2010-04</span>
-                </NavLink>
-                <NavLink
-                  to="/legal-instrument/supplemental"
-                  className={({ isActive }) => legalSubLinkClass(isActive)}
-                >
-                  <IconLegalSub />
-                  <span>Supplemental</span>
                 </NavLink>
               </div>
             )}

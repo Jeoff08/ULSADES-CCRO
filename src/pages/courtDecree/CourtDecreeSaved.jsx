@@ -112,30 +112,46 @@ export default function CourtDecreeSaved() {
       <p className="text-sm text-gray-500 mb-4">
         Court Decree forms saved when you click Done appear here. Open a saved file to view and print, or start a new form.
       </p>
-      <div className="flex flex-wrap gap-3 mb-6">
-        <Link
-          to="/ausf/saved"
-          className="court-decree-saved-anim-action inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all duration-200 ease-out hover:shadow-md active:scale-[0.98] opacity-0 no-underline"
-          style={{ animationDelay: '0.05s' }}
-        >
-          AUSF saved
-        </Link>
+      <div className="mb-6 space-y-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Link
+            to="/ausf/saved"
+            className="court-decree-saved-anim-action inline-flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all duration-200 ease-out hover:shadow-md active:scale-[0.98] opacity-0 no-underline text-center min-h-[2.75rem]"
+            style={{ animationDelay: '0.05s' }}
+          >
+            AUSF saved
+          </Link>
+          <span
+            className="court-decree-saved-anim-action inline-flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-emerald-600 bg-emerald-50 text-emerald-900 text-sm font-semibold rounded-lg opacity-0 text-center min-h-[2.75rem] cursor-default"
+            style={{ animationDelay: '0.1s' }}
+            aria-current="page"
+          >
+            Court Decree saved
+          </span>
+          <Link
+            to="/legitimation/saved"
+            className="court-decree-saved-anim-action inline-flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all duration-200 ease-out hover:shadow-md active:scale-[0.98] opacity-0 no-underline text-center min-h-[2.75rem]"
+            style={{ animationDelay: '0.12s' }}
+          >
+            Legitimation saved
+          </Link>
+          <Link
+            to="/legal-instrument/supplemental/saved"
+            className="court-decree-saved-anim-action inline-flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all duration-200 ease-out hover:shadow-md active:scale-[0.98] opacity-0 no-underline text-center min-h-[2.75rem]"
+            style={{ animationDelay: '0.14s' }}
+          >
+            Supplemental saved
+          </Link>
+        </div>
         <Link
           to="/court-decree/form"
-          className="court-decree-saved-anim-action inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:bg-[var(--primary-blue-light)] transition-all duration-200 ease-out hover:shadow-md hover:scale-[1.02] active:scale-[0.98] opacity-0"
-          style={{ animationDelay: '0.1s' }}
+          className="court-decree-saved-anim-action inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:bg-[var(--primary-blue-light)] transition-all duration-200 ease-out hover:shadow-md hover:scale-[1.02] active:scale-[0.98] opacity-0 w-full sm:w-auto justify-center"
+          style={{ animationDelay: '0.18s' }}
         >
           <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           New Court Decree
-        </Link>
-        <Link
-          to="/legitimation/saved"
-          className="court-decree-saved-anim-action inline-flex items-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all duration-200 ease-out hover:shadow-md active:scale-[0.98] opacity-0 no-underline"
-          style={{ animationDelay: '0.15s' }}
-        >
-          Legitimation saved
         </Link>
       </div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">

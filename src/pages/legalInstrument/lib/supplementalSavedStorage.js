@@ -52,11 +52,50 @@ export function addSavedSupplemental(data) {
   }
 }
 
+export function getActiveSupplementalId() {
+  try {
+    return localStorage.getItem(KEY_ACTIVE) || null
+  } catch {
+    return null
+  }
+}
+
+export function clearSupplementalActive() {
+  try {
+    localStorage.removeItem(KEY_ACTIVE)
+  } catch {}
+}
+
 export function deleteSavedSupplemental(id) {
   try {
     const list = getSavedSupplementalList().filter((x) => x.id !== id)
     localStorage.setItem(KEY_SAVED, JSON.stringify(list))
+    const active = localStorage.getItem(KEY_ACTIVE)
+    if (active === id) localStorage.removeItem(KEY_ACTIVE)
   } catch {}
+}
+
+/** If a saved entry is active (loaded for edit/print), update it; otherwise append a new saved row. */
+export function saveOrUpdateSupplemental(data) {
+  try {
+    const activeId = localStorage.getItem(KEY_ACTIVE)
+    const list = getSavedSupplementalList()
+    const idx = activeId ? list.findIndex((x) => x.id === activeId) : -1
+    if (idx >= 0) {
+      const next = [...list]
+      next[idx] = {
+        ...list[idx],
+        savedAt: new Date().toISOString(),
+        label: data.affiantName || data.regNo || 'Supplemental Report',
+        data: { ...data },
+      }
+      localStorage.setItem(KEY_SAVED, JSON.stringify(next))
+      return activeId
+    }
+    return addSavedSupplemental(data)
+  } catch {
+    return null
+  }
 }
 
 export function loadSavedSupplementalToDraft(id) {
