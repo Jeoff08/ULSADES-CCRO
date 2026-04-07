@@ -445,13 +445,6 @@ export default function LegitimationForm() {
       <div className="legitimation-form-page__actions no-print">
         <button
           type="button"
-          onClick={() => navigate('/legitimation')}
-          className="legitimation-form-page__btn legitimation-form-page__btn--secondary"
-        >
-          Back
-        </button>
-        <button
-          type="button"
           onClick={() => {
             const missing = getMissingFields(form)
             if (missing.length > 0) {

@@ -930,13 +930,6 @@ export default function CourtDecreeForm() {
         </div>
       )}
       <div className="court-decree-form-page__actions no-print">
-        <button
-          type="button"
-          onClick={() => navigate('/court-decree')}
-          className="court-decree-form-page__btn court-decree-form-page__btn--secondary"
-        >
-          Back
-        </button>
 <button
         type="button"
         onClick={() => {

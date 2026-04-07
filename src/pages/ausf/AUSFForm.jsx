@@ -162,6 +162,7 @@ export default function AUSFForm() {
 
   const showItems4to7 = form.childAlreadyAcknowledged === 'NO' || form.childAlreadyAcknowledged === 'YES' || form.formType === 'child-not-ack-transmittal' || form.formType === 'out-of-town' || form.formType === 'child-ack-annotation'
   const isAUSF06 = form.formType === 'ausf-0-6' || form.formType === 'ausf-07-17'
+  const isEditingSaved = searchParams.get('edit') === '1'
 
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [showValidationModal, setShowValidationModal] = useState(false)
@@ -440,12 +441,20 @@ export default function AUSFForm() {
         >
           Done
         </button>
-        <a
-          href="/ausf"
-          className="ausf-form-page__btn ausf-form-page__btn--secondary no-underline"
-        >
-          Clear / New
-        </a>
+        {isEditingSaved ? (
+          <button
+            type="button"
+            onClick={() => navigate('/ausf/saved')}
+            className="ausf-form-page__btn ausf-form-page__btn--secondary"
+          >
+            Back to Files Saved
+          </button>
+        ) : (
+          <a
+          >
+            
+          </a>
+        )}
       </div>
 
       {showValidationModal && (

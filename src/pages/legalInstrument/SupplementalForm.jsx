@@ -124,17 +124,8 @@ export default function SupplementalForm() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
+      <div className="mb-2">
         <h1 className="text-2xl font-bold text-gray-900">Supplemental Report Form</h1>
-        {activeSavedId ? (
-          <button
-            type="button"
-            onClick={handleBackToSaved}
-            className="shrink-0 px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-          >
-            Back to saved files
-          </button>
-        ) : null}
       </div>
       <p className="text-sm text-gray-600 mb-5">
         Fill out this form to generate the Affidavit for Supplemental Report output.
@@ -344,7 +335,7 @@ export default function SupplementalForm() {
         </div>
       </div>
 
-      <div className="mt-6 flex gap-3">
+      <div className="mt-6 flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={handleSave}
@@ -352,6 +343,15 @@ export default function SupplementalForm() {
         >
           Save
         </button>
+        {activeSavedId ? (
+          <button
+            type="button"
+            onClick={handleBackToSaved}
+            className="px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+          >
+            Back to saved files
+          </button>
+        ) : null}
       </div>
 
       {confirmOpen && (
