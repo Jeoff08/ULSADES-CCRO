@@ -1,4 +1,5 @@
 export { default as DocumentFooter } from './DocumentFooter'
 export { default as DocumentHeader } from './DocumentHeader'
 export { default as PrintHeaderRow } from './PrintHeaderRow'
+export { default as AnnotationPrintLayout } from './AnnotationPrintLayout'
 export * from './constants'

@@ -336,6 +336,22 @@ export default function Layout() {
             </svg>
             <span>Logs</span>
           </NavLink>
+
+          <NavLink
+            to="/annotation-field"
+            className={({ isActive }) =>
+              `${navRowBase} ${
+                isActive
+                  ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
+                  : 'text-white/90 hover:bg-white/10 text-white'
+              }`
+            }
+          >
+            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span>Annotation Field</span>
+          </NavLink>
         </nav>
         <div className="p-3 border-t border-white/10 shrink-0">
           <p className="text-xs text-white/70 mb-2 truncate" title={user?.username}>{user?.username}</p>

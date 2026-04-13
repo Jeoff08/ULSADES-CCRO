@@ -1,11 +1,19 @@
-/**
- * COLB Certificate of Live Birth layout (300dpi-style page used for field-position PDFs).
- * Remarks box: same grid as FIELD_POSITIONS.remarks in the field-position tool.
- */
-export const COLB_LAYOUT_DOC_PX = { width: 2550, height: 4200 }
+import { FIELD_POSITIONS, PDF_LAYOUT } from './colbCertificateLayout'
 
-/** REMARKS/ANNOTATIONS region on the layout (pixels, top-left origin). */
-export const COLB_REMARKS_NOT_ACK_RECT_PX = { x: 519, y: 3306, width: 2292 }
+/**
+ * COLB Certificate of Live Birth layout at 300 dpi → Legal bond 8.5" × 14"
+ * (2550 px = 8.5 in, 4200 px = 14 in). Used for print overlay % mapping.
+ */
+export const COLB_LAYOUT_DOC_PX = {
+  width: PDF_LAYOUT.document.width,
+  height: PDF_LAYOUT.document.height,
+}
+
+/**
+ * REMARKS/ANNOTATIONS overlay (layout pixels, top-left origin).
+ * Driven by `FIELD_POSITIONS.ausf_annotation_field` (tune there for AUSF annotation placement).
+ */
+export const COLB_REMARKS_NOT_ACK_RECT_PX = { ...FIELD_POSITIONS.ausf_annotation_field }
 
 /**
  * @param {{ x: number, y: number, width: number, height: number }} rectPx

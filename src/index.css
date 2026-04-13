@@ -757,6 +757,39 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   background: white;
 }
 
+/* Annotation Child Not Ack: no flex on overlay — block + absolute text (scan: bottom; placeholder: vertical center) */
+.colb-annotation-child-not-ack .colb-print-area .colb-annotation-overlay-remarks.colb-annotation-overlay-dynamic {
+  display: block;
+}
+.colb-annotation-child-not-ack .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-remarks-body {
+  display: block;
+  flex: none;
+  min-height: 0;
+  height: 100%;
+  position: relative;
+  padding: 0;
+  align-items: unset;
+  justify-content: unset;
+}
+.colb-annotation-child-not-ack .colb-print-area .colb-annotation-remarks-body--scan .colb-annotation-remarks-text {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 1.25rem;
+}
+.colb-annotation-child-not-ack .colb-print-area .colb-annotation-remarks-body--placeholder .colb-annotation-remarks-text {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  transform: translateY(-50%);
+  box-sizing: border-box;
+  padding: 0 1.25rem;
+}
+
 /* Annotation for Form 1A (Court Decree): REMARKS overlay on Form 102 scan – gray box edge-to-edge with text, justified, italic, 12px */
 .colb-annotation-form-1a .colb-print-area .colb-annotation-overlay-remarks {
   background-color: #e5e7eb;
@@ -1125,6 +1158,35 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     justify-content: flex-end !important;
     padding: 0 !important;
   }
+  .colb-annotation-child-not-ack .colb-print-area .colb-annotation-overlay-remarks.colb-annotation-overlay-dynamic {
+    display: block !important;
+  }
+  .colb-annotation-child-not-ack .colb-print-area .colb-annotation-overlay-remarks .colb-annotation-remarks-body {
+    display: block !important;
+    flex: none !important;
+    align-items: unset !important;
+    justify-content: unset !important;
+    height: 100% !important;
+    position: relative !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+  }
+  .colb-annotation-child-not-ack .colb-print-area .colb-annotation-remarks-body--scan .colb-annotation-remarks-text {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .colb-annotation-child-not-ack .colb-print-area .colb-annotation-remarks-body--placeholder .colb-annotation-remarks-text {
+    position: absolute !important;
+    top: 50% !important;
+    left: 0 !important;
+    width: 100% !important;
+    transform: translateY(-50%) !important;
+    box-sizing: border-box !important;
+  }
   .colb-annotation-overlay-remarks .colb-annotation-remarks-text {
     font-size: 10px !important;
     line-height: 1.25 !important;
@@ -1152,6 +1214,12 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     max-height: none !important;
     border: none !important;
     background: white !important;
+  }
+  /* Child Not Ack on Legal (8.5"×14"): COLB canvas is 2550×4200; allow full page height and bottom-align scan for overlay */
+  html[data-paper-size="legal"] .colb-annotation-child-not-ack .colb-print-area img,
+  .colb-annotation-child-not-ack[data-paper-size="legal"] .colb-print-area img {
+    max-height: 355.6mm !important;
+    object-position: bottom center !important;
   }
   /* Form 1A: keep dynamic rect (detection or FORM_102 fallback) in print */
   /* Form 1A: overlay height fits text in print/PDF – no large empty gray area */

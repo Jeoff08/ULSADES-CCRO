@@ -82,6 +82,7 @@ export const defaultAUSF = {
   // Annotation (Child Ack): COLB scan and annotation text
   colbScanDataUrl: '',
   annotationChildAckText: '',
+  annotationChildNotAckText: '',
   // Separate COLB scan per view so upload in one does not show in the other
   colbScanDataUrlAck: '',
   colbScanDataUrlNotAck: '',

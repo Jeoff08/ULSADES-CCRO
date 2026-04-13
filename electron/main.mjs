@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { mkdirSync } from 'fs'
@@ -72,6 +72,46 @@ ipcMain.handle('pdf:save-current-window', async (event, suggestedFileName = 'doc
   return { ok: true, filePath }
 })
 
+/** Save PDF bytes from renderer (e.g. jsPDF output) — same document as in-app preview, not printToPDF. */
+ipcMain.handle('pdf:save-from-base64', async (event, payload) => {
+  const base64 = typeof payload === 'string' ? payload : payload?.base64
+  const suggestedFileName =
+    typeof payload === 'object' && payload?.suggestedFileName != null
+      ? String(payload.suggestedFileName)
+      : 'document.pdf'
+
+  const win = BrowserWindow.fromWebContents(event.sender)
+  if (!win || win.isDestroyed()) {
+    return { ok: false, cancelled: true, reason: 'Window unavailable' }
+  }
+
+  if (!base64 || typeof base64 !== 'string') {
+    return { ok: false, reason: 'Missing PDF data' }
+  }
+
+  const safeName = sanitizeFileName(suggestedFileName)
+  const defaultPath = safeName.toLowerCase().endsWith('.pdf') ? safeName : `${safeName}.pdf`
+
+  const { canceled, filePath } = await dialog.showSaveDialog(win, {
+    title: 'Save as PDF',
+    defaultPath,
+    filters: [{ name: 'PDF Files', extensions: ['pdf'] }],
+  })
+
+  if (canceled || !filePath) return { ok: false, cancelled: true }
+
+  let buffer
+  try {
+    buffer = Buffer.from(base64, 'base64')
+  } catch {
+    return { ok: false, reason: 'Invalid PDF data' }
+  }
+
+  const { writeFile } = await import('fs/promises')
+  await writeFile(filePath, buffer)
+  return { ok: true, filePath }
+})
+
 ipcMain.handle('pdf:preview-current-window', async (event, suggestedFileName = 'document-preview.pdf') => {
   const win = BrowserWindow.fromWebContents(event.sender)
   if (!win || win.isDestroyed()) {
@@ -90,6 +130,10 @@ ipcMain.handle('pdf:preview-current-window', async (event, suggestedFileName = '
 
   const { writeFile } = await import('fs/promises')
   await writeFile(tempPath, pdfData)
+  const openErr = await shell.openPath(tempPath)
+  if (openErr) {
+    return { ok: false, reason: openErr, filePath: tempPath }
+  }
   return { ok: true, filePath: tempPath }
 })
 

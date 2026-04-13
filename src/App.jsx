@@ -13,6 +13,7 @@ import SupplementalSaved from './pages/legalInstrument/SupplementalSaved'
 import CourtDecreeWorkflowPage from './pages/CourtDecreeWorkflowPage'
 import UploadedFileViewer from './pages/UploadedFileViewer'
 import Log from './pages/Log'
+import AnnotationFieldPage from './pages/AnnotationFieldPage'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth()
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="legal-instrument/supplemental/saved" element={<SupplementalSaved />} />
         <Route path="uploaded/:scope" element={<UploadedFileViewer />} />
         <Route path="logs" element={<Log />} />
+        <Route path="annotation-field" element={<AnnotationFieldPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

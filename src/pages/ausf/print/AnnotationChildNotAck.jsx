@@ -1,128 +1,125 @@
-import React from 'react'
-import { buildDefaultAnnotationText } from '../../../lib/printUtils'
+import React, { useCallback, useMemo } from "react";
+import { buildDefaultAnnotationText } from "../../../lib/printUtils";
+import { ausfDraftToColbMerged } from "../../../lib/ausfDraftToColbMerged";
 import {
   COLB_LAYOUT_DOC_PX,
   COLB_REMARKS_NOT_ACK_RECT_PX,
   colbRectToCssPercentVars,
-} from '../../../lib/colbRemarksLayout'
-import { DocumentFooter } from '../../../components/print'
+} from "../../../lib/colbRemarksLayout";
+import ColbCertificateFieldsOverlay from "../../../components/colb/ColbCertificateFieldsOverlay";
+import { DocumentFooter, AnnotationPrintLayout } from "../../../components/print";
+import { AnnotationRenderer } from "../../../components/annotations/AnnotationRenderer";
 
 export function getAnnotationChildNotAckText(data) {
-  const defaultAnnotation = buildDefaultAnnotationText(data || {})
+  const defaultAnnotation = buildDefaultAnnotationText(data || {});
   return (
     data?.annotationChildNotAckText ||
     data?.annotationChildAckText ||
     defaultAnnotation
-  )
+  );
 }
 
-/**
- * Annotation (Child Not Ack): attach COLB scan; overlay aligns to REMARKS box
- * (2550×4200 layout: x=246, y=1959, w=2292, h=300).
- */
-export default function AnnotationChildNotAck({ data, onAnnotationChange }) {
-  const hasScan = Boolean(data.colbScanDataUrl)
-  const annotationText = getAnnotationChildNotAckText(data)
-  // Keep print overlay mapping consistent with the FieldPosition PDF formula:
-  // yIn = ((field.y + 25) / docHeight) * pageHeightInches
-  const overlayRectPx = {
-    ...COLB_REMARKS_NOT_ACK_RECT_PX,
-    y: COLB_REMARKS_NOT_ACK_RECT_PX.y + 25,
-  }
-  const overlayContainerStyle = {
-    aspectRatio: `${COLB_LAYOUT_DOC_PX.width} / ${COLB_LAYOUT_DOC_PX.height}`,
-    ...colbRectToCssPercentVars(overlayRectPx),
-  }
-
-  const renderAnnotationContent = () => {
-    const text = annotationText || '—'
-    const pursuantIdx = text.toLowerCase().indexOf('pursuant')
-    if (pursuantIdx <= 0) {
-      const match = text.match(/known as\s+(.+?)\s+pursuant/i)
-      if (match) {
-        const before = text.slice(0, text.indexOf(match[1]))
-        const name = match[1]
-        const after = text.slice(text.indexOf(match[1]) + name.length)
-        return (
-          <>
-            {before}
-            <strong style={{ textDecoration: 'underline' }}>{name}</strong>
-            {after}
-          </>
-        )
-      }
-      return text
-    }
+export function renderAnnotationNotAckRichContent(annotationText) {
+  const text = annotationText || '—'
+  const pursuantIdx = text.toLowerCase().indexOf('pursuant')
+  if (pursuantIdx > 0) {
     const mainPart = text.slice(0, pursuantIdx).trim()
     const pursuantPart = text.slice(pursuantIdx).replace(/["\s]+$/g, '').trim()
-    const underIdx = mainPart.indexOf(' under ')
-    const firstLine = underIdx >= 0 ? mainPart.slice(0, underIdx + 7) : mainPart
-    const secondLineContent = underIdx >= 0 ? mainPart.slice(underIdx + 7) : ''
-    const nameMatch =
-      secondLineContent.match(/known as\s+(.+?)\s*$/i) ||
-      mainPart.match(/known as\s+(.+?)\s*$/i) ||
-      text.match(/known as\s+(.+?)\s+pursuant/i)
+    const nameMatch = mainPart.match(/known as\s+(.+?)(?:\s*"|$)/i)
     const name = nameMatch ? nameMatch[1].trim() : ''
-    const knownAsIdx = secondLineContent.toLowerCase().indexOf('known as')
-    const secondBeforeName = knownAsIdx >= 0 ? secondLineContent.slice(0, knownAsIdx + 9) : secondLineContent
-    const secondAfterName = name && knownAsIdx >= 0 ? secondLineContent.slice(knownAsIdx + 9 + name.length) : ''
+    const beforeName = mainPart.slice(0, mainPart.toLowerCase().indexOf('known as') + 9)
     return (
-      <span className="block w-full">
-        <span>{firstLine}</span>
-        <br />
-        <span>{secondBeforeName}</span>
-        {name ? <strong style={{ textDecoration: 'underline' }}>{name}</strong> : null}
-        <span>{secondAfterName}</span>
+      <span className="inline-block text-center">
+        <span>
+          {beforeName}
+          <strong style={{ textDecoration: 'underline' }}>{name}</strong>
+          {'"'}
+        </span>
         <br />
         <span>{pursuantPart}</span>
       </span>
     )
   }
+  const match = text.match(/known as\s+(.+?)\s+pursuant/i)
+  if (match) {
+    const name = match[1].trim()
+    return (
+      <span className="inline-block text-center">
+        <span>
+          The child shall be known as <strong style={{ textDecoration: 'underline' }}>{name}</strong> pursuant
+        </span>
+        <br />
+        <span>to R.A. 9255</span>
+      </span>
+    )
+  }
+  return <span>{text}</span>
+}
+
+/**
+ * Annotation (Child Not Ack): COLB scan on Legal 8.5"×14" (2550×4200 layout);
+ * remarks overlay uses `FIELD_POSITIONS.ausf_annotation_field` via COLB_REMARKS_NOT_ACK_RECT_PX.
+ */
+export default function AnnotationChildNotAck({ data, onAnnotationChange }) {
+  const hasScan = Boolean(data.colbScanDataUrl);
+  const annotationText = getAnnotationChildNotAckText(data);
+  const colbMerged = useMemo(() => ausfDraftToColbMerged(data || {}), [data]);
+  const overlayRectPx = { ...COLB_REMARKS_NOT_ACK_RECT_PX };
+  const overlayContainerStyle = {
+    aspectRatio: `${COLB_LAYOUT_DOC_PX.width} / ${COLB_LAYOUT_DOC_PX.height}`,
+    ...colbRectToCssPercentVars(overlayRectPx),
+  };
 
   return (
-    <div className="ausf-doc print-doc colb-annotation-ack bg-white text-black text-sm max-w-[210mm] mx-auto flex flex-col relative print:min-h-[260mm] px-4 py-3 print:px-0 print:py-0 print:max-w-none">
-      <h2 className="text-base font-bold uppercase mb-3 text-center print:hidden">Annotation (Child Not Ack) — COLB Office File</h2>
+    <AnnotationPrintLayout
+      className="colb-annotation-ack colb-annotation-child-not-ack text-sm print:min-h-[355.6mm]"
+      paperSize="legal"
+      moduleClass="ausf-doc"
+    >
+      <h2 className="text-base font-bold uppercase mb-3 text-center print:hidden">
+        Annotation (Child Not Ack) — COLB Office File
+      </h2>
 
       {hasScan ? (
         <div className="colb-print-area relative mb-4">
-          <p className="text-xs font-medium text-gray-600 mb-1 print:hidden">Scan copy of COLB office file</p>
+          <p className="text-xs font-medium text-gray-600 mb-1 print:hidden">
+            Scan copy of COLB office file
+          </p>
           <div
-            className="relative w-full max-h-[600px] print:max-h-[270mm] mx-auto overflow-visible colb-certificate-container colb-notack-full-height border border-gray-300 rounded overflow-hidden print:border-0"
+            className="relative w-full max-h-[600px] print:max-h-[355.6mm] mx-auto overflow-visible colb-certificate-container colb-notack-full-height border border-gray-300 rounded overflow-hidden print:border-0"
             style={overlayContainerStyle}
           >
-            {data.colbScanDataUrl.startsWith('data:image') ? (
+            {data.colbScanDataUrl.startsWith("data:image") ? (
               <>
                 <img
                   src={data.colbScanDataUrl}
                   alt="COLB office file scan"
                   className="w-full h-full object-contain object-top print:w-full print:h-full print:object-bottom"
                 />
+                <ColbCertificateFieldsOverlay
+                  merged={colbMerged}
+                  omitFieldKeys={["remarks"]}
+                />
                 <div
-                  className="colb-annotation-overlay-remarks colb-annotation-overlay-dynamic"
+                  className="colb-annotation-overlay-remarks colb-annotation-overlay-dynamic z-[2]"
                   aria-label="REMARKS/ANNOTATIONS"
                   style={{
-                    position: 'absolute',
-                    boxSizing: 'border-box',
-                    overflow: 'hidden',
+                    position: "absolute",
+                    boxSizing: "border-box",
+                    overflow: "hidden",
                   }}
                 >
-                  <div
-                    className="colb-annotation-remarks-body"
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'flex-end',
-                      alignItems: 'stretch',
-                      height: '100%',
-                    }}
-                  >
-                    <p className="colb-annotation-remarks-text text-sm" style={{ margin: 0 }}>
-                      {renderAnnotationContent()}
+                  <div className="colb-annotation-remarks-body colb-annotation-remarks-body--scan">
+                    <p
+                      className="colb-annotation-remarks-text text-sm"
+                      style={{ margin: 0 }}
+                    >
+                      <AnnotationRenderer annotationText={annotationText} type="not-ack" />
                     </p>
                   </div>
                 </div>
               </>
-            ) : data.colbScanDataUrl.startsWith('data:application/pdf') ? (
+            ) : data.colbScanDataUrl.startsWith("data:application/pdf") ? (
               <div className="relative w-full h-full min-h-[200px]">
                 <iframe
                   src={data.colbScanDataUrl}
@@ -130,15 +127,21 @@ export default function AnnotationChildNotAck({ data, onAnnotationChange }) {
                   className="w-full h-full min-h-[400px] print:hidden"
                 />
                 <p className="print:block hidden p-4 text-sm">
-                  PDF attached. For printing with annotation overlay, please attach an image (PNG/JPG) of the COLB scan.
+                  PDF attached. For printing with annotation overlay, please
+                  attach an image (PNG/JPG) of the COLB scan.
                 </p>
               </div>
             ) : (
               <div className="p-4 text-sm text-gray-500">
-                Attached file.{' '}
-                <a href={data.colbScanDataUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                Attached file.{" "}
+                <a
+                  href={data.colbScanDataUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
                   Open in new tab
-                </a>{' '}
+                </a>{" "}
                 to view.
               </div>
             )}
@@ -158,41 +161,6 @@ export default function AnnotationChildNotAck({ data, onAnnotationChange }) {
 
       {!hasScan && (
         <div className="mb-4">
-          <div className="colb-print-area relative mb-3">
-            <p className="font-medium text-sm mb-1 print:hidden">REMARKS/ANNOTATION (Child not acknowledged)</p>
-            <div
-              className="relative w-full max-h-[600px] print:max-h-[270mm] mx-auto overflow-visible colb-certificate-container colb-notack-full-height border border-gray-300 rounded overflow-hidden print:border-0"
-              style={overlayContainerStyle}
-            >
-              <div
-                className="colb-annotation-overlay-remarks colb-annotation-overlay-dynamic"
-                aria-label="REMARKS/ANNOTATIONS"
-                style={{
-                  position: 'absolute',
-                  boxSizing: 'border-box',
-                  overflow: 'hidden',
-                  border: '1px solid black',
-                  background: '#e5e7eb',
-                }}
-              >
-                <div
-                  className="colb-annotation-remarks-body"
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'stretch',
-                    height: '100%',
-                    background: 'transparent',
-                  }}
-                >
-                  <p className="colb-annotation-remarks-text text-sm" style={{ margin: 0 }}>
-                    {renderAnnotationContent()}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
           <div className="no-print mb-4">
             <p className="font-medium text-sm mb-1">Edit annotation</p>
             <textarea
@@ -206,10 +174,12 @@ export default function AnnotationChildNotAck({ data, onAnnotationChange }) {
         </div>
       )}
 
-      <div className="mt-auto pt-4 shrink-0 print:hidden">
-        <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
+      <div className="mt-4 pt-4 print:hidden">
+        <DocumentFooter
+          contactPhone={data.contactPhone}
+          contactEmail={data.contactEmail}
+        />
       </div>
-
-    </div>
-  )
+    </AnnotationPrintLayout>
+  );
 }
