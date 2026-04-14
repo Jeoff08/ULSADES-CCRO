@@ -23,7 +23,8 @@ export const PDF_LAYOUT = {
 
 export const FIELD_POSITIONS = {
   /** AUSF annotation (Child not acknowledged): overlay, Annotation field page, and jsPDF preview. Layout px on 2550×4200. */
-  ausf_annotation_field: { x: 148, y: 3600, width: 2292, height: 210 },
+  ausf_annotation_field: { x: 354, y: 3600, width: 1830, height: 210 },
+  /** AUSF annotation (Child acknowledged): vertical strip in the Remarks area. Layout px on 2550×4200. */
 };
 
 export const PDF_COLUMN_GUTTER_PX = 20;

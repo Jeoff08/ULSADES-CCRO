@@ -19,7 +19,7 @@ export function buildAnnotationFieldPreviewPdfBase64(plainText) {
   const boxWIn = (box.width / docW) * pageWidthInches
   const boxHIn = (box.height / docH) * pageHeightInches
   const innerW = Math.max(0.3, boxWIn - padX * 2)
-  const centerX = boxLeftIn + boxWIn / 2
+  const textLeftIn = boxLeftIn + padX
 
   const str = String(plainText ?? '').trim() || '—'
   let fontPt = PDF_LAYOUT.pdfDefaultFontSize
@@ -37,10 +37,7 @@ export function buildAnnotationFieldPreviewPdfBase64(plainText) {
   const blockH = lines.length * lineHeightIn
   let y = boxTopIn + Math.max(lineHeightIn * 0.35, (boxHIn - blockH) / 2 + lineHeightIn * 0.8)
 
-  lines.forEach((line) => {
-    doc.text(line, centerX, y, { align: 'center' })
-    y += lineHeightIn
-  })
+  doc.text(lines, textLeftIn, y, { align: 'justify', maxWidth: innerW })
 
   const dataUri = doc.output('datauristring')
   return dataUri.includes(',') ? dataUri.split(',')[1] : ''

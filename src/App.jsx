@@ -14,6 +14,7 @@ import CourtDecreeWorkflowPage from './pages/CourtDecreeWorkflowPage'
 import UploadedFileViewer from './pages/UploadedFileViewer'
 import Log from './pages/Log'
 import AnnotationFieldPage from './pages/AnnotationFieldPage'
+import AnnotationAckFieldPage from './pages/AnnotationAckFieldPage'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth()
@@ -53,6 +54,7 @@ export default function App() {
         <Route path="uploaded/:scope" element={<UploadedFileViewer />} />
         <Route path="logs" element={<Log />} />
         <Route path="annotation-field" element={<AnnotationFieldPage />} />
+        <Route path="annotation-ack-field" element={<AnnotationAckFieldPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
