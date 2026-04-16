@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatDateLong, fullName } from '../../../lib/printUtils'
+import { formatDateLong, fullName, joinCommaParts } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter, FILL, FILL_BOLD } from '../../../components/print'
 
 export default function AusfOnly({ data }) {
@@ -18,8 +18,8 @@ export default function AusfOnly({ data }) {
   const publicOffice = data.publicDocOffice
   const filingAt = data.filingLocation || 'ILIGAN CITY'
   const witnessDate = formatDateLong(data.affidavitExecutionDate) || formatDateLong(data.colbDateOfRegistration)
-  const placeOfBirthName = data.placeOfBirthAddress || ''
-  const placeCityProvince = [data.placeOfBirthCity, data.placeOfBirthProvince].filter(Boolean).join(', ')
+  const placeStreet = (data.placeOfBirthAddress || '').trim()
+  const placeCityProvince = joinCommaParts(data.placeOfBirthCity, data.placeOfBirthProvince)
 
   return (
     <div className="ausf-doc print-doc ausf-only-doc flex flex-col min-h-[297mm] bg-white text-black text-[17px] max-w-[210mm] mx-auto px-6 py-4 leading-snug">
@@ -37,7 +37,7 @@ export default function AusfOnly({ data }) {
         }
       />
       <div className="ausf-only-doc-body">
-      <h2 className="text-center font-bold text-lg uppercase mb-4 mt-0">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
+      <h2 className="text-center font-bold text-[14px] uppercase mb-4 mt-0">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
       <p className="mb-4 leading-normal text-justify">
         I, <span className={`${FILL} affiant-name-blank affiant-name-bold-underline uppercase mx-0.5 align-baseline`}><span className="affiant-name-inner">{affiantWithSurname}</span></span>, of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
       </p>
@@ -47,7 +47,7 @@ export default function AusfOnly({ data }) {
           I am seeking to use the surname of <span className={`${FILL_BOLD} px-0.5 align-baseline uppercase`}>{surnameSought}</span> in the Certificate of Live Birth/Report of Birth of pursuant to R.A No. 9255
         </li>
         <li className="ausf-place-of-birth-line text-justify">
-          I was born on <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{dobFormatted}</span> at <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{placeOfBirthName}</span> <span className={`${FILL_BOLD} px-0.5 align-baseline uppercase ml-0.5`}>{placeCityProvince}</span>
+          I was born on <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{dobFormatted}</span> at <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{placeStreet}</span>{placeStreet && placeCityProvince ? ', ' : null}{placeCityProvince ? <span className={`${FILL_BOLD} px-0.5 align-baseline uppercase`}>{placeCityProvince}</span> : null}
         </li>
         <li>
           My Birth was recorded under Registry Number <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{colbReg}</span> on <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{colbDate}</span>

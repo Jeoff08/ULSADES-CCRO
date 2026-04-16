@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatDateLong, fullName } from '../../../lib/printUtils'
+import { formatDateLong, fullName, joinCommaParts } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter, FILL } from '../../../components/print'
 
 export default function Ausf0717({ data }) {
@@ -13,7 +13,8 @@ export default function Ausf0717({ data }) {
   const publicOffice = data.publicDocOffice
   const filingAt = data.filingLocation || 'ILIGAN CITY'
   const witnessDate = formatDateLong(data.affidavitExecutionDate) || colbDate
-  const placeCityProvince = [data.placeOfBirthCity, data.placeOfBirthProvince].filter(Boolean).join(', ')
+  const placeStreet = (data.placeOfBirthAddress || '').trim()
+  const placeCityProvince = joinCommaParts(data.placeOfBirthCity, data.placeOfBirthProvince)
   const attestationName = fullName(data.childFirst, data.childMiddle, data.childLast) || data.applicantName
   const attestationRelationship = (data.relationshipToChild === 'FATHER' || data.relationshipToChild === 'MOTHER')
     ? (data.sex === 'MALE' ? 'SON' : 'DAUGHTER')
@@ -34,14 +35,14 @@ export default function Ausf0717({ data }) {
           </div>
         }
       />
-      <h2 className="text-center font-bold text-base uppercase mb-2 mt-0">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
+      <h2 className="text-center font-bold text-[14px] uppercase mb-2 mt-0">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
       <p className="mb-2 leading-snug text-justify">
         I, <span className={`${FILL} affiant-name-blank affiant-name-bold-underline uppercase mx-0.5`}><span className="affiant-name-inner">{affiantName}</span></span>, of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
       </p>
 
       <ol className="list-decimal list-inside space-y-1.5 mb-2 mt-2 ml-6 text-justify">
         <li className="text-justify">I am seeking to use the surname of <span className="fill-blank inline-block font-bold px-1 min-w-[4rem] text-center uppercase">{surnameSought}</span> in the Certificate of Live Birth/Report of Birth of pursuant to R.A No. 9255.</li>
-        <li className="ausf-place-of-birth-line text-justify">He/She was born on <span className={`${FILL} px-0.5 align-baseline`}>{dobFormatted}</span> at <span className={`${FILL} px-0.5 align-baseline`}>{data.placeOfBirthAddress}</span> <span className={`${FILL} px-0.5 align-baseline uppercase ml-0.5`}>{placeCityProvince}</span></li>
+        <li className="ausf-place-of-birth-line text-justify">He/She was born on <span className={`${FILL} px-0.5 align-baseline`}>{dobFormatted}</span> at <span className={`${FILL} px-0.5 align-baseline`}>{placeStreet}</span>{placeStreet && placeCityProvince ? ', ' : null}{placeCityProvince ? <span className={`${FILL} px-0.5 align-baseline uppercase`}>{placeCityProvince}</span> : null}</li>
         <li className="text-justify">The Birth was recorded under Registry Number <span className="fill-blank inline-block px-1 min-w-[5rem] text-center">{colbReg}</span> on <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{colbDate}</span>.</li>
         <li className="text-justify">The Public Documents or the Private Handwritten Instrument was recorded under Registry Number <span className="fill-blank inline-block px-1 min-w-[5rem] text-center">{publicReg || ' '}</span> on <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{publicDate || ' '}</span> at the Local Civil Registry Office (LCRO)/Philippine Foreign Service Post (PFSP) of <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{publicOffice || ' '}</span>.</li>
         <li className="text-justify">I am filing this AUSF at LCRO/PFSP of <span className="fill-blank inline-block px-1 min-w-[8rem] text-center uppercase">{filingAt}</span> in accordance with R.A No. 9255 and its Revised Implementing Rules and Regulations.</li>

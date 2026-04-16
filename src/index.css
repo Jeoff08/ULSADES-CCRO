@@ -9,6 +9,8 @@
   --card-bg: #ffffff;
   --sidebar-bg: #1e3a5f;
   --ulsades-font: 'Montserrat', sans-serif;
+  /* AUSF / Court Decree / Legitimation print & PDF: left/right legal margin (header, body, and footer) */
+  --print-legal-margin-x: 1in;
 }
 
 /* Default (screen): slightly smaller UI text */
@@ -617,14 +619,31 @@ html[data-paper-size="long"] .ausf-0-6-doc.print-doc , html[data-paper-size="leg
   line-height: 1.1;
 }
 
-/* Remove padding/margin during PDF capture so output has no margin */
-body.pdf-capture .print-doc,
-body.pdf-capture .ausf-doc {
-  font-family: 'Times New Roman', Times, serif !important;
+/* PDF capture: supplemental transmittal stays edge-to-edge */
+body.pdf-capture .ausf-doc.print-doc.supplemental-transmittal-doc {
   padding: 0 !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
   max-width: none !important;
+}
+/* PDF capture: AUSF / Court Decree / Legitimation — legal side margins (includes footer inside root) */
+body.pdf-capture .ausf-doc.print-doc:not(.supplemental-transmittal-doc) {
+  font-family: 'Times New Roman', Times, serif !important;
+  padding-left: var(--print-legal-margin-x) !important;
+  padding-right: var(--print-legal-margin-x) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+}
+/* PDF capture: remove gaps between standard print header lines */
+body.pdf-capture .ausf-doc.print-doc:not(.supplemental-transmittal-doc) .print-doc-header .text-center > div > p,
+body.pdf-capture .ausf-doc.print-doc:not(.supplemental-transmittal-doc) .print-doc-header .print-header-address {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.05 !important;
 }
 /* Certificate of Authenticity / Registration: ensure 2-space gap inside content when capturing to PDF */
 body.pdf-capture .print-doc-cert-auth .cert-auth-body p + p,
@@ -889,8 +908,330 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .ausf-doc {
     font-family: 'Times New Roman', Times, serif !important;
   }
+  /* AUSF / Court Decree / Legitimation print header sizes */
+  .ausf-doc.print-doc .print-doc-header .text-center > div > p:nth-child(1) {
+    font-size: 14px !important; /* Republic of the Philippines */
+  }
+  .ausf-doc.print-doc .print-doc-header .text-center > div > p:nth-child(2) {
+    font-size: 16px !important; /* CITY CIVIL REGISTRAR'S OFFICE */
+  }
+  .ausf-doc.print-doc .print-doc-header .text-center > div > p:nth-child(3) {
+    font-size: 14px !important; /* City of Iligan */
+  }
+  .ausf-doc.print-doc .print-doc-header .print-header-address {
+    font-size: 11px !important; /* Ground Flr., Pedro Generalao... */
+  }
+  /* Browser print: remove gaps between standard print header lines */
+  .ausf-doc.print-doc:not(.supplemental-transmittal-doc) .print-doc-header .text-center > div > p,
+  .ausf-doc.print-doc:not(.supplemental-transmittal-doc) .print-doc-header .print-header-address {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.05 !important;
+  }
+  /* Browser print: legal side margins on full page (header, body, footer) */
+  .ausf-doc.print-doc:not(.supplemental-transmittal-doc) {
+    padding-left: var(--print-legal-margin-x) !important;
+    padding-right: var(--print-legal-margin-x) !important;
+    box-sizing: border-box !important;
+  }
   .supplemental-report-doc {
     font-family: Arial, sans-serif !important;
+  }
+  /* Supplemental CCR transmittal: 14px Arial throughout PDF; footer matches Iligan sample */
+  .supplemental-transmittal-doc.print-doc {
+    page-break-inside: auto !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-doc-header,
+  .supplemental-transmittal-doc.print-doc .print-doc-body,
+  .supplemental-transmittal-doc.print-doc .print-doc-footer,
+  .supplemental-transmittal-doc.print-doc .print-doc-header *,
+  .supplemental-transmittal-doc.print-doc .print-doc-body *,
+  .supplemental-transmittal-doc.print-doc .print-doc-footer * {
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-header-address {
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+  }
+  /* Supplemental transmittal header: no gaps between jurat/address lines in PDF */
+  .supplemental-transmittal-doc.print-doc .print-doc-header .text-center > div > p {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.05 !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-header-address {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.05 !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-doc-header .text-center > div > p:first-child {
+    padding-top: 0 !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-doc-header .text-center > div > p:nth-child(1) {
+    font-size: 16px !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-doc-header .text-center > div > p:nth-child(2) {
+    font-size: 18px !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-doc-header .text-center > div > p:nth-child(3) {
+    font-size: 14px !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-doc-header .text-center > div > p:nth-child(1),
+  .supplemental-transmittal-doc.print-doc .print-doc-header .text-center > div > p:nth-child(2),
+  .supplemental-transmittal-doc.print-doc .print-doc-header .text-center > div > p:nth-child(3) {
+    font-family: "Times New Roman", Times, serif !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-header-address {
+    font-size: 12px !important;
+    line-height: 1.15 !important;
+  }
+  /* Title (h1) stays full-width; letter inset applies only below TRANSMITTAL */
+  .supplemental-transmittal-doc.print-doc .print-doc-body {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 0 !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-doc-body .supplemental-transmittal-letter-body {
+    padding-left: 0.5in !important;
+    padding-right: 0.4in !important;
+    margin-left: 0.1in !important;
+  }
+  /* Attn / thru lines: extra indent in PDF (replaces Tailwind ml-* for consistent print) */
+  .supplemental-transmittal-doc.print-doc
+    .print-doc-body
+    .supplemental-transmittal-letter-body
+    .supplemental-transmittal-attn-block {
+    margin-left: 0.9in !important;
+  }
+  /* Compact body flow: remove extra paragraph/list gaps in transmittal PDF */
+  /* Date line: keep gap under date before recipient (global p reset would remove mb-6 in print) */
+  .supplemental-transmittal-doc.print-doc
+    .print-doc-body
+    .supplemental-transmittal-letter-body
+    > p.supplemental-transmittal-date-line {
+    margin-top: 0.12in !important;
+    margin-bottom: 1.5rem !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-doc-body p,
+  .supplemental-transmittal-doc.print-doc .print-doc-body li,
+  .supplemental-transmittal-doc.print-doc .print-doc-body ul {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-doc-body .space-y-0\.5 > :not([hidden]) ~ :not([hidden]),
+  .supplemental-transmittal-doc.print-doc .print-doc-body .space-y-1 > :not([hidden]) ~ :not([hidden]),
+  .supplemental-transmittal-doc.print-doc .print-doc-body .space-y-2 > :not([hidden]) ~ :not([hidden]),
+  .supplemental-transmittal-doc.print-doc .print-doc-body .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0 !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-doc-footer .grid > div:first-child,
+  .supplemental-transmittal-doc.print-doc .print-doc-footer .grid > div:first-child p {
+    color: #000000 !important;
+    font-style: normal !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-doc-footer .grid > div:first-child p:first-child {
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-doc-footer .grid > div:last-child,
+  .supplemental-transmittal-doc.print-doc .print-doc-footer .grid > div:last-child p {
+    font-style: italic !important;
+    font-weight: 400 !important;
+    color: #2563eb !important;
+  }
+  /* Sign-off sits just above Iligan footer (body is flex column + mt-auto on sign-off) */
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-sign-off {
+    margin-bottom: 0.14in !important;
+    padding-top: 0 !important;
+  }
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-sign-off p {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-sign-off p:nth-child(1) {
+    margin-bottom: 0.35rem !important;
+  }
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-sign-off p:nth-child(2),
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-sign-off p:nth-child(3) {
+    line-height: 1.05 !important;
+  }
+  .supplemental-transmittal-doc.print-doc .print-doc-footer-wrap {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+  /* Tighter gap above Iligan footer block than DocumentFooter default mt-4 */
+  .supplemental-transmittal-doc.print-doc .print-doc-footer {
+    margin-top: 0.35rem !important;
+  }
+  /* Supplemental transmittal: scale to fit A4 / Short / Long / Legal bond */
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc {
+    padding: 0.16in 0.3in 0.08in 0.3in !important;
+  }
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc {
+    padding: 0.2in 0.35in 0.12in 0.35in !important;
+  }
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc,
+  html[data-paper-size="legal"] .supplemental-transmittal-doc.print-doc {
+    padding: 0.26in 0.42in 0.14in 0.42in !important;
+  }
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc,
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc .print-doc-header *,
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc .print-doc-body *,
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc .print-doc-footer * {
+    font-size: 10.5px !important;
+    line-height: 1.2 !important;
+  }
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc .print-header-address {
+    font-size: 10.5px !important;
+  }
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc .print-doc-header img {
+    width: 3.45rem !important;
+    height: 3.45rem !important;
+    max-width: 3.45rem !important;
+    max-height: 3.45rem !important;
+  }
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc h1 {
+    margin-bottom: 0.3rem !important;
+    letter-spacing: 0.06em !important;
+  }
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc .supplemental-transmittal-checklist-grid {
+    column-gap: 0.4rem !important;
+    row-gap: 0.35rem !important;
+    margin-bottom: 0.4rem !important;
+  }
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc .supplemental-transmittal-checklist-grid table td {
+    padding-top: 0.08rem !important;
+    padding-bottom: 0.08rem !important;
+    padding-left: 0.2rem !important;
+    padding-right: 0.2rem !important;
+  }
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc,
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc .print-doc-header *,
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc .print-doc-body *,
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc .print-doc-footer * {
+    font-size: 11.5px !important;
+    line-height: 1.26 !important;
+  }
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc .print-header-address {
+    font-size: 11.5px !important;
+  }
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc .print-doc-header img {
+    width: 3.75rem !important;
+    height: 3.75rem !important;
+    max-width: 3.75rem !important;
+    max-height: 3.75rem !important;
+  }
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc h1 {
+    margin-bottom: 0.4rem !important;
+  }
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc .supplemental-transmittal-checklist-grid {
+    column-gap: 0.55rem !important;
+    row-gap: 0.45rem !important;
+  }
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc,
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc .print-doc-header *,
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc .print-doc-body *,
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc .print-doc-footer * {
+    font-size: 12.5px !important;
+    line-height: 1.3 !important;
+  }
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc .print-header-address {
+    font-size: 12.5px !important;
+  }
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc .print-doc-header img {
+    width: 4.05rem !important;
+    height: 4.05rem !important;
+    max-width: 4.05rem !important;
+    max-height: 4.05rem !important;
+  }
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc h1 {
+    margin-bottom: 0.45rem !important;
+  }
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc .supplemental-transmittal-checklist-grid {
+    column-gap: 0.65rem !important;
+    row-gap: 0.5rem !important;
+  }
+  /* Print-only selected checklist rows: slightly larger text, smaller blue boxes, clearer row gaps */
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-checklist-print-only {
+    row-gap: 0.62rem !important;
+  }
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-checklist-print-only,
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-checklist-print-only table,
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-checklist-print-only td,
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-checklist-print-only p {
+    font-size: 16px !important;
+    line-height: 1.34 !important;
+  }
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-checklist-print-only table td {
+    padding-top: 0.18rem !important;
+    padding-bottom: 0.18rem !important;
+    padding-left: 0.3rem !important;
+    padding-right: 0.3rem !important;
+  }
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-checklist-print-only table td:first-child {
+    width: 1.7rem !important;
+    min-width: 1.7rem !important;
+  }
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-checklist-print-only table td:first-child > div {
+    width: 0.8rem !important;
+    height: 0.8rem !important;
+    min-width: 0.8rem !important;
+    min-height: 0.8rem !important;
+  }
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-checklist-print-only .supplemental-transmittal-print-attachments {
+    margin-top: 3.2em !important; /* extra separation from "Type of Document" block */
+  }
+  /* Transmittal body content only: 16px text (header/footer excluded) */
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc .print-doc-body p,
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc .print-doc-body li,
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc .print-doc-body span,
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc .print-doc-body td,
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc .print-doc-body th,
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc .print-doc-body p,
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc .print-doc-body li,
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc .print-doc-body span,
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc .print-doc-body td,
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc .print-doc-body th,
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc .print-doc-body p,
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc .print-doc-body li,
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc .print-doc-body span,
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc .print-doc-body td,
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc .print-doc-body th,
+  html[data-paper-size="legal"] .supplemental-transmittal-doc.print-doc .print-doc-body p,
+  html[data-paper-size="legal"] .supplemental-transmittal-doc.print-doc .print-doc-body li,
+  html[data-paper-size="legal"] .supplemental-transmittal-doc.print-doc .print-doc-body span,
+  html[data-paper-size="legal"] .supplemental-transmittal-doc.print-doc .print-doc-body td,
+  html[data-paper-size="legal"] .supplemental-transmittal-doc.print-doc .print-doc-body th {
+    font-size: 14.5px !important;
+  }
+  /* Legal: room for full 14px baseline */
+  html[data-paper-size="legal"] .supplemental-transmittal-doc.print-doc .print-doc-header img {
+    width: 4.35rem !important;
+    height: 4.35rem !important;
+    max-width: 4.35rem !important;
+    max-height: 4.35rem !important;
+  }
+  html[data-paper-size="legal"] .supplemental-transmittal-doc.print-doc h1 {
+    margin-bottom: 0.5rem !important;
+  }
+  /* Slightly tighter gap under Iligan header so TRANSMITTAL sits higher in PDF */
+  .supplemental-transmittal-doc.print-doc .print-doc-header hr {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  /* Transmittal headline: fixed 18px in print/PDF (beats paper-size body * rules) */
+  .supplemental-transmittal-doc.print-doc .print-doc-body > h1.supplemental-transmittal-title {
+    font-size: 18px !important;
+    margin-top: -0.45rem !important;
   }
   .print-doc {
     max-width: 100% !important;
@@ -908,6 +1249,17 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     height: auto !important;
     min-height: 0 !important;
   }
+  /* Supplemental: two PDF outputs (Electron printToPDF reads @media print) */
+  html.supplemental-pdf-export--bundle-only #supplemental-print-transmittal {
+    display: none !important;
+  }
+  html.supplemental-pdf-export--transmittal-only #supplemental-print-bundle {
+    display: none !important;
+  }
+  html.supplemental-pdf-export--transmittal-only #supplemental-print-transmittal {
+    break-before: auto !important;
+    page-break-before: auto !important;
+  }
   .supplemental-report-doc .supplemental-bottom-wrap {
     margin-top: 0 !important;
     padding-top: 0.02in !important;
@@ -922,8 +1274,9 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .supplemental-report-doc .supplemental-bottom-wrap .grid {
     gap: 0 !important;
   }
-  /* Long bondpaper only: push supplemental contact/slogan block to page bottom */
-  html[data-paper-size="long"] .supplemental-report-doc .supplemental-bottom-wrap {
+  /* Long / Legal bond: push supplemental contact/slogan block to page bottom */
+  html[data-paper-size="long"] .supplemental-report-doc .supplemental-bottom-wrap,
+  html[data-paper-size="legal"] .supplemental-report-doc .supplemental-bottom-wrap {
     margin-top: auto !important;
     padding-top: 0 !important;
   }
@@ -937,29 +1290,62 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-top: auto !important;
     padding-top: 0 !important;
   }
-  /* Supplemental (A4 + Short): 15px text and double-space for items 1-7 */
+  html[data-paper-size="long"] .supplemental-report-doc {
+    min-height: 13in !important;
+    max-height: none !important;
+    background: transparent !important;
+  }
+  html[data-paper-size="legal"] .supplemental-report-doc {
+    min-height: 14in !important;
+    max-height: none !important;
+    background: transparent !important;
+  }
+  html[data-paper-size="a4"] .supplemental-report-doc {
+    min-height: 297mm !important;
+    max-height: none !important;
+    background: transparent !important;
+  }
+  html[data-paper-size="a4"] .supplemental-report-doc .supplemental-bottom-wrap {
+    margin-top: auto !important;
+    padding-top: 0 !important;
+  }
+  /* Supplemental affidavit: A4, Short, Long, Legal — consistent body type */
   html[data-paper-size="a4"] .supplemental-report-doc,
   html[data-paper-size="short"] .supplemental-report-doc,
+  html[data-paper-size="long"] .supplemental-report-doc,
+  html[data-paper-size="legal"] .supplemental-report-doc,
   html[data-paper-size="a4"] .supplemental-report-doc p,
   html[data-paper-size="short"] .supplemental-report-doc p,
+  html[data-paper-size="long"] .supplemental-report-doc p,
+  html[data-paper-size="legal"] .supplemental-report-doc p,
   html[data-paper-size="a4"] .supplemental-report-doc li,
   html[data-paper-size="short"] .supplemental-report-doc li,
+  html[data-paper-size="long"] .supplemental-report-doc li,
+  html[data-paper-size="legal"] .supplemental-report-doc li,
   html[data-paper-size="a4"] .supplemental-report-doc span,
   html[data-paper-size="short"] .supplemental-report-doc span,
+  html[data-paper-size="long"] .supplemental-report-doc span,
+  html[data-paper-size="legal"] .supplemental-report-doc span,
   html[data-paper-size="a4"] .supplemental-report-doc div,
-  html[data-paper-size="short"] .supplemental-report-doc div {
+  html[data-paper-size="short"] .supplemental-report-doc div,
+  html[data-paper-size="long"] .supplemental-report-doc div,
+  html[data-paper-size="legal"] .supplemental-report-doc div {
     font-size: 15px !important;
   }
   /* Supplemental middle-name header sizing in saved PDF */
   html[data-paper-size="a4"] .supplemental-report-doc .supplemental-header-main p,
-  html[data-paper-size="short"] .supplemental-report-doc .supplemental-header-main p {
+  html[data-paper-size="short"] .supplemental-report-doc .supplemental-header-main p,
+  html[data-paper-size="long"] .supplemental-report-doc .supplemental-header-main p,
+  html[data-paper-size="legal"] .supplemental-report-doc .supplemental-header-main p {
     font-size: 20px !important;
     line-height: 1 !important;
     margin: 0 !important;
     padding: 0 !important;
   }
   html[data-paper-size="a4"] .supplemental-report-doc .supplemental-header-main .supplemental-header-address,
-  html[data-paper-size="short"] .supplemental-report-doc .supplemental-header-main .supplemental-header-address {
+  html[data-paper-size="short"] .supplemental-report-doc .supplemental-header-main .supplemental-header-address,
+  html[data-paper-size="long"] .supplemental-report-doc .supplemental-header-main .supplemental-header-address,
+  html[data-paper-size="legal"] .supplemental-report-doc .supplemental-header-main .supplemental-header-address {
     font-size: 16px !important;
     line-height: 1 !important;
     margin: 0 !important;
@@ -967,18 +1353,37 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
   html[data-paper-size="a4"] .supplemental-report-doc .supplemental-numbered-items,
   html[data-paper-size="short"] .supplemental-report-doc .supplemental-numbered-items,
+  html[data-paper-size="long"] .supplemental-report-doc .supplemental-numbered-items,
+  html[data-paper-size="legal"] .supplemental-report-doc .supplemental-numbered-items,
   html[data-paper-size="a4"] .supplemental-report-doc .supplemental-numbered-items li,
-  html[data-paper-size="short"] .supplemental-report-doc .supplemental-numbered-items li {
+  html[data-paper-size="short"] .supplemental-report-doc .supplemental-numbered-items li,
+  html[data-paper-size="long"] .supplemental-report-doc .supplemental-numbered-items li,
+  html[data-paper-size="legal"] .supplemental-report-doc .supplemental-numbered-items li {
     line-height: 2 !important;
   }
   /* Print PDF only: header and footer fixed; only body content is flexible */
   .print-doc-header {
     flex-shrink: 0 !important;
   }
-  .print-header-address {
-    font-size: 18px !important;
+  .print-doc-header .text-center > div > p {
     margin: 0 !important;
-    line-height: 1.2 !important;
+    padding: 0 !important;
+    line-height: 1.02 !important;
+  }
+  .print-doc-header .text-center > div > p:nth-child(1) {
+    font-size: 15px !important;
+  }
+  .print-doc-header .text-center > div > p:nth-child(2) {
+    font-size: 18px !important;
+  }
+  .print-doc-header .text-center > div > p:nth-child(3) {
+    font-size: 14px !important;
+  }
+  .print-header-address {
+    font-size: 11px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.05 !important;
   }
   .print-doc-body {
     flex: 1 1 0% !important;
@@ -1018,7 +1423,8 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .ausf-0-6-doc.print-doc .registrar-signature-zone {
     align-items: flex-end !important;
     justify-content: flex-start !important;
-    margin-top: 0.2in !important;
+    min-height: 5rem !important;
+    margin-top: 0.45in !important;
   }
   .ausf-0-6-doc.print-doc .registrar-signature-zone .city-registrar-signature,
   .ausf-0-6-doc.print-doc .registrar-signature-zone .city-registrar-signature p {
@@ -2026,6 +2432,11 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .court-decree-lcr-form {
     padding: 0.12in 0.4in 0.1in !important;
     page-break-inside: avoid !important;
+  }
+  /* Court Decree LCR 3A: keep page edge white (no blue/gray halo) */
+  .court-decree-lcr-form-outer,
+  .court-decree-lcr-form.print-doc-lcr-3a {
+    background: #fff !important;
   }
   .court-decree-lcr-form .court-decree-lcr-body,
   .court-decree-lcr-form .court-decree-lcr-table,
@@ -3214,6 +3625,13 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
 }
 
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -4376,4 +4794,31 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
 .ausf-form-page__actions {
   margin-top: 1.75rem;
   padding-top: 1.25rem;
+}
+
+/* Final override: keep AUSF affidavit title at 14px in print and PDF capture */
+@media print {
+  .ausf-0-6-doc.print-doc h2:first-of-type,
+  .ausf-07-17-doc.print-doc h2:first-of-type,
+  .ausf-only-doc.print-doc h2:first-of-type,
+  html[data-paper-size="a4"] .ausf-0-6-doc.print-doc h2:first-of-type,
+  html[data-paper-size="a4"] .ausf-07-17-doc.print-doc h2:first-of-type,
+  html[data-paper-size="a4"] .ausf-only-doc.print-doc h2:first-of-type,
+  html[data-paper-size="short"] .ausf-0-6-doc.print-doc h2:first-of-type,
+  html[data-paper-size="short"] .ausf-07-17-doc.print-doc h2:first-of-type,
+  html[data-paper-size="short"] .ausf-only-doc.print-doc h2:first-of-type,
+  html[data-paper-size="long"] .ausf-0-6-doc.print-doc h2:first-of-type,
+  html[data-paper-size="long"] .ausf-07-17-doc.print-doc h2:first-of-type,
+  html[data-paper-size="long"] .ausf-only-doc.print-doc h2:first-of-type,
+  html[data-paper-size="legal"] .ausf-0-6-doc.print-doc h2:first-of-type,
+  html[data-paper-size="legal"] .ausf-07-17-doc.print-doc h2:first-of-type,
+  html[data-paper-size="legal"] .ausf-only-doc.print-doc h2:first-of-type {
+    font-size: 16px !important;
+  }
+}
+
+body.pdf-capture .ausf-0-6-doc.print-doc h2:first-of-type,
+body.pdf-capture .ausf-07-17-doc.print-doc h2:first-of-type,
+body.pdf-capture .ausf-only-doc.print-doc h2:first-of-type {
+  font-size: 14px !important;
 }

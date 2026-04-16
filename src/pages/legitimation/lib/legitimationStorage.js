@@ -75,14 +75,20 @@ export function getSavedLegitimationList() {
 
 export function addSavedLegitimation(data) {
   try {
+    const fromSavedId = String(data?._savedLegitimationId || '').trim()
+    if (fromSavedId) {
+      const updated = updateSavedLegitimation(fromSavedId, data)
+      if (updated) return fromSavedId
+    }
     const list = getSavedLegitimationList()
     const id = `leg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
     const payload = { ...data, certificateIssuanceDate: data.certificateIssuanceDate || new Date().toISOString() }
+    delete payload._savedLegitimationId
     list.unshift({
       id,
       savedAt: new Date().toISOString(),
-      label: getLabel(data),
-      formType: data.formType || 'joint-affidavit',
+      label: getLabel(payload),
+      formType: payload.formType || 'joint-affidavit',
       data: payload,
     })
     localStorage.setItem(KEY_SAVED, JSON.stringify(list))
@@ -122,7 +128,7 @@ export function loadSavedLegitimationToDraft(id) {
   const list = getSavedLegitimationList()
   const item = list.find((x) => x.id === id)
   if (!item || !item.data) return false
-  saveLegitimationDraft(item.data)
+  saveLegitimationDraft({ ...item.data, _savedLegitimationId: id })
   return true
 }
 
@@ -132,11 +138,12 @@ export function updateSavedLegitimation(id, data) {
     const idx = list.findIndex((x) => x.id === id)
     if (idx === -1) return false
     const payload = { ...data, certificateIssuanceDate: data.certificateIssuanceDate || new Date().toISOString() }
+    delete payload._savedLegitimationId
     list[idx] = {
       id,
       savedAt: new Date().toISOString(),
-      label: getLabel(data),
-      formType: data.formType || 'joint-affidavit',
+      label: getLabel(payload),
+      formType: payload.formType || 'joint-affidavit',
       data: payload,
     }
     localStorage.setItem(KEY_SAVED, JSON.stringify(list))

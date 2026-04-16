@@ -1,13 +1,12 @@
 import React from 'react'
-import { formatDateLong, formatDateCert, fullName } from '../../../lib/printUtils'
-import { PrintHeaderRow, DocumentFooter, LOGO_RIGHT_SRC } from '../../../components/print'
+import { formatDateLong, formatDateCert, fullName, joinCommaParts } from '../../../lib/printUtils'
+import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 
 export default function LcrFormA1({ data }) {
   const childFull = fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.childFirst, data.childMiddle, data.childLast)
   const motherFull = fullName(data.motherFirst, data.motherMiddle, data.motherLast)
   const fatherFull = fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
-  const placeOfBirthLine1 = [data.placeOfBirthAddress, data.placeOfBirthCity].filter(Boolean).join(' ') || '—'
-  const placeOfBirthLine2 = data.placeOfBirthProvince || ''
+  const placeOfBirth = joinCommaParts(data.placeOfBirthAddress, data.placeOfBirthCity, data.placeOfBirthProvince) || '—'
   const formDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
   const regOfficerName = data.certificateSignatoryName || 'LORELIE L. CANTO'
   const ccrName = data.cityCivilRegistrarName || ''
@@ -17,14 +16,7 @@ export default function LcrFormA1({ data }) {
     <div className="lcr-a1-print-root">
       <div className="ausf-doc print-doc print-doc-lcr-a1 bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 leading-snug flex flex-col min-h-0">
         <header className="lcr-a1-header shrink-0 mb-2 text-[15px]">
-          <PrintHeaderRow
-            rightContent={
-              <div className="flex flex-col items-end shrink-0">
-                <img src={LOGO_RIGHT_SRC} alt="Office of the City Civil Registrar" className="w-20 h-20 object-contain shrink-0" />
-                <p className="text-[11px] font-medium mt-0">{formDate}</p>
-              </div>
-            }
-          />
+          <PrintHeaderRow />
           <hr className="border-black border-t my-2" />
           <div className="flex justify-end items-baseline gap-4 text-[21px] leading-tight">
             <div className="flex items-baseline gap-1 shrink-0">
@@ -61,7 +53,7 @@ export default function LcrFormA1({ data }) {
               <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Name of Child</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{childFull || '—'}</td></tr>
               <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Sex</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{data.sex || '—'}</td></tr>
               <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Date of Birth</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{formatDateLong(data.dateOfBirth) || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Place of Birth</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle leading-tight"><span>{placeOfBirthLine1}</span>{placeOfBirthLine2 && <><br /><span>{placeOfBirthLine2}</span></>}</td></tr>
+              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Place of Birth</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle leading-tight"><span>{placeOfBirth}</span></td></tr>
               <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Name of Mother</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{motherFull || '—'}</td></tr>
               <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Citizenship of Mother</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{data.motherCitizenship || '—'}</td></tr>
               <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Name of Father</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{fatherFull || '—'}</td></tr>

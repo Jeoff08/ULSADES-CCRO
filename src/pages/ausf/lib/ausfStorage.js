@@ -114,8 +114,10 @@ export async function loadSavedAUSFListFromApi() {
 export function addSavedAUSF(data) {
   try {
     const list = getSavedAUSFList()
+    const payload = { ...data }
+    delete payload._savedAUSFId
     const id = `ausf_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
-    const label = data.applicantName || data.childFirst || data.formType || 'AUSF'
+    const label = payload.applicantName || payload.childFirst || payload.formType || 'AUSF'
     const formTypeLabel = {
       'ausf-only': 'AUSF only',
       'ausf-0-6': 'AUSF 0-6',
@@ -130,13 +132,13 @@ export function addSavedAUSF(data) {
       'child-not-ack-annotation': 'Annotation (Child Not Acknowledged)',
       'child-not-ack-transmittal': 'Transmittal (Child Not Acknowledged)',
       'out-of-town': 'Out-of-Town Transmittal',
-    }[data.formType] || data.formType
+    }[payload.formType] || payload.formType
     list.unshift({
       id,
       savedAt: new Date().toISOString(),
       label: String(label).trim() || formTypeLabel,
-      formType: data.formType,
-      data: { ...data },
+      formType: payload.formType,
+      data: payload,
     })
     localStorage.setItem(KEY_SAVED, JSON.stringify(list))
     return id
@@ -186,7 +188,7 @@ export function loadSavedAUSFToDraft(id) {
   const list = getSavedAUSFList()
   const item = list.find((x) => x.id === id)
   if (!item || !item.data) return false
-  saveAUSFDraft(item.data)
+  saveAUSFDraft({ ...item.data, _savedAUSFId: id })
   return true
 }
 
@@ -194,7 +196,9 @@ export async function loadSavedAUSFToDraftApi(id) {
   const { loaded } = await apiPost(`/api/saved/${id}/load`, {})
   if (!loaded) return false
   const d = await loadAUSFDraftFromApi()
-  return !!d
+  if (!d) return false
+  saveAUSFDraft({ ...d, _savedAUSFId: id })
+  return true
 }
 
 export function updateSavedAUSF(id, data) {
@@ -202,7 +206,9 @@ export function updateSavedAUSF(id, data) {
     const list = getSavedAUSFList()
     const idx = list.findIndex((x) => x.id === id)
     if (idx === -1) return false
-    const label = data.applicantName || data.childFirst || data.formType || 'AUSF'
+    const payload = { ...data }
+    delete payload._savedAUSFId
+    const label = payload.applicantName || payload.childFirst || payload.formType || 'AUSF'
     const formTypeLabel = {
       'ausf-only': 'AUSF only',
       'ausf-0-6': 'AUSF 0-6',
@@ -217,13 +223,13 @@ export function updateSavedAUSF(id, data) {
       'child-not-ack-annotation': 'Annotation (Child Not Acknowledged)',
       'child-not-ack-transmittal': 'Transmittal (Child Not Acknowledged)',
       'out-of-town': 'Out-of-Town Transmittal',
-    }[data.formType] || data.formType
+    }[payload.formType] || payload.formType
     list[idx] = {
       id,
       savedAt: new Date().toISOString(),
       label: String(label).trim() || formTypeLabel,
-      formType: data.formType,
-      data: { ...data },
+      formType: payload.formType,
+      data: payload,
     }
     localStorage.setItem(KEY_SAVED, JSON.stringify(list))
     return true

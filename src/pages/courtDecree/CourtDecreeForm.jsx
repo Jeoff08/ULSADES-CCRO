@@ -96,7 +96,7 @@ function LcrFormCompleteIcon({ show }) {
 }
 
 /** FORM 1A / 2A / 3A switcher with green check when that table is fully filled */
-function LcrFormNavLinks({ form, activeType, showFullCourtLink = true }) {
+function LcrFormNavLinks({ form, activeType, showFullCourtLink = true, visibleTypes = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a'] }) {
   const c1 = isLcr1aTableComplete(form)
   const c2 = isLcr2aTableComplete(form)
   const c3 = isLcr3aTableComplete(form)
@@ -104,30 +104,36 @@ function LcrFormNavLinks({ form, activeType, showFullCourtLink = true }) {
     `court-decree-form-page__form-link inline-flex items-center gap-1${activeType === t ? ' court-decree-form-page__form-link--active' : ''}`
   return (
     <div className={`court-decree-form-page__form-links flex flex-wrap items-center gap-2${showFullCourtLink ? ' mb-4' : ''}`}>
-      <Link
-        to="/court-decree/form?type=lcr-form-1a"
-        className={cls('lcr-form-1a')}
-        aria-label={c1 ? 'FORM 1A, all required fields filled' : 'FORM 1A'}
-      >
-        <span>FORM 1A</span>
-        <LcrFormCompleteIcon show={c1} />
-      </Link>
-      <Link
-        to="/court-decree/form?type=lcr-form-2a"
-        className={cls('lcr-form-2a')}
-        aria-label={c2 ? 'FORM 2A, all required fields filled' : 'FORM 2A'}
-      >
-        <span>FORM 2A</span>
-        <LcrFormCompleteIcon show={c2} />
-      </Link>
-      <Link
-        to="/court-decree/form?type=lcr-form-3a"
-        className={cls('lcr-form-3a')}
-        aria-label={c3 ? 'FORM 3A, all required fields filled' : 'FORM 3A'}
-      >
-        <span>FORM 3A</span>
-        <LcrFormCompleteIcon show={c3} />
-      </Link>
+      {visibleTypes.includes('lcr-form-1a') ? (
+        <Link
+          to="/court-decree/form?type=lcr-form-1a"
+          className={cls('lcr-form-1a')}
+          aria-label={c1 ? 'FORM 1A, all required fields filled' : 'FORM 1A'}
+        >
+          <span>FORM 1A</span>
+          <LcrFormCompleteIcon show={c1} />
+        </Link>
+      ) : null}
+      {visibleTypes.includes('lcr-form-2a') ? (
+        <Link
+          to="/court-decree/form?type=lcr-form-2a"
+          className={cls('lcr-form-2a')}
+          aria-label={c2 ? 'FORM 2A, all required fields filled' : 'FORM 2A'}
+        >
+          <span>FORM 2A</span>
+          <LcrFormCompleteIcon show={c2} />
+        </Link>
+      ) : null}
+      {visibleTypes.includes('lcr-form-3a') ? (
+        <Link
+          to="/court-decree/form?type=lcr-form-3a"
+          className={cls('lcr-form-3a')}
+          aria-label={c3 ? 'FORM 3A, all required fields filled' : 'FORM 3A'}
+        >
+          <span>FORM 3A</span>
+          <LcrFormCompleteIcon show={c3} />
+        </Link>
+      ) : null}
       {showFullCourtLink ? (
         <Link to="/court-decree/form?type=cert-authenticity" className="text-sm text-[var(--primary-blue)] underline self-center ml-2">
           Full court decree form
@@ -437,6 +443,9 @@ export default function CourtDecreeForm() {
 
   const proceedToPrint = () => {
     const formForOutput = { ...form }
+    const editingId = String(editId || form._savedCourtDecreeId || '').trim()
+    let finalSavedId = editingId
+    delete formForOutput._savedCourtDecreeId
     const affectedDocuments = deriveAffectedDocumentsForPrint(formForOutput)
     let nextPrintType = form.formType
     if (affectedDocuments.length > 0) {
@@ -451,12 +460,17 @@ export default function CourtDecreeForm() {
     COURT_DECREE_DATE_KEYS.forEach((key) => {
       if (formForOutput[key]) formForOutput[key] = dateToOutputFormat(formForOutput[key])
     })
-    if (isEdit && editId) {
-      updateSavedCourtDecree(editId, formForOutput)
+    if (editingId) {
+      const updated = updateSavedCourtDecree(editingId, formForOutput)
+      if (!updated) {
+        const createdId = addSavedCourtDecree(formForOutput)
+        if (createdId) finalSavedId = String(createdId).trim()
+      }
     } else {
-      addSavedCourtDecree(formForOutput)
+      const createdId = addSavedCourtDecree(formForOutput)
+      if (createdId) finalSavedId = String(createdId).trim()
     }
-    navigate(`/court-decree/print?type=${nextPrintType}`)
+    navigate(finalSavedId ? `/court-decree/print?type=${nextPrintType}&id=${encodeURIComponent(finalSavedId)}` : `/court-decree/print?type=${nextPrintType}`)
   }
 
   useEffect(() => {
@@ -527,6 +541,11 @@ export default function CourtDecreeForm() {
   }, [form.documentOwnerName, form.lcr1aNameOfChild, form.lcr2aNameDeceased, form.lcr3aHusbandName, form.lcr3aWifeName, form.formType])
 
   const isLcrFormType = LCR_FORM_TYPES.includes(form.formType)
+  const visibleLcrTypes = [
+    isLcr1aTableComplete(form) ? 'lcr-form-1a' : null,
+    isLcr2aTableComplete(form) ? 'lcr-form-2a' : null,
+    isLcr3aTableComplete(form) ? 'lcr-form-3a' : null,
+  ].filter(Boolean)
 
   let sectionIndex = 0
   const sectionDelay = (i) => ({ animationDelay: `${i * 0.06}s` })
@@ -836,7 +855,7 @@ export default function CourtDecreeForm() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Forms (checked when filled)</label>
-            <LcrFormNavLinks form={form} activeType={form.formType} showFullCourtLink={false} />
+            <LcrFormNavLinks form={form} activeType={form.formType} showFullCourtLink={false} visibleTypes={visibleLcrTypes} />
           </div>
         </div>
       </CourtDecreeSection>
@@ -951,6 +970,15 @@ export default function CourtDecreeForm() {
       >
         Done
       </button>
+      {isEdit ? (
+        <button
+          type="button"
+          onClick={() => navigate('/court-decree/saved')}
+          className="court-decree-form-page__btn court-decree-form-page__btn--secondary"
+        >
+          Back to Files Saved
+        </button>
+      ) : null}
       </div>
 
       {showValidationModal && (

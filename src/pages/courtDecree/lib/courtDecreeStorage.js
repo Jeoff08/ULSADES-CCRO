@@ -70,9 +70,15 @@ export function getSavedCourtDecreeList() {
 
 export function addSavedCourtDecree(data) {
   try {
+    const fromSavedId = String(data?._savedCourtDecreeId || '').trim()
+    if (fromSavedId) {
+      const updated = updateSavedCourtDecree(fromSavedId, data)
+      if (updated) return fromSavedId
+    }
     const list = getSavedCourtDecreeList()
     const id = `court_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
     const payload = { ...data, certificateIssuanceDate: data.certificateIssuanceDate || new Date().toISOString() }
+    delete payload._savedCourtDecreeId
     list.unshift({
       id,
       savedAt: new Date().toISOString(),
@@ -117,7 +123,7 @@ export function loadSavedCourtDecreeToDraft(id) {
   const list = getSavedCourtDecreeList()
   const item = list.find((x) => x.id === id)
   if (!item || !item.data) return false
-  saveCourtDecreeDraft(item.data)
+  saveCourtDecreeDraft({ ...item.data, _savedCourtDecreeId: id })
   return true
 }
 
@@ -127,11 +133,12 @@ export function updateSavedCourtDecree(id, data) {
     const idx = list.findIndex((x) => x.id === id)
     if (idx === -1) return false
     const payload = { ...data, certificateIssuanceDate: data.certificateIssuanceDate || new Date().toISOString() }
+    delete payload._savedCourtDecreeId
     list[idx] = {
       id,
       savedAt: new Date().toISOString(),
-      label: getLabel(data),
-      formType: data.formType || 'cert-authenticity',
+      label: getLabel(payload),
+      formType: payload.formType || 'cert-authenticity',
       data: payload,
     }
     localStorage.setItem(KEY_SAVED, JSON.stringify(list))

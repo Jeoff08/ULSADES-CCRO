@@ -428,7 +428,7 @@ function renderAckAnnotationContent(annotationText) {
 function buildVerticalAnnotationPdfBase64(plainText) {
   const doc = new jsPDF({ orientation: "portrait", unit: "in", format: "legal" });
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(0, 0, 0);
+  doc.setTextColor(255, 255, 255);
 
   const { width: docW, height: docH, pageWidthInches, pageHeightInches } = PDF_LAYOUT.document;
 
@@ -461,13 +461,13 @@ function buildVerticalAnnotationPdfBase64(plainText) {
   const totalBlockWidth = lines.length * lineHeightIn;
   let startX = centerX - totalBlockWidth / 2 + lineHeightIn / 2;
 
-  // Draw a light gray background over the full annotation field area.
+  // Draw a black background over the full annotation field area.
   const fieldInset = 0.02;
   const bgX = boxLeftIn + fieldInset;
   const bgY = 2.9 + fieldInset;
   const bgW = Math.max(0.1, boxWIn - fieldInset * 2);
   const bgH = Math.max(0.1, 8.8 - fieldInset * 2);
-  doc.setFillColor(240, 240, 240);
+  doc.setFillColor(0, 0, 0);
   doc.rect(bgX, bgY, bgW, bgH, "F");
 
   lines.forEach((line, i) => {
@@ -530,7 +530,7 @@ export default function AnnotationAckFieldPage() {
       fullName(d.childFirst, d.childMiddle, d.fatherLast) ||
       fullName(d.childFirst, d.childMiddle, d.childLast);
     const defaultAnnotation = childFull
-      ? `"The child shall be known as ${childFull.toUpperCase()} pursuant to R.A. 9255"`
+      ? `"This child shall be known as ${childFull.toUpperCase()} pursuant to R.A. 9255"`
       : "";
     return d.annotationChildAckText || defaultAnnotation;
   }, []);

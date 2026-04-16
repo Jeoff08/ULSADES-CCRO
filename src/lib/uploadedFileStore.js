@@ -114,6 +114,33 @@ export function hasAnyUploadsForRecord(moduleKey, recordId) {
   }
 }
 
+export function migrateRecordUploads(moduleKey, fromRecordId, toRecordId) {
+  try {
+    const fromId = String(fromRecordId || '').trim()
+    const toId = String(toRecordId || '').trim()
+    if (!moduleKey || !fromId || !toId || fromId === toId) return 0
+
+    const fromPrefix = `${STORAGE_PREFIX}${moduleKey}:${fromId}:`
+    const moved = []
+
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const k = localStorage.key(i)
+      if (!k || !k.startsWith(fromPrefix)) continue
+      const suffix = k.slice(fromPrefix.length)
+      const raw = localStorage.getItem(k)
+      moved.push({ oldKey: k, newKey: `${STORAGE_PREFIX}${moduleKey}:${toId}:${suffix}`, raw })
+    }
+
+    moved.forEach(({ newKey, raw }) => {
+      if (typeof raw === 'string') localStorage.setItem(newKey, raw)
+    })
+    moved.forEach(({ oldKey }) => localStorage.removeItem(oldKey))
+    return moved.length
+  } catch {
+    return 0
+  }
+}
+
 export function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()

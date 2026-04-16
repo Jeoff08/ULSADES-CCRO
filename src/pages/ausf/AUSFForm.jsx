@@ -14,6 +14,7 @@ import {
   addSavedAUSFToApi,
   updateSavedAUSFToApi,
 } from './lib/ausfStorage'
+import { migrateRecordUploads } from '../../lib/uploadedFileStore'
 
 const RELATIONSHIP_OPTIONS = [
   { value: '', label: '—' },
@@ -178,25 +179,43 @@ export default function AUSFForm() {
     setShowConfirmModal(true)
   }
   const handleConfirmDone = async () => {
-    const editId = searchParams.get('id')
+    const editId = String(searchParams.get('id') || '').trim()
+    const draftSavedId = String(form?._savedAUSFId || '').trim()
     const isEdit = searchParams.get('edit') === '1'
-    saveAUSFDraft(form)
+    const effectiveEditId = editId || draftSavedId
+    const draftPayload = { ...form, _savedAUSFId: effectiveEditId || draftSavedId || '' }
+    saveAUSFDraft(draftPayload)
+    let finalSavedId = effectiveEditId
     try {
-      await saveAUSFDraftToApi(form)
-      if (isEdit && editId) {
-        await updateSavedAUSFToApi(editId, form)
+      await saveAUSFDraftToApi(draftPayload)
+      if (isEdit && effectiveEditId) {
+        const nextId = await updateSavedAUSFToApi(effectiveEditId, draftPayload)
+        if (nextId) {
+          finalSavedId = String(nextId).trim()
+          if (finalSavedId && finalSavedId !== effectiveEditId) {
+            migrateRecordUploads('ausf', effectiveEditId, finalSavedId)
+          }
+        }
       } else {
-        await addSavedAUSFToApi(form)
+        const createdId = await addSavedAUSFToApi(draftPayload)
+        if (createdId) finalSavedId = String(createdId).trim()
       }
     } catch {
-      if (isEdit && editId) {
-        updateSavedAUSF(editId, form)
+      if (isEdit && effectiveEditId) {
+        const updated = updateSavedAUSF(effectiveEditId, draftPayload)
+        if (updated) {
+          finalSavedId = effectiveEditId
+        } else {
+          const createdId = addSavedAUSF(draftPayload)
+          if (createdId) finalSavedId = String(createdId).trim()
+        }
       } else {
-        addSavedAUSF(form)
+        const createdId = addSavedAUSF(draftPayload)
+        if (createdId) finalSavedId = String(createdId).trim()
       }
     }
     setShowConfirmModal(false)
-    navigate('/ausf/print')
+    navigate(finalSavedId ? `/ausf/print?id=${encodeURIComponent(finalSavedId)}` : '/ausf/print')
   }
   const handleCancelModal = () => setShowConfirmModal(false)
 

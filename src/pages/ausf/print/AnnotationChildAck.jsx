@@ -12,7 +12,7 @@ const MAX_FILE_SIZE_MB = 25
 export default function AnnotationChildAck({ data, onColbScanChange, onAnnotationChange }) {
   const childFull = fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.childFirst, data.childMiddle, data.childLast)
   const hasScan = Boolean(data.colbScanDataUrl)
-  const defaultAnnotation = childFull ? `"The child shall be known as ${childFull.toUpperCase()} pursuant to R.A. 9255"` : ''
+  const defaultAnnotation = childFull ? `"This child shall be known as ${childFull.toUpperCase()} pursuant to R.A. 9255"` : ''
   const annotationText = data.annotationChildAckText || defaultAnnotation
 
   // Render annotation with name bold+underline; "pursuant" at bottom

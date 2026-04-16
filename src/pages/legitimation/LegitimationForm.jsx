@@ -187,15 +187,23 @@ export default function LegitimationForm() {
 
   const proceedToPrint = () => {
     const formForOutput = { ...form }
+    const editingId = String(editId || form._savedLegitimationId || '').trim()
+    delete formForOutput._savedLegitimationId
+    let finalSavedId = editingId
     LEGITIMATION_DATE_KEYS.forEach((key) => {
       if (formForOutput[key]) formForOutput[key] = dateToOutputFormat(formForOutput[key])
     })
-    if (isEdit && editId) {
-      updateSavedLegitimation(editId, formForOutput)
+    if (editingId) {
+      const updated = updateSavedLegitimation(editingId, formForOutput)
+      if (!updated) {
+        const createdId = addSavedLegitimation(formForOutput)
+        if (createdId) finalSavedId = String(createdId).trim()
+      }
     } else {
-      addSavedLegitimation(formForOutput)
+      const createdId = addSavedLegitimation(formForOutput)
+      if (createdId) finalSavedId = String(createdId).trim()
     }
-    navigate(`/legitimation/print?type=${form.formType}`)
+    navigate(finalSavedId ? `/legitimation/print?type=${form.formType}&id=${encodeURIComponent(finalSavedId)}` : `/legitimation/print?type=${form.formType}`)
   }
 
   useEffect(() => {
@@ -458,6 +466,15 @@ export default function LegitimationForm() {
         >
           Done
         </button>
+        {isEdit ? (
+          <button
+            type="button"
+            onClick={() => navigate('/legitimation/saved')}
+            className="legitimation-form-page__btn legitimation-form-page__btn--secondary"
+          >
+            Back to Files Saved
+          </button>
+        ) : null}
       </div>
 
       {showValidationModal && (

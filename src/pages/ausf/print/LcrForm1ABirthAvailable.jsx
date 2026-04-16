@@ -1,13 +1,12 @@
 import React from 'react'
-import { formatDateLong, formatDateCert, fullName } from '../../../lib/printUtils'
+import { formatDateLong, formatDateCert, fullName, joinCommaParts } from '../../../lib/printUtils'
 import { DocumentFooter } from '../../../components/print'
 
 export default function LcrForm1ABirthAvailable({ data }) {
   const childFull = fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.childFirst, data.childMiddle, data.childLast)
   const motherFull = fullName(data.motherFirst, data.motherMiddle, data.motherLast)
   const fatherFull = fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
-  const placeOfBirthLine1 = [data.placeOfBirthAddress, data.placeOfBirthCity].filter(Boolean).join(' ') || '—'
-  const placeOfBirthLine2 = data.placeOfBirthProvince || ''
+  const placeOfBirth = joinCommaParts(data.placeOfBirthAddress, data.placeOfBirthCity, data.placeOfBirthProvince) || '—'
   const formDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
   const regOfficerName = data.certificateSignatoryName || 'LORELIE L. CANTO'
   const ccrName = data.cityCivilRegistrarName || ''
@@ -32,7 +31,7 @@ export default function LcrForm1ABirthAvailable({ data }) {
           <tr><td className="py-1.5 px-2 border border-black font-medium align-top">Name of Child</td><td className="py-1.5 px-2 border border-black font-bold text-center">{childFull || '—'}</td></tr>
           <tr><td className="py-1.5 px-2 border border-black font-medium align-top">Sex</td><td className="py-1.5 px-2 border border-black font-bold text-center">{data.sex || '—'}</td></tr>
           <tr><td className="py-1.5 px-2 border border-black font-medium align-top">Date of Birth</td><td className="py-1.5 px-2 border border-black font-bold text-center">{formatDateLong(data.dateOfBirth) || '—'}</td></tr>
-          <tr><td className="py-1.5 px-2 border border-black font-medium align-top">Place of Birth</td><td className="py-1.5 px-2 border border-black font-bold text-center"><span>{placeOfBirthLine1}</span>{placeOfBirthLine2 && <><br /><span>{placeOfBirthLine2}</span></>}</td></tr>
+          <tr><td className="py-1.5 px-2 border border-black font-medium align-top">Place of Birth</td><td className="py-1.5 px-2 border border-black font-bold text-center"><span>{placeOfBirth}</span></td></tr>
           <tr><td className="py-1.5 px-2 border border-black font-medium align-top">Name of Mother</td><td className="py-1.5 px-2 border border-black font-bold text-center">{motherFull || '—'}</td></tr>
           <tr><td className="py-1.5 px-2 border border-black font-medium align-top">Citizenship of Mother</td><td className="py-1.5 px-2 border border-black font-bold text-center">{data.motherCitizenship || '—'}</td></tr>
           <tr><td className="py-1.5 px-2 border border-black font-medium align-top">Name of Father</td><td className="py-1.5 px-2 border border-black font-bold text-center">{fatherFull || '—'}</td></tr>

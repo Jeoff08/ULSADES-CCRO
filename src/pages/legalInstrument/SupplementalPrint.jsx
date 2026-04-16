@@ -2,9 +2,14 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import SupplementalReportAffidavit from '../legitimation/print/SupplementalReportAffidavit'
 import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailable'
+import SupplementalTransmittal from './print/SupplementalTransmittal'
 import { saveCurrentViewAsPdf } from '../../lib/savePdf'
 import { PAPER_SIZES } from '../../components/print'
 import { getActiveSavedSupplemental, getSupplementalDraft } from './lib/supplementalSavedStorage'
+import {
+  getDefaultSupplementalTransmittalFields,
+  pickTransmittalStateFromDraft,
+} from './lib/supplementalTransmittalDefaults'
 import {
   buildForm1aDataForSupplemental,
   form1aDataFromLegitimationRecord,
@@ -34,6 +39,7 @@ const defaultSupplementalDraft = {
   item5Custom: '',
   includeForm1a: false,
   form1aMatchName: '',
+  ...getDefaultSupplementalTransmittalFields(),
 }
 
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-supplemental'
@@ -59,23 +65,57 @@ const sidebarBtnBase =
   'w-full text-left px-3 py-2.5 text-sm font-medium transition text-white rounded-lg'
 const sidebarBtnAffidavit = `${sidebarBtnBase} bg-[var(--primary-blue)]/80 hover:bg-[var(--primary-blue)]`
 const sidebarBtnForm1a = `${sidebarBtnBase} bg-[#283750] hover:bg-[#1e2d42]`
+const sidebarBtnTransmittal = `${sidebarBtnBase} bg-[#1a4d3a] hover:bg-[#143d2d]`
 const sidebarBtnSelected = ' ring-2 ring-offset-1 ring-[var(--primary-blue)]'
 
 export default function SupplementalPrint() {
   const baseData = useMemo(() => {
     const active = getActiveSavedSupplemental()
-    if (active?.data) return { ...defaultSupplementalDraft, ...active.data }
-    return getSupplementalDraft(defaultSupplementalDraft)
+    const merged = active?.data
+      ? { ...defaultSupplementalDraft, ...active.data }
+      : getSupplementalDraft(defaultSupplementalDraft)
+    const transmittalSlice = pickTransmittalStateFromDraft(merged)
+    return { ...merged, ...transmittalSlice }
   }, [])
   const [item3Custom, setItem3Custom] = useState(baseData.item3Custom || '')
   const [item5Custom, setItem5Custom] = useState(baseData.item5Custom || '')
   const [paperSize, setPaperSize] = useState('a4')
   const [savingPdf, setSavingPdf] = useState(false)
+  const [exportMode, setExportMode] = useState(null)
   const [activePanel, setActivePanel] = useState('affidavit')
   const data = useMemo(
     () => ({ ...baseData, item3Custom, item5Custom }),
     [baseData, item3Custom, item5Custom]
   )
+  const hasAffidavitData = useMemo(() => {
+    const values = [
+      data.affiantName,
+      data.residenceAddress,
+      data.registeredAt,
+      data.regMonth,
+      data.regDay,
+      data.regYear,
+      data.registeredOn,
+      data.missingGeo,
+      data.correctedGeo,
+      data.item3Custom,
+      data.item5Custom,
+      data.subjectColbName,
+      data.cityLine,
+      data.regNo,
+    ]
+    return values.some((v) => String(v || '').trim() !== '')
+  }, [data])
+  const showAffidavitOutput = hasAffidavitData
+  const hasTransmittalData = useMemo(() => {
+    // Treat transmittal as "present" only when user selected checklist/doc items
+    // specific to the transmittal output section.
+    const hasDocType = String(data.transmittalDocType || '').trim() !== ''
+    const hasEndorsements = Array.isArray(data.transmittalEndorsementIds) && data.transmittalEndorsementIds.length > 0
+    const hasAttachments = Array.isArray(data.transmittalAttachmentIds) && data.transmittalAttachmentIds.length > 0
+    return hasDocType || hasEndorsements || hasAttachments
+  }, [data])
+  const showTransmittalOutput = hasTransmittalData
   const supType = String(data.supplementType || '').toLowerCase()
   /** Opt-in button sets includeForm1a; sex-only backward compat when field was never saved. */
   const showForm1a =
@@ -123,21 +163,54 @@ export default function SupplementalPrint() {
       setForm1aRecord(form1aDataFromLegitimationRecord(form1aLegitimationMatches[0].data))
     }
   }, [showForm1a, form1aSearchQuery, form1aLegitimationMatches])
+  const effectivePaperSize = savingPdf && exportMode === 'bundle' ? 'short' : paperSize
   const paperSpec = useMemo(
-    () => PAPER_SIZES.find((p) => p.id === paperSize) || PAPER_SIZES[0],
-    [paperSize]
+    () => PAPER_SIZES.find((p) => p.id === effectivePaperSize) || PAPER_SIZES[0],
+    [effectivePaperSize]
   )
-  usePrintPageSize(paperSize)
+  usePrintPageSize(effectivePaperSize)
 
   useEffect(() => {
+    if (!showAffidavitOutput) {
+      if (showTransmittalOutput && (activePanel === 'affidavit' || activePanel === 'form1a')) {
+        setActivePanel('transmittal')
+      }
+      return
+    }
+    if (!showTransmittalOutput && activePanel === 'transmittal') {
+      setActivePanel(showForm1a ? 'form1a' : 'affidavit')
+      return
+    }
     if (!showForm1a && activePanel === 'form1a') setActivePanel('affidavit')
-  }, [showForm1a, activePanel])
+  }, [showAffidavitOutput, showForm1a, showTransmittalOutput, activePanel])
 
-  const handleSavePdf = async () => {
+  const PDF_EXPORT_CLASS = {
+    bundle: 'supplemental-pdf-export--bundle-only',
+    transmittal: 'supplemental-pdf-export--transmittal-only',
+  }
+  const showBundleForRender = showAffidavitOutput && exportMode !== 'transmittal'
+  const showTransmittalForRender = showTransmittalOutput && exportMode !== 'bundle'
+
+  const savePdfWithExportMode = async (mode, suggestedBaseName) => {
+    if (mode === 'bundle' && !showAffidavitOutput) {
+      window.alert('No supplemental affidavit data yet. Fill the Supplemental form first, or use Save transmittal PDF.')
+      return
+    }
+    if (mode === 'transmittal' && !showTransmittalOutput) {
+      window.alert('No supplemental transmittal data yet. Fill transmittal fields first, or use Save affidavit PDF.')
+      return
+    }
     if (savingPdf) return
     setSavingPdf(true)
+    setExportMode(mode)
+    const root = document.documentElement
+    const cls = PDF_EXPORT_CLASS[mode]
+    root.classList.add(cls)
+    await new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve))
+    })
     try {
-      const result = await saveCurrentViewAsPdf('Supplemental-Report')
+      const result = await saveCurrentViewAsPdf(suggestedBaseName)
       if (result?.ok) return
       if (result?.cancelled) {
         window.alert('Save cancelled. No PDF file was created.')
@@ -148,6 +221,8 @@ export default function SupplementalPrint() {
       console.error('Failed to save PDF:', error)
       window.alert(error?.message || 'Unable to save PDF right now. Please try again.')
     } finally {
+      root.classList.remove(cls)
+      setExportMode(null)
       setSavingPdf(false)
     }
   }
@@ -155,14 +230,13 @@ export default function SupplementalPrint() {
   return (
     <div className="p-4 print:p-0">
       <div className="no-print mb-3 max-w-6xl mx-auto flex items-center justify-between gap-2">
-        <p className="text-sm text-gray-500">
-          <Link to="/" className="text-[var(--primary-blue)] hover:underline">Dashboard</Link>
-          <span className="mx-2">/</span>
-          <Link to="/legal-instrument/supplemental" className="text-[var(--primary-blue)] hover:underline">Supplemental Form</Link>
-          <span className="mx-2">/</span>
-          <span>Print Output</span>
-        </p>
-        <div className="flex items-center gap-2">
+        <Link
+          to="/legal-instrument/supplemental/saved"
+          className="px-3 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50"
+        >
+          Back to Files Saved
+        </Link>
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <select
             value={paperSize}
             onChange={(e) => setPaperSize(e.target.value)}
@@ -173,14 +247,32 @@ export default function SupplementalPrint() {
               <option key={p.id} value={p.id}>{p.label}</option>
             ))}
           </select>
-          <button
-            type="button"
-            onClick={handleSavePdf}
-            disabled={savingPdf}
-            className="px-3 py-1.5 rounded-md bg-[var(--primary-blue)] text-white text-sm font-medium hover:bg-[var(--primary-blue-light)] disabled:opacity-60"
-          >
-            {savingPdf ? 'Saving...' : 'Save as PDF'}
-          </button>
+          {activePanel !== 'transmittal' ? (
+            <button
+              type="button"
+              onClick={() => savePdfWithExportMode('bundle', 'Supplemental-Report')}
+              disabled={savingPdf || !showAffidavitOutput}
+              className="px-3 py-1.5 rounded-md bg-[var(--primary-blue)] text-white text-sm font-medium hover:bg-[var(--primary-blue-light)] disabled:opacity-60"
+              title={
+                showAffidavitOutput
+                  ? 'Affidavit and Form 1A only (no transmittal pages)'
+                  : 'No supplemental affidavit data yet'
+              }
+            >
+              {savingPdf ? 'Saving...' : 'Save affidavit PDF'}
+            </button>
+          ) : null}
+          {showTransmittalOutput && activePanel === 'transmittal' ? (
+            <button
+              type="button"
+              onClick={() => savePdfWithExportMode('transmittal', 'Supplemental-Transmittal')}
+              disabled={savingPdf}
+              className="px-3 py-1.5 rounded-md bg-[#1a4d3a] text-white text-sm font-medium hover:bg-[#143d2d] disabled:opacity-60"
+              title="CCR transmittal letter only"
+            >
+              {savingPdf ? 'Saving...' : 'Save transmittal PDF'}
+            </button>
+          ) : null}
         </div>
       </div>
       <div id="supplemental-print-page" className="flex gap-6 items-start print:block">
@@ -189,10 +281,31 @@ export default function SupplementalPrint() {
           <div className="flex flex-col gap-2">
             <button
               type="button"
-              onClick={() => setActivePanel('affidavit')}
-              className={`${sidebarBtnAffidavit}${activePanel === 'affidavit' ? sidebarBtnSelected : ''}`}
+              onClick={() => {
+                if (!showAffidavitOutput) return
+                setActivePanel('affidavit')
+              }}
+              disabled={!showAffidavitOutput}
+              title={showAffidavitOutput ? 'Supplemental affidavit output' : 'No supplemental affidavit data yet'}
+              className={`${sidebarBtnAffidavit}${activePanel === 'affidavit' ? sidebarBtnSelected : ''} ${!showAffidavitOutput ? 'opacity-45 cursor-not-allowed hover:bg-[var(--primary-blue)]/80' : ''}`}
             >
               Supplemental affidavit
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (!showTransmittalOutput) return
+                setActivePanel('transmittal')
+              }}
+              disabled={!showTransmittalOutput}
+              title={
+                showTransmittalOutput
+                  ? 'CCR transmittal output'
+                  : 'No transmittal checklist/document selections yet'
+              }
+              className={`${sidebarBtnTransmittal}${activePanel === 'transmittal' ? sidebarBtnSelected : ''} ${!showTransmittalOutput ? 'opacity-45 cursor-not-allowed hover:bg-[#1a4d3a]' : ''}`}
+            >
+              Transmittal
             </button>
             <button
               type="button"
@@ -215,34 +328,28 @@ export default function SupplementalPrint() {
               FORM 1A
             </button>
           </div>
-          {showForm1a ? (
-            <p className="text-xs text-gray-600 leading-snug">
-              Form 1A uses Legitimation and Court Decree records. It pre-fills when one record matches the COLB / affiant name; otherwise pick from the list or enter manually. PDF/print includes both documents.
-            </p>
-          ) : (
-            <p className="text-xs text-gray-600 leading-snug">
-              Use the Supplemental form and confirm Include Form 1A to unlock FORM 1A here.
-            </p>
-          )}
         </aside>
 
         <div className="flex-1 min-w-0 print:w-full print:max-w-none">
-          <div
-            className={
-              activePanel === 'affidavit'
-                ? 'block'
-                : 'hidden print:block print:[page-break-before:avoid]'
-            }
-          >
-            <SupplementalReportAffidavit
-              data={data}
-              onItem3CustomChange={setItem3Custom}
-              onItem5CustomChange={setItem5Custom}
-              paperWidth={`${paperSpec.widthMm}mm`}
-              paperHeight={`${paperSpec.heightMm}mm`}
-            />
-          </div>
-          {showForm1a ? (
+          {showBundleForRender ? (
+          <div id="supplemental-print-bundle">
+            <div
+              className={
+                activePanel === 'affidavit'
+                  ? 'block'
+                  : 'hidden print:block print:[page-break-before:avoid]'
+              }
+            >
+              <SupplementalReportAffidavit
+                data={data}
+                onItem3CustomChange={setItem3Custom}
+                onItem5CustomChange={setItem5Custom}
+                paperWidth={`${paperSpec.widthMm}mm`}
+                paperHeight={`${paperSpec.heightMm}mm`}
+              />
+            </div>
+
+            {showForm1a ? (
             <div
               className={
                 activePanel === 'form1a'
@@ -319,6 +426,25 @@ export default function SupplementalPrint() {
                   onDataChange={setForm1aRecord}
                 />
               </div>
+            </div>
+            ) : null}
+          </div>
+          ) : null}
+
+          {showTransmittalForRender ? (
+            <div
+              id="supplemental-print-transmittal"
+              className={
+                activePanel === 'transmittal'
+                  ? `block mt-0 ${showBundleForRender ? 'print:[page-break-before:always]' : ''}`
+                  : `hidden print:block print:mt-0 ${showBundleForRender ? 'print:[page-break-before:always]' : ''}`
+              }
+            >
+              <SupplementalTransmittal
+                data={data}
+                paperWidth={`${paperSpec.widthMm}mm`}
+                paperHeight={`${paperSpec.heightMm}mm`}
+              />
             </div>
           ) : null}
         </div>

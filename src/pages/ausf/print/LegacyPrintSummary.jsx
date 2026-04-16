@@ -1,5 +1,5 @@
 import React from 'react'
-import { fullName } from '../../../lib/printUtils'
+import { fullName, joinCommaParts } from '../../../lib/printUtils'
 
 function formatDate(str) {
   if (!str) return ''
@@ -28,7 +28,7 @@ export default function LegacyPrintSummary({ data }) {
           <div className="text-sm space-y-1 mb-4">
             <p>Child: {fullName(data.childFirst, data.childMiddle, data.childLast)}</p>
             <p>DOB: {formatDate(data.dateOfBirth)}</p>
-            <p>Place: {[data.placeOfBirthAddress, data.placeOfBirthCity, data.placeOfBirthProvince].filter(Boolean).join(', ')}</p>
+            <p>Place: {joinCommaParts(data.placeOfBirthAddress, data.placeOfBirthCity, data.placeOfBirthProvince) || '—'}</p>
           </div>
         </>
       )}

@@ -24,7 +24,7 @@ export default function LcrForm3AMarriageAvailable({ data }) {
   const cell = 'py-1 px-2 border border-black text-center font-bold text-sm align-top'
 
   return (
-    <div className="ausf-doc print-doc print-doc-lcr-3a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col">
+    <div className="ausf-doc print-doc print-doc-lcr-3a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col w-full">
       <div className="court-decree-lcr-header shrink-0">
         <PrintHeaderRow />
         <div className="flex justify-between items-start mb-1">

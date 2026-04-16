@@ -7,6 +7,11 @@ import {
   saveSupplementalDraft,
 } from './lib/supplementalSavedStorage'
 import { listLegitimationSourcesForForm1a, searchLegitimationForForm1a } from './lib/supplementalForm1a'
+import {
+  getDefaultSupplementalTransmittalFields,
+  pickTransmittalStateFromDraft,
+} from './lib/supplementalTransmittalDefaults'
+import SupplementalTransmittalFieldsEditor from './SupplementalTransmittalFieldsEditor'
 
 const defaultSupplementalDraft = {
   supplementType: 'geographical',
@@ -27,12 +32,16 @@ const defaultSupplementalDraft = {
   correctedGeo: '',
   includeForm1a: false,
   form1aMatchName: '',
+  ...getDefaultSupplementalTransmittalFields(),
 }
 
 export default function SupplementalForm() {
   const navigate = useNavigate()
   const location = useLocation()
-  const [form, setForm] = useState(() => getSupplementalDraft(defaultSupplementalDraft))
+  const [form, setForm] = useState(() => {
+    const loaded = getSupplementalDraft(defaultSupplementalDraft)
+    return { ...loaded, ...pickTransmittalStateFromDraft(loaded) }
+  })
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [form1aModalOpen, setForm1aModalOpen] = useState(false)
   const [form1aRemoveModalOpen, setForm1aRemoveModalOpen] = useState(false)
@@ -42,7 +51,10 @@ export default function SupplementalForm() {
   const affiantNameInputRef = useRef(null)
 
   useEffect(() => {
-    setForm(getSupplementalDraft(defaultSupplementalDraft))
+    const loaded = getSupplementalDraft(defaultSupplementalDraft)
+    const next = { ...loaded, ...pickTransmittalStateFromDraft(loaded) }
+    saveSupplementalDraft(next)
+    setForm(next)
   }, [location.key])
 
   const handleBackToSaved = () => {
@@ -53,6 +65,14 @@ export default function SupplementalForm() {
   const update = (key, value) => {
     setForm((prev) => {
       const next = { ...prev, [key]: value }
+      saveSupplementalDraft(next)
+      return next
+    })
+  }
+
+  const updateTransmittalPatch = (patch) => {
+    setForm((prev) => {
+      const next = { ...prev, ...patch }
       saveSupplementalDraft(next)
       return next
     })
@@ -332,6 +352,13 @@ export default function SupplementalForm() {
         </div>
         <div><label className="block text-sm font-medium mb-1">{missingLabel}</label><input className={inputClass} value={form.missingGeo} onChange={(e) => update('missingGeo', e.target.value)} /></div>
         <div><label className="block text-sm font-medium mb-1">{correctedLabel}</label><input className={inputClass} value={form.correctedGeo} onChange={(e) => update('correctedGeo', e.target.value)} /></div>
+        <div className="md:col-span-2">
+          <SupplementalTransmittalFieldsEditor
+            data={form}
+            onPatch={updateTransmittalPatch}
+            inputClass={inputClass}
+          />
+        </div>
         </div>
       </div>
 

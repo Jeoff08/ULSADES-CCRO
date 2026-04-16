@@ -53,8 +53,60 @@ export function formatDateCert(str) {
   return `${day} ${months[d.getMonth()]}, ${year}`
 }
 
+/** Transmittal letter date line: "13 April 2026" (no leading zero on day, no comma). */
+export function formatTransmittalDateLong(str) {
+  if (!str) return ''
+  const d = parseBirthToDate(str)
+  if (!d || isNaN(d.getTime())) return String(str)
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ]
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
+}
+
+/** COLB-style DOB line for transmittal body: "16 MAY 1971". */
+export function formatDobDayMonthYearUpper(str) {
+  if (!str) return ''
+  const d = parseBirthToDate(str)
+  if (!d || isNaN(d.getTime())) return String(str).trim().toUpperCase()
+  const months = [
+    'JANUARY',
+    'FEBRUARY',
+    'MARCH',
+    'APRIL',
+    'MAY',
+    'JUNE',
+    'JULY',
+    'AUGUST',
+    'SEPTEMBER',
+    'OCTOBER',
+    'NOVEMBER',
+    'DECEMBER',
+  ]
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
+}
+
 export function fullName(first, middle, last) {
   return [first, middle, last].filter(Boolean).join(' ').trim() || ''
+}
+
+/** Trim each value, drop empties, join with ", " (e.g. AUSF place of birth on PDF). */
+export function joinCommaParts(...parts) {
+  return parts
+    .map((p) => (p == null ? '' : String(p).trim()))
+    .filter(Boolean)
+    .join(', ')
 }
 
 /** Format for LCR Date of Registration: "APR 03 2023" */
@@ -150,4 +202,12 @@ export function formatDateCOLB(str) {
   const month = months[d.getMonth()]
   const year = String(d.getFullYear())
   return { day, month, year, full: `${day} ${month} ${year}` }
+}
+
+/** Non-empty lines from a textarea (To/Thru titles, office block). */
+export function splitFieldLines(value) {
+  return String(value || '')
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter(Boolean)
 }

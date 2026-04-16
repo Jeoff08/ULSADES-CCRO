@@ -12,7 +12,7 @@ import UploadFileModal from '../../components/upload/UploadFileModal'
 import ToastHost from '../../components/toast/ToastHost'
 import { useToasts } from '../../components/toast/useToasts'
 import { saveCurrentViewAsPdf } from '../../lib/savePdf'
-import { isLcr1aTableComplete } from './lib/courtDecreeLcrCompletion'
+import { isLcr1aTableComplete, isLcr2aTableComplete, isLcr3aTableComplete } from './lib/courtDecreeLcrCompletion'
 
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-court'
 
@@ -102,73 +102,11 @@ function defaultPrintTypeForAffected(affectedDocuments) {
   return 'cert-authenticity'
 }
 
-function hasAnyLcr1AData(form) {
-  if (!form || typeof form !== 'object') return false
-  const keys = [
-    'lcr1aRegistryNumber',
-    'lcr1aDateRegistration',
-    'lcr1aNameOfChild',
-    'lcr1aSex',
-    'lcr1aDateOfBirth',
-    'lcr1aPlaceOfBirth',
-    'lcr1aNameOfMother',
-    'lcr1aNameOfFather',
-    'lcr1aDateMarriageParents',
-    'lcr1aPlaceMarriageParents',
-  ]
-  return keys.some((k) => {
-    const v = form[k]
-    return v != null && String(v).trim() !== ''
-  })
-}
-
-function hasAnyLcr2AData(form) {
-  if (!form || typeof form !== 'object') return false
-  const keys = [
-    'lcr2aRegistryNumber',
-    'lcr2aDateRegistration',
-    'lcr2aNameDeceased',
-    'lcr2aSex',
-    'lcr2aCivilStatus',
-    'lcr2aDateDeath',
-    'lcr2aPlaceDeath',
-    'lcr2aCauseDeath',
-  ]
-  return keys.some((k) => {
-    const v = form[k]
-    return v != null && String(v).trim() !== ''
-  })
-}
-
-function hasAnyLcr3AData(form) {
-  if (!form || typeof form !== 'object') return false
-  const keys = [
-    'lcr3aHusbandName',
-    'lcr3aWifeName',
-    'lcr3aRegistryNumber',
-    'lcr3aDateRegistration',
-    'lcr3aDateMarriage',
-    'lcr3aPlaceMarriage',
-    'lcr3aHusbandMother',
-    'lcr3aHusbandFather',
-    'lcr3aWifeMother',
-    'lcr3aWifeFather',
-    'husbandDateOfBirth',
-    'wifeDateOfBirth',
-    'husbandAge',
-    'wifeAge',
-  ]
-  return keys.some((k) => {
-    const v = form[k]
-    return v != null && String(v).trim() !== ''
-  })
-}
-
 function deriveFilledAffectedDocuments(form) {
   const out = []
-  if (hasAnyLcr1AData(form)) out.push('BIRTH_CERTIFICATE')
-  if (hasAnyLcr2AData(form)) out.push('DEATH_CERTIFICATE')
-  if (hasAnyLcr3AData(form)) out.push('MARRIAGE_CERTIFICATE')
+  if (isLcr1aTableComplete(form)) out.push('BIRTH_CERTIFICATE')
+  if (isLcr2aTableComplete(form)) out.push('DEATH_CERTIFICATE')
+  if (isLcr3aTableComplete(form)) out.push('MARRIAGE_CERTIFICATE')
   return out
 }
 
