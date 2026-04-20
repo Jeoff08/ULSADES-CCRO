@@ -102,24 +102,25 @@ export default function LcrForm1A({ data }) {
           <p className="text-sm font-bold italic">&quot;{remark}&quot;</p>
         </div>
 
-        <div className="flex justify-between items-end gap-8 mb-4">
-          <div>
-            <p className="font-medium text-sm mb-1">Verified by:</p>
-            <p className="font-bold underline">{verifiedByName}</p>
-            <p className="text-xs">LCR - Staff</p>
-          </div>
-          <div className="text-right">
-            <p className="font-bold underline">{ccrName}</p>
-            <p className="text-sm italic">City Civil Registrar</p>
-          </div>
-        </div>
-
-        <p className="font-bold text-sm mb-4 shrink-0">
-          Note: This certification is not valid if it has mark, erasure or alteration of any entry.
-        </p>
         </div>
 
         <div className="mt-auto shrink-0 print:mb-6 legitimation-lcr-1a-footer-wrap">
+          <div className="legitimation-lcr-1a-signature-footer mb-3">
+            <div className="flex justify-between items-end gap-8 mb-3">
+              <div>
+                <p className="font-medium text-sm mb-1">Verified by:</p>
+                <p className="font-bold underline">{verifiedByName}</p>
+                <p className="text-xs">Registration Officer II</p>
+              </div>
+              <div className="text-right">
+                <p className="font-bold underline">{ccrName}</p>
+                <p className="text-sm">City Civil Registrar</p>
+              </div>
+            </div>
+            <p className="font-bold text-sm">
+              Note: This certification is not valid if it has mark, erasure or alteration of any entry.
+            </p>
+          </div>
           <DocumentFooter
             contactPhone={data.contactPhone || '(063) 227-2806'}
             contactEmail={data.contactEmail || 'civilregistrar.iligan@gmail.com'}

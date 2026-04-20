@@ -1895,35 +1895,70 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     text-align: right !important;
   }
 
-  /* Legitimation LCR Form 1A only: all content on one page A4/short/long. Sheet grows with content; scale to fit (no clipping). */
+  /* Legitimation LCR Form 1A: keep signature + footer anchored at page bottom across paper sizes */
   .legitimation-lcr-1a.legitimation-lcr-1a-outer {
     padding: 0 !important;
     overflow: visible !important;
     page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+    page-break-after: avoid !important;
+    break-after: avoid-page !important;
     box-sizing: border-box !important;
+    background: #ffffff !important;
   }
   .legitimation-lcr-1a .legitimation-lcr-1a-sheet {
     box-sizing: border-box !important;
-    font-size: 10pt !important;
-    line-height: 1.3 !important;
+    font-size: 12pt !important;
+    line-height: 1.25 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+    background: #ffffff !important;
   }
   .legitimation-lcr-1a .legitimation-lcr-1a-sheet p,
   .legitimation-lcr-1a .legitimation-lcr-1a-sheet table { margin-bottom: 0.08in !important; }
   .legitimation-lcr-1a .legitimation-lcr-1a-sheet .mb-4 { margin-bottom: 0.08in !important; }
   .legitimation-lcr-1a .legitimation-lcr-1a-sheet .mb-2 { margin-bottom: 0.05in !important; }
-  .legitimation-lcr-1a .legitimation-lcr-1a-sheet td { padding: 0.04in 0.1in !important; font-size: inherit !important; }
+  .legitimation-lcr-1a .legitimation-lcr-1a-sheet td { padding: 0.035in 0.09in !important; font-size: inherit !important; }
   .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-footer-wrap p,
-  .legitimation-lcr-1a .legitimation-lcr-1a-sheet .print-doc-footer .text-xs { font-size: 9pt !important; line-height: 1.25 !important; }
-  /* Footer: ensure CONTACT DETAILS (Telephone, Email) and "Register them all!" are always visible and printed */
+  .legitimation-lcr-1a .legitimation-lcr-1a-sheet .print-doc-footer .text-xs { font-size: 10.5pt !important; line-height: 1.22 !important; }
+  .legitimation-lcr-1a .legitimation-lcr-1a-signature-footer p { font-size: 12pt !important; }
+  /* Footer: ensure signature/note + contact details are always visible and printed */
+  .legitimation-lcr-1a .legitimation-lcr-1a-signature-footer {
+    margin-top: auto !important;
+    page-break-inside: avoid !important;
+  }
+  .legitimation-lcr-1a .legitimation-lcr-1a-signature-footer p {
+    margin-top: 0 !important;
+  }
   .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer,
   .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer hr,
   .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer .grid,
   .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer p { visibility: visible !important; display: block !important; }
   .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer .grid { display: grid !important; }
   .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer p { margin: 0 !important; }
-  /* Sheet: no fixed height, no overflow hidden – all content visible; then scale fits it on one page */
-  .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-body { overflow: visible !important; flex: 0 1 auto !important; min-height: 0 !important; }
-  /* Short (11in): scale so even tall content fits */
+  /* Sheet/body/footer flow */
+  .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-body {
+    overflow: visible !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+  }
+  .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-footer-wrap {
+    flex-shrink: 0 !important;
+    margin-top: auto !important;
+    page-break-inside: avoid !important;
+    padding-bottom: 0 !important;
+  }
+  .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer,
+  .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer * {
+    visibility: visible !important;
+  }
+  .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer {
+    margin-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  /* Short (11in) */
   html[data-paper-size="short"] .legitimation-lcr-1a.legitimation-lcr-1a-outer {
     height: 11in !important;
     min-height: 11in !important;
@@ -1932,26 +1967,20 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     position: relative !important;
   }
   html[data-paper-size="short"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet {
-    position: absolute !important;
-    top: 0 !important;
-    left: 50% !important;
-    width: 210mm !important;
-    min-height: 297mm !important;
-    height: auto !important;
-    transform: translateX(-50%) scale(0.87) !important;
-    transform-origin: top center !important;
-    padding: 0.2in 0.45in 0.18in !important;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    min-height: 100% !important;
+    height: 100% !important;
+    transform: none !important;
+    transform-origin: initial !important;
+    padding: 0.2in 0.5in 0 !important;
     display: flex !important;
     flex-direction: column !important;
-    overflow: visible !important;
+    overflow: hidden !important;
   }
-  html[data-paper-size="short"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet > div:first-child,
-  html[data-paper-size="short"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet > div:nth-child(2) { flex-shrink: 0 !important; }
-  html[data-paper-size="short"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-body { flex: 0 1 auto !important; }
-  html[data-paper-size="short"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-footer-wrap { flex-shrink: 0 !important; margin-top: auto !important; page-break-inside: avoid !important; }
-  html[data-paper-size="short"] .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer,
-  html[data-paper-size="short"] .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer * { visibility: visible !important; }
-  /* A4 (297mm): scale so all content fits */
+  /* A4 (297mm) */
   html[data-paper-size="a4"] .legitimation-lcr-1a.legitimation-lcr-1a-outer {
     height: 297mm !important;
     min-height: 297mm !important;
@@ -1960,27 +1989,21 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     position: relative !important;
   }
   html[data-paper-size="a4"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet {
-    position: absolute !important;
-    top: 0 !important;
-    left: 50% !important;
-    width: 210mm !important;
-    min-height: 297mm !important;
-    height: auto !important;
-    transform: translateX(-50%) scale(0.92) !important;
-    transform-origin: top center !important;
-    padding: 0.22in 0.5in 0.18in !important;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    min-height: 100% !important;
+    height: 100% !important;
+    transform: none !important;
+    transform-origin: initial !important;
+    padding: 0.2in 0.5in 0 !important;
     display: flex !important;
     flex-direction: column !important;
-    overflow: visible !important;
+    overflow: hidden !important;
   }
-  html[data-paper-size="a4"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet > div:first-child,
-  html[data-paper-size="a4"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet > div:nth-child(2) { flex-shrink: 0 !important; }
-  html[data-paper-size="a4"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-body { flex: 0 1 auto !important; }
-  html[data-paper-size="a4"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-footer-wrap { flex-shrink: 0 !important; margin-top: auto !important; page-break-inside: avoid !important; }
-  html[data-paper-size="a4"] .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer,
-  html[data-paper-size="a4"] .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer * { visibility: visible !important; }
-  /* Long (13in): scale so entire content including footer (Telephone, Email, Register them all!) fits on one page */
-  html[data-paper-size="long"] .legitimation-lcr-1a.legitimation-lcr-1a-outer , html[data-paper-size="legal"] .legitimation-lcr-1a.legitimation-lcr-1a-outer {
+  /* Long (13in) */
+  html[data-paper-size="long"] .legitimation-lcr-1a.legitimation-lcr-1a-outer {
     height: 13in !important;
     min-height: 13in !important;
     max-height: 13in !important;
@@ -1988,32 +2011,42 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     position: relative !important;
     overflow: visible !important;
   }
-  html[data-paper-size="long"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet , html[data-paper-size="legal"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet {
-    position: absolute !important;
-    top: 0 !important;
-    left: 50% !important;
-    width: 210mm !important;
-    min-height: 297mm !important;
-    height: auto !important;
-    transform: translateX(-50%) scale(0.88) !important;
-    transform-origin: top center !important;
-    padding: 0.24in 0.5in 0.2in !important;
+  html[data-paper-size="long"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    min-height: 100% !important;
+    height: 100% !important;
+    transform: none !important;
+    transform-origin: initial !important;
+    padding: 0.2in 0.5in 0 !important;
     display: flex !important;
     flex-direction: column !important;
+    overflow: hidden !important;
+  }
+  /* Legal (14in): keep same layout behavior as long, with legal page height */
+  html[data-paper-size="legal"] .legitimation-lcr-1a.legitimation-lcr-1a-outer {
+    height: 14in !important;
+    min-height: 14in !important;
+    max-height: 14in !important;
+    display: block !important;
+    position: relative !important;
     overflow: visible !important;
   }
-  html[data-paper-size="long"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet > div:first-child, html[data-paper-size="legal"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet > div:first-child
-  html[data-paper-size="long"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet > div:nth-child(2) { flex-shrink: 0 !important; }
-  html[data-paper-size="long"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-body { flex: 0 1 auto !important; }
-  html[data-paper-size="long"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-footer-wrap , html[data-paper-size="legal"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-footer-wrap {
-    flex-shrink: 0 !important;
-    margin-top: auto !important;
-    padding-bottom: 0.08in !important;
-    page-break-inside: avoid !important;
-  }
-  html[data-paper-size="long"] .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer, html[data-paper-size="legal"] .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer
-  html[data-paper-size="long"] .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer * , html[data-paper-size="legal"] .legitimation-lcr-1a .legitimation-lcr-1a-footer-wrap .print-doc-footer * {
-    visibility: visible !important;
+  html[data-paper-size="legal"] .legitimation-lcr-1a .legitimation-lcr-1a-sheet {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    min-height: 100% !important;
+    height: 100% !important;
+    transform: none !important;
+    transform-origin: initial !important;
+    padding: 0.2in 0.5in 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
   }
 
   /* LCR Form A1: one page, header + footer always visible, body auto-adjusts to paper size */
