@@ -29,7 +29,10 @@ export default function LcrForm2ADeathAvailable({ data }) {
   return (
     <div className="ausf-doc print-doc print-doc-lcr-2a print-doc-lcr-3a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col">
       <div className="court-decree-lcr-header shrink-0">
-        <PrintHeaderRow />
+      <header className="print-doc-header">
+            <PrintHeaderRow />
+            <hr className="border-black my-3" />
+      </header>
         <div className="flex justify-between items-start mb-1">
           <div>
             <p className="font-bold text-base">LCR Form No. 2A</p>

@@ -15,16 +15,17 @@ export default function LcrFormA1({ data }) {
   return (
     <div className="lcr-a1-print-root">
       <div className="ausf-doc print-doc print-doc-lcr-a1 bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 leading-snug flex flex-col min-h-0">
-        <header className="lcr-a1-header shrink-0 mb-2 text-[15px]">
-          <PrintHeaderRow />
-          <hr className="border-black border-t my-2" />
+          <header className="print-doc-header">
+            <PrintHeaderRow />
+            <hr className="border-black my-3" />
+          </header>
           <div className="flex justify-end items-baseline gap-4 text-[21px] leading-tight">
-            <div className="flex items-baseline gap-1 shrink-0">
+            <div className="flex items-+baseline gap-1 shrink-0">
               <span>Registry Number:</span>
               <span className="fill-blank inline-block text-center min-w-[3rem] font-bold underline text-[21px]">{registryNo}</span>
             </div>
           </div>
-        </header>
+    
 
         <div className="lcr-a1-content-wrap flex-1 min-h-0 flex flex-col overflow-hidden">
           <div className="lcr-a1-scaled flex flex-col min-h-0 w-full origin-top-left gap-3">

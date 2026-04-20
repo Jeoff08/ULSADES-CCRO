@@ -56,7 +56,10 @@ export default function LcrForm1A({ data }) {
   return (
     <div className="ausf-doc print-doc print-doc-lcr-1a legitimation-lcr-1a bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4 flex flex-col min-h-0 legitimation-lcr-1a-outer">
       <div className="legitimation-lcr-1a-sheet flex flex-col min-h-0 flex-1">
-        <PrintHeaderRow />
+        <header className="print-doc-header">
+              <PrintHeaderRow />
+              <hr className="border-black my-3" />
+        </header>
 
         <div className="flex justify-between items-start gap-4 mb-4 shrink-0">
           <div>
