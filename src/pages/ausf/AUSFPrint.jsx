@@ -62,6 +62,13 @@ const AUSF_ANNOTATION_TYPES = new Set([
   "child-not-ack-annotation",
 ]);
 
+const CHILD_ACK_TYPES = new Set(["child-ack-lcr", "child-ack-annotation"]);
+const CHILD_NOT_ACK_TYPES = new Set([
+  "child-not-ack-lcr",
+  "child-not-ack-annotation",
+  "child-not-ack-transmittal",
+]);
+
 function usePrintPageSize(paperId) {
   useEffect(() => {
     const spec = PAPER_SIZES.find((p) => p.id === paperId) || PAPER_SIZES[0];
@@ -98,6 +105,27 @@ export default function AUSFPrint() {
       ? "legal"
       : paperSize;
   usePrintPageSize(pageSizeForPrint);
+
+  const acknowledged = data?.childAlreadyAcknowledged;
+  const viewPrintOptions = React.useMemo(() => {
+    if (acknowledged === "YES") {
+      return VIEW_PRINT_OPTIONS.filter((opt) => !CHILD_NOT_ACK_TYPES.has(opt.type));
+    }
+    if (acknowledged === "NO") {
+      return VIEW_PRINT_OPTIONS.filter((opt) => !CHILD_ACK_TYPES.has(opt.type));
+    }
+    return VIEW_PRINT_OPTIONS;
+  }, [acknowledged]);
+
+  useEffect(() => {
+    if (!activePrintType) return;
+    if (acknowledged === "YES" && CHILD_NOT_ACK_TYPES.has(activePrintType)) {
+      setDisplayType("child-ack-lcr");
+    }
+    if (acknowledged === "NO" && CHILD_ACK_TYPES.has(activePrintType)) {
+      setDisplayType("child-not-ack-lcr");
+    }
+  }, [acknowledged, activePrintType]);
 
   useEffect(() => {
     if (!activePrintType) return;
@@ -377,7 +405,7 @@ export default function AUSFPrint() {
             View &amp; Print
           </h2>
           <div className="flex flex-col gap-2">
-            {VIEW_PRINT_OPTIONS.map((opt) => {
+            {viewPrintOptions.map((opt) => {
               const isSelected = type === opt.type;
               const isLcrButton =
                 opt.type === "child-not-ack-lcr" ||

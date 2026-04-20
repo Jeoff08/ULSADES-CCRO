@@ -13,8 +13,10 @@ export default function RegistrationOfAcknowledgement({ data }) {
 
   return (
     <div className="ausf-doc print-doc print-doc-cert-registration ausf-registration-cert bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4">
-      <PrintHeaderRow />
-      <hr className="border-black my-3" />
+      <header className="print-doc-header">
+        <PrintHeaderRow />
+        <hr className="border-black my-3" />
+      </header>
       <div className="cert-reg-body mt-12 flex flex-col flex-1 min-h-0">
         <h2 className="cert-reg-title text-center font-bold text-xl uppercase tracking-tight">CERTIFICATE OF REGISTRATION</h2>
         <p className="cert-reg-to-whom font-bold mt-6">TO WHOM IT MAY CONCERN:</p>

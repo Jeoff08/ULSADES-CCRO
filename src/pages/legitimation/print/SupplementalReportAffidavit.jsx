@@ -142,7 +142,7 @@ export default function SupplementalReportAffidavit({
         <span className="block normal-case font-normal">(for COLB)</span>
       </h2>
 
-      <div className="text-justify text-[15px] leading-[1.5] space-y-2.5">
+      <div className="supplemental-report-content text-justify text-[15px] leading-[1.5] space-y-2.5">
         <p className="text-justify">
           I, <span className={`${fill} uppercase ${affiantName ? '' : 'min-w-[22ch]'}`}>{affiantName || ' '}</span>, of legal age, <span className="underline decoration-black font-bold uppercase">{civilStatus}</span>,
           with residence and postal address at <span className={`${fill} uppercase ${residenceAddress ? '' : 'min-w-[28ch]'}`}>{residenceAddress || ' '}</span>,
@@ -347,32 +347,6 @@ export default function SupplementalReportAffidavit({
         <span className={`${fill} min-w-[10ch]`} />, Philippines. I certify that I personally examined the affiant and that he/she voluntarily
         executed the foregoing affidavit and understood the contents thereof.
       </p>
-      {supplementType === 'middleName' && (
-        <div className="mt-5 text-right mr-5 mb-5">
-          <div
-            className="inline-block text-center"
-            style={{ fontFamily: 'Arial, sans-serif', fontSize: '14.2px', lineHeight: '0.9' }}
-          >
-            <p className="m-0 p-0 font-bold uppercase underline decoration-black">ATTY YUSSIF DON JUSTIN F. MARTIL</p>
-            <p className="-mt-[8px] m-0 p-0 font-bold uppercase leading-[0.9]">CITY CIVIL REGISTRAR</p>
-          </div>
-        </div>
-      )}
-      {supplementType === 'middleName' && (
-        <div className="supplemental-bottom-wrap mt-0 pt-0">
-          <div className="pt-0 grid grid-cols-[1fr_300px] items-start">
-            <div className="text-[14px] leading-none">
-              <p className="m-0 p-0 font-bold uppercase leading-none">CONTACT DETAILS:</p>
-              <p className="m-0 p-0 leading-none">Telephone No.: (063) 224 - 5038</p>
-              <p className="m-0 p-0 leading-none">Email: civilregistrar.iligan@gmail</p>
-            </div>
-            <div className="justify-self-end text-right text-[18px] leading-none text-blue-700 font-semibold self-start">
-              <p className="m-0 p-0 leading-none">Secure your existence,</p>
-              <p className="m-0 p-0 leading-none">Register your Birth!</p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

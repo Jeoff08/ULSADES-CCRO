@@ -58,8 +58,26 @@ export default function LcrFormA1({ data }) {
               <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Citizenship of Mother</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{data.motherCitizenship || '—'}</td></tr>
               <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Name of Father</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{fatherFull || '—'}</td></tr>
               <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Citizenship of Father</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{data.fatherCitizenship || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Date of Marriage of Parents</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">NOT APPLICABLE</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Place of Marriage of Parents</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">NOT APPLICABLE</td></tr>
+              <tr>
+                <td className="py-0.25 px-1 border border-black font-medium align-middle">Date of Marriage of Parents</td>
+                <td className="py-0.25 px-1 border border-black font-bold text-center align-middle">
+                  <span
+                    className="inline-block min-w-[14ch] outline-none print:outline-none underline decoration-black"
+                    contentEditable
+                    suppressContentEditableWarning
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td className="py-0.25 px-1 border border-black font-medium align-middle">Place of Marriage of Parents</td>
+                <td className="py-0.25 px-1 border border-black font-bold text-center align-middle">
+                  <span
+                    className="inline-block min-w-[14ch] outline-none print:outline-none underline decoration-black"
+                    contentEditable
+                    suppressContentEditableWarning
+                  />
+                </td>
+              </tr>
             </tbody>
           </table>
 
