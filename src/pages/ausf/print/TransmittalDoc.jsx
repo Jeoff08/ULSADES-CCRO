@@ -9,7 +9,16 @@ import { loadTransmittalChecklist, saveTransmittalChecklist, labelsToChecklistIt
  * Pass optional checklistConfig { isOutOfTown, defaultLabels, listId } to render an editable checklist inside the document.
  * Print PDF uses larger text for elderly readability; header and footer are fixed in print.
  */
-export default function TransmittalDoc({ data, isOutOfTown, attachments: attachmentsProp, subjectLine, hideLineBelowDate, showLineAboveDate, checklistConfig }) {
+export default function TransmittalDoc({ 
+  data, 
+  isOutOfTown, 
+  attachments: attachmentsProp, 
+  subjectLine, 
+  hideLineBelowDate, 
+  showLineAboveDate, 
+  checklistConfig,
+  signatoryGapNone = false
+}) {
   const isPsaLetter = !isOutOfTown
   const childFull = fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.childFirst, data.childMiddle, data.childLast) || '—'
   const childFullCaps = (childFull !== '—' ? childFull : '').toUpperCase()
@@ -151,11 +160,13 @@ export default function TransmittalDoc({ data, isOutOfTown, attachments: attachm
       </div>
 
       <footer className="print-doc-footer-wrap mt-auto pt-4 flex flex-col flex-shrink-0" role="contentinfo">
-        <div className="space-y-4 text-left mb-6">
-          <p>For appropriate action.</p>
-          <p>Respectfully yours,</p>
-          <p className="font-bold uppercase">{displaySignatory}</p>
-          <p className="text-sm">{signatoryTitle}</p>
+        <div className="text-left mb-6">
+          <p className="mb-4">For appropriate action.</p>
+          <p className="mb-12">Respectfully yours,</p>
+          <div className={`flex flex-col ${signatoryGapNone || checklistConfig?.isOutOfTown || checklistConfig?.listId?.includes('legitimation') ? 'gap-0 pt-0' : 'gap-0 pt-1'}`} style={{ gap: 0 }}>
+            <div className="font-bold uppercase" style={{ lineHeight: '1.1', margin: 0, padding: 0 }}>{displaySignatory}</div>
+            <div className="text-sm" style={{ lineHeight: '1.1', margin: 0, padding: 0 }}>{signatoryTitle}</div>
+          </div>
         </div>
         <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
       </footer>

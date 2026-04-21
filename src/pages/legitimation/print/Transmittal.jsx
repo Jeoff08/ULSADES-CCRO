@@ -9,6 +9,7 @@ export default function Transmittal({ data, subjectLine }) {
       data={data}
       isOutOfTown={false}
       subjectLine={subjectLine}
+      signatoryGapNone={true}
       checklistConfig={{ isOutOfTown: false, defaultLabels: LEGITIMATION_TRANSMITTAL_LIST, listId: 'legitimation-local' }}
     />
   )

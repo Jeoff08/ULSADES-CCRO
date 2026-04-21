@@ -9,6 +9,7 @@ export default function OutOfTownTransmittal({ data, subjectLine }) {
       data={data}
       isOutOfTown={true}
       subjectLine={subjectLine}
+      signatoryGapNone={true}
       checklistConfig={{ isOutOfTown: true, defaultLabels: LEGITIMATION_OUT_OF_TOWN_ATTACHMENTS, listId: 'legitimation-out-of-town' }}
     />
   )

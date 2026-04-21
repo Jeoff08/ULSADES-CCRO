@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+:root {
+  --primary-blue: #1e3a5f;
+  --primary-blue-light: #2d4a6f;
+  --primary-green: #0d9488;
+  --primary-green-light: #14b8a6;
+  --main-bg: #f1f5f9;
+  --card-bg: #ffffff;
+  --sidebar-bg: #1e3a5f;
+  --ulsades-font: 'Montserrat', sans-serif;
+  /* AUSF / Court Decree / Legitimation print & PDF: left/right legal margin (header, body, and footer) */
+  --print-legal-margin-x: 1in;
+}
+
+/* Default (screen): slightly smaller UI text */
+html {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  font-family: var(--ulsades-font);
+  font-size: 16px;
+  background: var(--main-bg);
+}
+
+@media print {
+  body, .layout-root, .layout-main {
+    background: #fff !important;
+  }
+}
+
+body.pdf-capture,
+body.pdf-capture .layout-root,
+body.pdf-capture .layout-main,
+body:has(.print-doc) .layout-root,
+body:has(.print-doc) .layout-main {
+  background: #fff !important;
+}
+
+/* Screen only — do not affect @media print output */
+@media screen {
+  /* PDF capture in Electron: keep original rem scale for the snapshot */
+  html:has(body.pdf-capture) {
+    font-size: 20px !important;
+  }
+  /*
+    View & Print on-screen preview: slightly smaller than before (print/PDF unchanged — not screen).
+  */
+  body:not(.pdf-capture) .print-doc,
+  body:not(.pdf-capture) .ausf-doc {
+    zoom: 0.92;
+  }
+}

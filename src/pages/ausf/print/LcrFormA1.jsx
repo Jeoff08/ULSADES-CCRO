@@ -1,119 +1,130 @@
 import React from 'react'
-import { formatDateLong, formatDateCert, fullName, joinCommaParts } from '../../../lib/printUtils'
+import { 
+  formatDateCert, 
+  formatDateLong,
+  fullName, 
+  joinCommaParts 
+} from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 
+/** LCR Form No. 1A (Birth-Available) for AUSF module (A1 version).
+ *  Updated signatory block to match the specific layout requested from the image.
+ */
 export default function LcrFormA1({ data }) {
   const childFull = fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.childFirst, data.childMiddle, data.childLast)
   const motherFull = fullName(data.motherFirst, data.motherMiddle, data.motherLast)
   const fatherFull = fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
   const placeOfBirth = joinCommaParts(data.placeOfBirthAddress, data.placeOfBirthCity, data.placeOfBirthProvince) || '—'
   const formDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
-  const regOfficerName = data.certificateSignatoryName || 'LORELIE L. CANTO'
-  const ccrName = data.cityCivilRegistrarName || ''
+  const regOfficerName = (data.certificateSignatoryName || 'LORELIE L. CANTO').toUpperCase()
+  const ccrName = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
   const registryNo = data.colbRegistryNo || '—'
+  const verifiedByLabel = 'Verified by:'
+
+  // Specific remarks for A1 form
+  const ackDate = formatDateLong(data.colbDateOfRegistration)?.toUpperCase() || '—'
+  const remarksText = `Acknowledged by ${fatherFull || '—'} on ${ackDate} under Registry Number ${registryNo}. "The child shall be known as ${childFull?.toUpperCase() || '—'} pursuant to R.A. 9255"`
+
+
+  const tableData = [
+    { label: 'LCR Registry Number', val: registryNo },
+    { label: 'Date of Registration', val: formatDateLong(data.colbDateOfRegistration) || '—' },
+    { label: 'Name of Child', val: childFull || '—' },
+    { label: 'Sex', val: data.sex || '—' },
+    { label: 'Date of Birth', val: formatDateLong(data.dateOfBirth) || '—' },
+    { label: 'Place of Birth', val: placeOfBirth },
+    { label: 'Name of Mother', val: motherFull || '—' },
+    { label: 'Citizenship of Mother', val: data.motherCitizenship || '—' },
+    { label: 'Name of Father', val: fatherFull || '—' },
+    { label: 'Citizenship of Father', val: data.fatherCitizenship || '—' },
+    { label: 'Date of Marriage of Parents', val: data.dateOfMarriageOfParents || '—' },
+    { label: 'Place of Marriage of Parents', val: data.placeOfMarriageOfParents || '—' },
+  ]
+
+  const colbPage = data.colbPageNumber || '—'
+  const colbBook = data.colbBookNumber || '—'
 
   return (
-    <div className="lcr-a1-print-root">
-      <div className="ausf-doc print-doc print-doc-lcr-a1 bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 leading-snug flex flex-col min-h-0">
-          <header className="print-doc-header">
-            <PrintHeaderRow />
-            <hr className="border-black my-3" />
-          </header>
-          <div className="flex justify-end items-baseline gap-4 text-[21px] leading-tight">
-            <div className="flex items-+baseline gap-1 shrink-0">
-              <span>Registry Number:</span>
-              <span className="fill-blank inline-block text-center min-w-[3rem] font-bold underline text-[21px]">{registryNo}</span>
-            </div>
+    <div className="ausf-doc print-doc print-doc-lcr-1a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 pt-2 pb-0 flex flex-col min-h-0 h-full">
+      <div className="court-decree-lcr-header shrink-0">
+        <header className="print-doc-header">
+          <PrintHeaderRow />
+          <hr className="border-black my-3" />
+        </header>
+        <div className="flex justify-between items-start mb-1">
+          <div>
+            <p className="font-bold text-base">LCR Form No. 1A</p>
+            <p className="text-sm">(Birth-Available)</p>
           </div>
-    
+          <p className="text-sm font-medium">{formDate}</p>
+        </div>
+      </div>
 
-        <div className="lcr-a1-content-wrap flex-1 min-h-0 flex flex-col overflow-hidden">
-          <div className="lcr-a1-scaled flex flex-col min-h-0 w-full origin-top-left gap-3">
-            <div className="flex justify-between items-baseline shrink-0">
-              <div>
-                <p className="lcr-a1-title font-bold text-[15px] mb-0">LCR Form No. 1A</p>
-                <p className="lcr-a1-subtitle text-[15px] mb-0">(Birth-Available)</p>
-              </div>
-              <p className="lcr-a1-form-date text-[15px] font-medium shrink-0">{formDate}</p>
-            </div>
-
-            <div className="lcr-a1-body flex flex-col flex-1 min-h-0 leading-snug text-[17px] gap-3">
-          <p className="font-bold text-center mb-0">TO WHOM IT MAY CONCERN:</p>
-          <p className="leading-snug text-justify mb-0">
-            WE CERTIFY that, among others, the following facts of birth appear in our Register of Births on Page <span className="fill-blank inline-block px-0.5 min-w-[1.5rem] text-center font-bold underline">{data.colbPageNumber || '—'}</span> of Book number <span className="fill-blank inline-block px-0.5 min-w-[2rem] text-center font-bold underline">{data.colbBookNumber || '—'}</span>
-          </p>
-
-          <table className="lcr-a1-table w-full border-collapse border border-black table-fixed text-[18px]">
-            <colgroup>
-              <col style={{ width: '50%' }} />
-              <col style={{ width: '50%' }} />
-            </colgroup>
-            <tbody>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">LCR Registry Number</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{data.colbRegistryNo || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Date of Registration</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{formatDateLong(data.colbDateOfRegistration) || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Name of Child</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{childFull || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Sex</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{data.sex || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Date of Birth</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{formatDateLong(data.dateOfBirth) || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Place of Birth</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle leading-tight"><span>{placeOfBirth}</span></td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Name of Mother</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{motherFull || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Citizenship of Mother</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{data.motherCitizenship || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Name of Father</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{fatherFull || '—'}</td></tr>
-              <tr><td className="py-0.25 px-1 border border-black font-medium align-middle">Citizenship of Father</td><td className="py-0.25 px-1 border border-black font-bold text-center align-middle">{data.fatherCitizenship || '—'}</td></tr>
-              <tr>
-                <td className="py-0.25 px-1 border border-black font-medium align-middle">Date of Marriage of Parents</td>
-                <td className="py-0.25 px-1 border border-black font-bold text-center align-middle">
-                  <span
-                    className="inline-block min-w-[14ch] outline-none print:outline-none underline decoration-black"
-                    contentEditable
-                    suppressContentEditableWarning
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td className="py-0.25 px-1 border border-black font-medium align-middle">Place of Marriage of Parents</td>
-                <td className="py-0.25 px-1 border border-black font-bold text-center align-middle">
-                  <span
-                    className="inline-block min-w-[14ch] outline-none print:outline-none underline decoration-black"
-                    contentEditable
-                    suppressContentEditableWarning
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          <p className="text-center leading-snug mb-0">This certification is issued upon the request of OCRG/OWNER/PARENTS/GUARDIAN for any legal purposes.</p>
-
-          <div className="lcr-a1-remarks">
-            <p className="font-bold mb-0.5">REMARKS:</p>
-            <p className="leading-snug mb-0">
-              &quot;The child shall be known as pursuant to RA 9255.&quot; <span className="font-bold underline">{childFull || '—'}</span>
+      <div className="court-decree-lcr-body-wrap flex-1 min-h-0 flex flex-col">
+        <div className="court-decree-lcr-body-scaled flex flex-col h-full">
+          <div className="flex-1">
+            <p className="font-bold mb-1">TO WHOM IT MAY CONCERN:</p>
+            <p className="mb-2 text-left court-decree-lcr-body">
+              <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of birth appear in our Register of Births on Page{' '}
+              <span className="inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold">{colbPage}</span>
+              {' '}of Book number{' '}
+              <span className="inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold">{colbBook}</span>
+              .
             </p>
-          </div>
 
-          <div className="lcr-a1-signature">
-            <p className="font-medium mb-0.5">Verified by:</p>
-            <div className="border-b border-black w-full my-1 min-h-[1.25em]" aria-hidden="true" />
-            <div className="flex justify-between items-start gap-3 mt-1">
-              <div className="text-left">
-                <p className="font-bold">{regOfficerName}</p>
-                <p className="text-sm mt-0">Registration Officer IV</p>
-              </div>
-              <div className="text-right">
-                <p className="font-bold">{ccrName}</p>
-                <p className="text-sm mt-0">City Civil Registrar</p>
+            <table className="w-full border-collapse text-sm mb-2 border border-black court-decree-lcr-table">
+              <tbody>
+                {tableData.map((row) => (
+                  <tr key={row.label}>
+                    <td className="py-1 px-2 border border-black font-medium align-top w-48">{row.label}</td>
+                    <td className="py-1 px-2 border border-black font-bold text-center">{row.val}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="lcr-form-bottom-content">
+              <p className="mb-2 text-sm court-decree-lcr-body">
+                This certification is issued upon the request of OCRG/OWNER/PARENTS/GUARDIAN for any legal purposes.
+              </p>
+
+              <div className="mt-10 mb-2 court-decree-lcr-body">
+                <p className="font-bold text-sm mb-0.5 uppercase">REMARKS:</p>
+                <p className="leading-[1.35] text-justify break-words [overflow-wrap:anywhere] text-sm">
+                  Acknowledged by <span className="font-bold underline">{fatherFull || '—'}</span> on <span className="font-bold underline">{ackDate}</span> under Registry Number <span className="font-bold underline">{registryNo}</span>. The child shall be known as <span className="font-bold underline">{childFull?.toUpperCase() || '—'}</span>
+                </p>
               </div>
             </div>
           </div>
 
-          <p className="lcr-a1-note italic leading-snug mb-0">Note: This certification is not valid if it has mark, erasure or alteration of any entry.</p>
-
+          {/* Signature Block & Note pushed to bottom */}
+          <div className="mt-auto lcr-form-bottom-content pb-0 mb-0">
+            <div className="mt-1 mb-4 court-decree-lcr-body">
+              <div className="flex justify-between items-end">
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-sm mb-1 text-left self-start">{verifiedByLabel}</p>
+                  <div className="font-bold uppercase text-sm leading-none m-0 p-0">{regOfficerName}</div>
+                  <div className="text-sm leading-none m-0 p-0">Registration Officer IV</div>
+                </div>
+                <div className="text-center flex flex-col items-center">
+                  <div className="font-bold uppercase text-sm leading-none m-0 p-0">{ccrName}</div>
+                  <div className="italic text-xs leading-none m-0 p-0">City Civil Registrar</div>
+                </div>
+              </div>
             </div>
+
+            <p className="font-bold text-sm mb-0">Note: This certification is not valid if it has mark, erasure or alteration of any entry.</p>
           </div>
         </div>
-
-        <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} contentClassName="text-[11px]" />
       </div>
+
+      <footer className="print-doc-footer mt-auto shrink-0">
+        <DocumentFooter 
+          contactPhone={data.contactPhone || '(063) 224-5038'} 
+          contactEmail={data.contactEmail || 'civilregistrar.iligan@gmail.com'} 
+          sloganBlue 
+        />
+      </footer>
     </div>
   )
 }
