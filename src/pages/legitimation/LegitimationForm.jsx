@@ -85,7 +85,7 @@ function dateToOutputFormat(str) {
 
 const LEGITIMATION_DATE_KEYS = ['dateOfBirth', 'dateOfDeath', 'affidavitAckDate', 'affidavitLegitDate', 'dateOfMarriage', 'colbRegDate']
 
-function DateInput({ value, onChange, placeholder = 'dd/mm/yyyy' }) {
+function DateInput({ value, onChange, placeholder = 'dd/mm/yyyy', disabled }) {
   const pickerRef = useRef(null)
   const handleInputChange = (e) => {
     const formatted = formatDigitsToDdMmYyyy(e.target.value)
@@ -102,13 +102,15 @@ function DateInput({ value, onChange, placeholder = 'dd/mm/yyyy' }) {
         onChange={handleInputChange}
         placeholder={placeholder}
         maxLength={10}
-        className={`${inputClass} pr-9`}
+        disabled={disabled}
+        className={`${inputClass} pr-9 ${disabled ? 'opacity-50 cursor-not-allowed bg-gray-200' : ''}`}
       />
       <button
         type="button"
-        onClick={() => pickerRef.current?.showPicker?.() || pickerRef.current?.click()}
-        className="legitimation-form-page__date-picker-btn absolute right-1.5 p-1 rounded text-gray-500"
-        title="Pick date"
+        onClick={() => !disabled && (pickerRef.current?.showPicker?.() || pickerRef.current?.click())}
+        disabled={disabled}
+        className={`legitimation-form-page__date-picker-btn absolute right-1.5 p-1 rounded text-gray-500 ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
+        title={disabled ? 'Disabled' : 'Pick date'}
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
       </button>
@@ -330,27 +332,31 @@ export default function LegitimationForm() {
       </LegitimationSection>
       </div>
 
-      <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
-      <LegitimationSection number="7" title="Details of surviving and deceased parent">
+      <div className={`legitimation-form-page__section ${form.bothParentsAlive === 'YES' ? 'opacity-60' : ''}`} style={sectionDelay(sectionIndex++)}>
+      <LegitimationSection 
+        number="7" 
+        title="Details of surviving and deceased parent"
+        instruction={form.bothParentsAlive === 'YES' ? 'Disabled because both parents are alive (Item 5 is YES)' : null}
+      >
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Surviving parent</label>
             <div className="grid grid-cols-3 gap-2">
-              <input type="text" value={form.survivingParentFirst} onChange={scInput('survivingParentFirst')} className={inputClass}  placeholder='First'/>
-              <input type="text" value={form.survivingParentMiddle} onChange={scInput('survivingParentMiddle')} className={inputClass}  placeholder='Middle'/>
-              <input type="text" value={form.survivingParentLast} onChange={scInput('survivingParentLast')} className={inputClass}  placeholder='Surname'/>
+              <input type="text" value={form.survivingParentFirst} onChange={scInput('survivingParentFirst')} className={`${inputClass} ${form.bothParentsAlive === 'YES' ? 'bg-gray-200 cursor-not-allowed' : ''}`}  placeholder='First' disabled={form.bothParentsAlive === 'YES'}/>
+              <input type="text" value={form.survivingParentMiddle} onChange={scInput('survivingParentMiddle')} className={`${inputClass} ${form.bothParentsAlive === 'YES' ? 'bg-gray-200 cursor-not-allowed' : ''}`}  placeholder='Middle' disabled={form.bothParentsAlive === 'YES'}/>
+              <input type="text" value={form.survivingParentLast} onChange={scInput('survivingParentLast')} className={`${inputClass} ${form.bothParentsAlive === 'YES' ? 'bg-gray-200 cursor-not-allowed' : ''}`}  placeholder='Surname' disabled={form.bothParentsAlive === 'YES'}/>
             </div>
-            <input type="text" value={form.survivingParentCitizenship} onChange={scInput('survivingParentCitizenship')} placeholder="Citizenship" className={`${inputClass} mt-2`} />
+            <input type="text" value={form.survivingParentCitizenship} onChange={scInput('survivingParentCitizenship')} placeholder="Citizenship" className={`${inputClass} mt-2 ${form.bothParentsAlive === 'YES' ? 'bg-gray-200 cursor-not-allowed' : ''}`} disabled={form.bothParentsAlive === 'YES'} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Deceased parent</label>
             <div className="grid grid-cols-3 gap-2">
-              <input type="text" value={form.deceasedParentFirst} onChange={scInput('deceasedParentFirst')} className={inputClass}  placeholder='First'/>
-              <input type="text" value={form.deceasedParentMiddle} onChange={scInput('deceasedParentMiddle')} className={inputClass}  placeholder='Middle'/>
-              <input type="text" value={form.deceasedParentLast} onChange={scInput('deceasedParentLast')} className={inputClass}  placeholder='Surname'/>
+              <input type="text" value={form.deceasedParentFirst} onChange={scInput('deceasedParentFirst')} className={`${inputClass} ${form.bothParentsAlive === 'YES' ? 'bg-gray-200 cursor-not-allowed' : ''}`}  placeholder='First' disabled={form.bothParentsAlive === 'YES'}/>
+              <input type="text" value={form.deceasedParentMiddle} onChange={scInput('deceasedParentMiddle')} className={`${inputClass} ${form.bothParentsAlive === 'YES' ? 'bg-gray-200 cursor-not-allowed' : ''}`}  placeholder='Middle' disabled={form.bothParentsAlive === 'YES'}/>
+              <input type="text" value={form.deceasedParentLast} onChange={scInput('deceasedParentLast')} className={`${inputClass} ${form.bothParentsAlive === 'YES' ? 'bg-gray-200 cursor-not-allowed' : ''}`}  placeholder='Surname' disabled={form.bothParentsAlive === 'YES'}/>
             </div>
             <div className="mt-2">
-              <DateInput value={form.dateOfDeath} onChange={(v) => update('dateOfDeath', v)} placeholder="Date of death (dd/mm/yyyy)" />
+              <DateInput value={form.dateOfDeath} onChange={(v) => update('dateOfDeath', v)} placeholder="Date of death (dd/mm/yyyy)" disabled={form.bothParentsAlive === 'YES'}/>
             </div>
           </div>
         </div>

@@ -12,26 +12,37 @@ export default function RegistrationOfAcknowledgement({ data }) {
   const signatoryTitle = 'Registration Officer IV'
 
   return (
-    <div className="ausf-doc print-doc print-doc-cert-registration ausf-registration-cert bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4">
-      <header className="print-doc-header">
+    <div className="ausf-doc print-doc court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-16 pt-4 pb-0 flex flex-col min-h-0 h-full">
+      <header className="print-doc-header shrink-0">
         <PrintHeaderRow />
-        <hr className="border-black my-3" />
+        <hr className="border-black border-t my-2" />
+        <div className="flex justify-end mt-1">
+          <p className="text-base font-medium">Registry Number: <span className="font-bold underline">{registryNo}</span></p>
+        </div>
       </header>
-      <div className="cert-reg-body mt-12 flex flex-col flex-1 min-h-0">
-        <h2 className="cert-reg-title text-center font-bold text-xl uppercase tracking-tight">CERTIFICATE OF REGISTRATION</h2>
-        <p className="cert-reg-to-whom font-bold mt-6">TO WHOM IT MAY CONCERN:</p>
-        <p className="cert-reg-p mb-5 text-justify cert-reg-justify">
-          THIS IS TO CERTIFY that the {affidavitLabel} executed by <span className="fill-blank inline-block px-1 min-w-[8rem]">{affiantName}</span> had been registered in this office on <span className="fill-blank inline-block px-1 min-w-[8rem]">{regDate}</span> under Registry Number <span className="fill-blank inline-block px-1 min-w-[5rem]">{registryNo}</span>.
-        </p>
-        <p className="cert-reg-p mb-5 mt-6 text-justify cert-reg-justify">This certification is issued for whatever legal purposes it may serve.</p>
-        <p className="cert-reg-p mb-5 mt-6 text-justify cert-reg-justify">Issued this <span className="fill-blank inline-block px-1 min-w-[8rem]">{issuedDate}</span> at Iligan City, Philippines.</p>
-        <div className="cert-reg-signatory-spacer flex-1 min-h-0" aria-hidden="true" />
-        <div className="cert-reg-signatory text-left mt-2">
-          <p className="font-bold uppercase text-base">{signatoryName}</p>
-          <p className="text-sm text-black mt-0.5">{signatoryTitle}</p>
+      <div className="cert-reg-body-wrap flex-1 flex flex-col min-h-0">
+        <div className="cert-reg-body-scaled flex-1 flex flex-col">
+          <div className="flex-1">
+            <h2 className="cert-reg-title text-center font-bold text-2xl uppercase tracking-wide mt-12">CERTIFICATE OF REGISTRATION</h2>
+            <p className="cert-reg-to-whom font-bold mt-12 text-base uppercase">TO WHOM IT MAY CONCERN:</p>
+            <p className="cert-reg-p mt-8 text-justify text-base leading-relaxed">
+              THIS IS TO CERTIFY that the {affidavitLabel} executed by <span className="font-bold underline px-1 uppercase">{affiantName}</span> had been registered in this office on <span className="font-bold underline px-1 uppercase">{regDate}</span> under Registry Number <span className="font-bold underline px-1">{registryNo}</span>.
+            </p>
+            <p className="cert-reg-p mt-8 text-justify text-base leading-relaxed">This certification is issued for whatever legal purposes it may serve.</p>
+            <p className="cert-reg-p mt-8 text-justify text-base leading-relaxed uppercase font-bold">
+              Issued this <span className="underline px-1">{issuedDate}</span> at Iligan City, Philippines.
+            </p>
+          </div>
+          
+          <div className="cert-reg-signatory text-left mt-20 mb-16">
+            <p className="font-bold uppercase text-base">{signatoryName}</p>
+            <p className="text-sm text-black mt-0.5">{signatoryTitle}</p>
+          </div>
         </div>
       </div>
-      <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
+      <div className="shrink-0 mt-auto">
+        <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
+      </div>
     </div>
   )
 }

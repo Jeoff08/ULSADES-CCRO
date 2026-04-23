@@ -83,7 +83,7 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
     father: data.lcr1aNameOfFather || fatherFull || '—',
     fatherCit: data.lcr1aFatherCitizenship || data.fatherCitizenship || '—',
     dom: formatLcrFormShortDate(data.lcr1aDateMarriageParents || data.dateOfMarriage) || '—',
-    pom: data.lcr1aPlaceMarriageParents || data.placeOfMarriageOfParents || '—',
+    pom: data.lcr1aPlaceMarriageParents || [data.placeOfMarriageCity, data.placeOfMarriageProvince, data.placeOfMarriageCountry].filter(Boolean).join(', ').trim() || '—',
   }
 
   const colbPage = data.colbPageNo ?? data.colbPageNumber ?? '0'
@@ -184,7 +184,7 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
               This certification is issued upon the request of OCRG/OWNER/PARENTS/GUARDIAN for any legal purposes.
             </p>
 
-            <div className="mb-2 court-decree-lcr-body">
+            <div className="mt-10 mb-2 court-decree-lcr-body">
               <p className="font-bold text-sm mb-0.5">REMARKS:</p>
               <div className="no-print mb-1">
                 <textarea
