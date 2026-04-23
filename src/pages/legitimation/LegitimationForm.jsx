@@ -32,11 +32,15 @@ function getRequiredFields(form) {
     { key: 'placeOfMarriageProvince', label: 'Place of marriage (province)' },
     { key: 'placeOfMarriageCountry', label: 'Place of marriage (country)' },
     { key: 'solemnizingOfficer', label: 'Solemnizing officer' },
-    { key: 'colbRegistryNo', label: 'COLB registry number' },
-    { key: 'colbRegDate', label: 'COLB registration date' },
-    { key: 'colbPageNo', label: 'COLB page number' },
-    { key: 'colbBookNo', label: 'COLB book number' },
   ]
+  if (form.birthRegisteredIligan !== 'NO') {
+    base.push(
+      { key: 'colbRegistryNo', label: 'COLB registry number' },
+      { key: 'colbRegDate', label: 'COLB registration date' },
+      { key: 'colbPageNo', label: 'COLB page number' },
+      { key: 'colbBookNo', label: 'COLB book number' }
+    )
+  }
   if (form.acknowledgedByFatherInColb === 'NO') {
     base.push(
       { key: 'affidavitAckRegistryNo', label: 'Affidavit of acknowledgement registry number' },
@@ -171,6 +175,8 @@ export default function LegitimationForm() {
   })
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
+  const disableItem8 = form.acknowledgedByFatherInColb === 'YES'
+  const disableItem11 = form.birthRegisteredIligan === 'NO'
   const scInput = (key) => (e) => {
     if (key === 'contactEmail') {
       update(key, e.target.value)
@@ -228,7 +234,11 @@ export default function LegitimationForm() {
 
         <div className="legitimation-form-page__body">
       <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
-      <LegitimationSection number="1" title="Birth of child registered in Iligan?" instruction={form.birthRegisteredIligan === 'YES' ? 'Fill-in ITEM 11' : null}>
+      <LegitimationSection
+        number="1"
+        title="Birth of child registered in Iligan?"
+        instruction={form.birthRegisteredIligan === 'NO' ? "Don't Register the Affidavit of Legitimation, Don't prepare Form 1A and Don't Fill-in ITEM 11" : null}
+      >
         <div className="legitimation-form-page__radio-group flex gap-4">
           <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.birthRegisteredIligan === 'YES'} onChange={() => update('birthRegisteredIligan', 'YES')} /> YES</label>
           <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.birthRegisteredIligan === 'NO'} onChange={() => update('birthRegisteredIligan', 'NO')} /> NO</label>
@@ -237,7 +247,11 @@ export default function LegitimationForm() {
       </div>
 
       <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
-      <LegitimationSection number="2" title="Acknowledged by father in COLB?" instruction={form.acknowledgedByFatherInColb === 'YES' ? "Don't Fill-in ITEM 8" : null}>
+      <LegitimationSection
+        number="2"
+        title="Acknowledged by father in COLB?"
+        instruction={form.acknowledgedByFatherInColb === 'NO' ? 'Father is required to execute Affidavit of paternity/Acknowledgement and Fill-in ITEM 8' : null}
+      >
         <div className="legitimation-form-page__radio-group flex gap-4">
           <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.acknowledgedByFatherInColb === 'YES'} onChange={() => update('acknowledgedByFatherInColb', 'YES')} /> YES</label>
           <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.acknowledgedByFatherInColb === 'NO'} onChange={() => update('acknowledgedByFatherInColb', 'NO')} /> NO</label>
@@ -246,7 +260,11 @@ export default function LegitimationForm() {
       </div>
 
       <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
-      <LegitimationSection number="3" title="Parent/s minor at the time of birth?">
+      <LegitimationSection
+        number="3"
+        title="Parent/s minor at the time of birth?"
+        instruction={form.parentsMinorAtBirth === 'YES' ? 'Minority of the parent/s must be stated in the Affidavit of legitimation. Edit paragraph 2 and choose the statement that mentions EXCEPT AGE.' : null}
+      >
         <div className="legitimation-form-page__radio-group flex gap-4">
           <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.parentsMinorAtBirth === 'YES'} onChange={() => update('parentsMinorAtBirth', 'YES')} /> YES</label>
           <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.parentsMinorAtBirth === 'NO'} onChange={() => update('parentsMinorAtBirth', 'NO')} /> NO</label>
@@ -299,7 +317,11 @@ export default function LegitimationForm() {
       </div>
 
       <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
-      <LegitimationSection number="5" title="Both parent/s alive/present?" instruction={form.bothParentsAlive === 'YES' ? 'Fill-up ITEM 6 ONLY and use AFFIDAVIT LEGITIMATION' : null}>
+      <LegitimationSection
+        number="5"
+        title="Both parent/s alive/present?"
+        instruction={form.bothParentsAlive === 'NO' ? 'Fill-up ITEM 6 & 7 and use SOLE AFFIDAVIT' : null}
+      >
         <div className="legitimation-form-page__radio-group flex gap-4">
           <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.bothParentsAlive === 'YES'} onChange={() => update('bothParentsAlive', 'YES')} /> YES</label>
           <label className="legitimation-form-page__radio-label flex items-center gap-2"><input type="radio" className="legitimation-form-page__radio" checked={form.bothParentsAlive === 'NO'} onChange={() => update('bothParentsAlive', 'NO')} /> NO</label>
@@ -364,15 +386,19 @@ export default function LegitimationForm() {
       </div>
 
       <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
-      <LegitimationSection number="8" title="Details of affidavit of acknowledgement">
+      <LegitimationSection
+        number="8"
+        title="Details of affidavit of acknowledgement"
+        instruction={disableItem8 ? 'Disabled because Item 2 is YES' : null}
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Registry number</label>
-            <input type="text" value={form.affidavitAckRegistryNo} onChange={scInput('affidavitAckRegistryNo')} className={inputClass} placeholder='e.g. 1139' />
+            <input type="text" value={form.affidavitAckRegistryNo} onChange={scInput('affidavitAckRegistryNo')} className={`${inputClass} ${disableItem8 ? 'bg-gray-200 cursor-not-allowed' : ''}`} placeholder='e.g. 1139' disabled={disableItem8} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Registration date</label>
-            <DateInput value={form.affidavitAckDate} onChange={(v) => update('affidavitAckDate', v)} placeholder="dd/mm/yyyy" />
+            <DateInput value={form.affidavitAckDate} onChange={(v) => update('affidavitAckDate', v)} placeholder="dd/mm/yyyy" disabled={disableItem8} />
           </div>
         </div>
       </LegitimationSection>
@@ -423,23 +449,27 @@ export default function LegitimationForm() {
       </div>
 
       <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
-      <LegitimationSection number="11" title="Details of registered COLB of child">
+      <LegitimationSection
+        number="11"
+        title="Details of registered COLB of child"
+        instruction={disableItem11 ? 'Disabled because Item 1 is NO' : null}
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Registry number</label>
-            <input type="text" value={form.colbRegistryNo} onChange={scInput('colbRegistryNo')} placeholder="e.g. 2023-2.146" className={inputClass} />
+            <input type="text" value={form.colbRegistryNo} onChange={scInput('colbRegistryNo')} placeholder="e.g. 2023-2.146" className={`${inputClass} ${disableItem11 ? 'bg-gray-200 cursor-not-allowed' : ''}`} disabled={disableItem11} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Registration date</label>
-            <DateInput value={form.colbRegDate} onChange={(v) => update('colbRegDate', v)} placeholder="dd/mm/yyyy" />
+            <DateInput value={form.colbRegDate} onChange={(v) => update('colbRegDate', v)} placeholder="dd/mm/yyyy" disabled={disableItem11} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Page number</label>
-            <input type="text" value={form.colbPageNo} onChange={scInput('colbPageNo')} className={inputClass} placeholder='e.g. 146' />
+            <input type="text" value={form.colbPageNo} onChange={scInput('colbPageNo')} className={`${inputClass} ${disableItem11 ? 'bg-gray-200 cursor-not-allowed' : ''}`} placeholder='e.g. 146' disabled={disableItem11} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Book number</label>
-            <input type="text" value={form.colbBookNo} onChange={scInput('colbBookNo')} className={inputClass} placeholder='e.g. 2' />
+            <input type="text" value={form.colbBookNo} onChange={scInput('colbBookNo')} className={`${inputClass} ${disableItem11 ? 'bg-gray-200 cursor-not-allowed' : ''}`} placeholder='e.g. 2' disabled={disableItem11} />
           </div>
         </div>
       </LegitimationSection>

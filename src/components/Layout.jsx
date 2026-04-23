@@ -205,27 +205,7 @@ export default function Layout() {
                   <IconLegalSub />
                   <span>AUSF</span>
                 </NavLink>
-                <NavLink
-                  to="/legal-instrument/negative"
-                  className={({ isActive }) => legalSubLinkClass(isActive)}
-                >
-                  <IconLegalSub />
-                  <span>Negative</span>
-                </NavLink>
-                <NavLink
-                  to="/legal-instrument/clear-copy-blurred"
-                  className={({ isActive }) => legalSubLinkClass(isActive)}
-                >
-                  <IconLegalSub />
-                  <span>Clear Copy / Blurred Copy</span>
-                </NavLink>
-                <NavLink
-                  to="/legal-instrument/mc2010-04"
-                  className={({ isActive }) => legalSubLinkClass(isActive)}
-                >
-                  <IconLegalSub />
-                  <span>MC2010-04</span>
-                </NavLink>
+
               </div>
             )}
           </div>
@@ -304,6 +284,27 @@ export default function Layout() {
                   <IconLegalSub />
                   <span>Divorce</span>
                 </NavLink>
+                <NavLink
+                  to="/court-decree/form?type=lcr-form-1a"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>Form 1A (Birth)</span>
+                </NavLink>
+                <NavLink
+                  to="/court-decree/form?type=lcr-form-2a"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>Form 2A (Death)</span>
+                </NavLink>
+                <NavLink
+                  to="/court-decree/form?type=lcr-form-3a"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>Form 3A (Marriage)</span>
+                </NavLink>
               </div>
             )}
           </div>
@@ -319,22 +320,6 @@ export default function Layout() {
           >
             <IconFolder />
             <span>Files Saved</span>
-          </NavLink>
-
-          <NavLink
-            to="/logs"
-            className={({ isActive }) =>
-              `${navRowBase} ${
-                isActive
-                  ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
-                  : 'text-white/90 hover:bg-white/10 text-white'
-              }`
-            }
-          >
-            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2V7m3 10v-4m2 9H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v12a2 2 0 01-2 2z" />
-            </svg>
-            <span>Logs</span>
           </NavLink>
 
           <NavLink

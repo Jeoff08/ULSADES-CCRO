@@ -31,6 +31,7 @@ function createWindow() {
     height: 800,
     minWidth: 900,
     minHeight: 600,
+    icon: join(rootDir, 'public', 'ChatGPT Image Feb 11, 2026, 03_26_31 PM.png'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

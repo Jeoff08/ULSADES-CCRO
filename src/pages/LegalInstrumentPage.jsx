@@ -3,9 +3,6 @@ import { useParams, Link } from 'react-router-dom'
 import SupplementalForm from './legalInstrument/SupplementalForm'
 
 const TITLES = {
-  negative: 'Negative',
-  'clear-copy-blurred': 'Clear Copy / Blurred Copy',
-  'mc2010-04': 'MC2010-04',
   supplemental: 'Supplemental',
 }
 

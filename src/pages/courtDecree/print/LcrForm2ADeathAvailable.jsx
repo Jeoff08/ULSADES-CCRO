@@ -19,7 +19,7 @@ export default function LcrForm2ADeathAvailable({ data }) {
     if (p) return formatDateCert(p.toISOString().slice(0, 10))
     return formatDateCert(raw) || formatDateCert(new Date())
   })()
-  const regOfficer = data.certificateSignatoryName || 'LORELIE L. CANTO'
+  const regOfficer = data.certificateSignatoryName || 'SHIRLY L. DEMECILLO'
   const ccrName = data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL'
   const blankIfDash = (v) => (String(v || '').trim() === '—' ? '' : v)
   const causeText = blankIfDash(t.causeOfDeath)

@@ -37,8 +37,8 @@ export default function LcrFormA1({ data }) {
     { label: 'Citizenship of Mother', val: data.motherCitizenship || '—' },
     { label: 'Name of Father', val: fatherFull || '—' },
     { label: 'Citizenship of Father', val: data.fatherCitizenship || '—' },
-    { label: 'Date of Marriage of Parents', val: data.dateOfMarriageOfParents || '—' },
-    { label: 'Place of Marriage of Parents', val: data.placeOfMarriageOfParents || '—' },
+    { label: 'Date of Marriage of Parents', val: '' },
+    { label: 'Place of Marriage of Parents', val: '' },
   ]
 
   const colbPage = data.colbPageNumber || '—'

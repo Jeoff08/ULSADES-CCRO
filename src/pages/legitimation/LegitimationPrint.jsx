@@ -56,16 +56,28 @@ export default function LegitimationPrint() {
   const type = searchParams.get('type') || 'joint-affidavit'
   const recordId = searchParams.get('id') || 'draft'
   const validType = LEGITIMATION_TYPES.some((t) => t.id === type) ? type : 'joint-affidavit'
-  const pageSizeForPrint = validType === 'annotation' ? 'legal' : paperSize
   const [data, setData] = useState(() => getStoredData() || defaultLegitimation)
   const uploadInputRef = useRef(null)
   const uploadScopeRef = useRef('')
   const [uploadTick, setUploadTick] = useState(0)
   const [modal, setModal] = useState({ open: false, key: '', title: '' })
   const { toasts, show, dismiss } = useToasts()
+  const allowedTypes = LEGITIMATION_TYPES.filter((t) => {
+    if (data.bothParentsAlive === 'NO' && t.id === 'joint-affidavit') return false
+    if (data.bothParentsAlive === 'YES' && t.id === 'sole-affidavit') return false
+    if (data.birthRegisteredIligan === 'NO' && t.id === 'lcr-form-1a') return false
+    if (data.acknowledgedByFatherInColb === 'YES' && t.id === 'registration-acknowledgement') return false
+    return true
+  })
+  const allowedTypeIds = allowedTypes.map((t) => t.id)
+  const effectiveType = allowedTypeIds.includes(validType)
+    ? validType
+    : (allowedTypeIds[0] || 'joint-affidavit')
+  const pageSizeForPrint = effectiveType === 'annotation' ? 'legal' : paperSize
+
   const handleSavePdf = async () => {
     try {
-      const result = await saveCurrentViewAsPdf(`Legitimation-${validType}`)
+      const result = await saveCurrentViewAsPdf(`Legitimation-${effectiveType}`)
       if (result?.ok) {
         show({ type: 'success', title: 'PDF saved', message: result.filePath || '' })
         return
@@ -88,12 +100,18 @@ export default function LegitimationPrint() {
   }, [])
 
   useEffect(() => {
-    if (validType === 'annotation') {
+    if (effectiveType === 'annotation') {
       setPaperSize('legal')
     } else {
       setPaperSize((prev) => (prev === 'legal' ? 'a4' : prev))
     }
-  }, [validType])
+  }, [effectiveType])
+
+  useEffect(() => {
+    if (!allowedTypeIds.includes(validType) && allowedTypeIds.length > 0) {
+      setSearchParams({ type: allowedTypeIds[0] })
+    }
+  }, [validType, allowedTypeIds, setSearchParams])
 
   const childFull = [data.childFirst, data.childMiddle, data.childLast].filter(Boolean).join(' ')
   const fatherFull = [data.fatherFirst, data.fatherMiddle, data.fatherLast].filter(Boolean).join(' ')
@@ -101,7 +119,7 @@ export default function LegitimationPrint() {
   const subjectLine = `SUBJECT: LEGITIMATION IN FAVOR OF ${(childFull || '').toUpperCase()} - PARENTS ${(fatherFull || '').toUpperCase()} AND ${(motherFull || '').toUpperCase()}`
 
   let content
-  switch (validType) {
+  switch (effectiveType) {
     case 'sole-affidavit':
       content = <SoleAffidavitLegitimation data={data} />
       break
@@ -145,9 +163,9 @@ export default function LegitimationPrint() {
             id="legitimation-paper-size"
             value={paperSize}
             onChange={(e) => setPaperSize(e.target.value)}
-            disabled={validType === 'annotation'}
+            disabled={effectiveType === 'annotation'}
             title={
-              validType === 'annotation'
+              effectiveType === 'annotation'
                 ? 'Annotation outputs are fixed to Legal (8.5" × 14") for printing'
                 : undefined
             }
@@ -166,10 +184,15 @@ export default function LegitimationPrint() {
         <aside className="no-print w-56 shrink-0 flex flex-col gap-3">
           <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">View &amp; Print</h2>
           <div className="flex flex-col gap-2">
-            {LEGITIMATION_TYPES.map((t) => {
-              const isSelected = validType === t.id
+            {allowedTypes.map((t) => {
+              const isSelected = effectiveType === t.id
               const key = `legitimation:${recordId}:${t.id}`
               const uploaded = !!getUploadedFile(key)
+              const sidebarTitle = t.id === 'sole-affidavit'
+                ? 'SOLE AFFIDAVIT LEGITIMATION'
+                : t.id === 'joint-affidavit'
+                  ? 'JOINT AFFIDAVIT LEGITIMATION'
+                  : String(t.title || '').replace(/^\s*\d+\.\s*/, '')
               return (
                 <div key={t.id} className="relative">
                   <button
@@ -177,7 +200,7 @@ export default function LegitimationPrint() {
                     onClick={() => setSearchParams({ type: t.id })}
                     className={`text-left px-3 py-2.5 text-sm font-medium transition text-white rounded-lg bg-[#283750] hover:bg-[#1e2d42] w-full pr-[5.75rem] ${isSelected ? 'ring-2 ring-offset-1 ring-gray-400' : ''}`}
                   >
-                    {String(t.title || '').replace(/^\s*\d+\.\s*/, '')}
+                    {sidebarTitle}
                   </button>
                   <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
                     {!uploaded ? (

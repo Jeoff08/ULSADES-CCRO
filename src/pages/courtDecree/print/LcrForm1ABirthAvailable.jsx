@@ -49,7 +49,7 @@ export default function LcrForm1ABirthAvailable({ data, editableTable = false, o
     return formatDateCert(raw) || formatDateCert(new Date())
   })()
   const regOfficerName = data.certificateSignatoryName || 'SHIRLY L. DEMECILLO'
-  const regOfficerTitle = data.certificateSignatoryTitle || 'Registration Officer II'
+  const regOfficerTitle = data.certificateSignatoryTitle || 'LCRO - Staff'
   const ccrName = data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL'
 
   return (

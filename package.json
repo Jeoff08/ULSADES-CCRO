@@ -51,6 +51,7 @@
       "target": [
         "nsis"
       ],
+      "icon": "public/ChatGPT Image Feb 11, 2026, 03_26_31 PM.png",
       "signAndEditExecutable": false
     }
   }

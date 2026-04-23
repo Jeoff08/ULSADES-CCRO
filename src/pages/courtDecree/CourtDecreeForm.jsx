@@ -432,6 +432,7 @@ export default function CourtDecreeForm() {
     return base
   })
 
+
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
   const scInput = (key) => (e) => {
     if (key === 'contactEmail') {
@@ -440,6 +441,20 @@ export default function CourtDecreeForm() {
     }
     commitFirstLetterUpperFromInput(e, (v) => update(key, v))
   }
+
+  // Persistence for LCRO - Staff (permanently saved as requested)
+  useEffect(() => {
+    const saved = localStorage.getItem('ulsades_preferred_lcr_staff')
+    if (saved && !form.certificateSignatoryName) {
+      update('certificateSignatoryName', saved)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (form.certificateSignatoryName) {
+      localStorage.setItem('ulsades_preferred_lcr_staff', form.certificateSignatoryName)
+    }
+  }, [form.certificateSignatoryName])
 
   const proceedToPrint = () => {
     const formForOutput = { ...form }
@@ -855,7 +870,7 @@ export default function CourtDecreeForm() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Forms (checked when filled)</label>
-            <LcrFormNavLinks form={form} activeType={form.formType} showFullCourtLink={false} visibleTypes={visibleLcrTypes} />
+            <LcrFormNavLinks form={form} activeType={form.formType} showFullCourtLink={false} />
           </div>
         </div>
       </CourtDecreeSection>
@@ -936,6 +951,24 @@ export default function CourtDecreeForm() {
               placeholder="e.g. IN RE: JOINT PETITION TO APPROVE AND REGISTER THE DIVORCE OF SPOUSES..."
               className={inputClass}
             />
+          </div>
+        </div>
+      </CourtDecreeSection>
+      </div>
+
+      <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
+      <CourtDecreeSection number="5" title="Signatory">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">LCRO - Staff (Verified by)</label>
+            <input
+              type="text"
+              value={form.certificateSignatoryName}
+              onChange={scInput('certificateSignatoryName')}
+              placeholder="e.g. SHIRLY L. DEMECILLO"
+              className={inputClass}
+            />
+            <p className="text-xs text-gray-500 mt-1">This name will be saved and used for future forms on this computer.</p>
           </div>
         </div>
       </CourtDecreeSection>

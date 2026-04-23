@@ -29,12 +29,12 @@ export default function LcrForm1ABirthAvailable({ data }) {
     { label: 'Sex', val: data.sex || '—' },
     { label: 'Date of Birth', val: formatDateLong(data.dateOfBirth) || '—' },
     { label: 'Place of Birth', val: placeOfBirth },
-    { label: 'Name of Mother', val: motherFull || '—' },
+    { label: 'Name of Mother', val: '' },
     { label: 'Citizenship of Mother', val: data.motherCitizenship || '—' },
-    { label: 'Name of Father', val: fatherFull || '—' },
+    { label: 'Name of Father', val: '' },
     { label: 'Citizenship of Father', val: data.fatherCitizenship || '—' },
-    { label: 'Date of Marriage of Parents', val: data.dateOfMarriageOfParents || '—' },
-    { label: 'Place of Marriage of Parents', val: data.placeOfMarriageOfParents || '—' },
+    { label: 'Date of Marriage of Parents', val: 'NOT APPLICABLE' },
+    { label: 'Place of Marriage of Parents', val: 'NOT APPLICABLE' },
   ]
 
   const colbPage = data.colbPageNumber || '—'

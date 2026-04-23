@@ -5087,3 +5087,84 @@ body.pdf-capture .supplemental-report-doc.print-doc .supplemental-report-content
   text-align: justify !important;
   text-justify: inter-word;
 }
+
+/* Legitimation affidavit (sole/joint): align with standard AUSF print/PDF shell */
+.legitimation-affidavit-doc,
+.legitimation-affidavit-print {
+  line-height: 1.5;
+  font-family: 'Times New Roman', Times, serif;
+}
+/* Pull jurat/registry row closer to header line for sole/joint affidavit */
+.legitimation-affidavit-doc .print-doc-header > div,
+.legitimation-affidavit-print .print-doc-header > div {
+  margin-top: 0.15rem !important;
+}
+.legitimation-affidavit-doc .print-doc-header hr,
+.legitimation-affidavit-print .print-doc-header hr {
+  margin-top: 0.15rem !important;
+  margin-bottom: 0.25rem !important;
+}
+.legitimation-affidavit-doc .legitimation-affidavit-body,
+.legitimation-affidavit-print .legitimation-affidavit-body {
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+  text-align: justify;
+  margin-top: 0.1rem;
+}
+.legitimation-affidavit-doc .legitimation-affidavit-body p,
+.legitimation-affidavit-doc .legitimation-affidavit-body li,
+.legitimation-affidavit-print .legitimation-affidavit-body p,
+.legitimation-affidavit-print .legitimation-affidavit-body li {
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+}
+.legitimation-affidavit-doc .legitimation-affidavit-title,
+.legitimation-affidavit-print .legitimation-affidavit-title {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+  margin: 0 0 0.6rem !important;
+}
+
+/* Paper size coverage: keep structure stable per selected bond paper */
+html[data-paper-size='a4'] .legitimation-affidavit-doc,
+html[data-paper-size='a4'] .legitimation-affidavit-print {
+  min-height: 297mm;
+}
+html[data-paper-size='short'] .legitimation-affidavit-doc,
+html[data-paper-size='short'] .legitimation-affidavit-print {
+  min-height: 11in;
+}
+html[data-paper-size='long'] .legitimation-affidavit-doc,
+html[data-paper-size='long'] .legitimation-affidavit-print {
+  min-height: 13in;
+}
+html[data-paper-size='legal'] .legitimation-affidavit-doc,
+html[data-paper-size='legal'] .legitimation-affidavit-print {
+  min-height: 14in;
+}
+
+@media print {
+  .legitimation-affidavit-doc.print-doc,
+  .legitimation-affidavit-print.print-doc {
+    padding-left: var(--print-legal-margin-x) !important;
+    padding-right: var(--print-legal-margin-x) !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    box-sizing: border-box !important;
+  }
+}
+
+body.pdf-capture .legitimation-affidavit-doc.print-doc,
+body.pdf-capture .legitimation-affidavit-print.print-doc {
+  padding-left: var(--print-legal-margin-x) !important;
+  padding-right: var(--print-legal-margin-x) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+  font-family: 'Times New Roman', Times, serif !important;
+}
