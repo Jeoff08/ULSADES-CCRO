@@ -43,8 +43,10 @@ export default function SoleAffidavitLegitimation({ data }) {
         )}
       />
 
-      <div className="legitimation-affidavit-body flex-1 flex flex-col min-h-0">
-        <h2 className="legitimation-affidavit-title">AFFIDAVIT OF LEGITIMATION</h2>
+      <div className="legitimation-affidavit-body sole-legitimation-body flex-1 flex flex-col min-h-0">
+        <h2 className="legitimation-affidavit-title sole-legitimation-title">
+          AFFIDAVIT OF LEGITIMATION
+        </h2>
 
         <p className="mb-4 leading-normal text-justify">
           I, <span className={`${FILL_BOLD} px-0.5 align-baseline uppercase`}>{affiantName || '—'}</span>, of legal age,

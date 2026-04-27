@@ -9,6 +9,16 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
 function formatCourtDate(str) {
   if (!str || typeof str !== 'string') return ''
   const trimmed = str.trim()
+  const alphaParts = trimmed.split('/')
+  if (alphaParts.length === 3) {
+    const dd = parseInt(alphaParts[0], 10)
+    const yyyy = parseInt(alphaParts[2], 10)
+    const monthToken = (alphaParts[1] || '').trim().toLowerCase()
+    const monthFromName = MONTHS.findIndex((m) => m.toLowerCase() === monthToken)
+    if (dd >= 1 && dd <= 31 && monthFromName >= 0 && yyyy > 0) {
+      return `${MONTHS[monthFromName]} ${String(dd).padStart(2, '0')}, ${yyyy}`
+    }
+  }
   const parts = trimmed.split('/')
   if (parts.length === 3) {
     const [dd, mm, yyyy] = parts.map((p) => parseInt(p, 10))

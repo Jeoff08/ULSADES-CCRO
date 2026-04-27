@@ -61,6 +61,8 @@ export default function LegitimationPrint() {
   const uploadScopeRef = useRef('')
   const [uploadTick, setUploadTick] = useState(0)
   const [modal, setModal] = useState({ open: false, key: '', title: '' })
+  const [previewModalOpen, setPreviewModalOpen] = useState(false)
+  const [previewPdfUrl, setPreviewPdfUrl] = useState('')
   const { toasts, show, dismiss } = useToasts()
   const allowedTypes = LEGITIMATION_TYPES.filter((t) => {
     if (data.bothParentsAlive === 'NO' && t.id === 'joint-affidavit') return false
@@ -91,6 +93,55 @@ export default function LegitimationPrint() {
       show({ type: 'error', title: 'Save failed', message: err?.message || 'Unable to save PDF.' })
     }
   }
+  const handlePreviewPdfModal = async () => {
+    try {
+      const bridge = window?.electronAPI
+      if (!bridge || typeof bridge.previewPdfData !== 'function') {
+        show({ type: 'error', title: 'Preview unavailable', message: 'PDF preview bridge is unavailable. Restart Electron.' })
+        return
+      }
+      let result
+      try {
+        result = await bridge.previewPdfData()
+      } catch (invokeErr) {
+        const msg = String(invokeErr?.message || '')
+        if (msg.includes("No handler registered for 'pdf:get-current-window-base64'")) {
+          if (typeof bridge.previewPdf === 'function') {
+            const fallback = await bridge.previewPdf(`Legitimation-${effectiveType}-preview`)
+            if (fallback?.ok) {
+              show({ type: 'info', title: 'Preview opened', message: 'Opened using fallback preview. Please restart Electron to enable in-app modal preview.' })
+              return
+            }
+            show({ type: 'error', title: 'Preview failed', message: fallback?.reason || 'Unable to open fallback preview.' })
+            return
+          }
+        }
+        throw invokeErr
+      }
+      if (!result?.ok || !result?.base64) {
+        show({ type: 'error', title: 'Preview failed', message: result?.reason || 'Unable to generate PDF preview.' })
+        return
+      }
+
+      const binary = atob(result.base64)
+      const bytes = new Uint8Array(binary.length)
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+      const blob = new Blob([bytes], { type: 'application/pdf' })
+      const url = URL.createObjectURL(blob)
+      if (previewPdfUrl) URL.revokeObjectURL(previewPdfUrl)
+      setPreviewPdfUrl(url)
+      setPreviewModalOpen(true)
+    } catch (err) {
+      show({ type: 'error', title: 'Preview failed', message: err?.message || 'Unable to generate PDF preview.' })
+    }
+  }
+  const closePreviewModal = () => {
+    setPreviewModalOpen(false)
+    if (previewPdfUrl) {
+      URL.revokeObjectURL(previewPdfUrl)
+      setPreviewPdfUrl('')
+    }
+  }
 
   usePrintPageSize(pageSizeForPrint)
 
@@ -112,6 +163,10 @@ export default function LegitimationPrint() {
       setSearchParams({ type: allowedTypeIds[0] })
     }
   }, [validType, allowedTypeIds, setSearchParams])
+
+  useEffect(() => () => {
+    if (previewPdfUrl) URL.revokeObjectURL(previewPdfUrl)
+  }, [previewPdfUrl])
 
   const childFull = [data.childFirst, data.childMiddle, data.childLast].filter(Boolean).join(' ')
   const fatherFull = [data.fatherFirst, data.fatherMiddle, data.fatherLast].filter(Boolean).join(' ')
@@ -177,6 +232,9 @@ export default function LegitimationPrint() {
           </select>
           <button type="button" onClick={handleSavePdf} className="px-3 py-2.5 bg-gray-700 text-white rounded-lg text-sm font-medium hover:bg-gray-800">
             Save
+          </button>
+          <button type="button" onClick={handlePreviewPdfModal} className="px-3 py-2.5 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700">
+            Preview PDF
           </button>
         </div>
       </div>
@@ -272,6 +330,23 @@ export default function LegitimationPrint() {
           }
         }}
       />
+      {previewModalOpen && (
+        <div className="fixed inset-0 z-[70] bg-black/40 flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label="PDF preview">
+          <div className="bg-white rounded-xl w-[95vw] h-[92vh] shadow-2xl flex flex-col overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-800">PDF preview</h3>
+              <button
+                type="button"
+                onClick={closePreviewModal}
+                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50"
+              >
+                Close
+              </button>
+            </div>
+            <iframe title="PDF preview" src={previewPdfUrl} className="w-full flex-1 border-0" />
+          </div>
+        </div>
+      )}
       <ToastHost toasts={toasts} onDismiss={dismiss} />
     </div>
   )

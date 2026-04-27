@@ -18,12 +18,17 @@ import { migrateRecordUploads } from '../../lib/uploadedFileStore'
 
 const RELATIONSHIP_OPTIONS = [
   { value: '', label: '—' },
-  { value: 'SON', label: 'SON' },
-  { value: 'DAUGHTER', label: 'DAUGHTER' },
-  { value: 'FATHER', label: 'FATHER' },
   { value: 'MOTHER', label: 'MOTHER' },
   { value: 'GUARDIAN', label: 'GUARDIAN' },
-  { value: 'OTHER', label: 'OTHER' },
+  { value: 'UNCLE', label: 'UNCLE' },
+  { value: 'AUNT', label: 'AUNT' },
+  { value: 'BROTHER', label: 'BROTHER' },
+  { value: 'SISTER', label: 'SISTER' },
+  { value: 'NIECE', label: 'NIECE' },
+  { value: 'NEPHEW', label: 'NEPHEW' },
+  { value: 'SON', label: 'SON' },
+  { value: 'DAUGHTER', label: 'DAUGHTER' },
+  { value: 'MYSELF', label: 'MYSELF' },
 ]
 
 const SEX_OPTIONS = [
@@ -33,6 +38,17 @@ const SEX_OPTIONS = [
 
 function isEmpty(v) {
   return v == null || String(v).trim() === ''
+}
+
+function computeAgeFromIsoDate(isoDate) {
+  if (!isoDate || typeof isoDate !== 'string') return ''
+  const birth = new Date(isoDate)
+  if (isNaN(birth.getTime())) return ''
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const monthDiff = today.getMonth() - birth.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) age--
+  return String(Math.max(0, age))
 }
 
 function getRequiredFields(form) {
@@ -276,12 +292,22 @@ export default function AUSFForm() {
         <>
       <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
       <FormSection number={2} title="BIRTH OF CHILD REGISTERED IN ILIGAN">
-        <FormRadioGroup
-          name="birthIligan"
-          value={form.birthRegisteredInIligan}
-          onChange={(v) => update('birthRegisteredInIligan', v)}
-          options={[{ value: 'YES', label: 'YES' }, { value: 'NO', label: 'NO' }]}
-        />
+        <div className="flex flex-wrap items-start gap-4">
+          <FormRadioGroup
+            name="birthIligan"
+            value={form.birthRegisteredInIligan}
+            onChange={(v) => update('birthRegisteredInIligan', v)}
+            options={[{ value: 'YES', label: 'YES' }, { value: 'NO', label: 'NO' }]}
+          />
+          {form.birthRegisteredInIligan === 'NO' && (
+            <div className="ausf-form-page__instruction ausf-form-page__instruction--muted">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              Note: Don&apos;t register AUSF &amp; Acknowledgement and Don&apos;t prepare Form 1A
+            </div>
+          )}
+        </div>
       </FormSection>
       </div>
 
@@ -344,7 +370,20 @@ export default function AUSFForm() {
                 </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <FormInput label="DATE OF BIRTH" id="dob" type="date" value={form.dateOfBirth} onChange={(v) => update('dateOfBirth', v)} />
+                <FormInput
+                  label="DATE OF BIRTH"
+                  id="dob"
+                  type="date"
+                  value={form.dateOfBirth}
+                  onChange={(v) => {
+                    const nextDob = String(v || '')
+                    setForm((prev) => ({
+                      ...prev,
+                      dateOfBirth: nextDob,
+                      age: computeAgeFromIsoDate(nextDob),
+                    }))
+                  }}
+                />
                 <div>
                   <FormInput label="AGE" id="age" type="number" value={form.age} onChange={(v) => update('age', v)} />
                   {isAUSF06 && (

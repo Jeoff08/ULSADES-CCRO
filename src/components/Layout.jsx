@@ -52,11 +52,10 @@ const legalSubLinkBase =
   'flex items-center gap-2 pl-3 ml-6 border-l-2 border-white/20 py-2 pr-2 rounded-r-lg text-[13px] font-medium transition'
 
 function legalSubLinkClass(isActive) {
-  return `${legalSubLinkBase} ${
-    isActive
+  return `${legalSubLinkBase} ${isActive
       ? 'bg-white text-gray-800 border-[var(--primary-green)]'
       : 'text-white/85 hover:bg-white/10 text-white border-transparent hover:border-white/20'
-  }`
+    }`
 }
 
 const FILES_SAVED_PATHS = ['/ausf/saved', '/legitimation/saved', '/court-decree/saved']
@@ -144,10 +143,9 @@ export default function Layout() {
             to="/"
             end
             className={({ isActive }) =>
-              `${navRowBase} ${
-                isActive
-                  ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
-                  : 'text-white/90 hover:bg-white/10 text-white'
+              `${navRowBase} ${isActive
+                ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
+                : 'text-white/90 hover:bg-white/10 text-white'
               }`
             }
           >
@@ -159,11 +157,10 @@ export default function Layout() {
             <button
               type="button"
               onClick={() => setLegalInstrumentOpen((o) => !o)}
-              className={`${navRowBase} w-full text-left text-white/90 hover:bg-white/10 text-white ${
-                legalInstrumentActive && !legalInstrumentOpen
+              className={`${navRowBase} w-full text-left text-white/90 hover:bg-white/10 text-white ${legalInstrumentActive && !legalInstrumentOpen
                   ? 'bg-white/15 border-l-4 border-[var(--primary-green)] pl-[11px]'
                   : ''
-              }`}
+                }`}
               aria-expanded={legalInstrumentOpen}
             >
               <IconLegalInstrument />
@@ -212,21 +209,19 @@ export default function Layout() {
 
           <div className="space-y-0.5">
             <div
-              className={`flex items-stretch rounded-lg overflow-hidden transition relative ${
-                courtDecreeMainFormActive && !courtDecreeOpen
+              className={`flex items-stretch rounded-lg overflow-hidden transition relative ${courtDecreeMainFormActive && !courtDecreeOpen
                   ? ''
                   : courtDecreeMenuActive && !courtDecreeOpen && !courtDecreeMainFormActive
                     ? 'ring-1 ring-inset ring-white/20'
                     : ''
-              }`}
+                }`}
             >
               <NavLink
                 to="/court-decree/form?type=cert-authenticity"
-                className={`${navRowBase} flex-1 min-w-0 rounded-l-lg rounded-r-none border-0 ${
-                  courtDecreeMainFormActive
+                className={`${navRowBase} flex-1 min-w-0 rounded-l-lg rounded-r-none border-0 ${courtDecreeMainFormActive
                     ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] pl-[11px]'
                     : 'text-white/90 hover:bg-white/10 text-white'
-                }`}
+                  }`}
                 title="Open Court Decree forms"
               >
                 <IconCourtDecree />
@@ -238,9 +233,8 @@ export default function Layout() {
                   e.preventDefault()
                   setCourtDecreeOpen((o) => !o)
                 }}
-                className={`shrink-0 px-2 flex items-center justify-center text-white/90 hover:bg-white/15 border-l border-white/15 transition ${
-                  courtDecreeOpen ? 'bg-white/5' : ''
-                }`}
+                className={`shrink-0 px-2 flex items-center justify-center text-white/90 hover:bg-white/15 border-l border-white/15 transition ${courtDecreeOpen ? 'bg-white/5' : ''
+                  }`}
                 aria-expanded={courtDecreeOpen}
                 aria-label={courtDecreeOpen ? 'Collapse Court Decree menu' : 'Expand Court Decree menu'}
               >
@@ -284,37 +278,15 @@ export default function Layout() {
                   <IconLegalSub />
                   <span>Divorce</span>
                 </NavLink>
-                <NavLink
-                  to="/court-decree/form?type=lcr-form-1a"
-                  className={({ isActive }) => legalSubLinkClass(isActive)}
-                >
-                  <IconLegalSub />
-                  <span>Form 1A (Birth)</span>
-                </NavLink>
-                <NavLink
-                  to="/court-decree/form?type=lcr-form-2a"
-                  className={({ isActive }) => legalSubLinkClass(isActive)}
-                >
-                  <IconLegalSub />
-                  <span>Form 2A (Death)</span>
-                </NavLink>
-                <NavLink
-                  to="/court-decree/form?type=lcr-form-3a"
-                  className={({ isActive }) => legalSubLinkClass(isActive)}
-                >
-                  <IconLegalSub />
-                  <span>Form 3A (Marriage)</span>
-                </NavLink>
               </div>
             )}
           </div>
           <NavLink
             to="/ausf/saved"
             className={() =>
-              `${navRowBase} ${
-                isFilesSavedPage
-                  ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
-                  : 'text-white/90 hover:bg-white/10 text-white'
+              `${navRowBase} ${isFilesSavedPage
+                ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
+                : 'text-white/90 hover:bg-white/10 text-white'
               }`
             }
           >
@@ -325,10 +297,9 @@ export default function Layout() {
           <NavLink
             to="/annotation-ack-field"
             className={({ isActive }) =>
-              `${navRowBase} ${
-                isActive
-                  ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
-                  : 'text-white/90 hover:bg-white/10 text-white'
+              `${navRowBase} ${isActive
+                ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
+                : 'text-white/90 hover:bg-white/10 text-white'
               }`
             }
           >

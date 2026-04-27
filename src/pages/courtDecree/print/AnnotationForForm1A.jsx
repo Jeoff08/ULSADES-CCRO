@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { formatDateCert, fullName } from '../../../lib/printUtils'
+import { fullName } from '../../../lib/printUtils'
 import { ensureImageDataUrl } from '../../../lib/colbUtils'
 import { exportColbAsPdf } from '../../../lib/colbExportPdf'
 import { useCourtDecreeColbRemarksDetection } from '../../../hooks/useCourtDecreeColbRemarksDetection'
 import { FORM_102_REMARKS_OVERLAY, FORM_102_OVERLAY_MAX_BOTTOM } from '../../../lib/courtDecreeColbRemarksDetection'
-import { DocumentHeader, DocumentFooter } from '../../../components/print'
 
 const MAX_FILE_SIZE_MB = 25
 
@@ -61,7 +60,7 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
       const name = nameMatch ? nameMatch[1].trim() : ''
       const beforeName = mainPart.slice(0, mainPart.toLowerCase().indexOf('known as') + 9)
       return (
-        <span className="inline-block text-center w-full">
+        <span className="inline-block w-full text-justify">
           <span>
             {beforeName}
             <span className="underline">{name}</span>
@@ -74,9 +73,6 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
     }
     return text
   }
-
-  const issuedDate = formatDateCert(data?.certificateIssuanceDate) || formatDateCert(new Date())
-  const signatory = (data?.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
 
   const colbExportRef = useRef(null)
   const [showUploadModal, setShowUploadModal] = useState(false)
@@ -174,8 +170,6 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
 
   return (
     <div className={wrapperClass} data-paper-size={paperSize}>
-      <DocumentHeader registryNo={data?.registryNumber} />
-
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
         <h2 className="text-center font-bold text-[30px] uppercase mb-6 tracking-tight print:hidden">ANNOTATION (CHILD ACKNOWLEDGED) — COLB OFFICE FILE</h2>
 
@@ -224,14 +218,22 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
         </div>
 
         {!hasScan && (
-          <div className="mb-4 print:hidden">
-            <div className="border border-amber-200 bg-amber-50 mb-4 p-3 rounded no-print">
-              <p className="text-sm text-amber-800 font-medium">Attach scan copy of COLB office file using the button above</p>
-              <p className="text-xs text-gray-600 mt-0.5">The white REMARKS/ANNOTATION section on the right of the COLB will show the annotation when printed.</p>
+          <div className="flex-1 flex flex-col">
+            <div className="mb-4 print:hidden">
+              <div className="border border-amber-200 bg-amber-50 mb-4 p-3 rounded no-print">
+                <p className="text-sm text-amber-800 font-medium">Attach scan copy of COLB office file using the button above</p>
+                <p className="text-xs text-gray-600 mt-0.5">The white REMARKS/ANNOTATION section on the right of the COLB will show the annotation when printed.</p>
+              </div>
+              <p className="font-bold text-base mt-4 mb-1">REMARKS/ANNOTATION (Child acknowledged)</p>
+              <div className="border border-black bg-white min-h-[5rem] p-4 flex items-center justify-center">
+                <p className="text-sm leading-relaxed text-justify">{renderAnnotationContent()}</p>
+              </div>
             </div>
-            <p className="font-bold text-base mt-4 mb-1">REMARKS/ANNOTATION (Child acknowledged)</p>
-            <div className="border border-black bg-white min-h-[5rem] p-4 flex items-center justify-center text-center">
-              <p className="text-sm leading-relaxed">{renderAnnotationContent()}</p>
+
+            <div className="hidden print:flex flex-1 items-end">
+              <p className="text-[10.5px] leading-[1.2] text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] max-w-[96%] mb-3 ml-4">
+                {annotationDisplayText || '—'}
+              </p>
             </div>
           </div>
         )}
@@ -275,7 +277,7 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
                 }}
               >
                 <div className="colb-annotation-remarks-body">
-                  <p className="colb-annotation-form1a-text colb-annotation-remarks-text text-center">
+                  <p className="colb-annotation-form1a-text colb-annotation-remarks-text text-justify">
                     {renderAnnotationContent()}
                   </p>
                 </div>
@@ -287,16 +289,6 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
             {data?.annotationForm1AScanDataUrl?.startsWith('data:application/pdf') ? 'Converting PDF…' : 'Loading image…'}
           </div>
         ) : null}
-      </div>
-
-      <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-end flex-shrink-0">
-        <div className="flex flex-col items-end text-right mb-8 w-full max-w-md">
-          <p className="font-bold uppercase">{signatory}</p>
-          <p className="text-base italic">City Civil Registrar</p>
-        </div>
-        <div className="w-full">
-          <DocumentFooter contactPhone={data?.contactPhone} contactEmail={data?.contactEmail} />
-        </div>
       </div>
 
       {showUploadModal && (

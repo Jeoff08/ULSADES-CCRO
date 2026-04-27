@@ -99,7 +99,7 @@ export const defaultCourtDecree = {
   lcrForm1aRemarks: '',
   lcrForm2aRemarks: '',
   lcrForm3aRemarks: '',
-  certificateSignatoryName: 'SHIRLY L. DEMECILLO',
+  certificateSignatoryName: '',
   contactPhone: '(063) 227 - 2806',
   contactEmail: 'civilregistrar.iligan@gmail.com',
 }

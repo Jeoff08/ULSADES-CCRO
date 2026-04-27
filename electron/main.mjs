@@ -138,6 +138,20 @@ ipcMain.handle('pdf:preview-current-window', async (event, suggestedFileName = '
   return { ok: true, filePath: tempPath }
 })
 
+ipcMain.handle('pdf:get-current-window-base64', async (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender)
+  if (!win || win.isDestroyed()) {
+    return { ok: false, reason: 'Window unavailable' }
+  }
+
+  const pdfData = await win.webContents.printToPDF({
+    printBackground: true,
+    preferCSSPageSize: true,
+  })
+
+  return { ok: true, base64: pdfData.toString('base64') }
+})
+
 app.whenReady().then(async () => {
   const userData = app.getPath('userData')
   const devDbPath = join(rootDir, 'server', 'db', 'ulsades.db')

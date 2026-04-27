@@ -83,6 +83,8 @@ export default function SupplementalPrint() {
   const [savingPdf, setSavingPdf] = useState(false)
   const [exportMode, setExportMode] = useState(null)
   const [activePanel, setActivePanel] = useState('affidavit')
+  const [previewModalOpen, setPreviewModalOpen] = useState(false)
+  const [previewPdfUrl, setPreviewPdfUrl] = useState('')
   const data = useMemo(
     () => ({ ...baseData, item3Custom, item5Custom }),
     [baseData, item3Custom, item5Custom]
@@ -227,6 +229,41 @@ export default function SupplementalPrint() {
     }
   }
 
+  const handlePreviewPdfModal = async () => {
+    try {
+      const bridge = window?.electronAPI
+      if (!bridge || typeof bridge.previewPdfData !== 'function') {
+        window.alert('PDF preview bridge is unavailable. Restart Electron.')
+        return
+      }
+      const result = await bridge.previewPdfData()
+      if (!result?.ok || !result?.base64) {
+        window.alert(result?.reason || 'Unable to generate PDF preview.')
+        return
+      }
+      const binary = atob(result.base64)
+      const bytes = new Uint8Array(binary.length)
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+      const blob = new Blob([bytes], { type: 'application/pdf' })
+      const url = URL.createObjectURL(blob)
+      if (previewPdfUrl) URL.revokeObjectURL(previewPdfUrl)
+      setPreviewPdfUrl(url)
+      setPreviewModalOpen(true)
+    } catch (error) {
+      window.alert(error?.message || 'Unable to generate PDF preview.')
+    }
+  }
+  const closePreviewModal = () => {
+    setPreviewModalOpen(false)
+    if (previewPdfUrl) {
+      URL.revokeObjectURL(previewPdfUrl)
+      setPreviewPdfUrl('')
+    }
+  }
+  useEffect(() => () => {
+    if (previewPdfUrl) URL.revokeObjectURL(previewPdfUrl)
+  }, [previewPdfUrl])
+
   return (
     <div className="p-4 print:p-0">
       <div className="no-print mb-3 max-w-6xl mx-auto flex items-center justify-between gap-2">
@@ -273,6 +310,13 @@ export default function SupplementalPrint() {
               {savingPdf ? 'Saving...' : 'Save transmittal PDF'}
             </button>
           ) : null}
+          <button
+            type="button"
+            onClick={handlePreviewPdfModal}
+            className="px-3 py-1.5 rounded-md bg-gray-600 text-white text-sm font-medium hover:bg-gray-700"
+          >
+            Preview PDF
+          </button>
         </div>
       </div>
       <div id="supplemental-print-page" className="flex gap-6 items-start print:block">
@@ -449,6 +493,23 @@ export default function SupplementalPrint() {
           ) : null}
         </div>
       </div>
+      {previewModalOpen && (
+        <div className="fixed inset-0 z-[70] bg-black/40 flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label="PDF preview">
+          <div className="bg-white rounded-xl w-[95vw] h-[92vh] shadow-2xl flex flex-col overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-800">PDF preview</h3>
+              <button
+                type="button"
+                onClick={closePreviewModal}
+                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50"
+              >
+                Close
+              </button>
+            </div>
+            <iframe title="PDF preview" src={previewPdfUrl} className="w-full flex-1 border-0" />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

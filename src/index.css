@@ -5154,6 +5154,7 @@ html[data-paper-size='legal'] .legitimation-affidavit-print {
     padding-bottom: 0 !important;
     box-sizing: border-box !important;
   }
+  /* Keep title position unchanged; adjust body block only. */
 }
 
 body.pdf-capture .legitimation-affidavit-doc.print-doc,
@@ -5167,4 +5168,47 @@ body.pdf-capture .legitimation-affidavit-print.print-doc {
   max-width: none !important;
   box-sizing: border-box !important;
   font-family: 'Times New Roman', Times, serif !important;
+}
+/* Keep title position unchanged; adjust body block only. */
+
+@media print {
+  html[data-paper-size='short'] .legitimation-affidavit-doc .sole-legitimation-body,
+  html[data-paper-size='a4'] .legitimation-affidavit-doc .sole-legitimation-body,
+  html[data-paper-size='short'] .legitimation-affidavit-print .sole-legitimation-body,
+  html[data-paper-size='a4'] .legitimation-affidavit-print .sole-legitimation-body {
+    margin-top: -1.65rem !important;
+  }
+  html[data-paper-size='short'] .legitimation-affidavit-doc .joint-legitimation-body,
+  html[data-paper-size='a4'] .legitimation-affidavit-doc .joint-legitimation-body,
+  html[data-paper-size='short'] .legitimation-affidavit-print .joint-legitimation-body,
+  html[data-paper-size='a4'] .legitimation-affidavit-print .joint-legitimation-body {
+    margin-top: -1.70rem !important;
+  }
+  html[data-paper-size='a4'] .legitimation-affidavit-doc .joint-legitimation-title,
+  html[data-paper-size='a4'] .legitimation-affidavit-print .joint-legitimation-title,
+  html[data-paper-size='short'] .legitimation-affidavit-doc .joint-legitimation-title,
+  html[data-paper-size='short'] .legitimation-affidavit-print .joint-legitimation-title {
+    transform: translateY(-1.90rem) !important;
+  }
+}
+
+html[data-paper-size='short'] body.pdf-capture .legitimation-affidavit-doc .sole-legitimation-body,
+html[data-paper-size='a4'] body.pdf-capture .legitimation-affidavit-doc .sole-legitimation-body,
+html[data-paper-size='short'] body.pdf-capture .legitimation-affidavit-print .sole-legitimation-body,
+html[data-paper-size='a4'] body.pdf-capture .legitimation-affidavit-print .sole-legitimation-body {
+  margin-top: -1.65rem !important;
+}
+
+html[data-paper-size='short'] body.pdf-capture .legitimation-affidavit-doc .joint-legitimation-body,
+html[data-paper-size='a4'] body.pdf-capture .legitimation-affidavit-doc .joint-legitimation-body,
+html[data-paper-size='short'] body.pdf-capture .legitimation-affidavit-print .joint-legitimation-body,
+html[data-paper-size='a4'] body.pdf-capture .legitimation-affidavit-print .joint-legitimation-body {
+  margin-top: -1.15rem !important;
+}
+
+html[data-paper-size='a4'] body.pdf-capture .legitimation-affidavit-doc .joint-legitimation-title,
+html[data-paper-size='a4'] body.pdf-capture .legitimation-affidavit-print .joint-legitimation-title,
+html[data-paper-size='short'] body.pdf-capture .legitimation-affidavit-doc .joint-legitimation-title,
+html[data-paper-size='short'] body.pdf-capture .legitimation-affidavit-print .joint-legitimation-title {
+  transform: translateY(-1.35rem) !important;
 }

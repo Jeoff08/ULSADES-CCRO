@@ -5,7 +5,9 @@ import { DocumentHeader, DocumentFooter, FILL, FILL_BOLD } from '../../../compon
 export default function AusfOnly({ data }) {
   const affiantName = data.applicantName || fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
   const surnameSought = data.fatherLast
-  const affiantWithSurname = (affiantName && surnameSought)
+  const relationship = String(data.relationshipToChild || '').trim().toUpperCase()
+  const shouldAppendSurname = relationship === 'MYSELF' || relationship === 'SON'
+  const affiantWithSurname = (shouldAppendSurname && affiantName && surnameSought)
     ? (affiantName.trim().toUpperCase().endsWith((surnameSought || '').trim().toUpperCase())
       ? affiantName
       : `${affiantName.trim()} ${surnameSought.trim()}`.trim())

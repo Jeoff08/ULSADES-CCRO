@@ -7,6 +7,15 @@ import { isLcr1aTableComplete, isLcr2aTableComplete, isLcr3aTableComplete } from
 import { commitFirstLetterUpperFromInput } from '../../lib/sentenceCase'
 import { parseDdMmYyyyToDate, parseBirthToDate } from '../../lib/printUtils'
 const LCR_FORM_TYPES = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a']
+const PREFERRED_LCRO_STAFF_KEY = 'ulsades_preferred_lcr_staff'
+const LCRO_STAFF_LIST_KEY = 'ulsades_lcro_staff_list'
+
+function isLikelyFullStaffName(value) {
+  const name = String(value || '').trim()
+  if (name.length < 5) return false
+  // Require at least two name parts (e.g., first + last).
+  return name.split(/\s+/).filter(Boolean).length >= 2
+}
 
 const inputClass = 'court-decree-form-page__input w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-gray-50 transition-colors duration-150'
 
@@ -386,7 +395,7 @@ function mapAffectedToLcrPrintType(doc) {
 
 function CourtDecreeSection({ number, title, children }) {
   return (
-    <div className="court-decree-form-page__section-card mb-6 rounded-xl overflow-hidden border border-gray-200 bg-[var(--card-bg)] shadow-sm">
+    <div className="court-decree-form-page__section-card mb-6 rounded-xl overflow-visible border border-gray-200 bg-[var(--card-bg)] shadow-sm">
       <div className="court-decree-form-page__section-header bg-[var(--primary-blue)] text-white px-4 py-2.5 font-semibold text-sm uppercase tracking-wide">
         {number} {title}
       </div>
@@ -405,6 +414,9 @@ export default function CourtDecreeForm() {
   const [showValidationModal, setShowValidationModal] = useState(false)
   const [showContinueDecreeModal, setShowContinueDecreeModal] = useState(false)
   const [missingFields, setMissingFields] = useState([])
+  const [savedLcroStaff, setSavedLcroStaff] = useState([])
+  const [showStaffSuggestions, setShowStaffSuggestions] = useState(false)
+  const [staffSuggestionIndex, setStaffSuggestionIndex] = useState(-1)
 
   const editId = searchParams.get('id')
   const isEdit = searchParams.get('edit') === '1'
@@ -434,6 +446,17 @@ export default function CourtDecreeForm() {
 
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
+  const saveLcroStaffName = (rawName) => {
+    const currentName = String(rawName || '').trim()
+    if (!isLikelyFullStaffName(currentName)) return
+    localStorage.setItem(PREFERRED_LCRO_STAFF_KEY, currentName)
+    setSavedLcroStaff((prev) => {
+      if (prev.some((name) => name.toUpperCase() === currentName.toUpperCase())) return prev
+      const next = [currentName, ...prev]
+      localStorage.setItem(LCRO_STAFF_LIST_KEY, JSON.stringify(next))
+      return next
+    })
+  }
   const scInput = (key) => (e) => {
     if (key === 'contactEmail') {
       update(key, e.target.value)
@@ -441,19 +464,42 @@ export default function CourtDecreeForm() {
     }
     commitFirstLetterUpperFromInput(e, (v) => update(key, v))
   }
+  const filteredLcroStaff = React.useMemo(() => {
+    const query = String(form.certificateSignatoryName || '').trim().toUpperCase()
+    if (!query) return savedLcroStaff.slice(0, 8)
+    return savedLcroStaff
+      .filter((name) => name.toUpperCase().includes(query))
+      .slice(0, 8)
+  }, [savedLcroStaff, form.certificateSignatoryName])
+  const chooseLcroStaff = (name) => {
+    update('certificateSignatoryName', name)
+    saveLcroStaffName(name)
+    setShowStaffSuggestions(false)
+    setStaffSuggestionIndex(-1)
+  }
 
   // Persistence for LCRO - Staff (permanently saved as requested)
   useEffect(() => {
-    const saved = localStorage.getItem('ulsades_preferred_lcr_staff')
-    if (saved && !form.certificateSignatoryName) {
-      update('certificateSignatoryName', saved)
+    try {
+      const rawList = localStorage.getItem(LCRO_STAFF_LIST_KEY)
+      const parsed = rawList ? JSON.parse(rawList) : []
+      if (Array.isArray(parsed)) {
+        const cleaned = parsed
+          .map((v) => String(v || '').trim())
+          .filter((v) => isLikelyFullStaffName(v))
+          .filter((v, i, arr) => arr.findIndex((x) => x.toUpperCase() === v.toUpperCase()) === i)
+        localStorage.setItem(LCRO_STAFF_LIST_KEY, JSON.stringify(cleaned))
+        setSavedLcroStaff(cleaned)
+      }
+    } catch {
+      setSavedLcroStaff([])
     }
   }, [])
 
   useEffect(() => {
-    if (form.certificateSignatoryName) {
-      localStorage.setItem('ulsades_preferred_lcr_staff', form.certificateSignatoryName)
-    }
+    const currentName = String(form.certificateSignatoryName || '').trim()
+    if (!currentName) return
+    localStorage.setItem(PREFERRED_LCRO_STAFF_KEY, currentName)
   }, [form.certificateSignatoryName])
 
   const proceedToPrint = () => {
@@ -842,12 +888,19 @@ export default function CourtDecreeForm() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-            <input
-              type="text"
+            <select
               value={form.country}
-              onChange={scInput('country')}
+              onChange={(e) => update('country', e.target.value)}
               className={inputClass}
-            />
+            >
+              <option value="PHILIPPINES">PHILIPPINES</option>
+              <option value="FOREIGN">FOREIGN</option>
+            </select>
+            {String(form.country || '').trim().toUpperCase() === 'FOREIGN' && (
+              <p className="mt-2 text-center text-sm font-semibold text-red-600 uppercase">
+                Note: It must be registered at LCRO of Manila
+              </p>
+            )}
           </div>
           <div>
             <div className="court-decree-form-page__label-tag">Court or Racco?</div>
@@ -961,13 +1014,68 @@ export default function CourtDecreeForm() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">LCRO - Staff (Verified by)</label>
-            <input
-              type="text"
-              value={form.certificateSignatoryName}
-              onChange={scInput('certificateSignatoryName')}
-              placeholder="e.g. SHIRLY L. DEMECILLO"
-              className={inputClass}
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={form.certificateSignatoryName}
+                onChange={(e) => {
+                  scInput('certificateSignatoryName')(e)
+                  setShowStaffSuggestions(true)
+                  setStaffSuggestionIndex(-1)
+                }}
+                onFocus={() => setShowStaffSuggestions(true)}
+                onBlur={(e) => {
+                  saveLcroStaffName(e.target.value)
+                  setTimeout(() => setShowStaffSuggestions(false), 120)
+                }}
+                onKeyDown={(e) => {
+                  if (!showStaffSuggestions || filteredLcroStaff.length === 0) return
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault()
+                    setStaffSuggestionIndex((prev) => (prev + 1) % filteredLcroStaff.length)
+                    return
+                  }
+                  if (e.key === 'ArrowUp') {
+                    e.preventDefault()
+                    setStaffSuggestionIndex((prev) => (prev <= 0 ? filteredLcroStaff.length - 1 : prev - 1))
+                    return
+                  }
+                  if (e.key === 'Enter' && staffSuggestionIndex >= 0) {
+                    e.preventDefault()
+                    chooseLcroStaff(filteredLcroStaff[staffSuggestionIndex])
+                    return
+                  }
+                  if (e.key === 'Escape') {
+                    setShowStaffSuggestions(false)
+                    setStaffSuggestionIndex(-1)
+                  }
+                }}
+                placeholder="e.g. SHIRLY L. DEMECILLO"
+                className={inputClass}
+              />
+              {showStaffSuggestions && filteredLcroStaff.length > 0 && (
+                <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                  <ul className="max-h-56 overflow-auto py-1">
+                    {filteredLcroStaff.map((name, idx) => (
+                      <li key={name}>
+                        <button
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => chooseLcroStaff(name)}
+                          className={`w-full px-3 py-2 text-left text-sm transition ${
+                            idx === staffSuggestionIndex
+                              ? 'bg-[var(--primary-blue)] text-white'
+                              : 'text-gray-800 hover:bg-gray-100'
+                          }`}
+                        >
+                          {name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
             <p className="text-xs text-gray-500 mt-1">This name will be saved and used for future forms on this computer.</p>
           </div>
         </div>

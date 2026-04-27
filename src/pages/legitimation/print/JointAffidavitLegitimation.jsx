@@ -36,9 +36,9 @@ export default function JointAffidavitLegitimation({ data }) {
         )}
       />
 
-      <h2 className="legitimation-affidavit-title -mt-16">JOINT AFFIDAVIT OF LEGITIMATION</h2>
+      <h2 className="legitimation-affidavit-title joint-legitimation-title -mt-16">JOINT AFFIDAVIT OF LEGITIMATION</h2>
 
-      <div className="legitimation-affidavit-body flex-1 flex flex-col min-h-0">
+      <div className="legitimation-affidavit-body joint-legitimation-body flex-1 flex flex-col min-h-0">
 
         <p className="mb-4 leading-normal text-justify">
           We, <span className={`${FILL_BOLD} px-0.5 align-baseline uppercase`}>{motherFull || '—'}</span> and{' '}

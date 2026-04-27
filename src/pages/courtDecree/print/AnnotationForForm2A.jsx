@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { formatDateCert } from '../../../lib/printUtils'
 import { ensureImageDataUrl } from '../../../lib/colbUtils'
 import { exportColbAsPdf } from '../../../lib/colbExportPdf'
 import { useCourtDecreeColbRemarksDetection } from '../../../hooks/useCourtDecreeColbRemarksDetection'
 import { FORM_102_REMARKS_OVERLAY, FORM_102_OVERLAY_MAX_BOTTOM } from '../../../lib/courtDecreeColbRemarksDetection'
-import { DocumentHeader, DocumentFooter } from '../../../components/print'
 
 const MAX_FILE_SIZE_MB = 25
 
@@ -48,9 +46,6 @@ export default function AnnotationForForm2A({ paperSize = 'a4', data, onAttachme
   })()
 
   const remarks = (data?.remarks || '').trim() || FALLBACK_REMARKS
-
-  const issuedDate = formatDateCert(data?.certificateIssuanceDate) || formatDateCert(new Date())
-  const signatory = (data?.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
 
   const colbExportRef = useRef(null)
   const [showUploadModal, setShowUploadModal] = useState(false)
@@ -148,8 +143,6 @@ export default function AnnotationForForm2A({ paperSize = 'a4', data, onAttachme
 
   return (
     <div className={wrapperClass} data-paper-size={paperSize}>
-      <DocumentHeader registryNo={data?.registryNumber} />
-
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
         <h2 className="text-center font-bold text-[30px] uppercase mb-6 tracking-tight print:hidden">ANNOTATION FOR FORM 2A</h2>
 
@@ -204,8 +197,8 @@ export default function AnnotationForForm2A({ paperSize = 'a4', data, onAttachme
               <p className="text-xs text-gray-600 mt-0.5">The REMARKS/ANNOTATIONS section will show the annotation when printed.</p>
             </div>
             <p className="font-bold text-base mt-4 mb-1">REMARKS/ANNOTATIONS (For LCRO/OCRG Use Only)</p>
-            <div className="border border-black bg-white min-h-[5rem] p-4 flex items-center justify-center text-center">
-              <p className="text-sm leading-relaxed">{remarks}</p>
+            <div className="border border-black bg-white min-h-[5rem] p-4 flex items-center justify-center">
+              <p className="text-sm leading-relaxed text-justify">{remarks}</p>
             </div>
           </div>
         )}
@@ -249,7 +242,7 @@ export default function AnnotationForForm2A({ paperSize = 'a4', data, onAttachme
                 }}
               >
                 <div className="colb-annotation-remarks-body">
-                  <p className="colb-annotation-form2a-text colb-annotation-remarks-text text-center">
+                  <p className="colb-annotation-form2a-text colb-annotation-remarks-text text-justify">
                     {remarks}
                   </p>
                 </div>
@@ -261,16 +254,6 @@ export default function AnnotationForForm2A({ paperSize = 'a4', data, onAttachme
             {data?.annotationForm2AScanDataUrl?.startsWith('data:application/pdf') ? 'Converting PDF…' : 'Loading image…'}
           </div>
         ) : null}
-      </div>
-
-      <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-end flex-shrink-0">
-        <div className="flex flex-col items-end text-right mb-8 w-full max-w-md">
-          <p className="font-bold uppercase">{signatory}</p>
-          <p className="text-base italic">City Civil Registrar</p>
-        </div>
-        <div className="w-full">
-          <DocumentFooter contactPhone={data?.contactPhone} contactEmail={data?.contactEmail} />
-        </div>
       </div>
 
       {showUploadModal && (
