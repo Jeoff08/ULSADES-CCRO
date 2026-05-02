@@ -4,6 +4,7 @@ import { ensureImageDataUrl } from '../../../lib/colbUtils'
 import { exportColbAsPdf } from '../../../lib/colbExportPdf'
 import { useCourtDecreeColbRemarksDetection } from '../../../hooks/useCourtDecreeColbRemarksDetection'
 import { FORM_102_REMARKS_OVERLAY, FORM_102_OVERLAY_MAX_BOTTOM } from '../../../lib/courtDecreeColbRemarksDetection'
+import { FIELD_POSITIONS } from '../../../lib/colbCertificateLayout'
 
 const MAX_FILE_SIZE_MB = 25
 
@@ -13,7 +14,7 @@ const MAX_FILE_SIZE_MB = 25
  * is filled with the same remarks as LCR Form 1A (data.remarks), positioned via OCR or Form 102 fallback.
  * Layout: light gray box, justified, italic, 12px.
  */
-export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachmentChange }) {
+export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachmentChange, onRemarksChange }) {
   const hasScan = Boolean(data?.annotationForm1AScanDataUrl)
   const [displayImageUrl, setDisplayImageUrl] = useState(null)
 
@@ -34,7 +35,21 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
   }, [data?.annotationForm1AScanDataUrl])
 
   const { overlayRect, isAnalyzing, detectionFailed } = useCourtDecreeColbRemarksDetection(displayImageUrl || null)
-  const rawRect = detectionFailed ? FORM_102_REMARKS_OVERLAY : overlayRect
+  const sharedField = FIELD_POSITIONS.ausf_annotation_field
+  const sharedFieldOverlay =
+    sharedField &&
+      Number.isFinite(sharedField.x) &&
+      Number.isFinite(sharedField.y) &&
+      Number.isFinite(sharedField.width) &&
+      Number.isFinite(sharedField.height)
+      ? {
+        left: sharedField.x / 2550,
+        top: sharedField.y / 4200,
+        width: sharedField.width / 2550,
+        height: sharedField.height / 4200,
+      }
+      : null
+  const rawRect = detectionFailed ? (sharedFieldOverlay || FORM_102_REMARKS_OVERLAY) : overlayRect
   // Clamp overlay so it never covers the bottom green line of the form
   const effectiveRect = (() => {
     const top = rawRect.top ?? 0
@@ -44,11 +59,15 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
     const clampedHeight = bottom <= maxBottom ? height : Math.max(0.08, maxBottom - top)
     return { ...rawRect, top, height: clampedHeight }
   })()
+  const printFieldRect = sharedFieldOverlay || FORM_102_REMARKS_OVERLAY
+  const printExpandedLeft = -0.010
+  const printExpandedWidth = 1.07
 
-  const remarks = data?.remarks ?? ''
+  const hasExplicitRemarks = Object.prototype.hasOwnProperty.call(data || {}, 'remarks')
+  const remarks = hasExplicitRemarks ? String(data?.remarks ?? '') : ''
   const childFull = fullName(data?.childFirst, data?.childMiddle, data?.fatherLast) || fullName(data?.childFirst, data?.childMiddle, data?.childLast)
   const defaultAnnotation = childFull ? `"The child shall be known as ${childFull.toUpperCase()} pursuant to R.A. 9255"` : ''
-  const annotationDisplayText = remarks || defaultAnnotation
+  const annotationDisplayText = hasExplicitRemarks ? remarks : defaultAnnotation
 
   const renderAnnotationContent = () => {
     const text = annotationDisplayText || '—'
@@ -78,6 +97,7 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [uploadList, setUploadList] = useState([])
   const fileInputRef = useRef(null)
+  const remarksInputRef = useRef(null)
   const [imgAspectRatio, setImgAspectRatio] = useState(null)
 
   const handleImageLoad = (e) => {
@@ -87,6 +107,13 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
   useEffect(() => {
     setImgAspectRatio(null)
   }, [data?.annotationForm1AScanDataUrl])
+
+  useEffect(() => {
+    const el = remarksInputRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [annotationDisplayText])
 
   const handleFileSelect = (file) => {
     if (!file) return
@@ -225,14 +252,30 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
                 <p className="text-xs text-gray-600 mt-0.5">The white REMARKS/ANNOTATION section on the right of the COLB will show the annotation when printed.</p>
               </div>
               <p className="font-bold text-base mt-4 mb-1">REMARKS/ANNOTATION (Child acknowledged)</p>
-              <div className="border border-black bg-white min-h-[5rem] p-4 flex items-center justify-center">
-                <p className="text-sm leading-relaxed text-justify">{renderAnnotationContent()}</p>
+              <div className="border border-black bg-white min-h-[5rem] p-4">
+                <textarea
+                  ref={remarksInputRef}
+                  value={annotationDisplayText}
+                  onChange={(e) => onRemarksChange?.(e.target.value)}
+                  className="w-full min-h-[5rem] resize-none overflow-hidden bg-transparent text-sm leading-relaxed text-justify outline-none"
+                  rows={4}
+                />
               </div>
             </div>
 
-            <div className="hidden print:flex flex-1 items-end">
-              <p className="text-[10.5px] leading-[1.2] text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] max-w-[96%] mb-3 ml-4">
-                {annotationDisplayText || '—'}
+            <div className="hidden print:block flex-1 relative">
+              <p
+                className="absolute text-[11.5px] leading-[0.9] font-bold text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+                style={{
+                  left: `${printExpandedLeft * 100}%`,
+                  top: `${(printFieldRect.top ?? 0) * 100}%`,
+                  width: `${printExpandedWidth * 100}%`,
+                  minHeight: `${(printFieldRect.height ?? 0.1) * 100}%`,
+                  margin: 0,
+                  fontFamily: 'Arial, sans-serif',
+                }}
+              >
+                  {annotationDisplayText}
               </p>
             </div>
           </div>
@@ -277,7 +320,10 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
                 }}
               >
                 <div className="colb-annotation-remarks-body">
-                  <p className="colb-annotation-form1a-text colb-annotation-remarks-text text-justify">
+                  <p
+                    className="colb-annotation-form1a-text colb-annotation-remarks-text text-justify font-bold"
+                    style={{ fontFamily: 'Arial, sans-serif' }}
+                  >
                     {renderAnnotationContent()}
                   </p>
                 </div>

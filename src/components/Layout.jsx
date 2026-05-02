@@ -53,8 +53,8 @@ const legalSubLinkBase =
 
 function legalSubLinkClass(isActive) {
   return `${legalSubLinkBase} ${isActive
-      ? 'bg-white text-gray-800 border-[var(--primary-green)]'
-      : 'text-white/85 hover:bg-white/10 text-white border-transparent hover:border-white/20'
+    ? 'bg-white text-gray-800 border-[var(--primary-green)]'
+    : 'text-white/85 hover:bg-white/10 text-white border-transparent hover:border-white/20'
     }`
 }
 
@@ -158,8 +158,8 @@ export default function Layout() {
               type="button"
               onClick={() => setLegalInstrumentOpen((o) => !o)}
               className={`${navRowBase} w-full text-left text-white/90 hover:bg-white/10 text-white ${legalInstrumentActive && !legalInstrumentOpen
-                  ? 'bg-white/15 border-l-4 border-[var(--primary-green)] pl-[11px]'
-                  : ''
+                ? 'bg-white/15 border-l-4 border-[var(--primary-green)] pl-[11px]'
+                : ''
                 }`}
               aria-expanded={legalInstrumentOpen}
             >
@@ -210,17 +210,17 @@ export default function Layout() {
           <div className="space-y-0.5">
             <div
               className={`flex items-stretch rounded-lg overflow-hidden transition relative ${courtDecreeMainFormActive && !courtDecreeOpen
-                  ? ''
-                  : courtDecreeMenuActive && !courtDecreeOpen && !courtDecreeMainFormActive
-                    ? 'ring-1 ring-inset ring-white/20'
-                    : ''
+                ? ''
+                : courtDecreeMenuActive && !courtDecreeOpen && !courtDecreeMainFormActive
+                  ? 'ring-1 ring-inset ring-white/20'
+                  : ''
                 }`}
             >
               <NavLink
                 to="/court-decree/form?type=cert-authenticity"
                 className={`${navRowBase} flex-1 min-w-0 rounded-l-lg rounded-r-none border-0 ${courtDecreeMainFormActive
-                    ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] pl-[11px]'
-                    : 'text-white/90 hover:bg-white/10 text-white'
+                  ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] pl-[11px]'
+                  : 'text-white/90 hover:bg-white/10 text-white'
                   }`}
                 title="Open Court Decree forms"
               >

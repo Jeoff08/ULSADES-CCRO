@@ -33,10 +33,10 @@ export default function RegistrationOfAusf({ data }) {
               Issued this <span className="underline px-1">{issuedDate}</span> at Iligan City, Philippines.
             </p>
           </div>
-          
+
           <div className="cert-reg-signatory text-left mt-20 mb-16">
-            <p className="font-bold uppercase text-base">{signatoryName}</p>
-            <p className="text-sm text-black mt-0.5">{signatoryTitle}</p>
+            <div className="font-bold uppercase text-base leading-none m-0 p-0">{signatoryName}</div>
+            <div className="text-sm text-black leading-none m-0 p-0">{signatoryTitle}</div>
           </div>
         </div>
       </div>

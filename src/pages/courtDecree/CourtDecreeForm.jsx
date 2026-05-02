@@ -9,6 +9,9 @@ import { parseDdMmYyyyToDate, parseBirthToDate } from '../../lib/printUtils'
 const LCR_FORM_TYPES = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a']
 const PREFERRED_LCRO_STAFF_KEY = 'ulsades_preferred_lcr_staff'
 const LCRO_STAFF_LIST_KEY = 'ulsades_lcro_staff_list'
+const COURT_THAT_ISSUED_OPTIONS = [
+  "4TH SHARI'A CIRCUIT COURT, 4TH SHARIA JUDICIAL DISTRICT, ILIGAN CITY",
+]
 
 function isLikelyFullStaffName(value) {
   const name = String(value || '').trim()
@@ -413,10 +416,14 @@ export default function CourtDecreeForm() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [showValidationModal, setShowValidationModal] = useState(false)
   const [showContinueDecreeModal, setShowContinueDecreeModal] = useState(false)
+  const [showForeignCountryModal, setShowForeignCountryModal] = useState(false)
+  const [showForeignCountryNote, setShowForeignCountryNote] = useState(false)
   const [missingFields, setMissingFields] = useState([])
   const [savedLcroStaff, setSavedLcroStaff] = useState([])
   const [showStaffSuggestions, setShowStaffSuggestions] = useState(false)
   const [staffSuggestionIndex, setStaffSuggestionIndex] = useState(-1)
+  const [showCourtIssuedSuggestions, setShowCourtIssuedSuggestions] = useState(false)
+  const [courtIssuedSuggestionIndex, setCourtIssuedSuggestionIndex] = useState(-1)
 
   const editId = searchParams.get('id')
   const isEdit = searchParams.get('edit') === '1'
@@ -446,6 +453,21 @@ export default function CourtDecreeForm() {
 
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
+  const updateAndPersistDraft = (key, value) =>
+    setForm((prev) => {
+      const next = { ...prev, [key]: value }
+      saveCourtDecreeDraft(next)
+      return next
+    })
+  const handleCountryChange = (value) => {
+    const nextValue = String(value || '').trim().toUpperCase()
+    if (nextValue === 'FOREIGN' && String(form.country || '').trim().toUpperCase() !== 'FOREIGN') {
+      setShowForeignCountryModal(true)
+      return
+    }
+    setShowForeignCountryNote(false)
+    update('country', value)
+  }
   const saveLcroStaffName = (rawName) => {
     const currentName = String(rawName || '').trim()
     if (!isLikelyFullStaffName(currentName)) return
@@ -471,11 +493,21 @@ export default function CourtDecreeForm() {
       .filter((name) => name.toUpperCase().includes(query))
       .slice(0, 8)
   }, [savedLcroStaff, form.certificateSignatoryName])
+  const filteredCourtIssued = React.useMemo(() => {
+    const query = String(form.courtThatIssued || '').trim().toUpperCase()
+    if (!query) return COURT_THAT_ISSUED_OPTIONS
+    return COURT_THAT_ISSUED_OPTIONS.filter((name) => name.toUpperCase().includes(query))
+  }, [form.courtThatIssued])
   const chooseLcroStaff = (name) => {
     update('certificateSignatoryName', name)
     saveLcroStaffName(name)
     setShowStaffSuggestions(false)
     setStaffSuggestionIndex(-1)
+  }
+  const chooseCourtIssued = (name) => {
+    updateAndPersistDraft('courtThatIssued', name)
+    setShowCourtIssuedSuggestions(false)
+    setCourtIssuedSuggestionIndex(-1)
   }
 
   // Persistence for LCRO - Staff (permanently saved as requested)
@@ -890,13 +922,13 @@ export default function CourtDecreeForm() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
             <select
               value={form.country}
-              onChange={(e) => update('country', e.target.value)}
+              onChange={(e) => handleCountryChange(e.target.value)}
               className={inputClass}
             >
               <option value="PHILIPPINES">PHILIPPINES</option>
               <option value="FOREIGN">FOREIGN</option>
             </select>
-            {String(form.country || '').trim().toUpperCase() === 'FOREIGN' && (
+            {(String(form.country || '').trim().toUpperCase() === 'FOREIGN' || showForeignCountryNote) && (
               <p className="mt-2 text-center text-sm font-semibold text-red-600 uppercase">
                 Note: It must be registered at LCRO of Manila
               </p>
@@ -953,7 +985,71 @@ export default function CourtDecreeForm() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Court that issued the court decree</label>
-            <input type="text" value={form.courtThatIssued} onChange={scInput('courtThatIssued')} placeholder="e.g. 4TH SHARI'A CIRCUIT COURT, ILIGAN CITY" className={inputClass} />
+            <div className="relative">
+              <input
+                type="text"
+                value={form.courtThatIssued}
+                onChange={(e) => {
+                  commitFirstLetterUpperFromInput(e, (v) => updateAndPersistDraft('courtThatIssued', v))
+                  setShowCourtIssuedSuggestions(true)
+                  setCourtIssuedSuggestionIndex(-1)
+                }}
+                onFocus={() => setShowCourtIssuedSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowCourtIssuedSuggestions(false), 120)}
+                onKeyDown={(e) => {
+                  if (!showCourtIssuedSuggestions || filteredCourtIssued.length === 0) return
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault()
+                    setCourtIssuedSuggestionIndex((prev) => (prev + 1) % filteredCourtIssued.length)
+                    return
+                  }
+                  if (e.key === 'ArrowUp') {
+                    e.preventDefault()
+                    setCourtIssuedSuggestionIndex((prev) => (prev <= 0 ? filteredCourtIssued.length - 1 : prev - 1))
+                    return
+                  }
+                  if (e.key === 'Enter' && courtIssuedSuggestionIndex >= 0) {
+                    e.preventDefault()
+                    chooseCourtIssued(filteredCourtIssued[courtIssuedSuggestionIndex])
+                    return
+                  }
+                  if (e.key === 'Escape') {
+                    setShowCourtIssuedSuggestions(false)
+                    setCourtIssuedSuggestionIndex(-1)
+                  }
+                }}
+                placeholder="e.g. 4TH SHARI'A CIRCUIT COURT, ILIGAN CITY"
+                className={`${inputClass} pr-10`}
+              />
+              <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
+                <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4" aria-hidden>
+                  <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.166l3.71-3.935a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                </svg>
+              </span>
+              {showCourtIssuedSuggestions && (
+                <div className="absolute z-50 mt-1 w-full rounded-xl border border-indigo-100 bg-white shadow-[0_10px_30px_rgba(79,70,229,0.18)] overflow-hidden">
+                  {filteredCourtIssued.length > 0 ? (
+                    filteredCourtIssued.map((name, idx) => (
+                      <button
+                        key={name}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => chooseCourtIssued(name)}
+                        className={`w-full px-3 py-2 text-left text-sm transition ${
+                          idx === courtIssuedSuggestionIndex
+                            ? 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white'
+                            : 'text-gray-800 hover:bg-indigo-50'
+                        }`}
+                      >
+                        {name}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-3 py-2 text-sm text-gray-500">No matching court found</div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -1196,6 +1292,47 @@ export default function CourtDecreeForm() {
                 className="court-decree-form-page__btn court-decree-form-page__btn--primary"
               >
                 Continue to court decree form
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showForeignCountryModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 court-decree-form-page__modal-backdrop no-print"
+          onClick={() => setShowForeignCountryModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="court-decree-foreign-country-title"
+        >
+          <div className="court-decree-form-page__modal-dialog bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-100" onClick={(e) => e.stopPropagation()}>
+            <h3 id="court-decree-foreign-country-title" className="text-lg font-bold text-gray-800 mb-2">Foreign record confirmation</h3>
+            <p className="text-gray-600 text-sm mb-4">
+              Has the foreign person/decree already been registered at LCRO of Manila?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  update('country', 'PHILIPPINES')
+                  setShowForeignCountryNote(true)
+                  setShowForeignCountryModal(false)
+                }}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 text-sm font-medium"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  update('country', 'FOREIGN')
+                  setShowForeignCountryNote(false)
+                  setShowForeignCountryModal(false)
+                }}
+                className="px-4 py-2 rounded-lg bg-[var(--primary-blue)] text-white hover:opacity-90 text-sm font-semibold"
+              >
+                Yes
               </button>
             </div>
           </div>

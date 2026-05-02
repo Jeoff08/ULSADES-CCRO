@@ -43,13 +43,13 @@ export default function LcrForm2ADeathAvailable({ data }) {
       </div>
       <div className="court-decree-lcr-body-wrap flex-1 min-h-0 flex flex-col">
         <div className="court-decree-lcr-body-scaled flex flex-col h-full">
-          <p className="font-bold mb-1">TO WHOM IT MAY CONCERN:</p>
+          <p className="font-bold mb-1 pl-8">TO WHOM IT MAY CONCERN:</p>
           <p className="mb-2 text-left court-decree-lcr-body">
             <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of death appear in our Register of Deaths on Page{' '}
             <span className="inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold">{colbPage ?? ''}</span> of Book number{' '}
             <span className="inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold">{colbBook ?? ''}</span>.
           </p>
-          <table className="w-full border-collapse text-sm mb-2 border border-black table-fixed court-decree-lcr-table">
+          <table className="w-full border-collapse text-sm mt-4 mb-2 border border-black table-fixed court-decree-lcr-table">
             <colgroup>
               <col style={{ width: '38%' }} />
               <col style={{ width: '62%' }} />
@@ -102,9 +102,9 @@ export default function LcrForm2ADeathAvailable({ data }) {
             </tbody>
           </table>
           <p className="mb-2 text-sm court-decree-lcr-body">
-            This certification is issued upon the request of OCRG/DOCUMENT OWNER for any legal purposes.
+            This certification is issued upon the request of <span className="font-bold">OCRG/DOCUMENT OWNER</span> for any legal purposes.
           </p>
-          <div className="mb-2 court-decree-lcr-body">
+          <div className="mb-2 court-decree-lcr-body court-decree-lcr-2a-remarks-block">
             <p className="font-bold text-sm mb-0.5">REMARKS:</p>
             <div className="no-print mb-1">
               <textarea
@@ -123,8 +123,8 @@ export default function LcrForm2ADeathAvailable({ data }) {
       </div>
       <div className="court-decree-lcr-footer mt-auto shrink-0">
         <div className="court-decree-lcr-body mb-1">
-          <div className="mb-1 flex justify-between items-end gap-0">
-            <div className="flex flex-col items-center text-center">
+          <div className="mb-1 flex justify-between items-end gap-0 court-decree-lcr-2a-signatures">
+            <div className="court-decree-lcr-2a-verified-left flex flex-col items-center text-center">
               <p className="text-sm mb-0.5 self-start">Verified by:</p>
               <p className="font-bold text-sm border-b border-black inline-block uppercase">{regOfficer}</p>
               <p className="text-xs mt-0">LCRO - Staff</p>

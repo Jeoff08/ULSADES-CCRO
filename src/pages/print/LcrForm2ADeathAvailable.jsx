@@ -35,7 +35,9 @@ export default function LcrForm2ADeathAvailable({ data }) {
           <tr><td className="py-1.5 px-2 border border-black font-medium">Cause of Death</td><td className="py-1.5 px-2 border border-black">{data.causeOfDeath || '—'}</td></tr>
         </tbody>
       </table>
-      <p className="mb-4 text-sm">This certification is issued upon the request of OCRG/OWNER/PARENTS/GUARDIAN for any legal purposes.</p>
+      <p className="mb-4 text-sm">
+        This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.
+      </p>
       <p className="font-bold text-sm mb-1">REMARKS:</p>
       <p className="min-h-[3rem] border-b border-gray-400 mb-6 text-sm">{data.remarks || ''}</p>
       <div className="flex justify-between items-start mb-4">

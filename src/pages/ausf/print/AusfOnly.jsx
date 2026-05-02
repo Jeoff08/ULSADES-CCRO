@@ -38,13 +38,13 @@ export default function AusfOnly({ data }) {
           </div>
         }
       />
-      <div className="ausf-only-doc-body">
+      <div className="ausf-only-doc-body flex flex-col flex-1 min-h-0">
       <h2 className="text-center font-bold text-[14px] uppercase mb-4 mt-0">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
-      <p className="mb-4 leading-normal text-justify">
+      <p className="mb-0 leading-normal text-justify">
         I, <span className={`${FILL} affiant-name-blank affiant-name-bold-underline uppercase mx-0.5 align-baseline`}><span className="affiant-name-inner">{affiantWithSurname}</span></span>, of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
       </p>
 
-      <ol className="list-decimal list-outside ml-8 mr-0 pl-1 space-y-3 mb-3 mt-4 text-justify leading-normal">
+      <ol className="list-decimal list-outside ml-8 mr-0 pl-1 space-y-3 mb-0 mt-0 text-justify leading-normal">
         <li className="text-justify">
           I am seeking to use the surname of <span className={`${FILL_BOLD} px-0.5 align-baseline uppercase`}>{surnameSought}</span> in the Certificate of Live Birth/Report of Birth of pursuant to R.A No. 9255
         </li>
@@ -65,12 +65,12 @@ export default function AusfOnly({ data }) {
         </li>
       </ol>
 
-      <p className="mb-1 leading-normal mt-4 text-justify">IN WITNESS WHEREOF, I have hereunto set my hand this <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> at Iligan City, Philippines.</p>
+      <p className="mb-1 leading-normal mt-0 text-justify"><span className="font-bold">IN WITNESS WHEREOF,</span> I have hereunto set my hand this <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> at Iligan City, Philippines.</p>
       <div className="text-center mt-4 mb-4 leading-none">
         <div className="fill-blank font-bold uppercase inline-block pb-0 border-b border-black min-w-[16rem]">{affiantWithSurname}</div>
         <div className="text-xs mt-0">Affiant</div>
       </div>
-      <p className="ausf-subscribed-sworn mb-1 leading-normal text-justify">SUBSCRIBED AND SWORN to before me this <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
+      <p className="ausf-subscribed-sworn mb-1 leading-normal text-justify"><span className="font-bold">SUBSCRIBED AND SWORN</span> to before me this <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
       <div className="registrar-signature-zone flex-1 flex min-h-[3rem] flex-col justify-center items-end">
         <div className="text-right city-registrar-signature">
           <p className="font-bold text-right">{data.cityCivilRegistrarName}</p>
@@ -78,7 +78,9 @@ export default function AusfOnly({ data }) {
         </div>
       </div>
       </div>
-      <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
+      <div className="mt-auto shrink-0">
+        <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
+      </div>
     </div>
   )
 }

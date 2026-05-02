@@ -78,6 +78,11 @@ export default function TransmittalDoc({
   const defaultSignatoryTitle = 'Registration Officer IV'
   const displaySignatory = (data.transmittalSignatoryName || defaultSignatoryName).toUpperCase()
   const signatoryTitle = data.transmittalSignatoryTitle || defaultSignatoryTitle
+  const listId = String(checklistConfig?.listId || '').trim()
+  const isAusfTransmittal = !listId
+  const isLegitimationTransmittal = Boolean(checklistConfig?.listId?.includes('legitimation'))
+  const isCourtDecreeTransmittal = Boolean(checklistConfig?.listId?.includes('court-decree'))
+  const useAdjustedTransmittalLines = isAusfTransmittal || isLegitimationTransmittal || isCourtDecreeTransmittal
   const subject = subjectLine != null && subjectLine !== '' ? subjectLine : `SUBJECT: ENDORSEMENT OF AFFIDAVIT TO USE SURNAME OF FATHER IN FAVOR OF ${childFullCaps || childFull}`
 
   return (
@@ -161,8 +166,8 @@ export default function TransmittalDoc({
 
       <footer className="print-doc-footer-wrap mt-auto pt-4 flex flex-col flex-shrink-0" role="contentinfo">
         <div className="text-left mb-6">
-          <p className="mb-4">For appropriate action.</p>
-          <p className="mb-12">Respectfully yours,</p>
+          <p className={`mb-4 ${useAdjustedTransmittalLines ? 'legitimation-transmittal-action-line' : ''}`}>For appropriate action.</p>
+          <p className={`mb-12 ${useAdjustedTransmittalLines ? 'legitimation-transmittal-respectfully-line' : ''}`}>Respectfully yours,</p>
           <div className={`flex flex-col ${signatoryGapNone || checklistConfig?.isOutOfTown || checklistConfig?.listId?.includes('legitimation') ? 'gap-0 pt-0' : 'gap-0 pt-1'}`} style={{ gap: 0 }}>
             <div className="font-bold uppercase" style={{ lineHeight: '1.1', margin: 0, padding: 0 }}>{displaySignatory}</div>
             <div className="text-sm" style={{ lineHeight: '1.1', margin: 0, padding: 0 }}>{signatoryTitle}</div>

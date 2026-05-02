@@ -89,7 +89,7 @@ const defaultAUSF = {
   cityCivilRegistrarName: "Atty. Yussif Don Justin F. Martil",
   certificateSignatoryName: "LORELIE L. CANTO",
   certificateIssuanceDate: "",
-  contactPhone: "(063) 224-5038",
+  contactPhone: "228-1311",
   contactEmail: "civilregistrar.iligan@gmail.com",
   motherReligion: "",
   motherOccupation: "",
@@ -155,8 +155,8 @@ const FIELD_POSITIONS = {
 };
 
 const PDF_CENTER_OFFSETS = {
-  x: 0.-0.1, // + right, - left
-  y: 0.-5.4, // + down, - up
+  x: 0. - 0.1, // + right, - left
+  y: 0. - 5.4, // + down, - up
 };
 
 // ── Print @page size for Legal (from print/constants PAPER_SIZES) ──────────
@@ -308,19 +308,30 @@ function ToastHost({ toasts, onDismiss }) {
 }
 
 // ── DocumentFooter (inlined from components/print/DocumentFooter) ─────────
+function normalizeContactPhone(phone) {
+  const raw = String(phone || "").trim();
+  const digits = raw.replace(/\D/g, "");
+
+  if (!digits) return "228-1311";
+  if (digits.endsWith("2245038") || digits.endsWith("2272806") || digits.endsWith("2281311")) {
+    return "228-1311";
+  }
+  return raw;
+}
+
 function DocumentFooter({ contactPhone, contactEmail, sloganBlue, contentClassName }) {
+  const displayPhone = normalizeContactPhone(contactPhone);
+
   return (
     <div className="print-doc-footer mt-4 w-full">
       <hr className="border-black border-t mb-3" />
       <div className={`grid grid-cols-2 gap-6 items-start ${contentClassName || "text-xs"}`}>
         <div className="leading-tight space-y-0.5">
           <p className="font-bold">CONTACT DETAILS:</p>
-          <p>Telephone No.: {contactPhone || "(063) 224-5038"}</p>
+          <p>Telephone No.: {displayPhone}</p>
           <p>Email: {contactEmail || "civilregistrar.iligan@gmail.com"}</p>
         </div>
-        <div
-          className={`text-right leading-tight space-y-0.5 italic font-bold ${sloganBlue ? "text-blue-600" : ""}`}
-        >
+        <div className="text-right leading-tight space-y-0.5 italic font-bold text-blue-600">
           <p>Births, Marriages and Deaths matter,</p>
           <p>Register them all!</p>
         </div>
@@ -450,7 +461,7 @@ function buildVerticalAnnotationPdfBase64(plainText) {
   let lines;
   let lineHeightIn;
 
-  for (;;) {
+  for (; ;) {
     doc.setFontSize(fontPt);
     lines = doc.splitTextToSize(str, innerW);
     lineHeightIn = (fontPt * PDF_LAYOUT.lineHeightRatio) / 72;
@@ -513,7 +524,7 @@ export default function AnnotationAckFieldPage() {
         if (!apiDraft) return;
         setData({ ...defaultAUSF, ...apiDraft });
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   useEffect(() => {

@@ -56,7 +56,7 @@ const VIEW_PRINT_OPTIONS = [
 
 const PRINT_SIZE_STYLE_ID = "print-paper-size";
 
-/** AUSF annotation views — Legal bond (8.5" × 14") */
+/** AUSF annotation views — Long bond (8.5" × 13") */
 const AUSF_ANNOTATION_TYPES = new Set([
   "child-ack-annotation",
   "child-not-ack-annotation",
@@ -104,7 +104,7 @@ export default function AUSFPrint() {
   const activePrintType = displayType ?? data?.formType;
   const pageSizeForPrint =
     activePrintType && AUSF_ANNOTATION_TYPES.has(activePrintType)
-      ? "legal"
+      ? "long"
       : paperSize;
   usePrintPageSize(pageSizeForPrint);
 
@@ -132,7 +132,7 @@ export default function AUSFPrint() {
   useEffect(() => {
     if (!activePrintType) return;
     if (AUSF_ANNOTATION_TYPES.has(activePrintType)) {
-      setPaperSize("legal");
+      setPaperSize("long");
     } else {
       setPaperSize((prev) => (prev === "legal" ? "a4" : prev));
     }
@@ -408,7 +408,7 @@ export default function AUSFPrint() {
                 }
                 title={
                   activePrintType && AUSF_ANNOTATION_TYPES.has(activePrintType)
-                    ? 'Annotation outputs are fixed to Legal (8.5" × 14") for printing'
+                    ? 'Annotation outputs are fixed to Long (8.5" × 13") for printing'
                     : undefined
                 }
                 className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white disabled:opacity-70 disabled:cursor-not-allowed"

@@ -103,7 +103,7 @@ export default function AnnotationFieldPage() {
         if (!apiDraft) return;
         setData({ ...defaultAUSF, ...apiDraft });
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   useEffect(() => {

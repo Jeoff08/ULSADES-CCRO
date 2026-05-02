@@ -75,7 +75,7 @@ export default function LegitimationPrint() {
   const effectiveType = allowedTypeIds.includes(validType)
     ? validType
     : (allowedTypeIds[0] || 'joint-affidavit')
-  const pageSizeForPrint = effectiveType === 'annotation' ? 'legal' : paperSize
+  const pageSizeForPrint = effectiveType === 'annotation' ? 'long' : paperSize
 
   const handleSavePdf = async () => {
     try {
@@ -152,7 +152,7 @@ export default function LegitimationPrint() {
 
   useEffect(() => {
     if (effectiveType === 'annotation') {
-      setPaperSize('legal')
+      setPaperSize('long')
     } else {
       setPaperSize((prev) => (prev === 'legal' ? 'a4' : prev))
     }
@@ -221,7 +221,7 @@ export default function LegitimationPrint() {
             disabled={effectiveType === 'annotation'}
             title={
               effectiveType === 'annotation'
-                ? 'Annotation outputs are fixed to Legal (8.5" × 14") for printing'
+                ? 'Annotation outputs are fixed to Long (8.5" × 13") for printing'
                 : undefined
             }
             className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white disabled:opacity-70 disabled:cursor-not-allowed"

@@ -97,9 +97,12 @@ export const defaultCourtDecree = {
   dateOfMarriage: '',
   placeOfMarriageOfParents: '',
   lcrForm1aRemarks: '',
+  lcrForm1aRemarksTouched: false,
   lcrForm2aRemarks: '',
+  lcrForm2aRemarksTouched: false,
   lcrForm3aRemarks: '',
+  lcrForm3aRemarksTouched: false,
   certificateSignatoryName: '',
-  contactPhone: '(063) 227 - 2806',
+  contactPhone: '228-1311',
   contactEmail: 'civilregistrar.iligan@gmail.com',
 }

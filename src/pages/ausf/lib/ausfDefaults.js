@@ -38,7 +38,7 @@ export const defaultAUSF = {
   cityCivilRegistrarName: 'Atty. Yussif Don Justin F. Martil',
   certificateSignatoryName: 'LORELIE L. CANTO',
   certificateIssuanceDate: '',
-  contactPhone: '(063) 224-5038',
+  contactPhone: '228-1311',
   contactEmail: 'civilregistrar.iligan@gmail.com',
   // Certificate of Live Birth (Annotation / Municipal Form 102)
   motherReligion: '',

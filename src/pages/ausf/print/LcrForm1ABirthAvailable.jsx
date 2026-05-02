@@ -1,9 +1,9 @@
 import React from 'react'
-import { 
-  formatDateCert, 
+import {
+  formatDateCert,
   formatDateLong,
-  fullName, 
-  joinCommaParts 
+  fullName,
+  joinCommaParts
 } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 
@@ -59,7 +59,7 @@ export default function LcrForm1ABirthAvailable({ data }) {
       <div className="court-decree-lcr-body-wrap flex-1 min-h-0 flex flex-col">
         <div className="court-decree-lcr-body-scaled flex flex-col h-full">
           <div className="flex-1">
-            <p className="font-bold mb-1">TO WHOM IT MAY CONCERN:</p>
+            <p className="font-bold mb-1 pl-8">TO WHOM IT MAY CONCERN:</p>
             <p className="mb-2 text-left court-decree-lcr-body">
               <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of birth appear in our Register of Births on Page{' '}
               <span className="inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold">{colbPage}</span>
@@ -68,7 +68,7 @@ export default function LcrForm1ABirthAvailable({ data }) {
               .
             </p>
 
-            <table className="w-full border-collapse text-sm mb-2 border border-black court-decree-lcr-table">
+            <table className="w-full border-collapse text-sm mt-6 mb-2 border border-black court-decree-lcr-table">
               <tbody>
                 {tableData.map((row) => (
                   <tr key={row.label}>
@@ -80,11 +80,11 @@ export default function LcrForm1ABirthAvailable({ data }) {
             </table>
 
             <div className="lcr-form-bottom-content">
-              <p className="mb-2 text-sm court-decree-lcr-body">
-                This certification is issued upon the request of OCRG/OWNER/PARENTS/GUARDIAN for any legal purposes.
+              <p className="mb-2 text-[11.7pt] court-decree-lcr-body ausf-lcr-cert-line">
+                This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.
               </p>
 
-              <div className="mt-10 mb-2 court-decree-lcr-body">
+              <div className="mt-10 mb-2 court-decree-lcr-body ausf-lcr-remarks-block">
                 <p className="font-bold text-sm mb-0.5 uppercase">REMARKS:</p>
                 <p className="leading-[1.35] text-justify break-words [overflow-wrap:anywhere] text-sm">
                   &quot;The child shall be known as <span className="font-bold underline">{childFull || '—'}</span> pursuant to RA 9255.&quot;
@@ -95,10 +95,10 @@ export default function LcrForm1ABirthAvailable({ data }) {
 
           {/* Signature Block & Note pushed to bottom */}
           <div className="mt-auto lcr-form-bottom-content pb-0 mb-0">
-            <div className="mt-1 mb-4 court-decree-lcr-body">
+            <div className="mt-1 mb-4 court-decree-lcr-body ausf-lcr-verified-block">
               <div className="flex justify-between items-end">
                 <div className="text-center flex flex-col items-center">
-                  <p className="text-sm mb-1 text-left self-start">{verifiedByLabel}</p>
+                  <p className="text-sm mb-1 -mt-2 print:-mt-3 text-left self-start">{verifiedByLabel}</p>
                   <div className="font-bold uppercase text-sm leading-none m-0 p-0">{regOfficerName}</div>
                   <div className="text-sm leading-none m-0 p-0">Registration Officer IV</div>
                 </div>
@@ -109,16 +109,16 @@ export default function LcrForm1ABirthAvailable({ data }) {
               </div>
             </div>
 
-            <p className="font-bold text-sm mb-0">Note: This certification is not valid if it has mark, erasure or alteration of any entry.</p>
           </div>
         </div>
       </div>
 
       <footer className="print-doc-footer mt-auto shrink-0">
-        <DocumentFooter 
-          contactPhone={data.contactPhone || '(063) 224-5038'} 
-          contactEmail={data.contactEmail || 'civilregistrar.iligan@gmail.com'} 
-          sloganBlue 
+        <p className="lcr1a-note-line font-bold text-sm mb-0">Note: This certification is not valid if it has mark, erasure or alteration of any entry.</p>
+        <DocumentFooter
+          contactPhone={data.contactPhone || '228-1311'}
+          contactEmail={data.contactEmail || 'civilregistrar.iligan@gmail.com'}
+          sloganBlue
         />
       </footer>
     </div>

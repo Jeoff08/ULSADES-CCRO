@@ -110,7 +110,7 @@ function deriveFilledAffectedDocuments(form) {
   return out
 }
 
-/** Annotation / marriage annotation print — Legal 8.5" × 14" for @page (print/PDF only via usePrintPageSize) */
+/** Annotation / marriage annotation print — Long 8.5" × 13" for @page (print/PDF only via usePrintPageSize) */
 const COURT_DECREE_ANNOTATION_TYPES = new Set([
   'annotation-form-1a',
   'annotation-form-2a',
@@ -131,7 +131,7 @@ export default function CourtDecreePrint() {
       : COURT_DECREE_TYPES.some((t) => t.id === type)
         ? type
         : 'cert-authenticity'
-  const pageSizeForPrint = COURT_DECREE_ANNOTATION_TYPES.has(validType) ? 'legal' : paperSize
+  const pageSizeForPrint = COURT_DECREE_ANNOTATION_TYPES.has(validType) ? 'long' : paperSize
   const [data, setData] = useState(() => getStoredData() || defaultCourtDecree)
   const uploadInputRef = useRef(null)
   const uploadScopeRef = useRef('')
@@ -216,7 +216,7 @@ export default function CourtDecreePrint() {
 
   useEffect(() => {
     if (COURT_DECREE_ANNOTATION_TYPES.has(validType)) {
-      setPaperSize('legal')
+      setPaperSize('long')
     } else {
       setPaperSize((prev) => (prev === 'legal' ? 'a4' : prev))
     }
@@ -273,8 +273,10 @@ export default function CourtDecreePrint() {
     const pom = String(data.placeOfMarriageOfParents || '').trim()
     const pomFallback = [out.placeOfMarriageCity, out.placeOfMarriageProvince, out.placeOfMarriageCountry].filter(Boolean).join(', ')
     out.placeOfMarriageOfParents = pom || pomFallback
-    const manualRemarks = String(data.lcrForm1aRemarks || '').trim()
-    out.remarks = manualRemarks || buildLcrRemarks(data, out, 'BIRTH')
+    const manualRaw = data?.lcrForm1aRemarks
+    const hasManualContent = String(manualRaw ?? '').trim() !== ''
+    const isRemarksTouched = data?.lcrForm1aRemarksTouched === true
+    out.remarks = (hasManualContent || isRemarksTouched) ? String(manualRaw ?? '') : buildLcrRemarks(data, out, 'BIRTH')
     return out
   }, [validType, data])
 
@@ -327,8 +329,10 @@ export default function CourtDecreePrint() {
     }
     const reg = String(data.lcr2aRegistryNumber || '').trim() || String(data.colbRegistryNo || '').trim()
     if (reg) out.colbRegistryNo = reg
-    const manualRemarks = String(data.lcrForm2aRemarks || '').trim()
-    out.remarks = manualRemarks || buildLcrRemarks(data, out, 'DEATH')
+    const manualRaw = data?.lcrForm2aRemarks
+    const hasManualContent = String(manualRaw ?? '').trim() !== ''
+    const isRemarksTouched = data?.lcrForm2aRemarksTouched === true
+    out.remarks = (hasManualContent || isRemarksTouched) ? String(manualRaw ?? '') : buildLcrRemarks(data, out, 'DEATH')
     return out
   }, [validType, data])
 
@@ -391,8 +395,8 @@ export default function CourtDecreePrint() {
     }
     const reg = String(data.lcr3aRegistryNumber || '').trim() || String(data.marriageRegistryNo || '').trim()
     if (reg) out.marriageRegistryNo = reg
-    const manualRemarks = String(data.lcrForm3aRemarks || '').trim()
-    out.remarks = manualRemarks || buildLcrRemarks(data, out, 'MARRIAGE')
+    const manualRaw = data?.lcrForm3aRemarks
+    out.remarks = String(manualRaw ?? '')
     return out
   }, [validType, data])
 
@@ -423,6 +427,10 @@ export default function CourtDecreePrint() {
         }
       }
     }
+    const manualRaw = data?.lcrForm2aRemarks
+    const hasManualContent = String(manualRaw ?? '').trim() !== ''
+    const isRemarksTouched = data?.lcrForm2aRemarksTouched === true
+    if (hasManualContent || isRemarksTouched) return String(manualRaw ?? '')
     if (!ownerData) ownerData = getLegitimationDraft()
     if (!ownerData) return buildLcrRemarks(data, { ...defaultLegitimation }, 'DEATH')
     return buildLcrRemarks(data, ownerData, 'DEATH')
@@ -450,17 +458,17 @@ export default function CourtDecreePrint() {
       content =
         effectiveAffectedDocs.length <= 1
           ? (
-              <div className="court-decree-lcr-form-outer">
-                <LcrForm1ABirthAvailable data={dataForLcr1A} />
-              </div>
-            )
+            <div className="court-decree-lcr-form-outer">
+              <LcrForm1ABirthAvailable data={dataForLcr1A} />
+            </div>
+          )
           : (
-              <div className="court-decree-lcr-form-outer space-y-6">
-                {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
-                {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
-                {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
-              </div>
-            )
+            <div className="court-decree-lcr-form-outer space-y-6">
+              {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
+              {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
+              {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
+            </div>
+          )
       break
     case 'lcr-form-2a':
       content = (
@@ -473,30 +481,38 @@ export default function CourtDecreePrint() {
       content =
         effectiveAffectedDocs.length <= 1
           ? (
-              <div className="court-decree-lcr-form-outer">
-                <LcrForm3AMarriageAvailable data={dataForLcr3A} />
-              </div>
-            )
+            <div className="court-decree-lcr-form-outer">
+              <LcrForm3AMarriageAvailable data={dataForLcr3A} />
+            </div>
+          )
           : (
-              <div className="court-decree-lcr-form-outer space-y-6">
-                {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
-                {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
-                {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
-              </div>
-            )
+            <div className="court-decree-lcr-form-outer space-y-6">
+              {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
+              {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
+              {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
+            </div>
+          )
       break
     case 'annotation-form-1a':
       content = (
         <AnnotationForForm1A
           paperSize={paperSize}
           data={{ ...data, remarks: dataForLcr1A.remarks }}
+          onRemarksChange={(remarks) => {
+            const next = { ...data, lcrForm1aRemarks: remarks, lcrForm1aRemarksTouched: true }
+            setData(next)
+            try {
+              const stored = getCourtDecreeDraft() || {}
+              saveCourtDecreeDraft({ ...stored, lcrForm1aRemarks: remarks, lcrForm1aRemarksTouched: true })
+            } catch (_) { }
+          }}
           onAttachmentChange={(url) => {
             const next = { ...data, annotationForm1AScanDataUrl: url ?? '' }
             setData(next)
             try {
               const stored = getCourtDecreeDraft() || {}
               saveCourtDecreeDraft({ ...stored, annotationForm1AScanDataUrl: url ?? '' })
-            } catch (_) {}
+            } catch (_) { }
           }}
         />
       )
@@ -506,19 +522,39 @@ export default function CourtDecreePrint() {
         <AnnotationForForm2A
           paperSize={paperSize}
           data={{ ...data, remarks: remarksForAnnotationForm2A }}
+          onRemarksChange={(remarks) => {
+            const next = { ...data, lcrForm2aRemarks: remarks, lcrForm2aRemarksTouched: true }
+            setData(next)
+            try {
+              const stored = getCourtDecreeDraft() || {}
+              saveCourtDecreeDraft({ ...stored, lcrForm2aRemarks: remarks, lcrForm2aRemarksTouched: true })
+            } catch (_) { }
+          }}
           onAttachmentChange={(url) => {
             const next = { ...data, annotationForm2AScanDataUrl: url ?? '' }
             setData(next)
             try {
               const stored = getCourtDecreeDraft() || {}
               saveCourtDecreeDraft({ ...stored, annotationForm2AScanDataUrl: url ?? '' })
-            } catch (_) {}
+            } catch (_) { }
           }}
         />
       )
       break
     case 'annotation-form-3a':
-      content = <AnnotationForForm3A data={data} />
+      content = (
+        <AnnotationForForm3A
+          data={{ ...data, remarks: String(data?.lcrForm3aRemarks ?? '') }}
+          onRemarksChange={(remarks) => {
+            const next = { ...data, lcrForm3aRemarks: remarks, lcrForm3aRemarksTouched: true }
+            setData(next)
+            try {
+              const stored = getCourtDecreeDraft() || {}
+              saveCourtDecreeDraft({ ...stored, lcrForm3aRemarks: remarks, lcrForm3aRemarksTouched: true })
+            } catch (_) { }
+          }}
+        />
+      )
       break
     case 'marriage-nullity-art42':
       content = (
@@ -532,7 +568,7 @@ export default function CourtDecreePrint() {
             try {
               const stored = getCourtDecreeDraft() || {}
               saveCourtDecreeDraft({ ...stored, marriageNullityScanDataUrl: url ?? '' })
-            } catch (_) {}
+            } catch (_) { }
           }}
           onModeChange={(m) => {
             const next = { ...data, marriageAnnotationMode: m }
@@ -540,7 +576,7 @@ export default function CourtDecreePrint() {
             try {
               const stored = getCourtDecreeDraft() || {}
               saveCourtDecreeDraft({ ...stored, marriageAnnotationMode: m })
-            } catch (_) {}
+            } catch (_) { }
           }}
         />
       )
@@ -567,7 +603,7 @@ export default function CourtDecreePrint() {
             disabled={COURT_DECREE_ANNOTATION_TYPES.has(validType)}
             title={
               COURT_DECREE_ANNOTATION_TYPES.has(validType)
-                ? 'Annotation outputs are fixed to Legal (8.5" × 14") for printing'
+                ? 'Annotation outputs are fixed to Long (8.5" × 13") for printing'
                 : undefined
             }
             className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white disabled:opacity-70 disabled:cursor-not-allowed"
@@ -670,7 +706,7 @@ export default function CourtDecreePrint() {
                 try {
                   const stored = getCourtDecreeDraft() || {}
                   saveCourtDecreeDraft({ ...stored, marriageAnnotationMode: m })
-                } catch (_) {}
+                } catch (_) { }
               }}
             />
           ) : null}

@@ -1,40 +1,68 @@
-import React from 'react'
-import { formatDateCert } from '../../../lib/printUtils'
-import { DocumentHeader, DocumentFooter } from '../../../components/print'
+import React, { useEffect, useRef } from 'react'
+import { FIELD_POSITIONS } from '../../../lib/colbCertificateLayout'
 
-/** ANNOTATION FOR FORM 3A – court decree. Print layout matches Certificate of Authenticity. */
-export default function AnnotationForForm3A({ data }) {
-  const issuedDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
-  const signatory = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
+/** ANNOTATION FOR FORM 3A – court decree (Certificate of Marriage). */
+export default function AnnotationForForm3A({ data, onRemarksChange }) {
+  const remarks = String(data?.remarks ?? '')
+  const sharedField = FIELD_POSITIONS.ausf_annotation_field
+  const printFieldRect =
+    sharedField &&
+      Number.isFinite(sharedField.x) &&
+      Number.isFinite(sharedField.y) &&
+      Number.isFinite(sharedField.width) &&
+      Number.isFinite(sharedField.height)
+      ? {
+        left: sharedField.x / 2550,
+        top: sharedField.y / 4200,
+        width: sharedField.width / 2550,
+        height: sharedField.height / 4200,
+      }
+      : { left: 0.13, top: 0.86, width: 0.72, height: 0.05 }
+  const printExpandedLeft = -0.01
+  const printExpandedWidth = 1.07
+  const remarksInputRef = useRef(null)
+
+  useEffect(() => {
+    const el = remarksInputRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [remarks])
 
   return (
     <div className="ausf-doc print-doc print-doc-cert-auth bg-white text-black text-base max-w-[210mm] mx-auto px-6 py-4 leading-relaxed flex flex-col min-h-[297mm]">
-      <DocumentHeader registryNo={data.registryNumber} />
-
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
-        <h2 className="text-center font-bold text-[30px] uppercase mb-6 tracking-tight">ANNOTATION FOR FORM 3A</h2>
+        <h2 className="text-center font-bold text-[30px] uppercase mb-6 tracking-tight print:hidden">ANNOTATION FOR FORM 3A</h2>
 
-        <p className="font-bold text-[18px] mb-4">TO WHOM IT MAY CONCERN:</p>
-
-        <div className="cert-auth-body cert-auth-body-gaps text-justify text-[18px] leading-[1.8] pl-4 print:pl-6">
-          <p>
-            This document is issued in relation to the court decree. Please follow the standard annotation instructions for LCR Form 3A.
-          </p>
-          <p>
-            Issued this <span className="font-bold underline">{issuedDate}</span> at Iligan City, Philippines.
-          </p>
+        <div className="mb-4 print:hidden">
+          <p className="font-bold text-base mt-4 mb-1">REMARKS/ANNOTATIONS (For LCRO/OCRG Use Only)</p>
+          <div className="border border-black bg-white min-h-[5rem] p-4">
+            <textarea
+              ref={remarksInputRef}
+              value={remarks}
+              onChange={(e) => onRemarksChange?.(e.target.value)}
+              className="w-full min-h-[5rem] resize-none overflow-hidden bg-transparent text-[12px] leading-relaxed text-justify outline-none"
+              rows={4}
+            />
+          </div>
         </div>
 
-        <div className="min-h-[8rem] flex-1" aria-hidden />
-      </div>
-
-      <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-end flex-shrink-0">
-        <div className="flex flex-col items-end text-right mb-8 w-full max-w-md">
-          <p className="font-bold uppercase">{signatory}</p>
-          <p className="text-base italic">City Civil Registrar</p>
-        </div>
-        <div className="w-full">
-          <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
+        <div className="hidden print:block flex-1 relative">
+          <p
+            className="absolute text-[12px] leading-none font-bold text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+            style={{
+              left: `${printExpandedLeft * 100}%`,
+              top: `${(printFieldRect.top ?? 0) * 100}%`,
+              width: `${printExpandedWidth * 100}%`,
+              minHeight: `${(printFieldRect.height ?? 0.1) * 100}%`,
+              margin: 0,
+              fontFamily: 'Arial, sans-serif',
+              textAlign: 'justify',
+              textJustify: 'inter-word',
+            }}
+          >
+            {remarks}
+          </p>
         </div>
       </div>
     </div>

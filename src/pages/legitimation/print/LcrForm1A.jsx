@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { 
-  formatDateCert, 
-  fullName, 
-  formatLcrFormShortDate 
+import {
+  formatDateCert,
+  fullName,
+  formatLcrFormShortDate
 } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 
@@ -90,7 +90,7 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
   const colbBook = data.colbBookNo ?? data.colbBookNumber ?? '0'
 
   return (
-    <div className="ausf-doc print-doc print-doc-lcr-1a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col">
+    <div className="legitimation-lcr1a-doc ausf-doc print-doc print-doc-lcr-1a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col">
       <div className="court-decree-lcr-header shrink-0">
         <header className="print-doc-header">
           <PrintHeaderRow />
@@ -108,7 +108,7 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
       <div className="court-decree-lcr-body-wrap flex-1 min-h-0 flex flex-col">
         <div className="court-decree-lcr-body-scaled flex flex-col h-full">
           <div>
-            <p className="font-bold mb-1">TO WHOM IT MAY CONCERN:</p>
+            <p className="font-bold mb-1 pl-8">TO WHOM IT MAY CONCERN:</p>
             <p className="mb-2 text-left court-decree-lcr-body">
               <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of birth appear in our Register of Births on Page{' '}
               {editableTable && onDataChange ? (
@@ -141,50 +141,50 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
               .
             </p>
 
-            <table className="w-full border-collapse text-sm mb-2 border border-black court-decree-lcr-table">
+            <table className="w-full border-collapse text-sm mt-6 mb-2 border border-black court-decree-lcr-table">
               <tbody>
                 {editableTable && onDataChange
                   ? LCR_1A_EDITABLE_ROWS.map((row) => (
-                      <tr key={row.k}>
-                        <td className="py-1 px-2 border border-black font-medium align-top w-48">{row.label}</td>
-                        <td className="py-1 px-2 border border-black font-bold text-center align-top">
-                          <input
-                            type="text"
-                            className="no-print w-full min-w-0 text-center font-bold border-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none focus:border-[var(--primary-blue)] px-1"
-                            value={cellEditText(table[row.k])}
-                            onChange={(e) => patchData(row.patch(e.target.value))}
-                          />
-                          <span className="hidden print:inline">{table[row.k]}</span>
-                        </td>
-                      </tr>
-                    ))
+                    <tr key={row.k}>
+                      <td className="py-1 px-2 border border-black font-medium align-top w-48">{row.label}</td>
+                      <td className="py-1 px-2 border border-black font-bold text-center align-top">
+                        <input
+                          type="text"
+                          className="no-print w-full min-w-0 text-center font-bold border-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none focus:border-[var(--primary-blue)] px-1"
+                          value={cellEditText(table[row.k])}
+                          onChange={(e) => patchData(row.patch(e.target.value))}
+                        />
+                        <span className="hidden print:inline">{table[row.k]}</span>
+                      </td>
+                    </tr>
+                  ))
                   : Object.entries({
-                      'LCR Registry Number': table.registry,
-                      'Date of Registration': table.dateReg,
-                      'Name of Child': table.nameChild,
-                      'Sex': table.sex,
-                      'Date of Birth': table.dob,
-                      'Place of Birth': table.pob,
-                      'Name of Mother': table.mother,
-                      'Citizenship of Mother': table.motherCit,
-                      'Name of Father': table.father,
-                      'Citizenship of Father': table.fatherCit,
-                      'Date of Marriage of Parents': table.dom,
-                      'Place of Marriage of Parents': table.pom,
-                    }).map(([label, val]) => (
-                      <tr key={label}>
-                        <td className="py-1 px-2 border border-black font-medium align-top w-48">{label}</td>
-                        <td className="py-1 px-2 border border-black font-bold text-center">{val}</td>
-                      </tr>
-                    ))}
+                    'LCR Registry Number': table.registry,
+                    'Date of Registration': table.dateReg,
+                    'Name of Child': table.nameChild,
+                    'Sex': table.sex,
+                    'Date of Birth': table.dob,
+                    'Place of Birth': table.pob,
+                    'Name of Mother': table.mother,
+                    'Citizenship of Mother': table.motherCit,
+                    'Name of Father': table.father,
+                    'Citizenship of Father': table.fatherCit,
+                    'Date of Marriage of Parents': table.dom,
+                    'Place of Marriage of Parents': table.pom,
+                  }).map(([label, val]) => (
+                    <tr key={label}>
+                      <td className="py-1 px-2 border border-black font-medium align-top w-48">{label}</td>
+                      <td className="py-1 px-2 border border-black font-bold text-center">{val}</td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
 
             <p className="mb-2 text-sm court-decree-lcr-body">
-              This certification is issued upon the request of OCRG/OWNER/PARENTS/GUARDIAN for any legal purposes.
+              This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.
             </p>
 
-            <div className="mt-10 mb-2 court-decree-lcr-body">
+            <div className="mt-10 mb-2 court-decree-lcr-body legitimation-lcr1a-remarks-block">
               <p className="font-bold text-sm mb-0.5">REMARKS:</p>
               <div className="no-print mb-1">
                 <textarea
@@ -210,7 +210,7 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
       <div className="court-decree-lcr-footer mt-auto shrink-0">
         <div className="court-decree-lcr-body mb-1">
           <div className="mb-1 flex justify-between items-end gap-0">
-            <div className="flex flex-col items-center text-center">
+            <div className="legitimation-lcr1a-verified-left flex flex-col items-center text-center">
               <p className="font-bold text-sm mb-0.5 self-start">Verified by:</p>
               <p className="font-bold text-sm border-b border-black inline-block">{verifiedByName}</p>
               <p className="text-xs mt-0">{regOfficerTitle}</p>
@@ -220,12 +220,12 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
               <p className="text-xs mt-0">City Civil Registrar</p>
             </div>
           </div>
-          <p className="font-bold text-sm mb-1">Note: This certification is not valid if it has mark, erasure or alteration of any entry.</p>
+          <p className="lcr1a-note-line font-bold text-sm mb-1">Note: This certification is not valid if it has mark, erasure or alteration of any entry.</p>
         </div>
-        <DocumentFooter 
-          contactPhone={data.contactPhone || '(063) 227-2806'} 
-          contactEmail={data.contactEmail || 'civilregistrar.iligan@gmail.com'} 
-          sloganBlue 
+        <DocumentFooter
+          contactPhone={data.contactPhone || '228-1311'}
+          contactEmail={data.contactEmail || 'civilregistrar.iligan@gmail.com'}
+          sloganBlue
         />
       </div>
     </div>

@@ -28,7 +28,7 @@ export default function SoleAffidavitLegitimation({ data }) {
   const registryNo = data.affidavitLegitRegistryNo || '—'
 
   return (
-    <div className="ausf-doc print-doc legitimation-affidavit-doc bg-white text-black text-[17px] max-w-[210mm] mx-auto px-6 py-4 leading-snug flex flex-col min-h-0">
+    <div className="sole-legitimation-doc ausf-doc print-doc legitimation-affidavit-doc bg-white text-black text-[17px] max-w-[210mm] mx-auto px-6 py-4 leading-snug flex flex-col min-h-0">
       <DocumentHeader
         registryNo={registryNo}
         headerTextSize="20px"
@@ -48,13 +48,13 @@ export default function SoleAffidavitLegitimation({ data }) {
           AFFIDAVIT OF LEGITIMATION
         </h2>
 
-        <p className="mb-4 leading-normal text-justify">
+        <p className="mb-0.5 leading-normal text-justify">
           I, <span className={`${FILL_BOLD} px-0.5 align-baseline uppercase`}>{affiantName || '—'}</span>, of legal age,
           married, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby
           declare THAT:
         </p>
 
-        <ol className="list-decimal list-outside ml-8 mr-0 pl-1 space-y-3 mb-3 mt-4 text-justify leading-normal">
+        <ol className="list-decimal list-outside ml-8 mr-0 pl-1 space-y-3 mb-0.5 mt-0.5 text-justify leading-normal">
           <li>
             We, <span className={`${FILL_BOLD} px-0.5 align-baseline uppercase`}>{fatherFull || '—'}</span> and{' '}
             <span className={`${FILL_BOLD} px-0.5 align-baseline uppercase`}>{motherFull || '—'}</span> are the biological
@@ -90,7 +90,7 @@ export default function SoleAffidavitLegitimation({ data }) {
           </li>
         </ol>
 
-        <p className="mb-2 leading-normal mt-4 text-justify">
+        <p className="mb-2 leading-normal mt-0.5 text-justify">
           IN WITNESS WHEREOF, I have hereunto set my hand this{' '}
           <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> at Iligan City, Philippines.
         </p>
