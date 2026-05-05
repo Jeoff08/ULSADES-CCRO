@@ -26,6 +26,13 @@ export const defaultCourtDecree = {
   recipientName: '',
   recipientTitle: '',
   recipientOffice: '',
+  /** When true, print offers Out-of-Town Transmittal only; when false, local Transmittal only. */
+  courtDecreeTransmittalIsOutOfTown: false,
+  /** Local transmittal “To PSA” block (4 lines); empty = use print defaults */
+  transmittalToPsaLine1: '',
+  transmittalToPsaLine2: '',
+  transmittalToPsaLine3: '',
+  transmittalToPsaLine4: '',
   // LCR Form 1A table-only (court decree) — one field per printed row
   lcr1aRegistryNumber: '',
   lcr1aDateRegistration: '',
@@ -105,4 +112,12 @@ export const defaultCourtDecree = {
   certificateSignatoryName: '',
   contactPhone: '228-1311',
   contactEmail: 'civilregistrar.iligan@gmail.com',
+}
+
+/** Align out-of-town flag with legacy print formType when loading drafts. */
+export function syncCourtDecreeTransmittalFlagFromFormType(data) {
+  if (!data || typeof data !== 'object') return data
+  if (data.formType === 'out-of-town-transmittal') return { ...data, courtDecreeTransmittalIsOutOfTown: true }
+  if (data.formType === 'transmittal') return { ...data, courtDecreeTransmittalIsOutOfTown: false }
+  return data
 }

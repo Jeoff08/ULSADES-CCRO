@@ -31,6 +31,25 @@ body {
   body, .layout-root, .layout-main {
     background: #fff !important;
   }
+
+  /* Correction of entries — combined packet: one document per page break */
+  .correction-print-all-chunk {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .correction-print-all-chunk:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+}
+
+@media screen {
+  .correction-print-all-chunk:not(:last-child) {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px dashed rgb(203 213 225);
+  }
 }
 
 body.pdf-capture,
@@ -174,11 +193,11 @@ html[data-paper-size="legal"] .court-decree-lcr-form {
   padding: 0;
   line-height: 1.25;
 }
-/* AUSF-only: screen preview – footer 12px to match PDF */
+/* AUSF-only: screen preview – footer 13px (shared contact block) */
 .ausf-only-doc .print-doc-footer,
 .ausf-only-doc .print-doc-footer p,
 .ausf-only-doc .print-doc-footer .text-xs {
-  font-size: 12px;
+  font-size: 13px;
 }
 /* AUSF-only: City Civil Registrar block right-aligned (screen and print) */
 .ausf-only-doc .registrar-signature-zone {
@@ -419,9 +438,15 @@ html[data-paper-size="legal"] .court-decree-lcr-form {
   }
 }
 
-/* Dashboard / layout fade-in after login */
+/* Dashboard / layout: visible by default; fade only when motion is OK (avoids stuck opacity:0). */
 .layout-main {
-  animation: layout-fade-in 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .layout-main {
+    opacity: 0;
+    animation: layout-fade-in 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
 }
 @keyframes layout-fade-in {
   from {
@@ -674,6 +699,173 @@ html[data-paper-size="legal"] .print-doc-transmittal-elderly div {
   font-size: 17px !important;
 }
 
+/* Court decree transmittal: 12pt PSA name + SUBJECT (override elderly transmittal scaling) */
+html[data-paper-size="a4"] .print-doc-transmittal-elderly p.court-decree-transmittal-psa-name,
+html[data-paper-size="a4"] .print-doc-transmittal-elderly p.court-decree-transmittal-subject-line,
+html[data-paper-size="short"] .print-doc-transmittal-elderly p.court-decree-transmittal-psa-name,
+html[data-paper-size="short"] .print-doc-transmittal-elderly p.court-decree-transmittal-subject-line,
+html[data-paper-size="long"] .print-doc-transmittal-elderly p.court-decree-transmittal-psa-name,
+html[data-paper-size="long"] .print-doc-transmittal-elderly p.court-decree-transmittal-subject-line,
+html[data-paper-size="legal"] .print-doc-transmittal-elderly p.court-decree-transmittal-psa-name,
+html[data-paper-size="legal"] .print-doc-transmittal-elderly p.court-decree-transmittal-subject-line {
+  font-size: 12pt !important;
+  line-height: 1.35 !important;
+}
+html[data-paper-size="a4"] .print-doc-transmittal-elderly .court-decree-oot-transmittal-mcr-header p,
+html[data-paper-size="short"] .print-doc-transmittal-elderly .court-decree-oot-transmittal-mcr-header p,
+html[data-paper-size="long"] .print-doc-transmittal-elderly .court-decree-oot-transmittal-mcr-header p,
+html[data-paper-size="legal"] .print-doc-transmittal-elderly .court-decree-oot-transmittal-mcr-header p {
+  font-size: 12pt !important;
+  line-height: 1.35 !important;
+}
+.print-doc-transmittal-elderly p.court-decree-transmittal-psa-name,
+.print-doc-transmittal-elderly p.court-decree-transmittal-subject-line {
+  font-size: 12pt;
+  line-height: 1.35;
+}
+.print-doc-transmittal-elderly .court-decree-transmittal-psa-header p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  line-height: 1.08 !important;
+}
+.print-doc-transmittal-elderly .court-decree-oot-transmittal-mcr-header p {
+  font-size: 12pt;
+  line-height: 1.35;
+}
+
+/* Legitimation / AUSF out-of-town: three-line addressee (print/PDF type size) */
+html[data-paper-size="a4"] .print-doc-transmittal-elderly .oot-transmittal-addressee-header p,
+html[data-paper-size="short"] .print-doc-transmittal-elderly .oot-transmittal-addressee-header p,
+html[data-paper-size="long"] .print-doc-transmittal-elderly .oot-transmittal-addressee-header p,
+html[data-paper-size="legal"] .print-doc-transmittal-elderly .oot-transmittal-addressee-header p {
+  font-size: 12pt !important;
+  line-height: 1.35 !important;
+}
+.print-doc-transmittal-elderly .oot-transmittal-addressee-header p {
+  font-size: 12pt;
+  line-height: 1.35;
+}
+
+/* Legitimation transmittal (local + OOT): rule under header, date directly beneath */
+.print-doc-transmittal-elderly.legitimation-transmittal-doc .print-doc-header hr.legitimation-transmittal-header-rule {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+.print-doc-transmittal-elderly.legitimation-transmittal-doc p.legitimation-transmittal-print-date {
+  margin-top: 0 !important;
+  margin-bottom: 0.75rem !important;
+  padding-top: 0 !important;
+}
+
+/* AUSF transmittal (local + out-of-town): date tight under header rule */
+.print-doc-transmittal-elderly .print-doc-header hr:has(+ p.ausf-transmittal-print-date) {
+  margin-bottom: 0 !important;
+}
+.print-doc-transmittal-elderly .print-doc-header hr:has(+ hr + p.ausf-transmittal-print-date) {
+  margin-bottom: 0 !important;
+}
+.print-doc-transmittal-elderly .print-doc-header hr + hr:has(+ p.ausf-transmittal-print-date) {
+  margin-bottom: 0 !important;
+}
+.print-doc-transmittal-elderly p.ausf-transmittal-print-date {
+  margin-top: 0.125rem !important;
+  margin-bottom: 0.75rem !important;
+  padding-top: 0 !important;
+}
+
+/* AUSF local transmittal SUBJECT: 16px on screen; 12pt + slight lift in print/PDF */
+html[data-paper-size='a4'] .print-doc-transmittal-elderly p.ausf-transmittal-subject-line,
+html[data-paper-size='short'] .print-doc-transmittal-elderly p.ausf-transmittal-subject-line,
+html[data-paper-size='long'] .print-doc-transmittal-elderly p.ausf-transmittal-subject-line,
+html[data-paper-size='legal'] .print-doc-transmittal-elderly p.ausf-transmittal-subject-line,
+.print-doc-transmittal-elderly p.ausf-transmittal-subject-line {
+  font-size: 16px !important;
+  line-height: 1.25 !important;
+  margin-top: 0 !important;
+}
+@media print {
+  html[data-paper-size='a4'] .print-doc-transmittal-elderly p.ausf-transmittal-subject-line,
+  html[data-paper-size='short'] .print-doc-transmittal-elderly p.ausf-transmittal-subject-line,
+  html[data-paper-size='long'] .print-doc-transmittal-elderly p.ausf-transmittal-subject-line,
+  html[data-paper-size='legal'] .print-doc-transmittal-elderly p.ausf-transmittal-subject-line,
+  .print-doc-transmittal-elderly p.ausf-transmittal-subject-line {
+    font-size: 12pt !important;
+    line-height: 1.25 !important;
+    margin-top: -0.45rem !important;
+  }
+}
+
+/* AUSF transmittal: one-line gap between SUBJECT and salutation */
+.print-doc-transmittal-elderly p.ausf-transmittal-salutation {
+  margin-top: 1em !important;
+}
+@media print {
+  .print-doc-transmittal-elderly p.ausf-transmittal-salutation {
+    margin-top: 1em !important;
+  }
+}
+
+/* Legitimation transmittal: PSA block, SUBJECT, numbered attachments = 12pt (override elderly transmittal scaling) */
+html[data-paper-size="a4"] .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-psa-header p,
+html[data-paper-size="short"] .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-psa-header p,
+html[data-paper-size="long"] .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-psa-header p,
+html[data-paper-size="legal"] .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-psa-header p {
+  font-size: 12pt !important;
+  line-height: 1.12 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+html[data-paper-size="a4"] .print-doc-transmittal-elderly.legitimation-transmittal-doc p.legitimation-transmittal-subject-line,
+html[data-paper-size="short"] .print-doc-transmittal-elderly.legitimation-transmittal-doc p.legitimation-transmittal-subject-line,
+html[data-paper-size="long"] .print-doc-transmittal-elderly.legitimation-transmittal-doc p.legitimation-transmittal-subject-line,
+html[data-paper-size="legal"] .print-doc-transmittal-elderly.legitimation-transmittal-doc p.legitimation-transmittal-subject-line,
+html[data-paper-size="a4"] .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-attachments-print li,
+html[data-paper-size="short"] .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-attachments-print li,
+html[data-paper-size="long"] .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-attachments-print li,
+html[data-paper-size="legal"] .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-attachments-print li {
+  font-size: 12pt !important;
+  line-height: 1.35 !important;
+}
+html[data-paper-size="a4"] .print-doc-transmittal-elderly.legitimation-transmittal-doc p.legitimation-transmittal-subject-line,
+html[data-paper-size="short"] .print-doc-transmittal-elderly.legitimation-transmittal-doc p.legitimation-transmittal-subject-line,
+html[data-paper-size="long"] .print-doc-transmittal-elderly.legitimation-transmittal-doc p.legitimation-transmittal-subject-line,
+html[data-paper-size="legal"] .print-doc-transmittal-elderly.legitimation-transmittal-doc p.legitimation-transmittal-subject-line {
+  margin-bottom: 2.75em !important;
+}
+.print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-psa-header p {
+  font-size: 12pt;
+  line-height: 1.12;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.print-doc-transmittal-elderly.legitimation-transmittal-doc p.legitimation-transmittal-subject-line,
+.print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-attachments-print li {
+  font-size: 12pt;
+  line-height: 1.35;
+}
+.print-doc-transmittal-elderly.legitimation-transmittal-doc p.legitimation-transmittal-subject-line {
+  margin-bottom: 2.75em !important;
+}
+
+/* Court decree transmittal: gap between SUBJECT and salutation (e.g. Ma'am:) */
+html[data-paper-size="a4"] .print-doc-transmittal-elderly p.court-decree-transmittal-subject-line,
+html[data-paper-size="short"] .print-doc-transmittal-elderly p.court-decree-transmittal-subject-line,
+html[data-paper-size="long"] .print-doc-transmittal-elderly p.court-decree-transmittal-subject-line,
+html[data-paper-size="legal"] .print-doc-transmittal-elderly p.court-decree-transmittal-subject-line,
+.print-doc-transmittal-elderly p.court-decree-transmittal-subject-line {
+  margin-bottom: 2em !important;
+}
+html[data-paper-size="a4"] .print-doc-transmittal-elderly .court-decree-transmittal-attachments-print li,
+html[data-paper-size="short"] .print-doc-transmittal-elderly .court-decree-transmittal-attachments-print li,
+html[data-paper-size="long"] .print-doc-transmittal-elderly .court-decree-transmittal-attachments-print li,
+html[data-paper-size="legal"] .print-doc-transmittal-elderly .court-decree-transmittal-attachments-print li,
+.print-doc-transmittal-elderly .court-decree-transmittal-attachments-print li {
+  font-size: 12pt !important;
+  line-height: 1.35 !important;
+}
+
 /* Supplemental Report scaling */
 html[data-paper-size="a4"] .supplemental-report-doc,
 html[data-paper-size="a4"] .supplemental-report-doc p,
@@ -741,6 +933,20 @@ html[data-paper-size="long"] .ausf-0-6-doc.print-doc , html[data-paper-size="leg
 .cert-auth-body-gaps p + p {
   margin-top: 2em; /* 2 line heights = 2-space gap between blocks */
 }
+/* Court Decree Certificate of Registration only: gap between body paragraphs (screen / preview) */
+.print-doc-cert-registration .cert-reg-body.cert-auth-body-gaps p + p {
+  margin-top: 2.5em;
+}
+
+/* Court Decree CoA / CoR: first-line indent on body paragraphs (not the middle “request… legal purposes” line) */
+.print-doc-cert-auth .cert-auth-body p,
+.print-doc-cert-registration .cert-reg-body p {
+  text-indent: 0.25in;
+}
+.print-doc-cert-auth .cert-auth-body p:nth-of-type(2),
+.print-doc-cert-registration .cert-reg-body p:nth-of-type(2) {
+  text-indent: 0;
+}
 
 /* Court decree CoA/CoR: signatory stack — same tight spacing on screen preview and in print/PDF */
 .print-doc-cert-auth .court-decree-cert-signatory-block p,
@@ -805,10 +1011,22 @@ body.pdf-capture .print-doc-lcr-1a .print-header-address {
   padding: 0 !important;
   line-height: 1.05 !important;
 }
-/* Certificate of Authenticity / Registration: ensure 2-space gap inside content when capturing to PDF */
-body.pdf-capture .print-doc-cert-auth .cert-auth-body p + p,
-body.pdf-capture .print-doc-cert-registration .cert-reg-body p + p {
+/* Certificate of Authenticity: 2-line gap when capturing to PDF */
+body.pdf-capture .print-doc-cert-auth .cert-auth-body p + p {
   margin-top: 2em !important;
+}
+/* Certificate of Registration: gap between body paragraphs (PDF capture) */
+body.pdf-capture .print-doc-cert-registration .cert-reg-body p + p {
+  margin-top: 2.5em !important;
+}
+/* Court Decree CoA / CoR: first-line indent on body paragraphs (PDF capture) */
+body.pdf-capture .print-doc-cert-auth .cert-auth-body p,
+body.pdf-capture .print-doc-cert-registration .cert-reg-body p {
+  text-indent: 0.25in !important;
+}
+body.pdf-capture .print-doc-cert-auth .cert-auth-body p:nth-of-type(2),
+body.pdf-capture .print-doc-cert-registration .cert-reg-body p:nth-of-type(2) {
+  text-indent: 0 !important;
 }
 /* Court Decree CoA / CoR: signatory centered under name + sizes (PDF capture) */
 body.pdf-capture .print-doc-cert-auth .print-doc-footer-wrap > div.court-decree-cert-signatory-block,
@@ -856,12 +1074,94 @@ body.pdf-capture .print-doc-transmittal-elderly p {
 body.pdf-capture .print-doc-transmittal-elderly p.font-bold {
   font-size: 15pt !important;
 }
+body.pdf-capture .print-doc-transmittal-elderly p.court-decree-transmittal-psa-name,
+body.pdf-capture .print-doc-transmittal-elderly p.court-decree-transmittal-subject-line {
+  font-size: 12pt !important;
+  line-height: 1.35 !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly .court-decree-transmittal-psa-header p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 1 !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly .court-decree-transmittal-psa-header .m-0 {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 1 !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly .court-decree-oot-transmittal-mcr-header p {
+  font-size: 12pt !important;
+  line-height: 1.35 !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly .oot-transmittal-addressee-header p {
+  font-size: 12pt !important;
+  line-height: 1.35 !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly.legitimation-transmittal-doc .print-doc-header hr.legitimation-transmittal-header-rule {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly.legitimation-transmittal-doc p.legitimation-transmittal-print-date {
+  margin-top: 0 !important;
+  margin-bottom: 0.75rem !important;
+  padding-top: 0 !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly .print-doc-header hr:has(+ p.ausf-transmittal-print-date) {
+  margin-bottom: 0 !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly .print-doc-header hr:has(+ hr + p.ausf-transmittal-print-date) {
+  margin-bottom: 0 !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly .print-doc-header hr + hr:has(+ p.ausf-transmittal-print-date) {
+  margin-bottom: 0 !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly p.ausf-transmittal-print-date {
+  margin-top: 0.125rem !important;
+  margin-bottom: 0.75rem !important;
+  padding-top: 0 !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly p.ausf-transmittal-subject-line {
+  font-size: 12pt !important;
+  line-height: 1.25 !important;
+  margin-top: -0.45rem !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly p.ausf-transmittal-salutation {
+  margin-top: 1em !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-psa-header p {
+  font-size: 12pt !important;
+  line-height: 1.12 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly.legitimation-transmittal-doc p.legitimation-transmittal-subject-line {
+  font-size: 12pt !important;
+  line-height: 1.35 !important;
+  margin-bottom: 2.75em !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly p.court-decree-transmittal-subject-line {
+  margin-bottom: 2em !important;
+}
 body.pdf-capture .print-doc-transmittal-elderly ol li {
   font-size: 14pt !important;
 }
+body.pdf-capture .print-doc-transmittal-elderly .court-decree-transmittal-attachments-print li {
+  font-size: 12pt !important;
+  line-height: 1.35 !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-attachments-print li {
+  font-size: 12pt !important;
+  line-height: 1.35 !important;
+}
 body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer p,
 body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
-  font-size: 12pt !important;
+  font-size: 10pt !important;
 }
 
 /* Annotation (Child Not Ack): overlay fits only the REMARKS/ANNOTATIONS box – width aligns with form's green edge */
@@ -1578,7 +1878,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="long"] .ausf-0-6-doc .print-doc-footer p, html[data-paper-size="legal"] .ausf-0-6-doc .print-doc-footer p
   html[data-paper-size="long"] .ausf-0-6-doc .print-doc-footer .text-xs, html[data-paper-size="legal"] .ausf-0-6-doc .print-doc-footer .text-xs
   html[data-paper-size="long"] .ausf-0-6-doc .print-doc-footer * , html[data-paper-size="legal"] .ausf-0-6-doc .print-doc-footer * {
-    font-size: 12px !important;
+    font-size: 10pt !important;
   }
   /* AUSF 0-6 PDF print: City Civil Registrar (name + title) right-aligned, nudged down */
   .ausf-0-6-doc.print-doc .registrar-signature-zone {
@@ -2055,7 +2355,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .legitimation-lcr-1a .legitimation-lcr-1a-sheet .mb-2 { margin-bottom: 0.05in !important; }
   .legitimation-lcr-1a .legitimation-lcr-1a-sheet td { padding: 0.035in 0.09in !important; font-size: inherit !important; }
   .legitimation-lcr-1a .legitimation-lcr-1a-sheet .legitimation-lcr-1a-footer-wrap p,
-  .legitimation-lcr-1a .legitimation-lcr-1a-sheet .print-doc-footer .text-xs { font-size: 10.5pt !important; line-height: 1.22 !important; }
+  .legitimation-lcr-1a .legitimation-lcr-1a-sheet .print-doc-footer .text-xs { font-size: 10pt !important; line-height: 1.22 !important; }
   .legitimation-lcr-1a .legitimation-lcr-1a-signature-footer p { font-size: 12pt !important; }
   /* Footer: ensure signature/note + contact details are always visible and printed */
   .legitimation-lcr-1a .legitimation-lcr-1a-signature-footer {
@@ -2310,7 +2610,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
   .lcr-a1-print-root .print-doc-footer p,
   .lcr-a1-print-root .print-doc-footer .text-xs {
-    font-size: 13px !important;
+    font-size: 10pt !important;
     line-height: 1.35 !important;
   }
 
@@ -2389,15 +2689,15 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
   html[data-paper-size="short"] .lcr-a1-print-root .print-doc-footer p,
   html[data-paper-size="short"] .lcr-a1-print-root .print-doc-footer .text-xs {
-    font-size: 13px !important;
+    font-size: 10pt !important;
   }
   html[data-paper-size="a4"] .lcr-a1-print-root .print-doc-footer p,
   html[data-paper-size="a4"] .lcr-a1-print-root .print-doc-footer .text-xs {
-    font-size: 13px !important;
+    font-size: 10pt !important;
   }
   html[data-paper-size="long"] .lcr-a1-print-root .print-doc-footer p, html[data-paper-size="legal"] .lcr-a1-print-root .print-doc-footer p
   html[data-paper-size="long"] .lcr-a1-print-root .print-doc-footer .text-xs , html[data-paper-size="legal"] .lcr-a1-print-root .print-doc-footer .text-xs {
-    font-size: 13px !important;
+    font-size: 10pt !important;
   }
 
   /* FINAL: AUSF LCR Form 1A + Birth-Available header matches AUSF-only/0-6/07-17 (print/PDF) */
@@ -2756,7 +3056,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .court-decree-lcr-form .print-doc-footer .text-xs,
   .court-decree-lcr-form .court-decree-lcr-footer .print-doc-footer p,
   .court-decree-lcr-form .court-decree-lcr-footer .print-doc-footer .text-xs {
-    font-size: 13px !important;
+    font-size: 10pt !important;
     line-height: 1.35 !important;
   }
   html[data-paper-size="short"] .court-decree-lcr-form .print-doc-footer p,
@@ -2771,7 +3071,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="long"] .court-decree-lcr-form .print-doc-footer .text-xs, html[data-paper-size="legal"] .court-decree-lcr-form .print-doc-footer .text-xs
   html[data-paper-size="long"] .court-decree-lcr-form .court-decree-lcr-footer .print-doc-footer p, html[data-paper-size="legal"] .court-decree-lcr-form .court-decree-lcr-footer .print-doc-footer p
   html[data-paper-size="long"] .court-decree-lcr-form .court-decree-lcr-footer .print-doc-footer .text-xs , html[data-paper-size="legal"] .court-decree-lcr-form .court-decree-lcr-footer .print-doc-footer .text-xs {
-    font-size: 13px !important;
+    font-size: 10pt !important;
     line-height: 1.35 !important;
   }
   html[data-paper-size="a4"] .court-decree-lcr-form .court-decree-lcr-body,
@@ -2979,8 +3279,14 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     text-justify: inter-word;
     line-height: 1.5 !important;
   }
+  .print-doc-cert-registration .cert-reg-body p {
+    text-indent: 0.25in !important;
+  }
+  .print-doc-cert-registration .cert-reg-body p:nth-of-type(2) {
+    text-indent: 0 !important;
+  }
   .print-doc-cert-registration .cert-reg-body p + p {
-    margin-top: 0.05in !important;
+    margin-top: 2.5em !important;
   }
   .print-doc-cert-registration .cert-reg-body .font-bold.mb-2 {
     text-align: left !important;
@@ -3024,7 +3330,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
   .ausf-registration-cert .print-doc-footer p,
   .ausf-registration-cert .print-doc-footer .text-xs {
-    font-size: 11pt !important;
+    font-size: 10pt !important;
   }
   .ausf-registration-cert .fill-blank {
     border-bottom-width: 1.5px !important;
@@ -3075,13 +3381,55 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .print-doc-transmittal-elderly p.font-bold {
     font-size: 15pt !important;
   }
+  .print-doc-transmittal-elderly p.court-decree-transmittal-psa-name,
+  .print-doc-transmittal-elderly p.court-decree-transmittal-subject-line {
+    font-size: 12pt !important;
+    line-height: 1.35 !important;
+  }
+  .print-doc-transmittal-elderly .court-decree-oot-transmittal-mcr-header p {
+    font-size: 12pt !important;
+    line-height: 1.35 !important;
+  }
+  .print-doc-transmittal-elderly .oot-transmittal-addressee-header p {
+    font-size: 12pt !important;
+    line-height: 1.35 !important;
+  }
+  .print-doc-transmittal-elderly.legitimation-transmittal-doc .print-doc-header hr.legitimation-transmittal-header-rule {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  .print-doc-transmittal-elderly.legitimation-transmittal-doc p.legitimation-transmittal-print-date {
+    margin-top: 0 !important;
+    margin-bottom: 0.75rem !important;
+    padding-top: 0 !important;
+  }
+  .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-psa-header p {
+    font-size: 12pt !important;
+    line-height: 1.12 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .print-doc-transmittal-elderly.legitimation-transmittal-doc p.legitimation-transmittal-subject-line {
+    font-size: 12pt !important;
+    line-height: 1.35 !important;
+    margin-bottom: 2.75em !important;
+  }
+  .print-doc-transmittal-elderly p.court-decree-transmittal-subject-line {
+    margin-bottom: 2em !important;
+  }
   .print-doc-transmittal-elderly ol li {
     font-size: 14pt !important;
     line-height: 1.5 !important;
   }
+  .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-attachments-print li {
+    font-size: 12pt !important;
+    line-height: 1.35 !important;
+  }
   .print-doc-transmittal-elderly .print-doc-footer p,
   .print-doc-transmittal-elderly .print-doc-footer .text-xs {
-    font-size: 12pt !important;
+    font-size: 10pt !important;
   }
   .print-doc-transmittal-elderly .mt-auto {
     flex-shrink: 0 !important;
@@ -3098,6 +3446,10 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
   .print-doc-cert-auth .cert-auth-body p {
     line-height: 1.8 !important;
+    text-indent: 0.25in !important;
+  }
+  .print-doc-cert-auth .cert-auth-body p:nth-of-type(2) {
+    text-indent: 0 !important;
   }
   .print-doc-cert-auth .cert-auth-body p + p {
     margin-top: 2em !important; /* 2 line heights = gap between blocks, not outside */
@@ -3241,9 +3593,35 @@ html[data-paper-size="short"] .print-doc-footer p {
   html[data-paper-size="short"] .print-doc-transmittal-elderly.ausf-doc p {
     font-size: 14pt !important;
   }
+  html[data-paper-size="short"] .print-doc-transmittal-elderly.ausf-doc p.court-decree-transmittal-psa-name,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly.ausf-doc p.court-decree-transmittal-subject-line {
+    font-size: 12pt !important;
+    line-height: 1.35 !important;
+  }
+  html[data-paper-size="short"] .print-doc-transmittal-elderly.ausf-doc .court-decree-oot-transmittal-mcr-header p {
+    font-size: 12pt !important;
+    line-height: 1.35 !important;
+  }
+  html[data-paper-size="short"] .print-doc-transmittal-elderly.legitimation-transmittal-doc.ausf-doc .legitimation-transmittal-psa-header p {
+    font-size: 12pt !important;
+    line-height: 1.12 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  html[data-paper-size="short"] .print-doc-transmittal-elderly.legitimation-transmittal-doc.ausf-doc p.legitimation-transmittal-subject-line,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly.legitimation-transmittal-doc.ausf-doc .legitimation-transmittal-attachments-print li {
+    font-size: 12pt !important;
+    line-height: 1.35 !important;
+  }
+  html[data-paper-size="short"] .print-doc-transmittal-elderly.legitimation-transmittal-doc.ausf-doc p.legitimation-transmittal-subject-line {
+    margin-bottom: 2.75em !important;
+  }
+  html[data-paper-size="short"] .print-doc-transmittal-elderly.ausf-doc p.court-decree-transmittal-subject-line {
+    margin-bottom: 2em !important;
+  }
   html[data-paper-size="short"] .print-doc-transmittal-elderly .print-doc-footer p,
   html[data-paper-size="short"] .print-doc-transmittal-elderly .print-doc-footer .text-xs {
-    font-size: 12pt !important;
+    font-size: 10pt !important;
   }
   html[data-paper-size="short"] .ausf-doc .print-doc-header,
   html[data-paper-size="short"] .ausf-0-6-doc .print-doc-header {
@@ -3561,31 +3939,31 @@ html[data-paper-size="short"] .print-doc-footer p {
 
   /* Long bond: AUSF 0-6 fits one page (13" height), auto-adjusts with relaxed spacing */
   html[data-paper-size="long"] .ausf-0-6-doc, html[data-paper-size="legal"] .ausf-0-6-doc
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc) {
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) {
     font-size: 10.5pt !important;
     line-height: 1.5 !important;
   }
   html[data-paper-size="long"] .ausf-0-6-doc .print-doc-header, html[data-paper-size="legal"] .ausf-0-6-doc .print-doc-header
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .print-doc-header , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc) .print-doc-header {
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .print-doc-header , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .print-doc-header {
     margin-bottom: 0.28in !important;
   }
   html[data-paper-size="long"] .ausf-0-6-doc h2, html[data-paper-size="legal"] .ausf-0-6-doc h2
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) h2 , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc) h2 {
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) h2 , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) h2 {
     margin-top: 0.28in !important;
     margin-bottom: 0.28in !important;
     font-size: 1.1rem !important;
   }
   html[data-paper-size="long"] .ausf-0-6-doc p, html[data-paper-size="legal"] .ausf-0-6-doc p
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) p , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc) p {
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) p , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) p {
     margin-bottom: 0.08in !important;
     line-height: 1.5 !important;
   }
   html[data-paper-size="long"] .ausf-0-6-doc ol, html[data-paper-size="legal"] .ausf-0-6-doc ol
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) ol , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc) ol {
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) ol , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) ol {
     margin-bottom: 0.1in !important;
   }
   html[data-paper-size="long"] .ausf-0-6-doc ol li, html[data-paper-size="legal"] .ausf-0-6-doc ol li
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) ol li , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc) ol li {
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) ol li , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) ol li {
     margin-bottom: 0.05in !important;
     line-height: 1.5 !important;
   }
@@ -3593,31 +3971,31 @@ html[data-paper-size="short"] .print-doc-footer p {
   html[data-paper-size="long"] .ausf-0-6-doc .text-right.mt-6, html[data-paper-size="legal"] .ausf-0-6-doc .text-right.mt-6
   html[data-paper-size="long"] .ausf-0-6-doc .text-xs.mt-6, html[data-paper-size="legal"] .ausf-0-6-doc .text-xs.mt-6
   html[data-paper-size="long"] .ausf-0-6-doc .border-t.mt-6, html[data-paper-size="legal"] .ausf-0-6-doc .border-t.mt-6
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .text-center.mt-6, html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc) .text-center.mt-6
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .text-right.mt-6, html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc) .text-right.mt-6
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .text-xs.mt-6, html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc) .text-xs.mt-6
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .border-t.mt-6 , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc) .border-t.mt-6 {
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .text-center.mt-6, html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .text-center.mt-6
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .text-right.mt-6, html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .text-right.mt-6
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .text-xs.mt-6, html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .text-xs.mt-6
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .border-t.mt-6 , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .border-t.mt-6 {
     margin-top: 0.12in !important;
   }
   html[data-paper-size="long"] .ausf-0-6-doc .border-t.mt-6, html[data-paper-size="legal"] .ausf-0-6-doc .border-t.mt-6
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .border-t.mt-6 , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc) .border-t.mt-6 {
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .border-t.mt-6 , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .border-t.mt-6 {
     margin-bottom: 0.08in !important;
   }
   html[data-paper-size="long"] .ausf-0-6-doc hr, html[data-paper-size="legal"] .ausf-0-6-doc hr
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) hr , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc) hr {
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) hr , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) hr {
     margin-top: 0.05in !important;
     margin-bottom: 0.05in !important;
   }
   html[data-paper-size="long"] .ausf-0-6-doc .registrar-signature-zone, html[data-paper-size="legal"] .ausf-0-6-doc .registrar-signature-zone
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .registrar-signature-zone , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc) .registrar-signature-zone {
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .registrar-signature-zone , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .registrar-signature-zone {
     min-height: 2.25rem !important;
   }
   html[data-paper-size="long"] .ausf-0-6-doc .print-doc-footer, html[data-paper-size="legal"] .ausf-0-6-doc .print-doc-footer
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .print-doc-footer , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc) .print-doc-footer {
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .print-doc-footer , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .print-doc-footer {
     margin-top: auto !important;
   }
   html[data-paper-size="long"] .ausf-0-6-doc .ausf-subscribed-sworn, html[data-paper-size="legal"] .ausf-0-6-doc .ausf-subscribed-sworn
-  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc) .ausf-subscribed-sworn , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc) .ausf-subscribed-sworn {
+  html[data-paper-size="long"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .ausf-subscribed-sworn , html[data-paper-size="legal"] .ausf-doc:not(.ausf-07-17-doc):not(.legitimation-affidavit-doc) .ausf-subscribed-sworn {
     line-height: 1.5 !important;
   }
 
@@ -4056,11 +4434,19 @@ html[data-paper-size="short"] .print-doc-footer p {
 .legitimation-form-page__body {
   padding: 1.25rem 1.5rem 1.5rem;
 }
+/* Sections visible by default; entrance animation only when motion is OK (otherwise opacity:0 never clears). */
 .ausf-form-page__section,
 .court-decree-form-page__section,
 .legitimation-form-page__section {
-  opacity: 0;
-  animation: ausfSectionIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ausf-form-page__section,
+  .court-decree-form-page__section,
+  .legitimation-form-page__section {
+    opacity: 0;
+    animation: ausfSectionIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
 }
 @keyframes ausfSectionIn {
   from {
@@ -5175,6 +5561,19 @@ html[data-paper-size='long'] .legitimation-affidavit-doc,
 html[data-paper-size='long'] .legitimation-affidavit-print {
   min-height: 13in;
 }
+/* Long bond: sole/joint affidavit — full sheet height, footer at bottom (footer typography: shared .ausf-doc .print-doc-footer rules) */
+html[data-paper-size='long'] .sole-legitimation-doc.legitimation-affidavit-doc.print-doc,
+html[data-paper-size='long'] .joint-legitimation-doc.legitimation-affidavit-doc.print-doc {
+  min-height: 13in !important;
+  padding-bottom: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+html[data-paper-size='long'] .sole-legitimation-doc.legitimation-affidavit-doc.print-doc > .print-doc-footer,
+html[data-paper-size='long'] .joint-legitimation-doc.legitimation-affidavit-doc.print-doc > .print-doc-footer {
+  margin-top: auto !important;
+  padding-top: 6.5em !important;
+}
 html[data-paper-size='legal'] .legitimation-affidavit-doc,
 html[data-paper-size='legal'] .legitimation-affidavit-print {
   min-height: 14in;
@@ -5188,6 +5587,34 @@ html[data-paper-size='legal'] .legitimation-affidavit-print {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     box-sizing: border-box !important;
+  }
+  /* Sole/joint affidavit: footer toward sheet bottom + ~2 line spaces above contact block */
+  .sole-legitimation-doc.legitimation-affidavit-doc.print-doc,
+  .joint-legitimation-doc.legitimation-affidavit-doc.print-doc {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .sole-legitimation-doc.legitimation-affidavit-doc.print-doc > .print-doc-footer,
+  .joint-legitimation-doc.legitimation-affidavit-doc.print-doc > .print-doc-footer {
+    margin-top: auto !important;
+    padding-top: 2em !important;
+  }
+  /* Long bond: sole/joint — sheet height, footer at bottom, extra space above footer, footer 10pt */
+  html[data-paper-size='long'] .sole-legitimation-doc.legitimation-affidavit-doc.print-doc,
+  html[data-paper-size='long'] .joint-legitimation-doc.legitimation-affidavit-doc.print-doc {
+    min-height: 13in !important;
+    padding-bottom: 0 !important;
+  }
+  html[data-paper-size='long'] .sole-legitimation-doc.legitimation-affidavit-doc.print-doc > .print-doc-footer,
+  html[data-paper-size='long'] .joint-legitimation-doc.legitimation-affidavit-doc.print-doc > .print-doc-footer {
+    padding-top: 6.5em !important;
+  }
+  html[data-paper-size='long'] .sole-legitimation-doc.legitimation-affidavit-doc.print-doc .print-doc-footer,
+  html[data-paper-size='long'] .sole-legitimation-doc.legitimation-affidavit-doc.print-doc .print-doc-footer *,
+  html[data-paper-size='long'] .joint-legitimation-doc.legitimation-affidavit-doc.print-doc .print-doc-footer,
+  html[data-paper-size='long'] .joint-legitimation-doc.legitimation-affidavit-doc.print-doc .print-doc-footer * {
+    font-size: 10pt !important;
+    line-height: 1.35 !important;
   }
   /* Keep title position unchanged; adjust body block only. */
 }
@@ -5203,6 +5630,32 @@ body.pdf-capture .legitimation-affidavit-print.print-doc {
   max-width: none !important;
   box-sizing: border-box !important;
   font-family: 'Times New Roman', Times, serif !important;
+}
+body.pdf-capture .sole-legitimation-doc.legitimation-affidavit-doc.print-doc,
+body.pdf-capture .joint-legitimation-doc.legitimation-affidavit-doc.print-doc {
+  display: flex !important;
+  flex-direction: column !important;
+}
+body.pdf-capture .sole-legitimation-doc.legitimation-affidavit-doc.print-doc > .print-doc-footer,
+body.pdf-capture .joint-legitimation-doc.legitimation-affidavit-doc.print-doc > .print-doc-footer {
+  margin-top: auto !important;
+  padding-top: 2em !important;
+}
+html[data-paper-size='long'] body.pdf-capture .sole-legitimation-doc.legitimation-affidavit-doc.print-doc,
+html[data-paper-size='long'] body.pdf-capture .joint-legitimation-doc.legitimation-affidavit-doc.print-doc {
+  min-height: 13in !important;
+  padding-bottom: 0 !important;
+}
+html[data-paper-size='long'] body.pdf-capture .sole-legitimation-doc.legitimation-affidavit-doc.print-doc > .print-doc-footer,
+html[data-paper-size='long'] body.pdf-capture .joint-legitimation-doc.legitimation-affidavit-doc.print-doc > .print-doc-footer {
+  padding-top: 6.5em !important;
+}
+html[data-paper-size='long'] body.pdf-capture .sole-legitimation-doc.legitimation-affidavit-doc.print-doc .print-doc-footer,
+html[data-paper-size='long'] body.pdf-capture .sole-legitimation-doc.legitimation-affidavit-doc.print-doc .print-doc-footer *,
+html[data-paper-size='long'] body.pdf-capture .joint-legitimation-doc.legitimation-affidavit-doc.print-doc .print-doc-footer,
+html[data-paper-size='long'] body.pdf-capture .joint-legitimation-doc.legitimation-affidavit-doc.print-doc .print-doc-footer * {
+  font-size: 10pt !important;
+  line-height: 1.35 !important;
 }
 /* Keep title position unchanged; adjust body block only. */
 
@@ -5248,27 +5701,49 @@ html[data-paper-size='short'] body.pdf-capture .legitimation-affidavit-print .jo
   transform: translateY(-1.35rem) !important;
 }
 
-/* AUSF final typography mode:
-   - System/preview: 16px
-   - Print/PDF output: 12pt
+/* Shared DocumentFooter only. Use typed selectors (not *) so we beat transmittal-elderly
+   `... p` rules (type beats *). html[data-paper-size] beats short-bond `html[...] .print-doc-transmittal-elderly .print-doc-footer p`.
+   - Screen preview: 13px
+   - Print + PDF capture: 10pt
 */
 @media screen {
-  .ausf-doc.print-doc,
-  .ausf-doc.print-doc * {
-    font-size: 16px !important;
+  html[data-paper-size] .ausf-doc.print-doc .print-doc-footer,
+  html[data-paper-size] .ausf-doc.print-doc .print-doc-footer p,
+  html[data-paper-size] .ausf-doc.print-doc .print-doc-footer div,
+  html[data-paper-size] .ausf-doc.print-doc .print-doc-footer hr,
+  .ausf-doc.print-doc .print-doc-footer,
+  .ausf-doc.print-doc .print-doc-footer p,
+  .ausf-doc.print-doc .print-doc-footer div,
+  .ausf-doc.print-doc .print-doc-footer hr {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
   }
 }
 
 @media print {
-  .ausf-doc.print-doc,
-  .ausf-doc.print-doc * {
-    font-size: 12pt !important;
+  html[data-paper-size] .ausf-doc.print-doc .print-doc-footer,
+  html[data-paper-size] .ausf-doc.print-doc .print-doc-footer p,
+  html[data-paper-size] .ausf-doc.print-doc .print-doc-footer div,
+  html[data-paper-size] .ausf-doc.print-doc .print-doc-footer hr,
+  .ausf-doc.print-doc .print-doc-footer,
+  .ausf-doc.print-doc .print-doc-footer p,
+  .ausf-doc.print-doc .print-doc-footer div,
+  .ausf-doc.print-doc .print-doc-footer hr {
+    font-size: 10pt !important;
+    line-height: 1.35 !important;
   }
 }
 
-body.pdf-capture .ausf-doc.print-doc,
-body.pdf-capture .ausf-doc.print-doc * {
-  font-size: 12pt !important;
+html[data-paper-size] body.pdf-capture .ausf-doc.print-doc .print-doc-footer,
+html[data-paper-size] body.pdf-capture .ausf-doc.print-doc .print-doc-footer p,
+html[data-paper-size] body.pdf-capture .ausf-doc.print-doc .print-doc-footer div,
+html[data-paper-size] body.pdf-capture .ausf-doc.print-doc .print-doc-footer hr,
+body.pdf-capture .ausf-doc.print-doc .print-doc-footer,
+body.pdf-capture .ausf-doc.print-doc .print-doc-footer p,
+body.pdf-capture .ausf-doc.print-doc .print-doc-footer div,
+body.pdf-capture .ausf-doc.print-doc .print-doc-footer hr {
+  font-size: 10pt !important;
+  line-height: 1.35 !important;
 }
 
 /* AUSF Only (long bond): move registrar signatory block upward */
@@ -5417,7 +5892,13 @@ html[data-paper-size="short"] body.pdf-capture .ausf-07-17-doc.print-doc .print-
 html[data-paper-size="long"] .ausf-07-17-doc.print-doc .print-doc-footer,
 html[data-paper-size="long"] body.pdf-capture .ausf-07-17-doc.print-doc .print-doc-footer {
   position: relative !important;
-  top: -0.14in !important;
+  top: 0.03in !important;
+}
+
+html[data-paper-size="a4"] .ausf-07-17-doc.print-doc .print-doc-footer,
+html[data-paper-size="a4"] body.pdf-capture .ausf-07-17-doc.print-doc .print-doc-footer {
+  position: relative !important;
+  top: 0.03in !important;
 }
 
 /* AUSF Registration + Registration of Acknowledgement: no gap in signatory line stack (print/PDF) */

@@ -1,3 +1,6 @@
+import { defaultAUSF, syncAusfTransmittalFlagWithFormType } from './ausfDefaults'
+import { applyDerivedJuratFormTypeIfApplicable } from './ausfJuratRouting'
+
 const KEY = 'ulsades_ausf_draft'
 const KEY_SAVED = 'ulsades_ausf_saved'
 const BASE = import.meta.env.VITE_API_URL || ''
@@ -188,7 +191,15 @@ export function loadSavedAUSFToDraft(id) {
   const list = getSavedAUSFList()
   const item = list.find((x) => x.id === id)
   if (!item || !item.data) return false
-  saveAUSFDraft({ ...item.data, _savedAUSFId: id })
+  const merged = {
+    ...defaultAUSF,
+    ...item.data,
+    formType: item.data.formType || item.formType,
+    _savedAUSFId: id,
+  }
+  saveAUSFDraft(
+    applyDerivedJuratFormTypeIfApplicable(syncAusfTransmittalFlagWithFormType(merged))
+  )
   return true
 }
 
@@ -197,7 +208,10 @@ export async function loadSavedAUSFToDraftApi(id) {
   if (!loaded) return false
   const d = await loadAUSFDraftFromApi()
   if (!d) return false
-  saveAUSFDraft({ ...d, _savedAUSFId: id })
+  const merged = { ...defaultAUSF, ...d, _savedAUSFId: id }
+  saveAUSFDraft(
+    applyDerivedJuratFormTypeIfApplicable(syncAusfTransmittalFlagWithFormType(merged))
+  )
   return true
 }
 

@@ -580,6 +580,14 @@ export default function AnnotationAckFieldPage() {
           type: "success",
           title: "PDF saved",
           message: result.filePath || "",
+          actionLabel: "Open",
+          onAction: async () => {
+            if (!result.filePath) return;
+            await (
+              window?.electronAPI?.openPdfInBrowser?.(result.filePath) ||
+              window?.electronAPI?.openPdfInChrome?.(result.filePath)
+            );
+          },
         });
         return;
       }

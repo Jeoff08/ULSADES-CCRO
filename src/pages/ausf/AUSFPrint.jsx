@@ -6,11 +6,16 @@ import {
   loadAUSFDraftFromApi,
   saveAUSFDraftToApi,
 } from "./lib/ausfStorage";
-import { defaultAUSF } from "./lib/ausfDefaults";
+import { defaultAUSF, syncAusfTransmittalFlagWithFormType } from "./lib/ausfDefaults";
+import {
+  deriveAusfJuratAffidavitFormType,
+  AUSF_JURAT_PRINT_TYPES,
+} from "./lib/ausfJuratRouting";
 import {
   TRANSMITTAL_ATTACHMENTS_LOCAL,
   TRANSMITTAL_ATTACHMENTS_PSA,
   PAPER_SIZES,
+  getPaperPageSpec,
 } from "../../components/print";
 import {
   getUploadedFile,
@@ -19,7 +24,7 @@ import {
 import UploadFileModal from "../../components/upload/UploadFileModal";
 import ToastHost from "../../components/toast/ToastHost";
 import { useToasts } from "../../components/toast/useToasts";
-import { saveCurrentViewAsPdf } from "../../lib/savePdf";
+import { saveCurrentViewAsPdf, openSavedPdfInBrowser } from "../../lib/savePdf";
 import { buildAnnotationFieldPreviewPdfBase64 } from "../../lib/annotationFieldPreviewPdf";
 import { saveGeneratedPdfBase64 } from "../../lib/savePdf";
 import { getAnnotationChildNotAckText } from "./print/AnnotationChildNotAck";
@@ -56,7 +61,7 @@ const VIEW_PRINT_OPTIONS = [
 
 const PRINT_SIZE_STYLE_ID = "print-paper-size";
 
-/** AUSF annotation views — Long bond (8.5" × 13") */
+/** AUSF annotation views — Legal bond (8.5" × 14") only */
 const AUSF_ANNOTATION_TYPES = new Set([
   "child-ack-annotation",
   "child-not-ack-annotation",
@@ -68,10 +73,16 @@ const CHILD_NOT_ACK_TYPES = new Set([
   "child-not-ack-annotation",
   "child-not-ack-transmittal",
 ]);
+const AUSF_TRANSMITTAL_FORM_TYPES = new Set([
+  "child-not-ack-transmittal",
+  "out-of-town",
+]);
+/** Jurat affidavit forms — only used when child is not yet acknowledged; hide when YES */
+const AUSF_JURAT_CHILD_NOT_ACK_TYPES = new Set(["ausf-0-6", "ausf-07-17"]);
 
 function usePrintPageSize(paperId) {
   useEffect(() => {
-    const spec = PAPER_SIZES.find((p) => p.id === paperId) || PAPER_SIZES[0];
+    const spec = getPaperPageSpec(paperId);
     document.documentElement.dataset.paperSize = paperId;
     let el = document.getElementById(PRINT_SIZE_STYLE_ID);
     if (!el) {
@@ -104,25 +115,121 @@ export default function AUSFPrint() {
   const activePrintType = displayType ?? data?.formType;
   const pageSizeForPrint =
     activePrintType && AUSF_ANNOTATION_TYPES.has(activePrintType)
-      ? "long"
+      ? "legal"
       : paperSize;
   usePrintPageSize(pageSizeForPrint);
 
   const acknowledged = data?.childAlreadyAcknowledged;
+  const derivedJurat = React.useMemo(
+    () => (data ? deriveAusfJuratAffidavitFormType(data) : "ausf-0-6"),
+    [data?.childAlreadyAcknowledged, data?.age, data?.dateOfBirth]
+  );
+
   const viewPrintOptions = React.useMemo(() => {
+    let base;
     if (acknowledged === "YES") {
-      return VIEW_PRINT_OPTIONS.filter((opt) => !CHILD_NOT_ACK_TYPES.has(opt.type));
+      base = VIEW_PRINT_OPTIONS.filter(
+        (opt) =>
+          !CHILD_NOT_ACK_TYPES.has(opt.type) &&
+          !AUSF_JURAT_CHILD_NOT_ACK_TYPES.has(opt.type)
+      );
+    } else if (acknowledged === "NO") {
+      base = VIEW_PRINT_OPTIONS.filter((opt) => !CHILD_ACK_TYPES.has(opt.type));
+    } else {
+      base = VIEW_PRINT_OPTIONS;
     }
+    base = base.filter(
+      (opt) =>
+        !AUSF_JURAT_PRINT_TYPES.has(opt.type) || opt.type === derivedJurat
+    );
+    const oot = data?.ausfTransmittalIsOutOfTown === true;
     if (acknowledged === "NO") {
-      return VIEW_PRINT_OPTIONS.filter((opt) => !CHILD_ACK_TYPES.has(opt.type));
+      base = base.filter((opt) => {
+        if (opt.type === "child-not-ack-transmittal" && oot) return false;
+        if (opt.type === "out-of-town" && !oot) return false;
+        return true;
+      });
     }
-    return VIEW_PRINT_OPTIONS;
-  }, [acknowledged]);
+    return base;
+  }, [acknowledged, derivedJurat, data?.ausfTransmittalIsOutOfTown]);
+
+  /** Persist correct jurat formType on draft when age/ack changes */
+  useEffect(() => {
+    setData((prev) => {
+      if (!prev) return prev;
+      const want = deriveAusfJuratAffidavitFormType(prev);
+      if (!AUSF_JURAT_PRINT_TYPES.has(prev.formType)) return prev;
+      if (prev.formType === want) return prev;
+      const next = { ...prev, formType: want };
+      saveAUSFDraft(next);
+      saveAUSFDraftToApi(next).catch(() => { });
+      return next;
+    });
+  }, [data?.childAlreadyAcknowledged, data?.age, data?.dateOfBirth, data?.formType]);
+
+  /** Local vs out-of-town: keep draft formType aligned when on a transmittal letter */
+  useEffect(() => {
+    setData((prev) => {
+      if (!prev || prev.childAlreadyAcknowledged !== "NO") return prev;
+      if (!AUSF_TRANSMITTAL_FORM_TYPES.has(prev.formType)) return prev;
+      const want = prev.ausfTransmittalIsOutOfTown
+        ? "out-of-town"
+        : "child-not-ack-transmittal";
+      if (prev.formType === want) return prev;
+      const next = { ...prev, formType: want };
+      saveAUSFDraft(next);
+      saveAUSFDraftToApi(next).catch(() => { });
+      return next;
+    });
+  }, [
+    data?.ausfTransmittalIsOutOfTown,
+    data?.childAlreadyAcknowledged,
+    data?.formType,
+  ]);
+
+  /** Active jurat tab must match derived output */
+  useEffect(() => {
+    if (!data) return;
+    const want = deriveAusfJuratAffidavitFormType(data);
+    const cur = displayType ?? data.formType;
+    if (AUSF_JURAT_PRINT_TYPES.has(cur) && cur !== want) {
+      setDisplayType(want);
+    }
+  }, [
+    displayType,
+    data?.childAlreadyAcknowledged,
+    data?.age,
+    data?.dateOfBirth,
+    data?.formType,
+  ]);
+
+  /** Hide transmittal tab mismatch when form flag says local vs out-of-town */
+  useEffect(() => {
+    if (!data || data.childAlreadyAcknowledged !== "NO") return;
+    const oot = data.ausfTransmittalIsOutOfTown === true;
+    const cur = displayType ?? data.formType;
+    if (oot && cur === "child-not-ack-transmittal") {
+      setDisplayType("out-of-town");
+    } else if (!oot && cur === "out-of-town") {
+      setDisplayType("child-not-ack-transmittal");
+    }
+  }, [
+    data?.ausfTransmittalIsOutOfTown,
+    data?.childAlreadyAcknowledged,
+    displayType,
+    data?.formType,
+  ]);
 
   useEffect(() => {
     if (!activePrintType) return;
     if (acknowledged === "YES" && CHILD_NOT_ACK_TYPES.has(activePrintType)) {
       setDisplayType("child-ack-lcr");
+    }
+    if (
+      acknowledged === "YES" &&
+      AUSF_JURAT_CHILD_NOT_ACK_TYPES.has(activePrintType)
+    ) {
+      setDisplayType("ausf-only");
     }
     if (acknowledged === "NO" && CHILD_ACK_TYPES.has(activePrintType)) {
       setDisplayType("child-not-ack-lcr");
@@ -132,7 +239,7 @@ export default function AUSFPrint() {
   useEffect(() => {
     if (!activePrintType) return;
     if (AUSF_ANNOTATION_TYPES.has(activePrintType)) {
-      setPaperSize("long");
+      setPaperSize("legal");
     } else {
       setPaperSize((prev) => (prev === "legal" ? "a4" : prev));
     }
@@ -141,7 +248,10 @@ export default function AUSFPrint() {
   useEffect(() => {
     const draft = getAUSFDraft();
     if (draft) {
-      const loaded = { ...defaultAUSF, ...draft };
+      const loaded = syncAusfTransmittalFlagWithFormType({
+        ...defaultAUSF,
+        ...draft,
+      });
       setData(loaded);
       setDisplayType((prev) => prev ?? loaded.formType);
     } else {
@@ -150,11 +260,14 @@ export default function AUSFPrint() {
     loadAUSFDraftFromApi()
       .then((apiDraft) => {
         if (!apiDraft) return;
-        const loaded = { ...defaultAUSF, ...apiDraft };
+        const loaded = syncAusfTransmittalFlagWithFormType({
+          ...defaultAUSF,
+          ...apiDraft,
+        });
         setData(loaded);
         setDisplayType((prev) => prev ?? loaded.formType);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const defaultTitle =
@@ -174,6 +287,11 @@ export default function AUSFPrint() {
           type: "success",
           title: "PDF saved",
           message: result.filePath || "",
+          actionLabel: "Open",
+          onAction: async () => {
+            if (!result.filePath) return;
+            await openSavedPdfInBrowser(result.filePath);
+          },
         });
         return;
       }
@@ -221,6 +339,11 @@ export default function AUSFPrint() {
           type: "success",
           title: "PDF saved",
           message: result.filePath || "",
+          actionLabel: "Open",
+          onAction: async () => {
+            if (!result.filePath) return;
+            await openSavedPdfInBrowser(result.filePath);
+          },
         });
         return;
       }
@@ -326,13 +449,13 @@ export default function AUSFPrint() {
           const next = { ...data, colbScanDataUrlAck: url };
           setData(next);
           saveAUSFDraft(next);
-          saveAUSFDraftToApi(next).catch(() => {});
+          saveAUSFDraftToApi(next).catch(() => { });
         }}
         onAnnotationChange={(text) => {
           const next = { ...data, annotationChildAckText: text };
           setData(next);
           saveAUSFDraft(next);
-          saveAUSFDraftToApi(next).catch(() => {});
+          saveAUSFDraftToApi(next).catch(() => { });
         }}
       />
     );
@@ -345,13 +468,13 @@ export default function AUSFPrint() {
           const next = { ...data, colbScanDataUrlNotAck: url };
           setData(next);
           saveAUSFDraft(next);
-          saveAUSFDraftToApi(next).catch(() => {});
+          saveAUSFDraftToApi(next).catch(() => { });
         }}
         onAnnotationChange={(text) => {
           const next = { ...data, annotationChildNotAckText: text };
           setData(next);
           saveAUSFDraft(next);
-          saveAUSFDraftToApi(next).catch(() => {});
+          saveAUSFDraftToApi(next).catch(() => { });
         }}
       />
     );
@@ -364,6 +487,12 @@ export default function AUSFPrint() {
           isOutOfTown: false,
           defaultLabels: TRANSMITTAL_ATTACHMENTS_LOCAL,
         }}
+        onPersistDraft={(partial) => {
+          const next = { ...data, ...partial };
+          setData(next);
+          saveAUSFDraft(next);
+          saveAUSFDraftToApi(next).catch(() => { });
+        }}
       />
     );
   else if (type === "out-of-town")
@@ -374,6 +503,12 @@ export default function AUSFPrint() {
         checklistConfig={{
           isOutOfTown: true,
           defaultLabels: TRANSMITTAL_ATTACHMENTS_PSA,
+        }}
+        onPersistDraft={(partial) => {
+          const next = { ...data, ...partial };
+          setData(next);
+          saveAUSFDraft(next);
+          saveAUSFDraftToApi(next).catch(() => { });
         }}
       />
     );
@@ -395,30 +530,29 @@ export default function AUSFPrint() {
         <div className="flex flex-wrap items-center gap-3">
           {type !== "child-not-ack-annotation" && (
             <>
-              <label className="sr-only" htmlFor="paper-size-select">
-                Paper size (for print)
-              </label>
-              <select
-                id="paper-size-select"
-                value={paperSize}
-                onChange={(e) => setPaperSize(e.target.value)}
-                disabled={
-                  !!activePrintType &&
-                  AUSF_ANNOTATION_TYPES.has(activePrintType)
-                }
-                title={
-                  activePrintType && AUSF_ANNOTATION_TYPES.has(activePrintType)
-                    ? 'Annotation outputs are fixed to Long (8.5" × 13") for printing'
-                    : undefined
-                }
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {PAPER_SIZES.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
+              {activePrintType && AUSF_ANNOTATION_TYPES.has(activePrintType) ? (
+                <p className="text-xs text-gray-600 max-w-[16rem] leading-snug">
+                  Paper: Legal (8.5&quot; × 14&quot;) — fixed for AUSF annotations only.
+                </p>
+              ) : (
+                <>
+                  <label className="sr-only" htmlFor="paper-size-select">
+                    Paper size (for print)
+                  </label>
+                  <select
+                    id="paper-size-select"
+                    value={paperSize}
+                    onChange={(e) => setPaperSize(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                  >
+                    {PAPER_SIZES.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.label}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              )}
             </>
           )}
           {type !== "child-not-ack-annotation" ? (

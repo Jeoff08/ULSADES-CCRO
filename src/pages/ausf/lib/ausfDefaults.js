@@ -73,11 +73,13 @@ export const defaultAUSF = {
   registeredByName: '',
   registeredByTitle: '',
   registeredByDate: '',
-  // Transmittal (5.2, 6)
+  /** When true (child not acknowledged), print view offers Out-of-Town Transmittal only; when false, local Transmittal only. */
+  ausfTransmittalIsOutOfTown: false,
+  // Transmittal (5.2, 6) — default local addressee (AUSF transmittal letter)
   transmittalDate: '',
-  recipientName: '',
-  recipientTitle: '',
-  recipientOffice: '',
+  recipientName: 'KANYE WEST',
+  recipientTitle: 'LAAGAN',
+  recipientOffice: 'ILIGAN CITY, ILIGAN',
   transmittalSignatoryName: '',
   // Annotation (Child Ack): COLB scan and annotation text
   colbScanDataUrl: '',
@@ -86,4 +88,12 @@ export const defaultAUSF = {
   // Separate COLB scan per view so upload in one does not show in the other
   colbScanDataUrlAck: '',
   colbScanDataUrlNotAck: '',
+}
+
+/** Align out-of-town toggle with saved transmittal form type (legacy rows may omit the flag). */
+export function syncAusfTransmittalFlagWithFormType(data) {
+  if (!data || typeof data !== 'object') return data
+  if (data.formType === 'out-of-town') return { ...data, ausfTransmittalIsOutOfTown: true }
+  if (data.formType === 'child-not-ack-transmittal') return { ...data, ausfTransmittalIsOutOfTown: false }
+  return data
 }

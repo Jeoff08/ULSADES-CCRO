@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, Navigate } from 'react-router-dom'
 import { defaultCourtDecree } from './courtDecree/lib/courtDecreeDefaults'
 import { getCourtDecreeDraft, saveCourtDecreeDraft } from './courtDecree/lib/courtDecreeStorage'
 import { MARRIAGE_ANNOTATION_MODES as MODES } from './courtDecree/lib/marriageAnnotationMode'
 import MarriageNullityArt42Annotation from './courtDecree/print/MarriageNullityArt42Annotation'
 import MarriageAnnotationModeSidebar from './courtDecree/print/MarriageAnnotationModeSidebar'
 import StandardAnnotationWithInstructions from './courtDecree/print/StandardAnnotationWithInstructions'
-import { PAPER_SIZES } from '../components/print'
+import { getPaperPageSpec } from '../components/print'
 import { saveCurrentViewAsPdf } from '../lib/savePdf'
 
 const TITLES = {
@@ -20,7 +20,7 @@ const PRINT_SIZE_STYLE_ID = 'print-paper-size-marriage-workflow'
 
 function useWorkflowPrintSize(paperId) {
   useEffect(() => {
-    const spec = PAPER_SIZES.find((p) => p.id === paperId) || PAPER_SIZES[0]
+    const spec = getPaperPageSpec(paperId)
     document.documentElement.dataset.paperSize = paperId
     let el = document.getElementById(PRINT_SIZE_STYLE_ID)
     if (!el) {
@@ -213,6 +213,10 @@ function AdoptionWorkflow() {
 export default function CourtDecreeWorkflowPage() {
   const { slug } = useParams()
   const title = TITLES[slug] || 'Court Decree'
+
+  if (slug === 'correction-of-entries') {
+    return <Navigate to="/correction-of-entries" replace />
+  }
 
   if (slug === 'nullity-of-marriage') {
     return <NullityOfMarriageWorkflow />

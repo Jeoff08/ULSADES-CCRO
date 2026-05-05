@@ -22,7 +22,15 @@ export default function ToastHost({ toasts, onDismiss }) {
           ].join(' ')}
         >
           <div className={['h-1', t.type === 'success' ? 'bg-emerald-500' : t.type === 'error' ? 'bg-red-500' : 'bg-gray-500'].join(' ')} />
-          <div className="px-4 py-3">
+          <div className="px-4 py-3 relative">
+            <button
+              type="button"
+              onClick={() => onDismiss?.(t.id)}
+              className="absolute top-2 right-2 text-xs font-semibold text-gray-500 hover:text-gray-900"
+              aria-label="Close notification"
+            >
+              X
+            </button>
             <p className="text-sm font-semibold text-gray-900">{t.title}</p>
             {t.message ? <p className="text-xs text-gray-600 mt-0.5">{t.message}</p> : null}
             {t.actionLabel && t.onAction ? (
@@ -36,13 +44,6 @@ export default function ToastHost({ toasts, onDismiss }) {
                   className="px-3 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-semibold hover:bg-black"
                 >
                   {t.actionLabel}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onDismiss?.(t.id)}
-                  className="text-xs font-semibold text-gray-600 hover:text-gray-900"
-                >
-                  Dismiss
                 </button>
               </div>
             ) : null}

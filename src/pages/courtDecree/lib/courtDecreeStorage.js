@@ -1,3 +1,5 @@
+import { defaultCourtDecree, syncCourtDecreeTransmittalFlagFromFormType } from './courtDecreeDefaults'
+
 const KEY_DRAFT = 'courtDecreeDraft'
 const KEY_SAVED = 'ulsades_court_decree_saved'
 
@@ -123,7 +125,13 @@ export function loadSavedCourtDecreeToDraft(id) {
   const list = getSavedCourtDecreeList()
   const item = list.find((x) => x.id === id)
   if (!item || !item.data) return false
-  saveCourtDecreeDraft({ ...item.data, _savedCourtDecreeId: id })
+  const merged = syncCourtDecreeTransmittalFlagFromFormType({
+    ...defaultCourtDecree,
+    ...item.data,
+    formType: item.data.formType || item.formType,
+    _savedCourtDecreeId: id,
+  })
+  saveCourtDecreeDraft(merged)
   return true
 }
 

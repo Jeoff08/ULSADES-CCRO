@@ -9,7 +9,7 @@ import { defaultAUSF } from "./ausf/lib/ausfDefaults";
 import { PAPER_SIZES } from "../components/print";
 import ToastHost from "../components/toast/ToastHost";
 import { useToasts } from "../components/toast/useToasts";
-import { saveGeneratedPdfBase64 } from "../lib/savePdf";
+import { saveGeneratedPdfBase64, openSavedPdfInBrowser } from "../lib/savePdf";
 import { buildAnnotationFieldPreviewPdfBase64 } from "../lib/annotationFieldPreviewPdf";
 import { FIELD_POSITIONS } from "../lib/colbCertificateLayout";
 import {
@@ -151,6 +151,11 @@ export default function AnnotationFieldPage() {
           type: "success",
           title: "PDF saved",
           message: result.filePath || "",
+          actionLabel: "Open",
+          onAction: async () => {
+            if (!result.filePath) return;
+            await openSavedPdfInBrowser(result.filePath);
+          },
         });
         return;
       }

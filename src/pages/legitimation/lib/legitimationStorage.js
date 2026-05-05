@@ -1,3 +1,5 @@
+import { defaultLegitimation, syncLegitimationTransmittalFlagWithFormType } from './legitimationDefaults'
+
 const KEY_DRAFT = 'legitimationDraft'
 const KEY_SAVED = 'ulsades_legitimation_saved'
 
@@ -128,7 +130,13 @@ export function loadSavedLegitimationToDraft(id) {
   const list = getSavedLegitimationList()
   const item = list.find((x) => x.id === id)
   if (!item || !item.data) return false
-  saveLegitimationDraft({ ...item.data, _savedLegitimationId: id })
+  const merged = syncLegitimationTransmittalFlagWithFormType({
+    ...defaultLegitimation,
+    ...item.data,
+    formType: item.data.formType || item.formType,
+    _savedLegitimationId: id,
+  })
+  saveLegitimationDraft(merged)
   return true
 }
 

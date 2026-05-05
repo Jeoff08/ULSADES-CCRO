@@ -1,12 +1,36 @@
 import React from 'react'
 import { formatDateCert } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter } from '../../../components/print'
+import {
+  formatAffectedDocumentLabel,
+  resolveSingleAffectedDocumentForCertificate,
+} from '../lib/courtDecreeAffectedDocuments'
 
 /**
  * Court decree Certificate of Authenticity (output matches sample PDF).
  * Data from court decree form: dateIssued, issuedByTitle, issuedByName, typeOfCase, caseNo, authenticatedBy,
- * courtOrRacco (Memo Circular No.), affectedDocument, documentOwnerName, plus certificate issuance date and signatory.
+ * courtOrRacco (Memo Circular No.), one affected civil document from saved choice (affectedDocument / form type / list), then LCR inference if needed, documentOwnerName, plus certificate issuance date and signatory.
  */
+function documentOwnerForCertificate(data, affectedCode) {
+  const direct = String(data?.documentOwnerName || '').trim()
+  if (direct) return direct.toUpperCase()
+  if (affectedCode === 'DEATH_CERTIFICATE') {
+    const n = String(data?.lcr2aNameDeceased || '').trim()
+    if (n) return n.toUpperCase()
+  }
+  if (affectedCode === 'BIRTH_CERTIFICATE') {
+    const n = String(data?.lcr1aNameOfChild || '').trim()
+    if (n) return n.toUpperCase()
+  }
+  if (affectedCode === 'MARRIAGE_CERTIFICATE') {
+    const h = String(data?.lcr3aHusbandName || '').trim()
+    const w = String(data?.lcr3aWifeName || '').trim()
+    if (h && w) return `${h} & ${w}`.toUpperCase()
+    if (h || w) return (h || w).toUpperCase()
+  }
+  return '—'
+}
+
 export default function CertAuthenticityCourtDecree({ data }) {
   const dateIssued = data.dateIssued || '—'
   const judgeName = data.issuedByName || (data.issuedByTitle ? `${data.issuedByTitle} ${data.issuedByName || ''}`.trim() : '') || '—'
@@ -14,8 +38,9 @@ export default function CertAuthenticityCourtDecree({ data }) {
   const caseNo = data.caseNo || '—'
   const authenticatedBy = data.authenticatedBy || '—'
   const memoCircular = data.courtOrRacco || '2012-02'
-  const affectedDoc = data.affectedDocument === 'BIRTH_CERTIFICATE' ? 'BIRTH CERTIFICATE' : data.affectedDocument === 'DEATH_CERTIFICATE' ? 'DEATH CERTIFICATE' : 'MARRIAGE CERTIFICATE'
-  const documentOwner = (data.documentOwnerName || '—').toUpperCase()
+  const affectedCode = resolveSingleAffectedDocumentForCertificate(data)
+  const affectedDoc = formatAffectedDocumentLabel(affectedCode)
+  const documentOwner = documentOwnerForCertificate(data, affectedCode)
   const issuedDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
   const signatory = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
 

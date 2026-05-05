@@ -1,13 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { defaultLegitimation } from './lib/legitimationDefaults'
+import { defaultLegitimation, syncLegitimationTransmittalFlagWithFormType } from './lib/legitimationDefaults'
+import { saveLegitimationDraft } from './lib/legitimationStorage'
 import { LEGITIMATION_TYPES } from './constants'
 import { PAPER_SIZES } from '../../components/print'
 import { getUploadedFile, restoreUploadedFileFromTrash } from '../../lib/uploadedFileStore'
 import UploadFileModal from '../../components/upload/UploadFileModal'
 import ToastHost from '../../components/toast/ToastHost'
 import { useToasts } from '../../components/toast/useToasts'
-import { saveCurrentViewAsPdf } from '../../lib/savePdf'
+import { saveCurrentViewAsPdf, openSavedPdfInBrowser } from '../../lib/savePdf'
 import {
   SoleAffidavitLegitimation,
   JointAffidavitLegitimation,
@@ -20,6 +21,7 @@ import {
 } from './print'
 
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-legitimation'
+const LEGITIMATION_TRANSMITTAL_TYPES = new Set(['transmittal', 'out-of-town-transmittal'])
 
 function usePrintPageSize(paperId) {
   useEffect(() => {
@@ -43,7 +45,7 @@ function getStoredData() {
     const raw = localStorage.getItem('legitimationDraft')
     if (!raw) return null
     const parsed = JSON.parse(raw)
-    return { ...defaultLegitimation, ...parsed }
+    return syncLegitimationTransmittalFlagWithFormType({ ...defaultLegitimation, ...parsed })
   } catch {
     return null
   }
@@ -69,6 +71,11 @@ export default function LegitimationPrint() {
     if (data.bothParentsAlive === 'YES' && t.id === 'sole-affidavit') return false
     if (data.birthRegisteredIligan === 'NO' && t.id === 'lcr-form-1a') return false
     if (data.acknowledgedByFatherInColb === 'YES' && t.id === 'registration-acknowledgement') return false
+    if (LEGITIMATION_TRANSMITTAL_TYPES.has(t.id)) {
+      const oot = data.legitimationTransmittalIsOutOfTown === true
+      if (oot && t.id !== 'out-of-town-transmittal') return false
+      if (!oot && t.id !== 'transmittal') return false
+    }
     return true
   })
   const allowedTypeIds = allowedTypes.map((t) => t.id)
@@ -81,7 +88,16 @@ export default function LegitimationPrint() {
     try {
       const result = await saveCurrentViewAsPdf(`Legitimation-${effectiveType}`)
       if (result?.ok) {
-        show({ type: 'success', title: 'PDF saved', message: result.filePath || '' })
+        show({
+          type: 'success',
+          title: 'PDF saved',
+          message: result.filePath || '',
+          actionLabel: 'Open',
+          onAction: async () => {
+            if (!result.filePath) return
+            await openSavedPdfInBrowser(result.filePath)
+          },
+        })
         return
       }
       if (result?.cancelled) {
@@ -150,6 +166,24 @@ export default function LegitimationPrint() {
     if (stored) setData(stored)
   }, [])
 
+  /** Keep URL print type aligned with transmittal toggle */
+  useEffect(() => {
+    const oot = data?.legitimationTransmittalIsOutOfTown === true
+    if (oot && validType === 'transmittal') {
+      setSearchParams((sp) => {
+        const n = new URLSearchParams(sp)
+        n.set('type', 'out-of-town-transmittal')
+        return n
+      }, { replace: true })
+    } else if (!oot && validType === 'out-of-town-transmittal') {
+      setSearchParams((sp) => {
+        const n = new URLSearchParams(sp)
+        n.set('type', 'transmittal')
+        return n
+      }, { replace: true })
+    }
+  }, [data?.legitimationTransmittalIsOutOfTown, validType, setSearchParams])
+
   useEffect(() => {
     if (effectiveType === 'annotation') {
       setPaperSize('long')
@@ -173,6 +207,14 @@ export default function LegitimationPrint() {
   const motherFull = [data.motherFirst, data.motherMiddle, data.motherLast].filter(Boolean).join(' ')
   const subjectLine = `SUBJECT: LEGITIMATION IN FAVOR OF ${(childFull || '').toUpperCase()} - PARENTS ${(fatherFull || '').toUpperCase()} AND ${(motherFull || '').toUpperCase()}`
 
+  const persistTransmittalDraft = useCallback((patch) => {
+    setData((prev) => {
+      const next = { ...prev, ...patch }
+      saveLegitimationDraft(next)
+      return next
+    })
+  }, [])
+
   let content
   switch (effectiveType) {
     case 'sole-affidavit':
@@ -191,10 +233,10 @@ export default function LegitimationPrint() {
       content = <LcrForm1A data={data} />
       break
     case 'transmittal':
-      content = <Transmittal data={data} subjectLine={subjectLine} />
+      content = <Transmittal data={data} subjectLine={subjectLine} onPersistDraft={persistTransmittalDraft} />
       break
     case 'out-of-town-transmittal':
-      content = <OutOfTownTransmittal data={data} subjectLine={subjectLine} />
+      content = <OutOfTownTransmittal data={data} subjectLine={subjectLine} onPersistDraft={persistTransmittalDraft} />
       break
     case 'annotation':
       content = <Annotation data={data} />

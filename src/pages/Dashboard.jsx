@@ -12,9 +12,7 @@ const AUSF_ITEMS = [
   { title: 'Registration of AUSF', desc: 'Register the AUSF document', path: '/ausf', type: 'reg-ausf' },
   { title: 'Registration of Acknowledgement', desc: 'Register affidavit of acknowledgement', path: '/ausf', type: 'reg-ack' },
   { title: 'LCR Form 1A (Birth-Available)', desc: 'Child Acknowledge — Birth certification', path: '/ausf', type: 'child-ack-lcr' },
-  { title: 'Annotation', desc: 'Child Acknowledge — Annotation', path: '/ausf', type: 'child-ack-annotation' },
   { title: 'LCR Form A1 (Child Not Acknowledged)', desc: 'LCR Form 1A certification', path: '/ausf', type: 'child-not-ack-lcr' },
-  { title: 'Annotation (Child Not Acknowledged)', desc: 'Certificate of Live Birth (Municipal Form 102)', path: '/ausf', type: 'child-not-ack-annotation' },
   { title: 'Transmittal (Child Not Acknowledged)', desc: 'Endorsement letter to Municipal Civil Registrar', path: '/ausf', type: 'child-not-ack-transmittal' },
   { title: 'Out of Town Transmittal', desc: 'Transmittal for out-of-town / PSA', path: '/ausf', type: 'out-of-town' },
 ]
@@ -24,7 +22,7 @@ const categories = [
     id: 'ausf',
     title: 'AUSF',
     meaning: 'Affidavit to Use the Surname of Father – legal document allowing a child to use the father\'s surname.',
-    about: 'AUSF (Affidavit to Use the Surname of the Father) is a legal document that allows an illegitimate child to use the surname of the father. It applies when the child is born to parents who are not married. The father must execute an Affidavit to Use the Surname of the Father (AUSF) in order for the child to use his surname. This document is filed with the Local Civil Registrar where the child\'s birth was registered. AUSF covers various scenarios: children aged 0–6 and 7–17, registration of the affidavit, registration of acknowledgement, LCR forms, annotations, and transmittal documents for processing.',
+    about: 'AUSF (Affidavit to Use the Surname of the Father) is a legal document that allows an illegitimate child to use the surname of the father. It applies when the child is born to parents who are not married. The father must execute an Affidavit to Use the Surname of the Father (AUSF) in order for the child to use his surname. This document is filed with the Local Civil Registrar where the child\'s birth was registered. AUSF covers various scenarios: children aged 0–6 and 7–17, registration of the affidavit, registration of acknowledgement, LCR forms, and transmittal documents for processing.',
     path: '/ausf',
     files: AUSF_ITEMS,
   },
@@ -79,15 +77,14 @@ export default function Dashboard() {
   React.useEffect(() => {
     loadSavedAUSFListFromApi()
       .then((list) => setAusfCount(list.length))
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   return (
     <div className="relative min-h-full overflow-hidden">
       <div
-        className={`absolute inset-0 w-full p-6 transition-transform duration-[550ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${
-          showDetail ? 'translate-x-[-100%] pointer-events-none' : 'translate-x-0'
-        }`}
+        className={`absolute inset-0 w-full p-6 transition-transform duration-[550ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${showDetail ? 'translate-x-[-100%] pointer-events-none' : 'translate-x-0'
+          }`}
         style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
       >
         <div className="mb-6">
@@ -95,43 +92,42 @@ export default function Dashboard() {
           <p className="text-sm text-gray-500">Choose a transaction type to start data entry.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map((cat) => (
-          <section
-            key={cat.id}
-            className="relative bg-[var(--card-bg)] rounded-xl shadow-sm border border-gray-100 overflow-visible flex flex-col"
-          >
-            <button
-              type="button"
-              onClick={() => setSelectedCategory(cat)}
-              className="text-left w-full p-5 border-b border-gray-100 shrink-0 rounded-t-xl focus:bg-gray-50/50 focus:outline-none"
+          {categories.map((cat) => (
+            <section
+              key={cat.id}
+              className="relative bg-[var(--card-bg)] rounded-xl shadow-sm border border-gray-100 overflow-visible flex flex-col"
             >
-              <h2 className="font-semibold text-gray-800 text-base mb-1">{cat.title}</h2>
-              <p className="text-sm text-gray-500">{cat.meaning}</p>
-            </button>
-            <div className="p-4 pt-2 flex flex-col gap-1 flex-1">
-              <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide cursor-default">
-                Files
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+              <button
+                type="button"
+                onClick={() => setSelectedCategory(cat)}
+                className="text-left w-full p-5 border-b border-gray-100 shrink-0 rounded-t-xl focus:bg-gray-50/50 focus:outline-none"
+              >
+                <h2 className="font-semibold text-gray-800 text-base mb-1">{cat.title}</h2>
+                <p className="text-sm text-gray-500">{cat.meaning}</p>
+              </button>
+              <div className="p-4 pt-2 flex flex-col gap-1 flex-1">
+                <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide cursor-default">
+                  Files
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+                <p className="text-xs text-gray-400">Click category to view files</p>
               </div>
-              <p className="text-xs text-gray-400">Click category to view files</p>
-            </div>
-            <div
-              className="dashboard-card-total mt-4 mx-4 mb-4 p-4 rounded-lg border-2 flex items-center justify-center min-h-[4.5rem] shrink-0 bg-[#e8f4f8] border-[#0d9488]"
-              aria-label={`Total saved: ${totalCounts[cat.id]}`}
-            >
-              <span className="text-2xl font-bold text-[#0f766e] tabular-nums">Total: {totalCounts[cat.id]}</span>
-            </div>
-          </section>
-        ))}
+              <div
+                className="dashboard-card-total mt-4 mx-4 mb-4 p-4 rounded-lg border-2 flex items-center justify-center min-h-[4.5rem] shrink-0 bg-[#e8f4f8] border-[#0d9488]"
+                aria-label={`Total saved: ${totalCounts[cat.id]}`}
+              >
+                <span className="text-2xl font-bold text-[#0f766e] tabular-nums">Total: {totalCounts[cat.id]}</span>
+              </div>
+            </section>
+          ))}
         </div>
       </div>
 
       <div
-        className={`absolute inset-0 w-full p-6 bg-[var(--main-bg)] overflow-y-auto transition-transform duration-[550ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${
-          showDetail ? 'translate-x-0 pointer-events-auto' : 'translate-x-full pointer-events-none'
-        }`}
+        className={`absolute inset-0 w-full p-6 bg-[var(--main-bg)] overflow-y-auto transition-transform duration-[550ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${showDetail ? 'translate-x-0 pointer-events-auto' : 'translate-x-full pointer-events-none'
+          }`}
         style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
         aria-hidden={!showDetail}
       >

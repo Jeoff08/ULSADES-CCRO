@@ -56,3 +56,22 @@ export async function saveGeneratedPdfBase64(base64, suggestedBaseName = 'docume
     throw new Error('PDF save is unavailable. Run the app in Electron or use a modern browser.')
   }
 }
+
+export async function openSavedPdfInBrowser(filePath) {
+  const target = String(filePath || '').trim()
+  if (!target) return { ok: false, reason: 'Missing file path' }
+
+  const bridge = window?.electronAPI
+  if (bridge?.openPdfInBrowser && typeof bridge.openPdfInBrowser === 'function') {
+    const result = await bridge.openPdfInBrowser(target)
+    if (!result) return { ok: false, reason: 'Unknown response from main process' }
+    return result
+  }
+  if (bridge?.openPdfInChrome && typeof bridge.openPdfInChrome === 'function') {
+    const result = await bridge.openPdfInChrome(target)
+    if (!result) return { ok: false, reason: 'Unknown response from main process' }
+    return result
+  }
+
+  return { ok: false, reason: 'Open-in-browser bridge is unavailable. Run the app in Electron.' }
+}

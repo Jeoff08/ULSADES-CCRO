@@ -10,7 +10,8 @@ export default function Annotation({ data }) {
   const dateMarriage = formatDateCert(data.dateOfMarriage) || '—'
   const place = [data.placeOfMarriageCity, data.placeOfMarriageProvince].filter(Boolean).join(', ') || '—'
   const regNo = data.affidavitLegitRegistryNo || '—'
-  const withAck = data.acknowledgedByFatherInColb === 'YES'
+  const selected = String(data.legitimationAnnotationOption || '').trim().toUpperCase()
+  const withAck = selected === 'B' ? true : selected === 'A' ? false : data.acknowledgedByFatherInColb === 'YES'
 
   const annotationWithAck = `Legitimated by the subsequent marriage of parents ${(fatherFull || '').toUpperCase()} and ${(motherFull || '').toUpperCase()} on ${dateMarriage.toUpperCase()} at ${place.toUpperCase()} under registry number ${regNo}. The child shall be known as ${(childFull || '').toUpperCase()}.`
   const annotationWithoutAck = `Legitimated by the subsequent marriage of parents ${(fatherFull || '').toUpperCase()} and ${(motherFull || '').toUpperCase()} on ${dateMarriage.toUpperCase()} at ${place.toUpperCase()} under registry number ${regNo}.`

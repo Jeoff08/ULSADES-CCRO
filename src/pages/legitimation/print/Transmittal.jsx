@@ -3,13 +3,14 @@ import TransmittalDoc from '../../ausf/print/TransmittalDoc'
 import { LEGITIMATION_TRANSMITTAL_LIST } from '../../../components/print'
 
 /** Legitimation Transmittal: editable checklist inside the document; only checked items appear in print. */
-export default function Transmittal({ data, subjectLine }) {
+export default function Transmittal({ data, subjectLine, onPersistDraft }) {
   return (
     <TransmittalDoc
       data={data}
       isOutOfTown={false}
       subjectLine={subjectLine}
       signatoryGapNone={true}
+      onPersistDraft={onPersistDraft}
       checklistConfig={{ isOutOfTown: false, defaultLabels: LEGITIMATION_TRANSMITTAL_LIST, listId: 'legitimation-local' }}
     />
   )

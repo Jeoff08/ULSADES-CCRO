@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
-import { defaultCourtDecree } from './lib/courtDecreeDefaults'
+import { defaultCourtDecree, syncCourtDecreeTransmittalFlagFromFormType } from './lib/courtDecreeDefaults'
+import { deriveAffectedDocumentsForPrint, primaryAffectedDocumentForSave } from './lib/courtDecreeAffectedDocuments'
 import { addSavedCourtDecree, getCourtDecreeDraft, updateSavedCourtDecree, saveCourtDecreeDraft } from './lib/courtDecreeStorage'
 import { COURT_DECREE_TYPES, AFFECTED_DOCUMENT_OPTIONS, DATE_MONTHS } from './constants'
 import { isLcr1aTableComplete, isLcr2aTableComplete, isLcr3aTableComplete } from './lib/courtDecreeLcrCompletion'
@@ -338,57 +339,6 @@ function deriveDocumentOwnerFromLcr(f) {
   return ''
 }
 
-function hasValue(v) {
-  return v != null && String(v).trim() !== ''
-}
-
-function deriveAffectedDocumentsForPrint(form) {
-  if (!form || typeof form !== 'object') return []
-  const selected = []
-  const hasBirth = [
-    'lcr1aRegistryNumber',
-    'lcr1aDateRegistration',
-    'lcr1aNameOfChild',
-    'lcr1aSex',
-    'lcr1aDateOfBirth',
-    'lcr1aPlaceOfBirth',
-    'lcr1aNameOfMother',
-    'lcr1aMotherCitizenship',
-    'lcr1aNameOfFather',
-    'lcr1aFatherCitizenship',
-    'lcr1aDateMarriageParents',
-    'lcr1aPlaceMarriageParents',
-  ].some((k) => hasValue(form[k]))
-  const hasDeath = [
-    'lcr2aRegistryNumber',
-    'lcr2aDateRegistration',
-    'lcr2aNameDeceased',
-    'lcr2aSex',
-    'lcr2aCivilStatus',
-    'lcr2aCitizenship',
-    'lcr2aDateDeath',
-    'lcr2aCitizenshipFather',
-    'lcr2aPlaceDeath',
-    'lcr2aCauseDeath',
-  ].some((k) => hasValue(form[k]))
-  const hasMarriage = [
-    'lcr3aHusbandName',
-    'lcr3aWifeName',
-    'lcr3aRegistryNumber',
-    'lcr3aDateRegistration',
-    'lcr3aDateMarriage',
-    'lcr3aPlaceMarriage',
-  ].some((k) => hasValue(form[k]))
-
-  if (hasBirth) selected.push('BIRTH_CERTIFICATE')
-  if (hasDeath) selected.push('DEATH_CERTIFICATE')
-  if (hasMarriage) selected.push('MARRIAGE_CERTIFICATE')
-
-  if (selected.length > 0) return selected
-  if (hasValue(form.affectedDocument)) return [String(form.affectedDocument).trim()]
-  return []
-}
-
 function mapAffectedToLcrPrintType(doc) {
   if (doc === 'BIRTH_CERTIFICATE') return 'lcr-form-1a'
   if (doc === 'DEATH_CERTIFICATE') return 'lcr-form-2a'
@@ -441,13 +391,19 @@ export default function CourtDecreeForm() {
     if (isEdit && editId) {
       const draft = getCourtDecreeDraft()
       if (draft && typeof draft === 'object') {
-        Object.assign(base, draft, { formType: draft.formType || typeFromUrl || 'cert-authenticity' })
-        return base
+        return syncCourtDecreeTransmittalFlagFromFormType({
+          ...defaultCourtDecree,
+          ...draft,
+          formType: draft.formType || typeFromUrl || 'cert-authenticity',
+        })
       }
     }
-    base.formType = COURT_DECREE_TYPES.find(t => t.id === typeFromUrl)?.id || typeFromUrl || 'cert-authenticity'
+    base.formType = COURT_DECREE_TYPES.find((t) => t.id === typeFromUrl)?.id || 'cert-authenticity'
     const affected = urlToAffectedDoc(typeFromUrl)
-    if (affected) base.affectedDocument = affected
+    if (affected) {
+      base.affectedDocument = affected
+      base.affectedDocuments = [affected]
+    }
     return base
   })
 
@@ -459,6 +415,13 @@ export default function CourtDecreeForm() {
       saveCourtDecreeDraft(next)
       return next
     })
+  const setCourtDecreeTransmittalOutOfTown = (isOutOfTown) => {
+    setForm((prev) => {
+      const next = { ...prev, courtDecreeTransmittalIsOutOfTown: isOutOfTown }
+      saveCourtDecreeDraft(next)
+      return next
+    })
+  }
   const handleCountryChange = (value) => {
     const nextValue = String(value || '').trim().toUpperCase()
     if (nextValue === 'FOREIGN' && String(form.country || '').trim().toUpperCase() !== 'FOREIGN') {
@@ -543,7 +506,7 @@ export default function CourtDecreeForm() {
     let nextPrintType = form.formType
     if (affectedDocuments.length > 0) {
       formForOutput.affectedDocuments = affectedDocuments
-      formForOutput.affectedDocument = affectedDocuments[0]
+      formForOutput.affectedDocument = primaryAffectedDocumentForSave(formForOutput, affectedDocuments)
       // If only one LCR table was filled, always open print view on that specific LCR output.
       if (!LCR_FORM_TYPES.includes(form.formType) && affectedDocuments.length === 1) {
         const mapped = mapAffectedToLcrPrintType(affectedDocuments[0])
@@ -573,7 +536,11 @@ export default function CourtDecreeForm() {
       setForm((prev) => {
         const next = { ...prev, formType: type }
         const affected = urlToAffectedDoc(type)
-        if (affected) next.affectedDocument = affected
+        if (affected) {
+          next.affectedDocument = affected
+          next.affectedDocuments = [affected]
+        }
+        saveCourtDecreeDraft(next)
         return next
       })
     }
@@ -585,7 +552,11 @@ export default function CourtDecreeForm() {
     try {
       const d = getCourtDecreeDraft()
       if (d && typeof d === 'object') {
-        const merged = { ...defaultCourtDecree, ...d, formType: 'cert-authenticity' }
+        const merged = syncCourtDecreeTransmittalFlagFromFormType({
+          ...defaultCourtDecree,
+          ...d,
+          formType: 'cert-authenticity',
+        })
         setForm(merged)
       }
     } finally {
@@ -613,10 +584,12 @@ export default function CourtDecreeForm() {
       doc = h && w ? `${h} & ${w}` : h || w
     }
     const aff = urlToAffectedDoc(form.formType)
+    const chosenDoc = aff || form.affectedDocument || 'MARRIAGE_CERTIFICATE'
     saveCourtDecreeDraft({
       ...form,
       formType: 'cert-authenticity',
-      affectedDocument: aff || form.affectedDocument,
+      affectedDocument: chosenDoc,
+      affectedDocuments: [chosenDoc],
       documentOwnerName: doc || form.documentOwnerName,
     })
     setShowContinueDecreeModal(false)
@@ -668,705 +641,752 @@ export default function CourtDecreeForm() {
         </header>
 
         <div className="court-decree-form-page__body">
-      {form.formType === 'lcr-form-1a' ? (
-      <div className="court-decree-form-page__section" style={sectionDelay(0)}>
-        <LcrFormNavLinks form={form} activeType="lcr-form-1a" />
-        <CourtDecreeSection number="1" title="Table fields">
-          <div className="space-y-4 max-w-2xl">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">LCR Registry Number</label>
-              <input type="text" value={form.lcr1aRegistryNumber} onChange={scInput('lcr1aRegistryNumber')} placeholder="e.g. 2002-1956" className={inputClass} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date of Registration</label>
-              <DateInput value={form.lcr1aDateRegistration} onChange={(v) => update('lcr1aDateRegistration', v)} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name of Child</label>
-              <input type="text" value={form.lcr1aNameOfChild} onChange={scInput('lcr1aNameOfChild')} placeholder="e.g. ABDARIE LANTUD IBRAHIM" className={inputClass} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sex</label>
-              <select value={form.lcr1aSex} onChange={(e) => update('lcr1aSex', e.target.value)} className={inputClass}>
-                <option value="">—</option>
-                <option value="MALE">MALE</option>
-                <option value="FEMALE">FEMALE</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-              <DateInput value={form.lcr1aDateOfBirth} onChange={(v) => update('lcr1aDateOfBirth', v)} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Place of Birth</label>
-              <input type="text" value={form.lcr1aPlaceOfBirth} onChange={scInput('lcr1aPlaceOfBirth')} placeholder="e.g. 8 EAST ROS. HTS. TUBOD" className={inputClass} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name of Mother</label>
-              <input type="text" value={form.lcr1aNameOfMother} onChange={scInput('lcr1aNameOfMother')} className={inputClass} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Citizenship of Mother</label>
-              <input type="text" value={form.lcr1aMotherCitizenship} onChange={scInput('lcr1aMotherCitizenship')} className={inputClass} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name of Father</label>
-              <input type="text" value={form.lcr1aNameOfFather} onChange={scInput('lcr1aNameOfFather')} className={inputClass} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Citizenship of Father</label>
-              <input type="text" value={form.lcr1aFatherCitizenship} onChange={scInput('lcr1aFatherCitizenship')} className={inputClass} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date of Marriage of Parents</label>
-              <DateInput value={form.lcr1aDateMarriageParents} onChange={(v) => update('lcr1aDateMarriageParents', v)} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Place of Marriage of Parents</label>
-              <input type="text" value={form.lcr1aPlaceMarriageParents} onChange={scInput('lcr1aPlaceMarriageParents')} placeholder="e.g. SAGUIARAN, LANAO DEL SUR" className={inputClass} />
-            </div>
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <p className="text-sm text-gray-600 mb-3">When this table is fully filled, continue to the main court decree form for country, court decree details, and other print types.</p>
-              <button
-                type="button"
-                onClick={handleLcrTableCompleteContinue}
-                className="court-decree-form-page__btn px-4 py-2.5 rounded-lg font-semibold text-sm bg-white border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] hover:bg-[var(--primary-blue)]/5"
-              >
-                Table complete — continue to court decree form
-              </button>
-            </div>
-          </div>
-        </CourtDecreeSection>
-      </div>
-      ) : form.formType === 'lcr-form-2a' ? (
-      <div className="court-decree-form-page__section" style={sectionDelay(0)}>
-        <LcrFormNavLinks form={form} activeType="lcr-form-2a" />
-        <CourtDecreeSection number="1" title="Table fields">
-          <div className="space-y-4 max-w-2xl">
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">LCR Registry Number</label><input type="text" value={form.lcr2aRegistryNumber} onChange={scInput('lcr2aRegistryNumber')} className={inputClass} /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Registration</label><DateInput value={form.lcr2aDateRegistration} onChange={(v) => update('lcr2aDateRegistration', v)} /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Name of Deceased</label><input type="text" value={form.lcr2aNameDeceased} onChange={scInput('lcr2aNameDeceased')} className={inputClass} /></div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sex</label>
-              <select value={form.lcr2aSex} onChange={(e) => update('lcr2aSex', e.target.value)} className={inputClass}>
-                <option value="">—</option>
-                <option value="MALE">MALE</option>
-                <option value="FEMALE">FEMALE</option>
-              </select>
-            </div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Civil Status</label><input type="text" value={form.lcr2aCivilStatus} onChange={scInput('lcr2aCivilStatus')} placeholder="e.g. SINGLE" className={inputClass} /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label><input type="text" value={form.lcr2aCitizenship} onChange={scInput('lcr2aCitizenship')} className={inputClass} /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Death</label><DateInput value={form.lcr2aDateDeath} onChange={(v) => update('lcr2aDateDeath', v)} /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Citizenship of Father</label><input type="text" value={form.lcr2aCitizenshipFather} onChange={scInput('lcr2aCitizenshipFather')} className={inputClass} /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Place of Death</label><input type="text" value={form.lcr2aPlaceDeath} onChange={scInput('lcr2aPlaceDeath')} className={inputClass} /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Cause of Death</label><textarea value={form.lcr2aCauseDeath} onChange={scInput('lcr2aCauseDeath')} rows={4} className={inputClass} placeholder="As stated on the record" /></div>
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <p className="text-sm text-gray-600 mb-3">When this table is fully filled, continue to the main court decree form for country, court decree details, and other print types.</p>
-              <button
-                type="button"
-                onClick={handleLcrTableCompleteContinue}
-                className="court-decree-form-page__btn px-4 py-2.5 rounded-lg font-semibold text-sm bg-white border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] hover:bg-[var(--primary-blue)]/5"
-              >
-                Table complete — continue to court decree form
-              </button>
-            </div>
-          </div>
-        </CourtDecreeSection>
-      </div>
-      ) : form.formType === 'lcr-form-3a' ? (
-      <div className="court-decree-form-page__section" style={sectionDelay(0)}>
-        <LcrFormNavLinks form={form} activeType="lcr-form-3a" />
-        <CourtDecreeSection number="1" title="Table fields (Husband / Wife / Marriage)">
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <p className="font-semibold text-gray-800 border-b border-gray-200 pb-1 mb-3">Husband</p>
-              <div className="space-y-3">
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">Name</label><input type="text" value={form.lcr3aHusbandName} onChange={scInput('lcr3aHusbandName')} placeholder="e.g. NORHADJE P. DIRAMPATAN" className={inputClass} /></div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                  <FlexibleBirthDateInput
-                    value={form.husbandDateOfBirth}
-                    onChange={(v) =>
-                      setForm((prev) => {
-                        const ref = refDateForAge(prev.lcr3aDateMarriage)
-                        const hb = parseBirthToDate(v)
-                        return {
-                          ...prev,
-                          husbandDateOfBirth: v,
-                          lcr3aHusbandDobAge: '',
-                          husbandAge: hb ? String(computeAgeYears(hb, ref)) : '',
-                        }
-                      })
-                    }
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Type <strong>dd/mm/yyyy</strong> (8 digits) or <strong>mm/yyyy</strong> (6 digits) for month/year only. Calendar sets full date. Age fills automatically from <strong>Date of Marriage</strong> below (or today if empty).
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Age (auto)</label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={form.husbandAge}
-                    onChange={(e) => update('husbandAge', e.target.value.replace(/\D/g, '').slice(0, 3))}
-                    placeholder="Fills when DOB is set"
-                    className={inputClass}
-                  />
-                </div>
-                {form.lcr3aHusbandDobAge && !form.husbandDateOfBirth ? (
+          {form.formType === 'lcr-form-1a' ? (
+            <div className="court-decree-form-page__section" style={sectionDelay(0)}>
+              <LcrFormNavLinks form={form} activeType="lcr-form-1a" />
+              <CourtDecreeSection number="1" title="Table fields">
+                <div className="space-y-4 max-w-2xl">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Legacy free-text DOB/Age (clear to use calendar above)</label>
-                    <input type="text" value={form.lcr3aHusbandDobAge} onChange={scInput('lcr3aHusbandDobAge')} className={inputClass} />
+                    <label className="block text-sm font-medium text-gray-700 mb-1">LCR Registry Number</label>
+                    <input type="text" value={form.lcr1aRegistryNumber} onChange={scInput('lcr1aRegistryNumber')} placeholder="e.g. 2002-1956" className={inputClass} />
                   </div>
-                ) : null}
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label><input type="text" value={form.lcr3aHusbandCitizenship} onChange={scInput('lcr3aHusbandCitizenship')} className={inputClass} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">Civil Status</label><input type="text" value={form.lcr3aHusbandCivilStatus} onChange={scInput('lcr3aHusbandCivilStatus')} className={inputClass} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">Mother</label><input type="text" value={form.lcr3aHusbandMother} onChange={scInput('lcr3aHusbandMother')} placeholder="e.g. MARIAM T. PIQUERO (D)" className={inputClass} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">Father</label><input type="text" value={form.lcr3aHusbandFather} onChange={scInput('lcr3aHusbandFather')} className={inputClass} /></div>
-              </div>
-            </div>
-            <div>
-              <p className="font-semibold text-gray-800 border-b border-gray-200 pb-1 mb-3">Wife</p>
-              <div className="space-y-3">
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">Name</label><input type="text" value={form.lcr3aWifeName} onChange={scInput('lcr3aWifeName')} placeholder="e.g. AURORA JOSE MARIE C. FIGUEROA" className={inputClass} /></div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                  <FlexibleBirthDateInput
-                    value={form.wifeDateOfBirth}
-                    onChange={(v) =>
-                      setForm((prev) => {
-                        const ref = refDateForAge(prev.lcr3aDateMarriage)
-                        const wb = parseBirthToDate(v)
-                        return {
-                          ...prev,
-                          wifeDateOfBirth: v,
-                          lcr3aWifeDobAge: '',
-                          wifeAge: wb ? String(computeAgeYears(wb, ref)) : '',
-                        }
-                      })
-                    }
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Type <strong>dd/mm/yyyy</strong> or <strong>mm/yyyy</strong>, or use calendar. Age updates from date of marriage (or today).
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Age (auto)</label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={form.wifeAge}
-                    onChange={(e) => update('wifeAge', e.target.value.replace(/\D/g, '').slice(0, 3))}
-                    placeholder="Fills when DOB is set"
-                    className={inputClass}
-                  />
-                </div>
-                {form.lcr3aWifeDobAge && !form.wifeDateOfBirth ? (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Legacy free-text DOB/Age (clear to use calendar above)</label>
-                    <input type="text" value={form.lcr3aWifeDobAge} onChange={scInput('lcr3aWifeDobAge')} className={inputClass} />
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date of Registration</label>
+                    <DateInput value={form.lcr1aDateRegistration} onChange={(v) => update('lcr1aDateRegistration', v)} />
                   </div>
-                ) : null}
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label><input type="text" value={form.lcr3aWifeCitizenship} onChange={scInput('lcr3aWifeCitizenship')} className={inputClass} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">Civil Status</label><input type="text" value={form.lcr3aWifeCivilStatus} onChange={scInput('lcr3aWifeCivilStatus')} className={inputClass} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">Mother</label><input type="text" value={form.lcr3aWifeMother} onChange={scInput('lcr3aWifeMother')} className={inputClass} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">Father</label><input type="text" value={form.lcr3aWifeFather} onChange={scInput('lcr3aWifeFather')} placeholder="e.g. JOSE G. FIGUEROA (D)" className={inputClass} /></div>
-              </div>
-            </div>
-            <div>
-              <p className="font-semibold text-gray-800 border-b border-gray-200 pb-1 mb-3">Marriage</p>
-              <div className="space-y-3">
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">Registry Number</label><input type="text" value={form.lcr3aRegistryNumber} onChange={scInput('lcr3aRegistryNumber')} placeholder="e.g. 2009-813" className={inputClass} /></div>
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Registration</label><DateInput value={form.lcr3aDateRegistration} onChange={(v) => update('lcr3aDateRegistration', v)} /></div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Date of Marriage</label>
-                  <DateInput
-                    value={form.lcr3aDateMarriage}
-                    onChange={(v) =>
-                      setForm((prev) => {
-                        const ref = refDateForAge(v)
-                        const next = { ...prev, lcr3aDateMarriage: v }
-                        const hb = parseBirthToDate(prev.husbandDateOfBirth)
-                        const wb = parseBirthToDate(prev.wifeDateOfBirth)
-                        if (hb) next.husbandAge = String(computeAgeYears(hb, ref))
-                        if (wb) next.wifeAge = String(computeAgeYears(wb, ref))
-                        return next
-                      })
-                    }
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Used to calculate age at marriage for husband and wife.</p>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Name of Child</label>
+                    <input type="text" value={form.lcr1aNameOfChild} onChange={scInput('lcr1aNameOfChild')} placeholder="e.g. ABDARIE LANTUD IBRAHIM" className={inputClass} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Sex</label>
+                    <select value={form.lcr1aSex} onChange={(e) => update('lcr1aSex', e.target.value)} className={inputClass}>
+                      <option value="">—</option>
+                      <option value="MALE">MALE</option>
+                      <option value="FEMALE">FEMALE</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                    <DateInput value={form.lcr1aDateOfBirth} onChange={(v) => update('lcr1aDateOfBirth', v)} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Place of Birth</label>
+                    <input type="text" value={form.lcr1aPlaceOfBirth} onChange={scInput('lcr1aPlaceOfBirth')} placeholder="e.g. 8 EAST ROS. HTS. TUBOD" className={inputClass} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Name of Mother</label>
+                    <input type="text" value={form.lcr1aNameOfMother} onChange={scInput('lcr1aNameOfMother')} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Citizenship of Mother</label>
+                    <input type="text" value={form.lcr1aMotherCitizenship} onChange={scInput('lcr1aMotherCitizenship')} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Name of Father</label>
+                    <input type="text" value={form.lcr1aNameOfFather} onChange={scInput('lcr1aNameOfFather')} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Citizenship of Father</label>
+                    <input type="text" value={form.lcr1aFatherCitizenship} onChange={scInput('lcr1aFatherCitizenship')} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date of Marriage of Parents</label>
+                    <DateInput value={form.lcr1aDateMarriageParents} onChange={(v) => update('lcr1aDateMarriageParents', v)} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Place of Marriage of Parents</label>
+                    <input type="text" value={form.lcr1aPlaceMarriageParents} onChange={scInput('lcr1aPlaceMarriageParents')} placeholder="e.g. SAGUIARAN, LANAO DEL SUR" className={inputClass} />
+                  </div>
+                  <div className="mt-6 pt-4 border-t border-gray-200">
+                    <p className="text-sm text-gray-600 mb-3">When this table is fully filled, continue to the main court decree form for country, court decree details, and other print types.</p>
+                    <button
+                      type="button"
+                      onClick={handleLcrTableCompleteContinue}
+                      className="court-decree-form-page__btn px-4 py-2.5 rounded-lg font-semibold text-sm bg-white border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] hover:bg-[var(--primary-blue)]/5"
+                    >
+                      Table complete — continue to court decree form
+                    </button>
+                  </div>
                 </div>
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">Place of Marriage</label><input type="text" value={form.lcr3aPlaceMarriage} onChange={scInput('lcr3aPlaceMarriage')} placeholder="Full venue as on certificate" className={inputClass} /></div>
-              </div>
+              </CourtDecreeSection>
             </div>
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <p className="text-sm text-gray-600 mb-3">When this table is fully filled, continue to the main court decree form for country, court decree details, and other print types.</p>
-              <button
-                type="button"
-                onClick={handleLcrTableCompleteContinue}
-                className="court-decree-form-page__btn px-4 py-2.5 rounded-lg font-semibold text-sm bg-white border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] hover:bg-[var(--primary-blue)]/5"
-              >
-                Table complete — continue to court decree form
-              </button>
+          ) : form.formType === 'lcr-form-2a' ? (
+            <div className="court-decree-form-page__section" style={sectionDelay(0)}>
+              <LcrFormNavLinks form={form} activeType="lcr-form-2a" />
+              <CourtDecreeSection number="1" title="Table fields">
+                <div className="space-y-4 max-w-2xl">
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">LCR Registry Number</label><input type="text" value={form.lcr2aRegistryNumber} onChange={scInput('lcr2aRegistryNumber')} className={inputClass} /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Registration</label><DateInput value={form.lcr2aDateRegistration} onChange={(v) => update('lcr2aDateRegistration', v)} /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Name of Deceased</label><input type="text" value={form.lcr2aNameDeceased} onChange={scInput('lcr2aNameDeceased')} className={inputClass} /></div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Sex</label>
+                    <select value={form.lcr2aSex} onChange={(e) => update('lcr2aSex', e.target.value)} className={inputClass}>
+                      <option value="">—</option>
+                      <option value="MALE">MALE</option>
+                      <option value="FEMALE">FEMALE</option>
+                    </select>
+                  </div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Civil Status</label><input type="text" value={form.lcr2aCivilStatus} onChange={scInput('lcr2aCivilStatus')} placeholder="e.g. SINGLE" className={inputClass} /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label><input type="text" value={form.lcr2aCitizenship} onChange={scInput('lcr2aCitizenship')} className={inputClass} /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Death</label><DateInput value={form.lcr2aDateDeath} onChange={(v) => update('lcr2aDateDeath', v)} /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Citizenship of Father</label><input type="text" value={form.lcr2aCitizenshipFather} onChange={scInput('lcr2aCitizenshipFather')} className={inputClass} /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Place of Death</label><input type="text" value={form.lcr2aPlaceDeath} onChange={scInput('lcr2aPlaceDeath')} className={inputClass} /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Cause of Death</label><textarea value={form.lcr2aCauseDeath} onChange={scInput('lcr2aCauseDeath')} rows={4} className={inputClass} placeholder="As stated on the record" /></div>
+                  <div className="mt-6 pt-4 border-t border-gray-200">
+                    <p className="text-sm text-gray-600 mb-3">When this table is fully filled, continue to the main court decree form for country, court decree details, and other print types.</p>
+                    <button
+                      type="button"
+                      onClick={handleLcrTableCompleteContinue}
+                      className="court-decree-form-page__btn px-4 py-2.5 rounded-lg font-semibold text-sm bg-white border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] hover:bg-[var(--primary-blue)]/5"
+                    >
+                      Table complete — continue to court decree form
+                    </button>
+                  </div>
+                </div>
+              </CourtDecreeSection>
             </div>
-          </div>
-        </CourtDecreeSection>
-      </div>
-      ) : (
-      <>
-      <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
-      <CourtDecreeSection number="1" title="What country issued the court order/decree">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-            <select
-              value={form.country}
-              onChange={(e) => handleCountryChange(e.target.value)}
-              className={inputClass}
-            >
-              <option value="PHILIPPINES">PHILIPPINES</option>
-              <option value="FOREIGN">FOREIGN</option>
-            </select>
-            {(String(form.country || '').trim().toUpperCase() === 'FOREIGN' || showForeignCountryNote) && (
-              <p className="mt-2 text-center text-sm font-semibold text-red-600 uppercase">
-                Note: It must be registered at LCRO of Manila
-              </p>
-            )}
-          </div>
-          <div>
-            <div className="court-decree-form-page__label-tag">Court or Racco?</div>
-            <select
-              value={form.courtOrRacco}
-              onChange={(e) => update('courtOrRacco', e.target.value)}
-              className={inputClass}
-            >
-              <option value="">Select option</option>
-              <option value="2024-05">Racco is (2024-05) adoption</option>
-              <option value="2012-02">Court is (2012-02) divorce, nullity, and marraige</option>
-            </select>
-          </div>
-        </div>
-      </CourtDecreeSection>
-      </div>
-
-      <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
-      <CourtDecreeSection number="2" title="Affected civil document?">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Forms (checked when filled)</label>
-            <LcrFormNavLinks form={form} activeType={form.formType} showFullCourtLink={false} />
-          </div>
-        </div>
-      </CourtDecreeSection>
-      </div>
-
-      <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
-      <CourtDecreeSection number="3" title="Document owner/s">
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Document owner/s</label>
-          <input
-            type="text"
-            value={form.documentOwnerName}
-            onChange={scInput('documentOwnerName')}
-            placeholder="e.g. SPS. FRANCIS CANO CUBERO AND JULIEMAE ORLANES BAGTONG"
-            className={inputClass}
-          />
-        </div>
-      </CourtDecreeSection>
-      </div>
-
-      <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
-      <CourtDecreeSection number="4" title="Court decree details">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date Issued</label>
-            <DateInput value={form.dateIssued} onChange={(v) => update('dateIssued', v)} placeholder="dd/mm/yyyy" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Court that issued the court decree</label>
-            <div className="relative">
-              <input
-                type="text"
-                value={form.courtThatIssued}
-                onChange={(e) => {
-                  commitFirstLetterUpperFromInput(e, (v) => updateAndPersistDraft('courtThatIssued', v))
-                  setShowCourtIssuedSuggestions(true)
-                  setCourtIssuedSuggestionIndex(-1)
-                }}
-                onFocus={() => setShowCourtIssuedSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowCourtIssuedSuggestions(false), 120)}
-                onKeyDown={(e) => {
-                  if (!showCourtIssuedSuggestions || filteredCourtIssued.length === 0) return
-                  if (e.key === 'ArrowDown') {
-                    e.preventDefault()
-                    setCourtIssuedSuggestionIndex((prev) => (prev + 1) % filteredCourtIssued.length)
-                    return
-                  }
-                  if (e.key === 'ArrowUp') {
-                    e.preventDefault()
-                    setCourtIssuedSuggestionIndex((prev) => (prev <= 0 ? filteredCourtIssued.length - 1 : prev - 1))
-                    return
-                  }
-                  if (e.key === 'Enter' && courtIssuedSuggestionIndex >= 0) {
-                    e.preventDefault()
-                    chooseCourtIssued(filteredCourtIssued[courtIssuedSuggestionIndex])
-                    return
-                  }
-                  if (e.key === 'Escape') {
-                    setShowCourtIssuedSuggestions(false)
-                    setCourtIssuedSuggestionIndex(-1)
-                  }
-                }}
-                placeholder="e.g. 4TH SHARI'A CIRCUIT COURT, ILIGAN CITY"
-                className={`${inputClass} pr-10`}
-              />
-              <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
-                <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4" aria-hidden>
-                  <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.166l3.71-3.935a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-                </svg>
-              </span>
-              {showCourtIssuedSuggestions && (
-                <div className="absolute z-50 mt-1 w-full rounded-xl border border-indigo-100 bg-white shadow-[0_10px_30px_rgba(79,70,229,0.18)] overflow-hidden">
-                  {filteredCourtIssued.length > 0 ? (
-                    filteredCourtIssued.map((name, idx) => (
-                      <button
-                        key={name}
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => chooseCourtIssued(name)}
-                        className={`w-full px-3 py-2 text-left text-sm transition ${
-                          idx === courtIssuedSuggestionIndex
-                            ? 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white'
-                            : 'text-gray-800 hover:bg-indigo-50'
-                        }`}
+          ) : form.formType === 'lcr-form-3a' ? (
+            <div className="court-decree-form-page__section" style={sectionDelay(0)}>
+              <LcrFormNavLinks form={form} activeType="lcr-form-3a" />
+              <CourtDecreeSection number="1" title="Table fields (Husband / Wife / Marriage)">
+                <div className="space-y-6 max-w-3xl">
+                  <div>
+                    <p className="font-semibold text-gray-800 border-b border-gray-200 pb-1 mb-3">Husband</p>
+                    <div className="space-y-3">
+                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Name</label><input type="text" value={form.lcr3aHusbandName} onChange={scInput('lcr3aHusbandName')} placeholder="e.g. NORHADJE P. DIRAMPATAN" className={inputClass} /></div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                        <FlexibleBirthDateInput
+                          value={form.husbandDateOfBirth}
+                          onChange={(v) =>
+                            setForm((prev) => {
+                              const ref = refDateForAge(prev.lcr3aDateMarriage)
+                              const hb = parseBirthToDate(v)
+                              return {
+                                ...prev,
+                                husbandDateOfBirth: v,
+                                lcr3aHusbandDobAge: '',
+                                husbandAge: hb ? String(computeAgeYears(hb, ref)) : '',
+                              }
+                            })
+                          }
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Type <strong>dd/mm/yyyy</strong> (8 digits) or <strong>mm/yyyy</strong> (6 digits) for month/year only. Calendar sets full date. Age fills automatically from <strong>Date of Marriage</strong> below (or today if empty).
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Age (auto)</label>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={form.husbandAge}
+                          onChange={(e) => update('husbandAge', e.target.value.replace(/\D/g, '').slice(0, 3))}
+                          placeholder="Fills when DOB is set"
+                          className={inputClass}
+                        />
+                      </div>
+                      {form.lcr3aHusbandDobAge && !form.husbandDateOfBirth ? (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Legacy free-text DOB/Age (clear to use calendar above)</label>
+                          <input type="text" value={form.lcr3aHusbandDobAge} onChange={scInput('lcr3aHusbandDobAge')} className={inputClass} />
+                        </div>
+                      ) : null}
+                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label><input type="text" value={form.lcr3aHusbandCitizenship} onChange={scInput('lcr3aHusbandCitizenship')} className={inputClass} /></div>
+                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Civil Status</label><input type="text" value={form.lcr3aHusbandCivilStatus} onChange={scInput('lcr3aHusbandCivilStatus')} className={inputClass} /></div>
+                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Mother</label><input type="text" value={form.lcr3aHusbandMother} onChange={scInput('lcr3aHusbandMother')} placeholder="e.g. MARIAM T. PIQUERO (D)" className={inputClass} /></div>
+                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Father</label><input type="text" value={form.lcr3aHusbandFather} onChange={scInput('lcr3aHusbandFather')} className={inputClass} /></div>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800 border-b border-gray-200 pb-1 mb-3">Wife</p>
+                    <div className="space-y-3">
+                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Name</label><input type="text" value={form.lcr3aWifeName} onChange={scInput('lcr3aWifeName')} placeholder="e.g. AURORA JOSE MARIE C. FIGUEROA" className={inputClass} /></div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                        <FlexibleBirthDateInput
+                          value={form.wifeDateOfBirth}
+                          onChange={(v) =>
+                            setForm((prev) => {
+                              const ref = refDateForAge(prev.lcr3aDateMarriage)
+                              const wb = parseBirthToDate(v)
+                              return {
+                                ...prev,
+                                wifeDateOfBirth: v,
+                                lcr3aWifeDobAge: '',
+                                wifeAge: wb ? String(computeAgeYears(wb, ref)) : '',
+                              }
+                            })
+                          }
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Type <strong>dd/mm/yyyy</strong> or <strong>mm/yyyy</strong>, or use calendar. Age updates from date of marriage (or today).
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Age (auto)</label>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={form.wifeAge}
+                          onChange={(e) => update('wifeAge', e.target.value.replace(/\D/g, '').slice(0, 3))}
+                          placeholder="Fills when DOB is set"
+                          className={inputClass}
+                        />
+                      </div>
+                      {form.lcr3aWifeDobAge && !form.wifeDateOfBirth ? (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Legacy free-text DOB/Age (clear to use calendar above)</label>
+                          <input type="text" value={form.lcr3aWifeDobAge} onChange={scInput('lcr3aWifeDobAge')} className={inputClass} />
+                        </div>
+                      ) : null}
+                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label><input type="text" value={form.lcr3aWifeCitizenship} onChange={scInput('lcr3aWifeCitizenship')} className={inputClass} /></div>
+                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Civil Status</label><input type="text" value={form.lcr3aWifeCivilStatus} onChange={scInput('lcr3aWifeCivilStatus')} className={inputClass} /></div>
+                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Mother</label><input type="text" value={form.lcr3aWifeMother} onChange={scInput('lcr3aWifeMother')} className={inputClass} /></div>
+                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Father</label><input type="text" value={form.lcr3aWifeFather} onChange={scInput('lcr3aWifeFather')} placeholder="e.g. JOSE G. FIGUEROA (D)" className={inputClass} /></div>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800 border-b border-gray-200 pb-1 mb-3">Marriage</p>
+                    <div className="space-y-3">
+                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Registry Number</label><input type="text" value={form.lcr3aRegistryNumber} onChange={scInput('lcr3aRegistryNumber')} placeholder="e.g. 2009-813" className={inputClass} /></div>
+                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Registration</label><DateInput value={form.lcr3aDateRegistration} onChange={(v) => update('lcr3aDateRegistration', v)} /></div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Date of Marriage</label>
+                        <DateInput
+                          value={form.lcr3aDateMarriage}
+                          onChange={(v) =>
+                            setForm((prev) => {
+                              const ref = refDateForAge(v)
+                              const next = { ...prev, lcr3aDateMarriage: v }
+                              const hb = parseBirthToDate(prev.husbandDateOfBirth)
+                              const wb = parseBirthToDate(prev.wifeDateOfBirth)
+                              if (hb) next.husbandAge = String(computeAgeYears(hb, ref))
+                              if (wb) next.wifeAge = String(computeAgeYears(wb, ref))
+                              return next
+                            })
+                          }
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Used to calculate age at marriage for husband and wife.</p>
+                      </div>
+                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Place of Marriage</label><input type="text" value={form.lcr3aPlaceMarriage} onChange={scInput('lcr3aPlaceMarriage')} placeholder="Full venue as on certificate" className={inputClass} /></div>
+                    </div>
+                  </div>
+                  <div className="mt-6 pt-4 border-t border-gray-200">
+                    <p className="text-sm text-gray-600 mb-3">When this table is fully filled, continue to the main court decree form for country, court decree details, and other print types.</p>
+                    <button
+                      type="button"
+                      onClick={handleLcrTableCompleteContinue}
+                      className="court-decree-form-page__btn px-4 py-2.5 rounded-lg font-semibold text-sm bg-white border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] hover:bg-[var(--primary-blue)]/5"
+                    >
+                      Table complete — continue to court decree form
+                    </button>
+                  </div>
+                </div>
+              </CourtDecreeSection>
+            </div>
+          ) : (
+            <>
+              <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
+                <CourtDecreeSection number="1" title="What country issued the court order/decree">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                      <select
+                        value={form.country}
+                        onChange={(e) => handleCountryChange(e.target.value)}
+                        className={inputClass}
                       >
-                        {name}
-                      </button>
-                    ))
-                  ) : (
-                    <div className="px-3 py-2 text-sm text-gray-500">No matching court found</div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Issued/Rendered By (Title)</label>
-              <input type="text" value={form.issuedByTitle} onChange={scInput('issuedByTitle')} placeholder="e.g. Judge" className={inputClass} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-              <input type="text" value={form.issuedByName} onChange={scInput('issuedByName')} placeholder="e.g. HON. OSOP MANGOTARA ALI" className={inputClass} />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Type of Case</label>
-            <select
-              value={form.typeOfCase}
-              onChange={(e) => update('typeOfCase', e.target.value)}
-              className={inputClass}
-            >
-              <option value="Civil Case No.">Civil Case No.</option>
-              <option value="S.P. No">S.P. No</option>
-              <option value="RACCO">RACCO</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Case No</label>
-            <input type="text" value={form.caseNo} onChange={scInput('caseNo')} placeholder="e.g. 2025-034" className={inputClass} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Authenticated By</label>
-            <input type="text" value={form.authenticatedBy} onChange={scInput('authenticatedBy')} placeholder="e.g. NASRODING A. ALI" className={inputClass} />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Registry Number</label>
-              <input type="text" value={form.registryNumber} onChange={scInput('registryNumber')} placeholder="e.g. 64" className={inputClass} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date Registered</label>
-              <DateInput value={form.dateRegistered} onChange={(v) => update('dateRegistered', v)} placeholder="dd/mm/yyyy" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Case Title</label>
-            <textarea
-              value={form.caseTitle}
-              onChange={scInput('caseTitle')}
-              rows={3}
-              placeholder="e.g. IN RE: JOINT PETITION TO APPROVE AND REGISTER THE DIVORCE OF SPOUSES..."
-              className={inputClass}
-            />
-          </div>
-        </div>
-      </CourtDecreeSection>
-      </div>
-
-      <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
-      <CourtDecreeSection number="5" title="Signatory">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">LCRO - Staff (Verified by)</label>
-            <div className="relative">
-              <input
-                type="text"
-                value={form.certificateSignatoryName}
-                onChange={(e) => {
-                  scInput('certificateSignatoryName')(e)
-                  setShowStaffSuggestions(true)
-                  setStaffSuggestionIndex(-1)
-                }}
-                onFocus={() => setShowStaffSuggestions(true)}
-                onBlur={(e) => {
-                  saveLcroStaffName(e.target.value)
-                  setTimeout(() => setShowStaffSuggestions(false), 120)
-                }}
-                onKeyDown={(e) => {
-                  if (!showStaffSuggestions || filteredLcroStaff.length === 0) return
-                  if (e.key === 'ArrowDown') {
-                    e.preventDefault()
-                    setStaffSuggestionIndex((prev) => (prev + 1) % filteredLcroStaff.length)
-                    return
-                  }
-                  if (e.key === 'ArrowUp') {
-                    e.preventDefault()
-                    setStaffSuggestionIndex((prev) => (prev <= 0 ? filteredLcroStaff.length - 1 : prev - 1))
-                    return
-                  }
-                  if (e.key === 'Enter' && staffSuggestionIndex >= 0) {
-                    e.preventDefault()
-                    chooseLcroStaff(filteredLcroStaff[staffSuggestionIndex])
-                    return
-                  }
-                  if (e.key === 'Escape') {
-                    setShowStaffSuggestions(false)
-                    setStaffSuggestionIndex(-1)
-                  }
-                }}
-                placeholder="e.g. SHIRLY L. DEMECILLO"
-                className={inputClass}
-              />
-              {showStaffSuggestions && filteredLcroStaff.length > 0 && (
-                <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
-                  <ul className="max-h-56 overflow-auto py-1">
-                    {filteredLcroStaff.map((name, idx) => (
-                      <li key={name}>
-                        <button
-                          type="button"
-                          onMouseDown={(e) => e.preventDefault()}
-                          onClick={() => chooseLcroStaff(name)}
-                          className={`w-full px-3 py-2 text-left text-sm transition ${
-                            idx === staffSuggestionIndex
-                              ? 'bg-[var(--primary-blue)] text-white'
-                              : 'text-gray-800 hover:bg-gray-100'
-                          }`}
-                        >
-                          {name}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-            <p className="text-xs text-gray-500 mt-1">This name will be saved and used for future forms on this computer.</p>
-          </div>
-        </div>
-      </CourtDecreeSection>
-      </div>
-      </>
-      )}
-
-      {blockPrintReason && (
-        <div className="court-decree-form-page__section no-print p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-sm" role="alert">
-          {blockPrintReason}
-        </div>
-      )}
-      <div className="court-decree-form-page__actions no-print">
-<button
-        type="button"
-        onClick={() => {
-          const missing = getMissingFields(form)
-          if (missing.length > 0) {
-            setMissingFields(missing)
-            setShowValidationModal(true)
-            setBlockPrintReason(null)
-            return
-          }
-          if (isLcrFormType && form.formType !== 'lcr-form-1a' && form.formType !== 'lcr-form-2a' && form.formType !== 'lcr-form-3a' && !(form.documentOwnerName || '').trim()) {
-            setBlockPrintReason('Please enter a document owner.')
-            return
-          }
-          setBlockPrintReason(null)
-          setShowConfirm(true)
-        }}
-        className="court-decree-form-page__btn court-decree-form-page__btn--primary"
-      >
-        Done
-      </button>
-      {isEdit ? (
-        <button
-          type="button"
-          onClick={() => navigate('/court-decree/saved')}
-          className="court-decree-form-page__btn court-decree-form-page__btn--secondary"
-        >
-          Back to Files Saved
-        </button>
-      ) : null}
-      </div>
-
-      {showValidationModal && (
-        <div
-          className="court-decree-form-page__validation-backdrop court-decree-form-page__modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 no-print"
-          role="alertdialog"
-          aria-modal="true"
-          aria-labelledby="court-decree-validation-title"
-          aria-describedby="court-decree-validation-desc"
-          onClick={() => setShowValidationModal(false)}
-        >
-          <div
-            className="court-decree-form-page__validation-modal court-decree-form-page__modal-dialog no-print"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="court-decree-form-page__validation-strip" aria-hidden />
-            <div className="court-decree-form-page__validation-body">
-              <div className="court-decree-form-page__validation-icon" aria-hidden>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  <path d="M12 16h.01" strokeWidth="2.5" />
-                </svg>
-              </div>
-              <div className="court-decree-form-page__validation-content">
-                <h2 id="court-decree-validation-title" className="court-decree-form-page__validation-title">
-                  All required fields must be filled out
-                </h2>
-                <p id="court-decree-validation-desc" className="court-decree-form-page__validation-desc">
-                  You cannot proceed until every required field is completed. Please review and fill in the items below.
-                </p>
-                {missingFields.length > 0 && (
-                  <div className="court-decree-form-page__validation-list-wrap">
-                    <p className="court-decree-form-page__validation-list-label">Missing ({missingFields.length}):</p>
-                    <ul className="court-decree-form-page__validation-list">
-                      {missingFields.map(({ label }) => (
-                        <li key={label}>{label}</li>
-                      ))}
-                    </ul>
+                        <option value="PHILIPPINES">PHILIPPINES</option>
+                        <option value="FOREIGN">FOREIGN</option>
+                      </select>
+                      {(String(form.country || '').trim().toUpperCase() === 'FOREIGN' || showForeignCountryNote) && (
+                        <p className="mt-2 text-center text-sm font-semibold text-red-600 uppercase">
+                          Note: It must be registered at LCRO of Manila
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <div className="court-decree-form-page__label-tag">Court or Racco?</div>
+                      <select
+                        value={form.courtOrRacco}
+                        onChange={(e) => update('courtOrRacco', e.target.value)}
+                        className={inputClass}
+                      >
+                        <option value="">Select option</option>
+                        <option value="2024-05">Racco is (2024-05) adoption</option>
+                        <option value="2012-02">Court is (2012-02) divorce, nullity, and marraige</option>
+                      </select>
+                    </div>
                   </div>
-                )}
-                <div className="court-decree-form-page__validation-actions">
+                </CourtDecreeSection>
+              </div>
+
+              <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
+                <CourtDecreeSection number="2" title="Affected civil document?">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Forms (checked when filled)</label>
+                      <LcrFormNavLinks form={form} activeType={form.formType} showFullCourtLink={false} />
+                    </div>
+                  </div>
+                </CourtDecreeSection>
+              </div>
+
+              <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
+                <CourtDecreeSection number="3" title="Document owner/s">
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Document owner/s</label>
+                    <input
+                      type="text"
+                      value={form.documentOwnerName}
+                      onChange={scInput('documentOwnerName')}
+                      placeholder="e.g. SPS. FRANCIS CANO CUBERO AND JULIEMAE ORLANES BAGTONG"
+                      className={inputClass}
+                    />
+                  </div>
+                </CourtDecreeSection>
+              </div>
+
+              <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
+                <CourtDecreeSection number="4" title="Court decree details">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Date Issued</label>
+                      <DateInput value={form.dateIssued} onChange={(v) => update('dateIssued', v)} placeholder="dd/mm/yyyy" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Court that issued the court decree</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={form.courtThatIssued}
+                          onChange={(e) => {
+                            commitFirstLetterUpperFromInput(e, (v) => updateAndPersistDraft('courtThatIssued', v))
+                            setShowCourtIssuedSuggestions(true)
+                            setCourtIssuedSuggestionIndex(-1)
+                          }}
+                          onFocus={() => setShowCourtIssuedSuggestions(true)}
+                          onBlur={() => setTimeout(() => setShowCourtIssuedSuggestions(false), 120)}
+                          onKeyDown={(e) => {
+                            if (!showCourtIssuedSuggestions || filteredCourtIssued.length === 0) return
+                            if (e.key === 'ArrowDown') {
+                              e.preventDefault()
+                              setCourtIssuedSuggestionIndex((prev) => (prev + 1) % filteredCourtIssued.length)
+                              return
+                            }
+                            if (e.key === 'ArrowUp') {
+                              e.preventDefault()
+                              setCourtIssuedSuggestionIndex((prev) => (prev <= 0 ? filteredCourtIssued.length - 1 : prev - 1))
+                              return
+                            }
+                            if (e.key === 'Enter' && courtIssuedSuggestionIndex >= 0) {
+                              e.preventDefault()
+                              chooseCourtIssued(filteredCourtIssued[courtIssuedSuggestionIndex])
+                              return
+                            }
+                            if (e.key === 'Escape') {
+                              setShowCourtIssuedSuggestions(false)
+                              setCourtIssuedSuggestionIndex(-1)
+                            }
+                          }}
+                          placeholder="e.g. 4TH SHARI'A CIRCUIT COURT, ILIGAN CITY"
+                          className={`${inputClass} pr-10`}
+                        />
+                        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
+                          <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4" aria-hidden>
+                            <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.166l3.71-3.935a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                          </svg>
+                        </span>
+                        {showCourtIssuedSuggestions && (
+                          <div className="absolute z-50 mt-1 w-full rounded-xl border border-indigo-100 bg-white shadow-[0_10px_30px_rgba(79,70,229,0.18)] overflow-hidden">
+                            {filteredCourtIssued.length > 0 ? (
+                              filteredCourtIssued.map((name, idx) => (
+                                <button
+                                  key={name}
+                                  type="button"
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() => chooseCourtIssued(name)}
+                                  className={`w-full px-3 py-2 text-left text-sm transition ${idx === courtIssuedSuggestionIndex
+                                    ? 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white'
+                                    : 'text-gray-800 hover:bg-indigo-50'
+                                    }`}
+                                >
+                                  {name}
+                                </button>
+                              ))
+                            ) : (
+                              <div className="px-3 py-2 text-sm text-gray-500">No matching court found</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Issued/Rendered By (Title)</label>
+                        <input type="text" value={form.issuedByTitle} onChange={scInput('issuedByTitle')} placeholder="e.g. Judge" className={inputClass} />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <input type="text" value={form.issuedByName} onChange={scInput('issuedByName')} placeholder="e.g. HON. OSOP MANGOTARA ALI" className={inputClass} />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Type of Case</label>
+                      <select
+                        value={form.typeOfCase}
+                        onChange={(e) => update('typeOfCase', e.target.value)}
+                        className={inputClass}
+                      >
+                        <option value="Civil Case No.">Civil Case No.</option>
+                        <option value="S.P. No">S.P. No</option>
+                        <option value="RACCO">RACCO</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Case No</label>
+                      <input type="text" value={form.caseNo} onChange={scInput('caseNo')} placeholder="e.g. 2025-034" className={inputClass} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Authenticated By</label>
+                      <input type="text" value={form.authenticatedBy} onChange={scInput('authenticatedBy')} placeholder="e.g. NASRODING A. ALI" className={inputClass} />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Registry Number</label>
+                        <input type="text" value={form.registryNumber} onChange={scInput('registryNumber')} placeholder="e.g. 64" className={inputClass} />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Date Registered</label>
+                        <DateInput value={form.dateRegistered} onChange={(v) => update('dateRegistered', v)} placeholder="dd/mm/yyyy" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Case Title</label>
+                      <textarea
+                        value={form.caseTitle}
+                        onChange={scInput('caseTitle')}
+                        rows={3}
+                        placeholder="e.g. IN RE: JOINT PETITION TO APPROVE AND REGISTER THE DIVORCE OF SPOUSES..."
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+                </CourtDecreeSection>
+              </div>
+
+              <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
+                <CourtDecreeSection number="5" title="Transmittal letter (local or out of town)">
+                  <p className="text-sm text-gray-600 mb-3 max-w-2xl">
+                    Only one transmittal output is shown when you print: local Transmittal to PSA, or Out-of-Town
+                    Transmittal — not both. This does not change certificates, LCR forms, or annotations.
+                  </p>
+                  <label className="flex items-start gap-3 mb-4 p-3 rounded-lg border border-gray-200 bg-white cursor-pointer hover:border-gray-300 transition-colors max-w-2xl">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-[var(--primary-blue)] focus:ring-[var(--primary-blue)]"
+                      checked={Boolean(form.courtDecreeTransmittalIsOutOfTown)}
+                      onChange={(e) => setCourtDecreeTransmittalOutOfTown(e.target.checked)}
+                    />
+                    <span>
+                      <span className="block text-sm font-semibold text-gray-900">Out of town</span>
+                      <span className="block text-sm text-gray-600 mt-0.5">
+                        When checked, print shows Out-of-Town Transmittal only. When unchecked, print shows local
+                        Transmittal only.
+                      </span>
+                    </span>
+                  </label>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Or pick quickly</p>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setCourtDecreeTransmittalOutOfTown(false)}
+                      className={`min-h-[2.75rem] px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-colors ${
+                        !form.courtDecreeTransmittalIsOutOfTown
+                          ? 'border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm'
+                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                      }`}
+                    >
+                      Local — Transmittal only
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCourtDecreeTransmittalOutOfTown(true)}
+                      className={`min-h-[2.75rem] px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-colors ${
+                        form.courtDecreeTransmittalIsOutOfTown
+                          ? 'border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm'
+                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                      }`}
+                    >
+                      Out of town — Out-of-Town Transmittal only
+                    </button>
+                  </div>
+                </CourtDecreeSection>
+              </div>
+
+              <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
+                <CourtDecreeSection number="6" title="Signatory">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">LCRO - Staff (Verified by)</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={form.certificateSignatoryName}
+                          onChange={(e) => {
+                            scInput('certificateSignatoryName')(e)
+                            setShowStaffSuggestions(true)
+                            setStaffSuggestionIndex(-1)
+                          }}
+                          onFocus={() => setShowStaffSuggestions(true)}
+                          onBlur={(e) => {
+                            saveLcroStaffName(e.target.value)
+                            setTimeout(() => setShowStaffSuggestions(false), 120)
+                          }}
+                          onKeyDown={(e) => {
+                            if (!showStaffSuggestions || filteredLcroStaff.length === 0) return
+                            if (e.key === 'ArrowDown') {
+                              e.preventDefault()
+                              setStaffSuggestionIndex((prev) => (prev + 1) % filteredLcroStaff.length)
+                              return
+                            }
+                            if (e.key === 'ArrowUp') {
+                              e.preventDefault()
+                              setStaffSuggestionIndex((prev) => (prev <= 0 ? filteredLcroStaff.length - 1 : prev - 1))
+                              return
+                            }
+                            if (e.key === 'Enter' && staffSuggestionIndex >= 0) {
+                              e.preventDefault()
+                              chooseLcroStaff(filteredLcroStaff[staffSuggestionIndex])
+                              return
+                            }
+                            if (e.key === 'Escape') {
+                              setShowStaffSuggestions(false)
+                              setStaffSuggestionIndex(-1)
+                            }
+                          }}
+                          placeholder="e.g. SHIRLY L. DEMECILLO"
+                          className={inputClass}
+                        />
+                        {showStaffSuggestions && filteredLcroStaff.length > 0 && (
+                          <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                            <ul className="max-h-56 overflow-auto py-1">
+                              {filteredLcroStaff.map((name, idx) => (
+                                <li key={name}>
+                                  <button
+                                    type="button"
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    onClick={() => chooseLcroStaff(name)}
+                                    className={`w-full px-3 py-2 text-left text-sm transition ${idx === staffSuggestionIndex
+                                      ? 'bg-[var(--primary-blue)] text-white'
+                                      : 'text-gray-800 hover:bg-gray-100'
+                                      }`}
+                                  >
+                                    {name}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">This name will be saved and used for future forms on this computer.</p>
+                    </div>
+                  </div>
+                </CourtDecreeSection>
+              </div>
+            </>
+          )}
+
+          {blockPrintReason && (
+            <div className="court-decree-form-page__section no-print p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-sm" role="alert">
+              {blockPrintReason}
+            </div>
+          )}
+          <div className="court-decree-form-page__actions no-print">
+            <button
+              type="button"
+              onClick={() => {
+                const missing = getMissingFields(form)
+                if (missing.length > 0) {
+                  setMissingFields(missing)
+                  setShowValidationModal(true)
+                  setBlockPrintReason(null)
+                  return
+                }
+                if (isLcrFormType && form.formType !== 'lcr-form-1a' && form.formType !== 'lcr-form-2a' && form.formType !== 'lcr-form-3a' && !(form.documentOwnerName || '').trim()) {
+                  setBlockPrintReason('Please enter a document owner.')
+                  return
+                }
+                setBlockPrintReason(null)
+                setShowConfirm(true)
+              }}
+              className="court-decree-form-page__btn court-decree-form-page__btn--primary"
+            >
+              Done
+            </button>
+            {isEdit ? (
+              <button
+                type="button"
+                onClick={() => navigate('/court-decree/saved')}
+                className="court-decree-form-page__btn court-decree-form-page__btn--secondary"
+              >
+                Back to Files Saved
+              </button>
+            ) : null}
+          </div>
+
+          {showValidationModal && (
+            <div
+              className="court-decree-form-page__validation-backdrop court-decree-form-page__modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 no-print"
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="court-decree-validation-title"
+              aria-describedby="court-decree-validation-desc"
+              onClick={() => setShowValidationModal(false)}
+            >
+              <div
+                className="court-decree-form-page__validation-modal court-decree-form-page__modal-dialog no-print"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="court-decree-form-page__validation-strip" aria-hidden />
+                <div className="court-decree-form-page__validation-body">
+                  <div className="court-decree-form-page__validation-icon" aria-hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      <path d="M12 16h.01" strokeWidth="2.5" />
+                    </svg>
+                  </div>
+                  <div className="court-decree-form-page__validation-content">
+                    <h2 id="court-decree-validation-title" className="court-decree-form-page__validation-title">
+                      All required fields must be filled out
+                    </h2>
+                    <p id="court-decree-validation-desc" className="court-decree-form-page__validation-desc">
+                      You cannot proceed until every required field is completed. Please review and fill in the items below.
+                    </p>
+                    {missingFields.length > 0 && (
+                      <div className="court-decree-form-page__validation-list-wrap">
+                        <p className="court-decree-form-page__validation-list-label">Missing ({missingFields.length}):</p>
+                        <ul className="court-decree-form-page__validation-list">
+                          {missingFields.map(({ label }) => (
+                            <li key={label}>{label}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <div className="court-decree-form-page__validation-actions">
+                      <button
+                        type="button"
+                        onClick={() => setShowValidationModal(false)}
+                        className="court-decree-form-page__validation-btn"
+                      >
+                        Got it
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showContinueDecreeModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 court-decree-form-page__modal-backdrop no-print" onClick={() => setShowContinueDecreeModal(false)} role="dialog" aria-modal="true" aria-labelledby="court-decree-continue-title">
+              <div className="court-decree-form-page__modal-dialog bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-100" onClick={(e) => e.stopPropagation()}>
+                <h3 id="court-decree-continue-title" className="text-lg font-bold text-gray-800 mb-2">LCR table complete</h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  All required fields in this LCR table are filled. Continue to the full court decree form? Your table entries stay saved so you can still print LCR 1A / 2A / 3A from the print menu. Next, complete country, document owner, and court decree details.
+                </p>
+                <div className="flex justify-end gap-3">
                   <button
                     type="button"
-                    onClick={() => setShowValidationModal(false)}
-                    className="court-decree-form-page__validation-btn"
+                    onClick={() => setShowContinueDecreeModal(false)}
+                    className="court-decree-form-page__btn court-decree-form-page__btn--secondary"
                   >
-                    Got it
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={confirmContinueToFullCourtDecree}
+                    className="court-decree-form-page__btn court-decree-form-page__btn--primary"
+                  >
+                    Continue to court decree form
                   </button>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {showContinueDecreeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 court-decree-form-page__modal-backdrop no-print" onClick={() => setShowContinueDecreeModal(false)} role="dialog" aria-modal="true" aria-labelledby="court-decree-continue-title">
-          <div className="court-decree-form-page__modal-dialog bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-100" onClick={(e) => e.stopPropagation()}>
-            <h3 id="court-decree-continue-title" className="text-lg font-bold text-gray-800 mb-2">LCR table complete</h3>
-            <p className="text-gray-600 text-sm mb-4">
-              All required fields in this LCR table are filled. Continue to the full court decree form? Your table entries stay saved so you can still print LCR 1A / 2A / 3A from the print menu. Next, complete country, document owner, and court decree details.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowContinueDecreeModal(false)}
-                className="court-decree-form-page__btn court-decree-form-page__btn--secondary"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmContinueToFullCourtDecree}
-                className="court-decree-form-page__btn court-decree-form-page__btn--primary"
-              >
-                Continue to court decree form
-              </button>
+          {showForeignCountryModal && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 court-decree-form-page__modal-backdrop no-print"
+              onClick={() => setShowForeignCountryModal(false)}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="court-decree-foreign-country-title"
+            >
+              <div className="court-decree-form-page__modal-dialog bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-100" onClick={(e) => e.stopPropagation()}>
+                <h3 id="court-decree-foreign-country-title" className="text-lg font-bold text-gray-800 mb-2">Foreign record confirmation</h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Has the foreign person/decree already been registered at LCRO of Manila?
+                </p>
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      update('country', 'PHILIPPINES')
+                      setShowForeignCountryNote(true)
+                      setShowForeignCountryModal(false)
+                    }}
+                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 text-sm font-medium"
+                  >
+                    No
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      update('country', 'FOREIGN')
+                      setShowForeignCountryNote(false)
+                      setShowForeignCountryModal(false)
+                    }}
+                    className="px-4 py-2 rounded-lg bg-[var(--primary-blue)] text-white hover:opacity-90 text-sm font-semibold"
+                  >
+                    Yes
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {showForeignCountryModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 court-decree-form-page__modal-backdrop no-print"
-          onClick={() => setShowForeignCountryModal(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="court-decree-foreign-country-title"
-        >
-          <div className="court-decree-form-page__modal-dialog bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-100" onClick={(e) => e.stopPropagation()}>
-            <h3 id="court-decree-foreign-country-title" className="text-lg font-bold text-gray-800 mb-2">Foreign record confirmation</h3>
-            <p className="text-gray-600 text-sm mb-4">
-              Has the foreign person/decree already been registered at LCRO of Manila?
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  update('country', 'PHILIPPINES')
-                  setShowForeignCountryNote(true)
-                  setShowForeignCountryModal(false)
-                }}
-                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 text-sm font-medium"
-              >
-                No
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  update('country', 'FOREIGN')
-                  setShowForeignCountryNote(false)
-                  setShowForeignCountryModal(false)
-                }}
-                className="px-4 py-2 rounded-lg bg-[var(--primary-blue)] text-white hover:opacity-90 text-sm font-semibold"
-              >
-                Yes
-              </button>
+          {showConfirm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 court-decree-form-page__modal-backdrop no-print" onClick={() => setShowConfirm(false)} role="dialog" aria-modal="true" aria-labelledby="court-decree-confirm-title">
+              <div className="court-decree-form-page__modal-dialog bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-100" onClick={(e) => e.stopPropagation()}>
+                <h3 id="court-decree-confirm-title" className="text-lg font-bold text-gray-800 mb-2">Confirm submission</h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Are you sure you want to proceed? Please verify that all entries are correct. You will be directed to the print view.
+                </p>
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(false)}
+                    className="court-decree-form-page__btn court-decree-form-page__btn--secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowConfirm(false); proceedToPrint() }}
+                    className="court-decree-form-page__btn court-decree-form-page__btn--primary"
+                  >
+                    Confirm &amp; Proceed
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 court-decree-form-page__modal-backdrop no-print" onClick={() => setShowConfirm(false)} role="dialog" aria-modal="true" aria-labelledby="court-decree-confirm-title">
-          <div className="court-decree-form-page__modal-dialog bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-100" onClick={(e) => e.stopPropagation()}>
-            <h3 id="court-decree-confirm-title" className="text-lg font-bold text-gray-800 mb-2">Confirm submission</h3>
-            <p className="text-gray-600 text-sm mb-4">
-              Are you sure you want to proceed? Please verify that all entries are correct. You will be directed to the print view.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowConfirm(false)}
-                className="court-decree-form-page__btn court-decree-form-page__btn--secondary"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => { setShowConfirm(false); proceedToPrint() }}
-                className="court-decree-form-page__btn court-decree-form-page__btn--primary"
-              >
-                Confirm &amp; Proceed
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <p className="court-decree-form-page__footer-note no-print">created by: ATTY. YUSSIF DON JUSTINE F. MARTIL</p>
+          <p className="court-decree-form-page__footer-note no-print">created by: ATTY. YUSSIF DON JUSTINE F. MARTIL</p>
         </div>
       </div>
     </div>

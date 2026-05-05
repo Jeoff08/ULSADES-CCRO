@@ -1,5 +1,7 @@
 export const defaultLegitimation = {
   formType: 'joint-affidavit',
+  /** When true, print offers Out-of-Town Transmittal only; when false, local Transmittal only. */
+  legitimationTransmittalIsOutOfTown: false,
   // Child
   childFirst: '',
   childMiddle: '',
@@ -57,10 +59,25 @@ export const defaultLegitimation = {
   recipientTitle: '',
   recipientOffice: '',
   recipientAgency: '',
+  /** Local transmittal “To PSA” block (4 lines); empty = use print defaults */
+  transmittalToPsaLine1: '',
+  transmittalToPsaLine2: '',
+  transmittalToPsaLine3: '',
+  transmittalToPsaLine4: '',
   transmittalDate: '',
   transmittalSalutation: '',
   transmittalSignatoryName: '',
   transmittalSignatoryTitle: '',
+  /** Item 12 annotation choice: A (without acknowledgement) or B (with acknowledgement). */
+  legitimationAnnotationOption: 'A',
   contactPhone: '',
   contactEmail: '',
+}
+
+/** Align out-of-town flag with legacy print formType when loading saved drafts. */
+export function syncLegitimationTransmittalFlagWithFormType(data) {
+  if (!data || typeof data !== 'object') return data
+  if (data.formType === 'out-of-town-transmittal') return { ...data, legitimationTransmittalIsOutOfTown: true }
+  if (data.formType === 'transmittal') return { ...data, legitimationTransmittalIsOutOfTown: false }
+  return data
 }

@@ -15,6 +15,8 @@ import UploadedFileViewer from './pages/UploadedFileViewer'
 import Log from './pages/Log'
 import AnnotationFieldPage from './pages/AnnotationFieldPage'
 import AnnotationAckFieldPage from './pages/AnnotationAckFieldPage'
+import CorrectionOfEntriesForm from './pages/correctionOfEntries/CorrectionOfEntriesForm'
+import CorrectionOfEntriesPrint from './pages/correctionOfEntries/CorrectionOfEntriesPrint'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth()
@@ -55,6 +57,8 @@ export default function App() {
         <Route path="logs" element={<Log />} />
         <Route path="annotation-field" element={<AnnotationFieldPage />} />
         <Route path="annotation-ack-field" element={<AnnotationAckFieldPage />} />
+        <Route path="correction-of-entries" element={<CorrectionOfEntriesForm />} />
+        <Route path="correction-of-entries/print" element={<CorrectionOfEntriesPrint />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

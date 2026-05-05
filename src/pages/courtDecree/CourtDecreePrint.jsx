@@ -1,24 +1,25 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { defaultCourtDecree } from './lib/courtDecreeDefaults'
+import { defaultCourtDecree, syncCourtDecreeTransmittalFlagFromFormType } from './lib/courtDecreeDefaults'
 import { saveCourtDecreeDraft, getCourtDecreeDraft } from './lib/courtDecreeStorage'
 import { getLegitimationDraft, getSavedLegitimationList, getDocumentOwnerLabelFromLegitimationData } from '../legitimation/lib/legitimationStorage'
 import { defaultLegitimation } from '../legitimation/lib/legitimationDefaults'
 import { buildLcrRemarks } from './lib/lcrRemarks'
 import { COURT_DECREE_TYPES } from './constants'
-import { PAPER_SIZES } from '../../components/print'
+import { PAPER_SIZES, getPaperPageSpec } from '../../components/print'
 import { getUploadedFile, restoreUploadedFileFromTrash } from '../../lib/uploadedFileStore'
 import UploadFileModal from '../../components/upload/UploadFileModal'
 import ToastHost from '../../components/toast/ToastHost'
 import { useToasts } from '../../components/toast/useToasts'
-import { saveCurrentViewAsPdf } from '../../lib/savePdf'
+import { saveCurrentViewAsPdf, openSavedPdfInBrowser } from '../../lib/savePdf'
 import { isLcr1aTableComplete, isLcr2aTableComplete, isLcr3aTableComplete } from './lib/courtDecreeLcrCompletion'
+import { formTypeToAffectedCode } from './lib/courtDecreeAffectedDocuments'
 
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-court'
 
 function usePrintPageSize(paperId) {
   useEffect(() => {
-    const spec = PAPER_SIZES.find((p) => p.id === paperId) || PAPER_SIZES[0]
+    const spec = getPaperPageSpec(paperId)
     document.documentElement.dataset.paperSize = paperId
     let el = document.getElementById(PRINT_SIZE_STYLE_ID)
     if (!el) {
@@ -47,12 +48,14 @@ import {
   MarriageAnnotationModeSidebar,
 } from './print'
 
+const TRANSMITTAL_PRINT_IDS = new Set(['transmittal', 'out-of-town-transmittal'])
+
 function getStoredData() {
   try {
     const raw = localStorage.getItem('courtDecreeDraft')
     if (!raw) return null
     const parsed = JSON.parse(raw)
-    return { ...defaultCourtDecree, ...parsed }
+    return syncCourtDecreeTransmittalFlagFromFormType({ ...defaultCourtDecree, ...parsed })
   } catch {
     return null
   }
@@ -110,7 +113,7 @@ function deriveFilledAffectedDocuments(form) {
   return out
 }
 
-/** Annotation / marriage annotation print — Long 8.5" × 13" for @page (print/PDF only via usePrintPageSize) */
+/** Annotation / marriage annotation print — Legal 8.5" × 14" for @page (print/PDF only via usePrintPageSize) */
 const COURT_DECREE_ANNOTATION_TYPES = new Set([
   'annotation-form-1a',
   'annotation-form-2a',
@@ -131,7 +134,7 @@ export default function CourtDecreePrint() {
       : COURT_DECREE_TYPES.some((t) => t.id === type)
         ? type
         : 'cert-authenticity'
-  const pageSizeForPrint = COURT_DECREE_ANNOTATION_TYPES.has(validType) ? 'long' : paperSize
+  const pageSizeForPrint = COURT_DECREE_ANNOTATION_TYPES.has(validType) ? 'legal' : paperSize
   const [data, setData] = useState(() => getStoredData() || defaultCourtDecree)
   const uploadInputRef = useRef(null)
   const uploadScopeRef = useRef('')
@@ -150,7 +153,16 @@ export default function CourtDecreePrint() {
       }
       const result = await saveCurrentViewAsPdf(`CourtDecree-${outputType}`)
       if (result?.ok) {
-        show({ type: 'success', title: 'PDF saved', message: result.filePath || '' })
+        show({
+          type: 'success',
+          title: 'PDF saved',
+          message: result.filePath || '',
+          actionLabel: 'Open',
+          onAction: async () => {
+            if (!result.filePath) return
+            await openSavedPdfInBrowser(result.filePath)
+          },
+        })
         return
       }
       if (result?.cancelled) {
@@ -200,9 +212,76 @@ export default function CourtDecreePrint() {
     if (stored) setData(stored)
   }, [])
 
+  /** Keep draft + certificate wording aligned when switching 1A / 2A / 3A (or matching annotations) in print. */
+  const selectPrintView = useCallback((typeId) => {
+    setSearchParams((sp) => {
+      const next = new URLSearchParams(sp)
+      next.set('type', typeId)
+      return next
+    })
+    const aff = formTypeToAffectedCode(typeId)
+    setData((prev) => {
+      let merged = { ...prev }
+      if (typeId === 'transmittal') merged = { ...merged, courtDecreeTransmittalIsOutOfTown: false }
+      if (typeId === 'out-of-town-transmittal') merged = { ...merged, courtDecreeTransmittalIsOutOfTown: true }
+      if (aff) merged = { ...merged, affectedDocument: aff, affectedDocuments: [aff] }
+      try {
+        saveCourtDecreeDraft(merged)
+      } catch (_) { /* no-op */ }
+      return merged
+    })
+  }, [setSearchParams])
+
+  useEffect(() => {
+    const t = searchParams.get('type') || ''
+    const aff = formTypeToAffectedCode(t)
+    if (!aff) return
+    setData((prev) => {
+      if (String(prev.affectedDocument || '').trim() === aff) return prev
+      const merged = { ...prev, affectedDocument: aff, affectedDocuments: [aff] }
+      try {
+        saveCourtDecreeDraft(merged)
+      } catch (_) { /* no-op */ }
+      return merged
+    })
+  }, [searchParams])
+
   const affectedDocs = normalizeAffectedList(data)
   const filledAffectedDocs = useMemo(() => deriveFilledAffectedDocuments(data), [data])
   const effectiveAffectedDocs = filledAffectedDocs.length === 1 ? filledAffectedDocs : affectedDocs
+
+  const filteredCourtDecreePrintTypes = useMemo(() => {
+    const oot = data?.courtDecreeTransmittalIsOutOfTown === true
+    return COURT_DECREE_TYPES.filter((t) => {
+      if (!TRANSMITTAL_PRINT_IDS.has(t.id)) return true
+      if (oot) return t.id === 'out-of-town-transmittal'
+      return t.id === 'transmittal'
+    }).filter((t) => isPrintTypeAllowedForAffected(t.id, effectiveAffectedDocs))
+  }, [data?.courtDecreeTransmittalIsOutOfTown, effectiveAffectedDocs])
+
+  /** If draft says out-of-town (or vice versa), keep URL print type consistent */
+  useEffect(() => {
+    const oot = data?.courtDecreeTransmittalIsOutOfTown === true
+    if (oot && validType === 'transmittal') {
+      setSearchParams(
+        (sp) => {
+          const n = new URLSearchParams(sp)
+          n.set('type', 'out-of-town-transmittal')
+          return n
+        },
+        { replace: true }
+      )
+    } else if (!oot && validType === 'out-of-town-transmittal') {
+      setSearchParams(
+        (sp) => {
+          const n = new URLSearchParams(sp)
+          n.set('type', 'transmittal')
+          return n
+        },
+        { replace: true }
+      )
+    }
+  }, [data?.courtDecreeTransmittalIsOutOfTown, validType, setSearchParams])
 
   useEffect(() => {
     const docs = effectiveAffectedDocs
@@ -216,7 +295,7 @@ export default function CourtDecreePrint() {
 
   useEffect(() => {
     if (COURT_DECREE_ANNOTATION_TYPES.has(validType)) {
-      setPaperSize('long')
+      setPaperSize('legal')
     } else {
       setPaperSize((prev) => (prev === 'legal' ? 'a4' : prev))
     }
@@ -440,6 +519,14 @@ export default function CourtDecreePrint() {
     ? `SUBJECT: IN RE: ${(data.caseTitle || '').toUpperCase()}`
     : `SUBJECT: IN RE: JOINT PETITION TO APPROVE AND REGISTER THE DIVORCE OF SPOUSES ${(data.documentOwnerName || '').toUpperCase()}`
 
+  const persistTransmittalDraft = useCallback((patch) => {
+    setData((prev) => {
+      const next = { ...prev, ...patch }
+      saveCourtDecreeDraft(next)
+      return next
+    })
+  }, [])
+
   let content
   switch (validType) {
     case 'cert-authenticity':
@@ -449,10 +536,10 @@ export default function CourtDecreePrint() {
       content = <CertRegistrationCourtDecree data={data} />
       break
     case 'transmittal':
-      content = <Transmittal data={data} subjectLine={subjectLine} />
+      content = <Transmittal data={data} subjectLine={subjectLine} onPersistDraft={persistTransmittalDraft} />
       break
     case 'out-of-town-transmittal':
-      content = <OutOfTownTransmittal data={data} subjectLine={subjectLine} />
+      content = <OutOfTownTransmittal data={data} subjectLine={subjectLine} onPersistDraft={persistTransmittalDraft} />
       break
     case 'lcr-form-1a':
       content =
@@ -595,23 +682,25 @@ export default function CourtDecreePrint() {
           </button>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <label className="sr-only" htmlFor="court-decree-paper-size">Paper size (for print)</label>
-          <select
-            id="court-decree-paper-size"
-            value={paperSize}
-            onChange={(e) => setPaperSize(e.target.value)}
-            disabled={COURT_DECREE_ANNOTATION_TYPES.has(validType)}
-            title={
-              COURT_DECREE_ANNOTATION_TYPES.has(validType)
-                ? 'Annotation outputs are fixed to Long (8.5" × 13") for printing'
-                : undefined
-            }
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            {PAPER_SIZES.map((p) => (
-              <option key={p.id} value={p.id}>{p.label}</option>
-            ))}
-          </select>
+          {COURT_DECREE_ANNOTATION_TYPES.has(validType) ? (
+            <p className="text-xs text-gray-600 max-w-[16rem] leading-snug">
+              Paper: Legal (8.5&quot; × 14&quot;) — fixed for Court Decree annotations only.
+            </p>
+          ) : (
+            <>
+              <label className="sr-only" htmlFor="court-decree-paper-size">Paper size (for print)</label>
+              <select
+                id="court-decree-paper-size"
+                value={paperSize}
+                onChange={(e) => setPaperSize(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+              >
+                {PAPER_SIZES.map((p) => (
+                  <option key={p.id} value={p.id}>{p.label}</option>
+                ))}
+              </select>
+            </>
+          )}
           <button
             type="button"
             onClick={handleSavePdf}
@@ -637,7 +726,7 @@ export default function CourtDecreePrint() {
                 LCR and annotation options are limited to the civil document forms you filled out.
               </p>
             ) : null}
-            {COURT_DECREE_TYPES.filter((t) => isPrintTypeAllowedForAffected(t.id, effectiveAffectedDocs)).map((t) => {
+            {filteredCourtDecreePrintTypes.map((t) => {
               const isSelected = validType === t.id
               const isLcrForm = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a'].includes(t.id)
               const btnClass = [
@@ -651,7 +740,7 @@ export default function CourtDecreePrint() {
                 <div key={t.id} className="relative">
                   <button
                     type="button"
-                    onClick={() => setSearchParams({ type: t.id })}
+                    onClick={() => selectPrintView(t.id)}
                     className={[btnClass, 'w-full pr-[5.75rem]'].join(' ')}
                   >
                     {String(t.title || '').replace(/^\s*\d+\.\s*/, '')}

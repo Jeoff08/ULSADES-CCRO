@@ -22,6 +22,10 @@ export function loadTransmittalChecklist(isOutOfTown, defaultLabels, listId) {
       const decoded = JSON.parse(raw)
       if (Array.isArray(decoded)) parsed = decoded
     }
+    // Saved checklist length must match current template; otherwise ignore (avoids wrong row mapping after list updates).
+    if (defaultList && defaultList.length > 0 && parsed && parsed.length !== defaultList.length) {
+      parsed = null
+    }
     // When we have defaultLabels (e.g. AUSF local = 6 items, PSA = 8), use them as source of truth for labels and length
     if (defaultList && defaultList.length > 0) {
       // Migration: old saved data had all items unchecked. Treat "all false" as legacy and default to checked.
@@ -29,9 +33,10 @@ export function loadTransmittalChecklist(isOutOfTown, defaultLabels, listId) {
       return defaultList.map((label, i) => {
         const saved = parsed && parsed[i]
         const useCompleted = isLegacyAllUnchecked ? true : (saved != null ? !!saved.completed : true)
+        const savedLabel = saved && typeof saved.label === 'string' ? saved.label.trim() : ''
         return {
           id: saved?.id || `t-${i}-${String(label).slice(0, 12).replace(/\s/g, '-')}`,
-          label: label,
+          label: savedLabel || label,
           completed: useCompleted,
           notes: saved && typeof saved.notes === 'string' ? saved.notes : '',
         }

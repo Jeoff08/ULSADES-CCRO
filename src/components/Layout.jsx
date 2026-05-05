@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { clearSupplementalActive, clearSupplementalDraft } from '../pages/legalInstrument/lib/supplementalSavedStorage'
@@ -89,15 +89,11 @@ export default function Layout() {
       location.pathname.startsWith('/court-decree/workflow/'))
   const [courtDecreeOpen, setCourtDecreeOpen] = useState(false)
 
-  useEffect(() => {
-    if (location.pathname === '/court-decree/workflow/nullity-of-marriage') {
-      setCourtDecreeOpen(true)
-    }
-  }, [location.pathname])
-
   const legitimationFormActive =
     location.pathname.startsWith('/legitimation') && location.pathname !== '/legitimation/saved'
   const ausfFormActive = location.pathname.startsWith('/ausf') && location.pathname !== '/ausf/saved'
+
+  const correctionEntriesActive = location.pathname.startsWith('/correction-of-entries')
 
   const handleLogout = () => {
     if (isExiting) return
@@ -251,32 +247,11 @@ export default function Layout() {
             {courtDecreeOpen && (
               <div className="space-y-0.5 pb-0.5">
                 <NavLink
-                  to="/court-decree/workflow/correction-of-entries"
-                  className={({ isActive }) => legalSubLinkClass(isActive)}
-                >
-                  <IconLegalSub />
-                  <span>Correction of entries</span>
-                </NavLink>
-                <NavLink
                   to="/court-decree/workflow/adoption"
                   className={({ isActive }) => legalSubLinkClass(isActive)}
                 >
                   <IconLegalSub />
                   <span>Adoption</span>
-                </NavLink>
-                <NavLink
-                  to="/court-decree/workflow/nullity-of-marriage"
-                  className={({ isActive }) => legalSubLinkClass(isActive)}
-                >
-                  <IconLegalSub />
-                  <span>Nullity of marriage</span>
-                </NavLink>
-                <NavLink
-                  to="/court-decree/workflow/divorce"
-                  className={({ isActive }) => legalSubLinkClass(isActive)}
-                >
-                  <IconLegalSub />
-                  <span>Divorce</span>
                 </NavLink>
               </div>
             )}
@@ -307,6 +282,22 @@ export default function Layout() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span>Annotation Ack Field</span>
+          </NavLink>
+
+          <NavLink
+            to="/correction-of-entries"
+            className={() =>
+              `${navRowBase} ${
+                correctionEntriesActive
+                  ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
+                  : 'text-white/90 hover:bg-white/10 text-white'
+              }`
+            }
+          >
+            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span>Correction of entries</span>
           </NavLink>
         </nav>
         <div className="p-3 border-t border-white/10 shrink-0">
