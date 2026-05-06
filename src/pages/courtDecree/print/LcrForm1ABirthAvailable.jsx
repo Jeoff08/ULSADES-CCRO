@@ -77,11 +77,10 @@ export default function LcrForm1ABirthAvailable({ data, editableTable = false, o
                 <>
                   <input
                     type="text"
-                    className="no-print inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold max-w-[4rem] bg-white"
+                    className="inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold max-w-[4rem] bg-white"
                     value={String(colbPage ?? '')}
                     onChange={(e) => patchData({ colbPageNo: e.target.value, colbPageNumber: e.target.value })}
                   />
-                  <span className="hidden print:inline font-bold">{colbPage || ''}</span>
                 </>
               ) : (
                 <span className="inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold">{colbPage || ''}</span>
@@ -91,11 +90,10 @@ export default function LcrForm1ABirthAvailable({ data, editableTable = false, o
                 <>
                   <input
                     type="text"
-                    className="no-print inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold max-w-[5rem] bg-white"
+                    className="inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold max-w-[5rem] bg-white"
                     value={String(colbBook ?? '')}
                     onChange={(e) => patchData({ colbBookNo: e.target.value, colbBookNumber: e.target.value })}
                   />
-                  <span className="hidden print:inline font-bold">{colbBook || ''}</span>
                 </>
               ) : (
                 <span className="inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold">{colbBook || ''}</span>

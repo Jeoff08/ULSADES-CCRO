@@ -65,9 +65,20 @@ function getMissingFields(form) {
 
 function formatDigitsToDdMmYyyy(digits) {
   const d = (digits || '').replace(/\D/g, '').slice(0, 8)
-  if (d.length <= 2) return d
-  if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`
-  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`
+  if (d.length <= 2) {
+    if (d.length < 2) return d
+    return String(Math.min(31, Math.max(1, Number.parseInt(d, 10) || 0))).padStart(2, '0')
+  }
+  if (d.length <= 4) {
+    const ddRaw = d.slice(0, 2)
+    const mmRaw = d.slice(2)
+    const dd = ddRaw.length === 2 ? String(Math.min(31, Math.max(1, Number.parseInt(ddRaw, 10) || 0))).padStart(2, '0') : ddRaw
+    const mm = mmRaw.length === 2 ? String(Math.min(12, Math.max(1, Number.parseInt(mmRaw, 10) || 0))).padStart(2, '0') : mmRaw
+    return `${dd}/${mm}`
+  }
+  const dd = String(Math.min(31, Math.max(1, Number.parseInt(d.slice(0, 2), 10) || 0))).padStart(2, '0')
+  const mm = String(Math.min(12, Math.max(1, Number.parseInt(d.slice(2, 4), 10) || 0))).padStart(2, '0')
+  return `${dd}/${mm}/${d.slice(4)}`
 }
 
 function isoToDdMmYyyy(iso) {
@@ -82,9 +93,11 @@ function dateToOutputFormat(str) {
   const parts = str.trim().split('/')
   if (parts.length !== 3) return str
   const [dd, mm, yyyy] = parts
+  const dayNum = parseInt(dd, 10)
+  if (dayNum < 1 || dayNum > 31) return str
   const monthNum = parseInt(mm, 10)
   if (monthNum < 1 || monthNum > 12) return str
-  return `${dd.padStart(2, '0')}/${DATE_MONTHS[monthNum]}/${yyyy}`
+  return `${String(dayNum).padStart(2, '0')}/${DATE_MONTHS[monthNum]}/${yyyy}`
 }
 
 const LEGITIMATION_DATE_KEYS = ['dateOfBirth', 'dateOfDeath', 'affidavitAckDate', 'affidavitLegitDate', 'dateOfMarriage', 'colbRegDate']

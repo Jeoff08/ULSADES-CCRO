@@ -28,6 +28,17 @@ function formatSavedAt(iso) {
 }
 
 const TOAST_DURATION_MS = 8000
+const LCR_GROUP_FILTER_OPTIONS = ['ALL', '1A', '2A', '3A']
+
+function matchesLcrGroup(item, selectedGroup) {
+  const group = String(selectedGroup || 'ALL').toUpperCase()
+  if (group === 'ALL') return true
+  const formType = String(item?.formType || '').trim()
+  if (group === '1A') return formType === 'lcr-form-1a' || formType === 'annotation-form-1a'
+  if (group === '2A') return formType === 'lcr-form-2a' || formType === 'annotation-form-2a'
+  if (group === '3A') return formType === 'lcr-form-3a' || formType === 'annotation-form-3a'
+  return true
+}
 
 function matchesSearch(item, query, formTypeLabels) {
   if (!query.trim()) return true
@@ -42,6 +53,7 @@ export default function CourtDecreeSaved() {
   const [list, setList] = useState(() => getSavedCourtDecreeList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
   const [uploadsRev, setUploadsRev] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
+  const [lcrGroupFilter, setLcrGroupFilter] = useState('ALL')
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [toastVisible, setToastVisible] = useState(false)
   const [toastProgress, setToastProgress] = useState(100)
@@ -102,7 +114,11 @@ export default function CourtDecreeSaved() {
     }
   }
 
-  const filteredList = list.filter((item) => matchesSearch(item, searchQuery, COURT_DECREE_TYPE_LABELS))
+  const filteredList = list.filter(
+    (item) =>
+      matchesLcrGroup(item, lcrGroupFilter) &&
+      matchesSearch(item, searchQuery, COURT_DECREE_TYPE_LABELS)
+  )
 
   const courtDecreeTotal = getSavedCourtDecreeList().length
 
@@ -160,6 +176,18 @@ export default function CourtDecreeSaved() {
         </div>
         {list.length > 0 && (
           <div className="flex flex-wrap items-center justify-end gap-2 ml-auto">
+            <select
+              value={lcrGroupFilter}
+              onChange={(e) => setLcrGroupFilter(e.target.value)}
+              aria-label="Filter by LCR type"
+              className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:border-[var(--primary-blue)] focus:ring-2 focus:ring-[var(--primary-blue)]/20 outline-none transition-all duration-200"
+            >
+              {LCR_GROUP_FILTER_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt === 'ALL' ? 'All forms' : `${opt} only`}
+                </option>
+              ))}
+            </select>
             <div className="relative min-w-[200px] w-full sm:w-auto sm:max-w-sm">
               <input
                 type="search"
@@ -177,7 +205,10 @@ export default function CourtDecreeSaved() {
             </div>
             <button
               type="button"
-              onClick={() => setSearchQuery('')}
+              onClick={() => {
+                setSearchQuery('')
+                setLcrGroupFilter('ALL')
+              }}
               className="px-3 py-2.5 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 ease-out active:scale-95"
             >
               Clear

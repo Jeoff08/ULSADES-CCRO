@@ -5634,6 +5634,10 @@ body.pdf-capture .supplemental-report-doc.print-doc .supplemental-report-content
   font-size: 15px !important;
   line-height: 1.35 !important;
   text-align: justify;
+  text-justify: auto !important;
+  word-spacing: normal !important;
+  letter-spacing: normal !important;
+  hyphens: auto !important;
   margin-top: 0.1rem;
 }
 .legitimation-affidavit-doc .legitimation-affidavit-body p,
@@ -5642,6 +5646,191 @@ body.pdf-capture .supplemental-report-doc.print-doc .supplemental-report-content
 .legitimation-affidavit-print .legitimation-affidavit-body li {
   font-size: 15px !important;
   line-height: 1.35 !important;
+  text-align: justify !important;
+  text-justify: auto !important;
+  word-spacing: normal !important;
+  letter-spacing: normal !important;
+  hyphens: auto !important;
+}
+.legitimation-affidavit-doc .legitimation-affidavit-body .text-justify,
+.legitimation-affidavit-print .legitimation-affidavit-body .text-justify {
+  text-align: justify !important;
+  text-justify: auto !important;
+  word-spacing: normal !important;
+  letter-spacing: normal !important;
+  hyphens: auto !important;
+}
+
+/* Legitimation sole/joint affidavit: force tight inter-word spacing in print/PDF */
+@media print {
+  .sole-legitimation-doc .legitimation-affidavit-body,
+  .joint-legitimation-doc .legitimation-affidavit-body,
+  .sole-legitimation-doc .legitimation-affidavit-body p,
+  .joint-legitimation-doc .legitimation-affidavit-body p,
+  .sole-legitimation-doc .legitimation-affidavit-body li,
+  .joint-legitimation-doc .legitimation-affidavit-body li,
+  .sole-legitimation-doc .legitimation-affidavit-body .text-justify,
+  .joint-legitimation-doc .legitimation-affidavit-body .text-justify {
+    text-align: justify !important;
+    text-justify: auto !important;
+    word-spacing: -0.09em !important;
+    letter-spacing: 0 !important;
+    hyphens: auto !important;
+  }
+}
+
+body.pdf-capture .sole-legitimation-doc .legitimation-affidavit-body,
+body.pdf-capture .joint-legitimation-doc .legitimation-affidavit-body,
+body.pdf-capture .sole-legitimation-doc .legitimation-affidavit-body p,
+body.pdf-capture .joint-legitimation-doc .legitimation-affidavit-body p,
+body.pdf-capture .sole-legitimation-doc .legitimation-affidavit-body li,
+body.pdf-capture .joint-legitimation-doc .legitimation-affidavit-body li,
+body.pdf-capture .sole-legitimation-doc .legitimation-affidavit-body .text-justify,
+body.pdf-capture .joint-legitimation-doc .legitimation-affidavit-body .text-justify {
+  text-align: justify !important;
+  text-justify: auto !important;
+  word-spacing: -0.08em !important;
+  letter-spacing: 0 !important;
+  hyphens: auto !important;
+}
+
+/* Sole/Joint affidavit list flow: keep continuous wrap with proper hanging alignment in print/PDF */
+@media print {
+  .sole-legitimation-doc .legitimation-affidavit-body ol,
+  .joint-legitimation-doc .legitimation-affidavit-body ol {
+    list-style-position: outside !important;
+    padding-left: 1.25rem !important;
+  }
+  .sole-legitimation-doc .legitimation-affidavit-body ol li,
+  .joint-legitimation-doc .legitimation-affidavit-body ol li {
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+  }
+  .sole-legitimation-doc .legitimation-affidavit-body ol li:nth-child(3),
+  .joint-legitimation-doc .legitimation-affidavit-body ol li:nth-child(3) {
+    text-align: justify !important;
+    text-justify: auto !important;
+    text-indent: 0 !important;
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+    word-spacing: -0.08em !important;
+    letter-spacing: 0 !important;
+    hyphens: auto !important;
+  }
+  .sole-legitimation-doc .legitimation-affidavit-body ol li:nth-child(3) .fill-blank,
+  .joint-legitimation-doc .legitimation-affidavit-body ol li:nth-child(3) .fill-blank,
+  .sole-legitimation-doc .legitimation-affidavit-body ol li:nth-child(3) [class*="px-0.5"],
+  .joint-legitimation-doc .legitimation-affidavit-body ol li:nth-child(3) [class*="px-0.5"] {
+    display: inline !important;
+    white-space: normal !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+body.pdf-capture .sole-legitimation-doc .legitimation-affidavit-body ol,
+body.pdf-capture .joint-legitimation-doc .legitimation-affidavit-body ol {
+  list-style-position: outside !important;
+  padding-left: 1.25rem !important;
+}
+body.pdf-capture .sole-legitimation-doc .legitimation-affidavit-body ol li,
+body.pdf-capture .joint-legitimation-doc .legitimation-affidavit-body ol li {
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+body.pdf-capture .sole-legitimation-doc .legitimation-affidavit-body ol li:nth-child(3),
+body.pdf-capture .joint-legitimation-doc .legitimation-affidavit-body ol li:nth-child(3) {
+  text-align: justify !important;
+  text-justify: auto !important;
+  text-indent: 0 !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+  word-spacing: -0.08em !important;
+  letter-spacing: 0 !important;
+  hyphens: auto !important;
+}
+body.pdf-capture .sole-legitimation-doc .legitimation-affidavit-body ol li:nth-child(3) .fill-blank,
+body.pdf-capture .joint-legitimation-doc .legitimation-affidavit-body ol li:nth-child(3) .fill-blank,
+body.pdf-capture .sole-legitimation-doc .legitimation-affidavit-body ol li:nth-child(3) [class*="px-0.5"],
+body.pdf-capture .joint-legitimation-doc .legitimation-affidavit-body ol li:nth-child(3) [class*="px-0.5"] {
+  display: inline !important;
+  white-space: normal !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Sole affidavit only: numbered items use normal sentence spacing in print/PDF (no stretched gaps) */
+@media print {
+  .sole-legitimation-doc .legitimation-affidavit-body ol li,
+  .sole-legitimation-doc .legitimation-affidavit-body ol li.text-justify {
+    text-align: justify !important;
+    text-align-last: left !important;
+    text-justify: auto !important;
+    word-spacing: 0 !important;
+    letter-spacing: 0 !important;
+    hyphens: auto !important;
+  }
+}
+
+body.pdf-capture .sole-legitimation-doc .legitimation-affidavit-body ol li,
+body.pdf-capture .sole-legitimation-doc .legitimation-affidavit-body ol li.text-justify {
+  text-align: justify !important;
+  text-align-last: left !important;
+  text-justify: auto !important;
+  word-spacing: 0 !important;
+  letter-spacing: 0 !important;
+  hyphens: auto !important;
+}
+
+/* Item #1 only: keep justified but compress spacing to avoid oversized word gaps in print/PDF */
+@media print {
+  .sole-legitimation-doc .legitimation-affidavit-body ol li:nth-child(1),
+  .joint-legitimation-doc .legitimation-affidavit-body ol li:nth-child(1) {
+    text-align: justify !important;
+    text-align-last: left !important;
+    text-justify: auto !important;
+    word-spacing: -0.12em !important;
+    letter-spacing: 0 !important;
+    hyphens: auto !important;
+  }
+  .sole-legitimation-doc .legitimation-affidavit-body ol li:nth-child(1) .fill-blank,
+  .joint-legitimation-doc .legitimation-affidavit-body ol li:nth-child(1) .fill-blank,
+  .sole-legitimation-doc .legitimation-affidavit-body ol li:nth-child(1) [class*="px-0.5"],
+  .joint-legitimation-doc .legitimation-affidavit-body ol li:nth-child(1) [class*="px-0.5"] {
+    display: inline !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    white-space: normal !important;
+  }
+}
+
+body.pdf-capture .sole-legitimation-doc .legitimation-affidavit-body ol li:nth-child(1),
+body.pdf-capture .joint-legitimation-doc .legitimation-affidavit-body ol li:nth-child(1) {
+  text-align: justify !important;
+  text-align-last: left !important;
+  text-justify: auto !important;
+  word-spacing: -0.12em !important;
+  letter-spacing: 0 !important;
+  hyphens: auto !important;
+}
+body.pdf-capture .sole-legitimation-doc .legitimation-affidavit-body ol li:nth-child(1) .fill-blank,
+body.pdf-capture .joint-legitimation-doc .legitimation-affidavit-body ol li:nth-child(1) .fill-blank,
+body.pdf-capture .sole-legitimation-doc .legitimation-affidavit-body ol li:nth-child(1) [class*="px-0.5"],
+body.pdf-capture .joint-legitimation-doc .legitimation-affidavit-body ol li:nth-child(1) [class*="px-0.5"] {
+  display: inline !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  white-space: normal !important;
 }
 .legitimation-affidavit-doc .legitimation-affidavit-title,
 .legitimation-affidavit-print .legitimation-affidavit-title {

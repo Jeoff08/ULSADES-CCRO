@@ -12,6 +12,10 @@ const isDev = !app.isPackaged
 const VITE_DEV_URL = 'http://localhost:5173'
 const API_PORT = Number(process.env.PORT) || 3001
 
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.iligan.ulsades')
+}
+
 /** @type {import('http').Server | null} */
 let httpServer = null
 let openPdfBrowserPreference = null
@@ -35,7 +39,7 @@ function createWindow() {
     height: 800,
     minWidth: 900,
     minHeight: 600,
-    icon: join(rootDir, 'public', 'ChatGPT Image Feb 11, 2026, 03_26_31 PM.png'),
+    icon: join(rootDir, 'public', 'ulsades-icon.ico'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

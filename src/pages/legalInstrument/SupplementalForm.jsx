@@ -18,6 +18,43 @@ import { getSavedLegitimationList, getLegitimationDraft } from '../legitimation/
 import { mapSourceToSupplementalLcrData } from './lib/supplementalLcrPrefill'
 import SupplementalTransmittalFieldsEditor from './SupplementalTransmittalFieldsEditor'
 
+function hasValue(v) {
+  return String(v ?? '').trim().length > 0
+}
+
+function recordHasLcrType(data, lcrType) {
+  if (!data || typeof data !== 'object') return false
+
+  if (lcrType === '1A') {
+    return (
+      hasValue(data.lcr1aNameOfChild) ||
+      hasValue(data.lcr1aRegistryNumber) ||
+      hasValue(data.colbRegistryNo) ||
+      hasValue(data.childFirst) ||
+      hasValue(data.childLast)
+    )
+  }
+
+  if (lcrType === '2A') {
+    return (
+      hasValue(data.lcr2aNameDeceased) ||
+      hasValue(data.lcr2aRegistryNumber) ||
+      hasValue(data.lcr2aDateDeath)
+    )
+  }
+
+  if (lcrType === '3A') {
+    return (
+      hasValue(data.lcr3aHusbandName) ||
+      hasValue(data.lcr3aWifeName) ||
+      hasValue(data.lcr3aRegistryNumber) ||
+      hasValue(data.marriageRegistryNo)
+    )
+  }
+
+  return true
+}
+
 const defaultSupplementalDraft = {
   supplementType: 'geographical',
   colbSubject: 'self',
@@ -68,14 +105,16 @@ export default function SupplementalForm() {
     const key = form.lcrSource === 'ausf' || form.lcrSource === 'legitimation' ? form.lcrSource : 'courtDecree'
     const { list, draft } = sources[key]
     const rows = []
-    if (draft && typeof draft === 'object') {
+    if (draft && typeof draft === 'object' && recordHasLcrType(draft, form.lcrType)) {
       rows.push({ id: '__draft__', label: '[Current draft]', data: draft })
     }
     list.forEach((r) => {
-      if (r?.data) rows.push({ id: r.id, label: r.label || r.id, data: r.data })
+      if (r?.data && recordHasLcrType(r.data, form.lcrType)) {
+        rows.push({ id: r.id, label: r.label || r.id, data: r.data })
+      }
     })
     return rows
-  }, [form.lcrSource])
+  }, [form.lcrSource, form.lcrType])
 
   const filteredLcrRecords = useMemo(() => {
     const q = lcrSearchQuery.trim().toLowerCase()

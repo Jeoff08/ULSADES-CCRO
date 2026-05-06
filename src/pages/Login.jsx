@@ -29,6 +29,8 @@ const LOGIN_LOADING_MS = 700
 const LOGIN_SUCCESS_DELAY_MS = 500
 const LOGIN_OVERLAY_EXIT_MS = 350
 
+const CCRO_APP_BRAND_SRC = encodeURI('/ChatGPT Image Feb 11, 2026, 03_26_31 PM.png')
+
 export default function Login() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')

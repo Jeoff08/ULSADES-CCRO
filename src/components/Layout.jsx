@@ -60,6 +60,9 @@ function legalSubLinkClass(isActive) {
 
 const FILES_SAVED_PATHS = ['/ausf/saved', '/legitimation/saved', '/court-decree/saved']
 
+/** CCRO seal used in sidebar (public filename contains spaces). */
+const CCRO_APP_BRAND_SRC = encodeURI('/ChatGPT Image Feb 11, 2026, 03_26_31 PM.png')
+
 export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -197,34 +200,6 @@ export default function Layout() {
                 >
                   <IconLegalSub />
                   <span>AUSF</span>
-                </NavLink>
-                <NavLink
-                  to="/legal-instrument/negative"
-                  className={({ isActive }) => legalSubLinkClass(isActive)}
-                >
-                  <IconLegalSub />
-                  <span>Negative</span>
-                </NavLink>
-                <NavLink
-                  to="/legal-instrument/mc2010-04"
-                  className={({ isActive }) => legalSubLinkClass(isActive)}
-                >
-                  <IconLegalSub />
-                  <span>MC2010-04</span>
-                </NavLink>
-                <NavLink
-                  to="/legal-instrument/negative-2"
-                  className={({ isActive }) => legalSubLinkClass(isActive)}
-                >
-                  <IconLegalSub />
-                  <span>Negative</span>
-                </NavLink>
-                <NavLink
-                  to="/legal-instrument/clear-copy"
-                  className={({ isActive }) => legalSubLinkClass(isActive)}
-                >
-                  <IconLegalSub />
-                  <span>Clear Copy</span>
                 </NavLink>
               </div>
             )}
