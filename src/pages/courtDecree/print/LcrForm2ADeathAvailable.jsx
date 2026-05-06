@@ -3,10 +3,33 @@ import { formatDateCert, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { buildLcr2aTableDisplay } from '../lib/lcr2aTable'
 
+function cellEditText(displayed) {
+  const s = String(displayed ?? '').trim()
+  if (!s || s === '—') return ''
+  return s
+}
+
+const LCR_2A_EDITABLE_ROWS = [
+  { k: 'registry', label: 'LCR Registry Number', patch: (v) => ({ lcr2aRegistryNumber: v, colbRegistryNo: v }) },
+  { k: 'dateRegistration', label: 'Date of Registration', patch: (v) => ({ lcr2aDateRegistration: v, colbRegDate: v }) },
+  { k: 'nameDeceased', label: 'Name of Deceased', patch: (v) => ({ lcr2aNameDeceased: v }) },
+  { k: 'sex', label: 'Sex', patch: (v) => ({ lcr2aSex: v, sex: v }) },
+  { k: 'civilStatus', label: 'Civil Status', patch: (v) => ({ lcr2aCivilStatus: v }) },
+  { k: 'citizenship', label: 'Citizenship', patch: (v) => ({ lcr2aCitizenship: v }) },
+  { k: 'dateDeath', label: 'Date of Death', patch: (v) => ({ lcr2aDateDeath: v, dateOfDeath: v }) },
+  { k: 'citizenshipFather', label: 'Citizenship of Father', patch: (v) => ({ lcr2aCitizenshipFather: v }) },
+  { k: 'placeDeath', label: 'Place of Death', patch: (v) => ({ lcr2aPlaceDeath: v }) },
+  { k: 'causeOfDeath', label: 'Cause of Death', patch: (v) => ({ lcr2aCauseDeath: v }) },
+]
+
 /** LCR Form No. 2A (Death-Available). Full print layout; table from buildLcr2aTableDisplay (court + legitimation). */
-export default function LcrForm2ADeathAvailable({ data }) {
+export default function LcrForm2ADeathAvailable({ data, editableTable = false, onDataChange }) {
   const t = buildLcr2aTableDisplay(data)
   const [editableRemarks, setEditableRemarks] = useState(data?.remarks || '')
+
+  const patchData = (partial) => {
+    onDataChange?.({ ...data, ...partial })
+  }
 
   useEffect(() => {
     setEditableRemarks(data?.remarks || '')
@@ -55,50 +78,69 @@ export default function LcrForm2ADeathAvailable({ data }) {
               <col style={{ width: '62%' }} />
             </colgroup>
             <tbody>
-              <tr>
-                <td className={`${labelCell} w-48`}>LCR Registry Number</td>
-                <td className={`${valueCell} uppercase`}>{blankIfDash(t.registry)}</td>
-              </tr>
-              <tr>
-                <td className={labelCell}>Date of Registration</td>
-                <td className={valueCell}>{blankIfDash(t.dateRegistration)}</td>
-              </tr>
-              <tr>
-                <td className={labelCell}>Name of Deceased</td>
-                <td className={`${valueCell} uppercase`}>{blankIfDash(t.nameDeceased)}</td>
-              </tr>
-              <tr>
-                <td className={labelCell}>Sex</td>
-                <td className={`${valueCell} uppercase`}>{blankIfDash(t.sex)}</td>
-              </tr>
-              <tr>
-                <td className={labelCell}>Civil Status</td>
-                <td className={`${valueCell} uppercase`}>{blankIfDash(t.civilStatus)}</td>
-              </tr>
-              <tr>
-                <td className={labelCell}>Citizenship</td>
-                <td className={`${valueCell} uppercase`}>{blankIfDash(t.citizenship)}</td>
-              </tr>
-              <tr>
-                <td className={labelCell}>Date of Death</td>
-                <td className={valueCell}>{blankIfDash(t.dateDeath)}</td>
-              </tr>
-              <tr>
-                <td className={labelCell}>Citizenship of Father</td>
-                <td className={`${valueCell} uppercase`}>{blankIfDash(t.citizenshipFather)}</td>
-              </tr>
-              <tr>
-                <td className={labelCell}>Place of Death</td>
-                <td className={`${valueCell} uppercase whitespace-pre-wrap min-h-[2.2rem]`}>{blankIfDash(t.placeDeath)}</td>
-              </tr>
-              <tr>
-                <td className="py-0.5 px-2 border border-black align-top text-center leading-tight">
-                  Cause of Death
-                </td>
-                <td className="py-0.5 px-2 border border-black text-center font-bold align-top whitespace-pre-wrap leading-tight">
-                  {causeText}
-                </td>
-              </tr>
+              {editableTable && onDataChange
+                ? LCR_2A_EDITABLE_ROWS.map((row) => (
+                    <tr key={row.k}>
+                      <td className={`${labelCell} w-48`}>{row.label}</td>
+                      <td className={`${valueCell} uppercase`}>
+                        <input
+                          type="text"
+                          className="no-print w-full min-w-0 text-center font-bold border-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none focus:border-[var(--primary-blue)] px-1"
+                          value={cellEditText(t[row.k])}
+                          onChange={(e) => patchData(row.patch(e.target.value))}
+                        />
+                        <span className="hidden print:inline">{t[row.k]}</span>
+                      </td>
+                    </tr>
+                  ))
+                : (
+                  <>
+                    <tr>
+                      <td className={`${labelCell} w-48`}>LCR Registry Number</td>
+                      <td className={`${valueCell} uppercase`}>{blankIfDash(t.registry)}</td>
+                    </tr>
+                    <tr>
+                      <td className={labelCell}>Date of Registration</td>
+                      <td className={valueCell}>{blankIfDash(t.dateRegistration)}</td>
+                    </tr>
+                    <tr>
+                      <td className={labelCell}>Name of Deceased</td>
+                      <td className={`${valueCell} uppercase`}>{blankIfDash(t.nameDeceased)}</td>
+                    </tr>
+                    <tr>
+                      <td className={labelCell}>Sex</td>
+                      <td className={`${valueCell} uppercase`}>{blankIfDash(t.sex)}</td>
+                    </tr>
+                    <tr>
+                      <td className={labelCell}>Civil Status</td>
+                      <td className={`${valueCell} uppercase`}>{blankIfDash(t.civilStatus)}</td>
+                    </tr>
+                    <tr>
+                      <td className={labelCell}>Citizenship</td>
+                      <td className={`${valueCell} uppercase`}>{blankIfDash(t.citizenship)}</td>
+                    </tr>
+                    <tr>
+                      <td className={labelCell}>Date of Death</td>
+                      <td className={valueCell}>{blankIfDash(t.dateDeath)}</td>
+                    </tr>
+                    <tr>
+                      <td className={labelCell}>Citizenship of Father</td>
+                      <td className={`${valueCell} uppercase`}>{blankIfDash(t.citizenshipFather)}</td>
+                    </tr>
+                    <tr>
+                      <td className={labelCell}>Place of Death</td>
+                      <td className={`${valueCell} uppercase whitespace-pre-wrap min-h-[2.2rem]`}>{blankIfDash(t.placeDeath)}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-0.5 px-2 border border-black align-top text-center leading-tight">
+                        Cause of Death
+                      </td>
+                      <td className="py-0.5 px-2 border border-black text-center font-bold align-top whitespace-pre-wrap leading-tight">
+                        {causeText}
+                      </td>
+                    </tr>
+                  </>
+                )}
             </tbody>
           </table>
           <p className="mb-2 text-sm court-decree-lcr-body">
@@ -109,7 +151,11 @@ export default function LcrForm2ADeathAvailable({ data }) {
             <div className="no-print mb-1">
               <textarea
                 value={editableRemarks}
-                onChange={(e) => setEditableRemarks(e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value
+                  setEditableRemarks(v)
+                  onDataChange?.({ ...data, remarks: v })
+                }}
                 rows={3}
                 className="w-full border border-gray-300 rounded px-2 py-1 text-[14px]"
                 placeholder="Type or edit remarks here..."
@@ -129,7 +175,7 @@ export default function LcrForm2ADeathAvailable({ data }) {
               <p className="font-bold text-sm border-b border-black inline-block uppercase">{regOfficer}</p>
               <p className="text-xs mt-0">LCRO - Staff</p>
             </div>
-            <div className="flex flex-col items-center text-center">
+            <div className="court-decree-lcr-2a-ccr-right flex flex-col items-center text-center">
               <p className="font-bold text-sm border-b border-black inline-block uppercase">{ccrName}</p>
               <p className="text-xs mt-0 italic">City Civil Registrar</p>
             </div>

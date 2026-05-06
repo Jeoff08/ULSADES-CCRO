@@ -170,7 +170,7 @@ export default function LcrForm1ABirthAvailable({ data, editableTable = false, o
               <p className="font-bold text-sm border-b border-black inline-block">{regOfficerName}</p>
               <p className="text-xs mt-0">{regOfficerTitle}</p>
             </div>
-            <div className="flex flex-col items-center text-center">
+            <div className="court-decree-lcr-1a-ccr-right flex flex-col items-center text-center">
               <p className="font-bold text-sm border-b border-black inline-block">{ccrName}</p>
               <p className="text-xs mt-0">City Civil Registrar</p>
             </div>

@@ -198,7 +198,34 @@ export default function Layout() {
                   <IconLegalSub />
                   <span>AUSF</span>
                 </NavLink>
-
+                <NavLink
+                  to="/legal-instrument/negative"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>Negative</span>
+                </NavLink>
+                <NavLink
+                  to="/legal-instrument/mc2010-04"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>MC2010-04</span>
+                </NavLink>
+                <NavLink
+                  to="/legal-instrument/negative-2"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>Negative</span>
+                </NavLink>
+                <NavLink
+                  to="/legal-instrument/clear-copy"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>Clear Copy</span>
+                </NavLink>
               </div>
             )}
           </div>
@@ -267,21 +294,6 @@ export default function Layout() {
           >
             <IconFolder />
             <span>Files Saved</span>
-          </NavLink>
-
-          <NavLink
-            to="/annotation-ack-field"
-            className={({ isActive }) =>
-              `${navRowBase} ${isActive
-                ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
-                : 'text-white/90 hover:bg-white/10 text-white'
-              }`
-            }
-          >
-            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Annotation Ack Field</span>
           </NavLink>
 
           <NavLink

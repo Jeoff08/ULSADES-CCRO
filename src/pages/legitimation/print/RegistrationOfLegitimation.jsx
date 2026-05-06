@@ -17,15 +17,16 @@ export default function RegistrationOfLegitimation({ data }) {
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
         <h2 className="text-center font-bold text-[30px] uppercase mb-6 tracking-tight">REGISTRATION OF LEGITIMATION</h2>
 
-        <p className="font-bold text-[18px] mb-4">TO WHOM IT MAY CONCERN:</p>
+        <p className="font-bold text-[18px] mb-2">TO WHOM IT MAY CONCERN:</p>
 
-        <div className="cert-auth-body cert-auth-body-gaps text-justify text-[18px] leading-[1.8]">
+        <div className="cert-auth-body text-justify text-[18px] leading-[1.8] space-y-2">
           <p>
-            This certifies the registration of legitimation for the child <span className="font-bold underline">{childFull || '—'}</span>,
-            parents <span className="font-bold underline">{fatherFull || '—'}</span> and <span className="font-bold underline">{motherFull || '—'}</span>.
+            THIS IS TO CERTIFY that the Affidavit of Legitimation in favor of <span className="font-bold underline">{childFull || '—'}</span> had been
+            registered in this office on <span className="font-bold underline">{formatDateCert(data.affidavitLegitDate) || '—'}</span> under Registry Number{' '}
+            <span className="font-bold underline">{data.affidavitLegitRegistryNo || '—'}</span>.
           </p>
           <p>
-            Registry No. <span className="font-bold underline">{data.affidavitLegitRegistryNo || '—'}</span> dated <span className="font-bold underline">{formatDateCert(data.affidavitLegitDate) || '—'}</span>.
+            This certification is issued for whatever legal purposes it may serve.
           </p>
           <p>
             Issued this <span className="font-bold underline">{issuedDate}</span> at Iligan City, Philippines.

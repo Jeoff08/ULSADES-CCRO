@@ -25,9 +25,13 @@ import UploadFileModal from "../../components/upload/UploadFileModal";
 import ToastHost from "../../components/toast/ToastHost";
 import { useToasts } from "../../components/toast/useToasts";
 import { saveCurrentViewAsPdf, openSavedPdfInBrowser } from "../../lib/savePdf";
-import { buildAnnotationFieldPreviewPdfBase64 } from "../../lib/annotationFieldPreviewPdf";
+import {
+  buildAnnotationFieldPreviewPdfBase64,
+  buildAnnotationAckFieldPreviewPdfBase64,
+} from "../../lib/annotationFieldPreviewPdf";
 import { saveGeneratedPdfBase64 } from "../../lib/savePdf";
 import { getAnnotationChildNotAckText } from "./print/AnnotationChildNotAck";
+import { fullName } from "../../lib/printUtils";
 import AusfOnly from "./print/AusfOnly";
 import Ausf06 from "./print/Ausf06";
 import Ausf0717 from "./print/Ausf0717";
@@ -52,7 +56,7 @@ const VIEW_PRINT_OPTIONS = [
     labelLine1: "LCR Form 1A (Birth-",
     labelLine2: "Available)",
   },
-  { label: "Annotation (Child Ack)", type: "child-ack-annotation" },
+  { label: "Annotation Ack Field", type: "child-ack-annotation" },
   { label: "LCR Form A1", type: "child-not-ack-lcr", buttonRoundedLeft: true },
   { label: "Annotation (Child Not Ack)", type: "child-not-ack-annotation" },
   { label: "Transmittal", type: "child-not-ack-transmittal" },
@@ -369,6 +373,95 @@ export default function AUSFPrint() {
     }
   }, [data, show]);
 
+  const getAnnotationChildAckText = useCallback((draft) => {
+    if (!draft) return "";
+    const childFull =
+      fullName(draft.childFirst, draft.childMiddle, draft.fatherLast) ||
+      fullName(draft.childFirst, draft.childMiddle, draft.childLast);
+    const defaultAnnotation = childFull
+      ? `"This child shall be known as ${childFull.toUpperCase()} pursuant to R.A. 9255"`
+      : "";
+    return draft.annotationChildAckText || defaultAnnotation;
+  }, []);
+
+  const openPreviewFromBase64 = useCallback(
+    (base64) => {
+      if (!base64) {
+        show({
+          type: "error",
+          title: "Preview failed",
+          message: "Could not generate PDF.",
+        });
+        return;
+      }
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      if (previewPdfUrl) URL.revokeObjectURL(previewPdfUrl);
+      setPreviewPdfUrl(url);
+      setPreviewModalOpen(true);
+    },
+    [previewPdfUrl, show]
+  );
+
+  const handleSavePdfAck = useCallback(async () => {
+    if (!data) return;
+    const text = getAnnotationChildAckText(data);
+    const base64 = buildAnnotationAckFieldPreviewPdfBase64(text);
+    if (!base64) {
+      show({
+        type: "error",
+        title: "Save failed",
+        message: "Could not generate PDF.",
+      });
+      return;
+    }
+    try {
+      const result = await saveGeneratedPdfBase64(base64, "AUSF-annotation-child-ack");
+      if (result?.ok) {
+        show({
+          type: "success",
+          title: "PDF saved",
+          message: result.filePath || "",
+          actionLabel: "Open",
+          onAction: async () => {
+            if (!result.filePath) return;
+            await openSavedPdfInBrowser(result.filePath);
+          },
+        });
+        return;
+      }
+      if (result?.cancelled) {
+        show({
+          type: "info",
+          title: "Save cancelled",
+          message: "No PDF file was created.",
+        });
+        return;
+      }
+      show({
+        type: "error",
+        title: "Save failed",
+        message: result?.reason || "Unable to save PDF.",
+      });
+    } catch (err) {
+      show({
+        type: "error",
+        title: "Save failed",
+        message: err?.message || "Unable to save PDF.",
+      });
+    }
+  }, [data, getAnnotationChildAckText, show]);
+
+  const handlePreviewPdfAck = useCallback(() => {
+    if (!data) return;
+    const text = getAnnotationChildAckText(data);
+    const base64 = buildAnnotationAckFieldPreviewPdfBase64(text);
+    openPreviewFromBase64(base64);
+  }, [data, getAnnotationChildAckText, openPreviewFromBase64]);
+
   const handlePreviewPdfModal = async () => {
     try {
       const bridge = window?.electronAPI;
@@ -555,7 +648,7 @@ export default function AUSFPrint() {
               )}
             </>
           )}
-          {type !== "child-not-ack-annotation" ? (
+          {type !== "child-not-ack-annotation" && type !== "child-ack-annotation" ? (
             <>
               <button
                 type="button"
@@ -572,7 +665,7 @@ export default function AUSFPrint() {
                 Preview PDF
               </button>
             </>
-          ) : (
+          ) : type === "child-not-ack-annotation" ? (
             <>
               <button
                 type="button"
@@ -584,6 +677,23 @@ export default function AUSFPrint() {
               <button
                 type="button"
                 onClick={handlePreviewPdfModal}
+                className="px-3 py-2.5 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700"
+              >
+                Preview PDF
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={handleSavePdfAck}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Save as PDF
+              </button>
+              <button
+                type="button"
+                onClick={handlePreviewPdfAck}
                 className="px-3 py-2.5 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700"
               >
                 Preview PDF
@@ -782,3 +892,4 @@ export default function AUSFPrint() {
     </div>
   );
 }
+

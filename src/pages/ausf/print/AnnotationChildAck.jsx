@@ -129,7 +129,7 @@ export default function AnnotationChildAck({ data, onColbScanChange, onAnnotatio
 
   return (
     <div className={`ausf-doc print-doc colb-annotation-ack bg-white text-black text-sm max-w-[210mm] mx-auto flex flex-col relative ${hasScan ? 'px-4 py-3 print:px-0 print:py-0 print:max-w-none' : 'px-4 py-3'}`}>
-      <h2 className="text-base font-bold uppercase mb-3 text-center print:hidden">Annotation (Child Acknowledged) — COLB Office File</h2>
+      <h2 className="text-base font-bold uppercase mb-3 text-center print:hidden">Annotation Ack Field — COLB Office File</h2>
 
       <div className="no-print mb-4 flex flex-wrap items-center gap-3">
         <input

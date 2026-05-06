@@ -68,7 +68,8 @@ export const defaultCorrectionOfEntries = {
   typeOfPetition: 'RA 9048',
   migrantPetition: 'No',
   petitionNumber: '',
-  petitionYear: new Date().getFullYear(),
+  fatherName: '',
+  motherName: '',
   typeOfDocument: 'Birth',
   registryNumber: '',
   documentOwnerName: '',
@@ -86,8 +87,7 @@ export const defaultCorrectionOfEntries = {
   amountPaidFiling: '',
   dateOfReceiptFiling: '',
   orCertificationNumber: '',
-  amountCertification: '',
-  dateOfReceiptCertification: '',
+
   receivedByName: '',
   subscribeByCcr: 'Yes',
   suggestedDateOfDecision: '',
@@ -101,10 +101,7 @@ export const defaultCorrectionOfEntries = {
   impugnedNumber: '',
   certificateOfFinalityDate: '',
 
-  postingPeriodFrom: '',
-  postingPeriodTo: '',
-  dateOfFiling: '',
-  dateOfReceipt: '',
+
   placeOfPosting: 'Iligan, Lanao del Norte',
 
   decisionCmcrGranted: true,
@@ -148,8 +145,7 @@ export const defaultCorrectionOfEntries = {
   paymentAmountFiling: '',
   paymentDateFiling: '',
 
-  certificationIssuedDate: '',
-  certificatePostingIssuedAt: '',
+
 
   cofDecisionDate: '',
   cofIssuanceDate: '',
@@ -207,11 +203,6 @@ export const CORRECTION_PRINT_ALL_IDS = [
 
 /** Sidebar: grouped print outputs (Petition / First transmittal / Second transmittal). */
 export const CORRECTION_PRINT_GROUPS = [
-  {
-    id: 'final-output',
-    label: 'Final output',
-    children: [{ id: CORRECTION_COMPLETE_PACKET_ID, label: 'Complete packet (all documents, one PDF)' }],
-  },
   {
     id: 'petition',
     label: 'Petition',

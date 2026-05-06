@@ -27,7 +27,7 @@ export default function CertRegistrationCourtDecree({ data }) {
 
         <p className="font-bold text-[18px] mb-4">TO WHOM IT MAY CONCERN:</p>
 
-        <div className="cert-reg-body cert-auth-body-gaps text-justify text-[18px] leading-[1.8]">
+        <div className="cert-reg-body cert-auth-body-gaps text-[18px] leading-[1.8]">
           <p>
             THIS IS TO CERTIFY that the decision under {data.typeOfCase || 'Civil Case No.'} <span className="font-bold underline">{caseNo}</span> issued on <span className="font-bold underline">{dateIssued}</span> rendered by Judge <span className="font-bold underline">{judgeName}</span> of the <span className="font-bold underline">{court}</span>, RE: <span className="font-bold underline">{caseTitle}</span>, was already received by this office on <span className="font-bold underline">{dateReceived}</span> and therefore included in the official record of this office under Registry No. <span className="font-bold underline">{registryNo}</span>.
           </p>

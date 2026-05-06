@@ -20,7 +20,7 @@ const FORM_TYPE_LABELS = {
   'reg-ack': 'Registration of Acknowledgement',
   'child-ack': 'Child Acknowledge',
   'child-ack-lcr': 'LCR Form 1A (Birth-Available)',
-  'child-ack-annotation': 'Annotation',
+  'child-ack-annotation': 'Annotation Ack Field',
   'child-not-ack': 'Child Not Acknowledged',
   'child-not-ack-lcr': 'LCR Form A1 (Child Not Acknowledged)',
   'child-not-ack-annotation': 'Annotation (Child Not Acknowledged)',

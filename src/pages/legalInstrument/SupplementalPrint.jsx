@@ -1,22 +1,19 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import SupplementalReportAffidavit from '../legitimation/print/SupplementalReportAffidavit'
 import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailable'
+import LcrForm2ADeathAvailable from '../courtDecree/print/LcrForm2ADeathAvailable'
+import LcrForm3AMarriageAvailable from '../courtDecree/print/LcrForm3AMarriageAvailable'
 import SupplementalTransmittal from './print/SupplementalTransmittal'
 import { saveCurrentViewAsPdf } from '../../lib/savePdf'
-import { PAPER_SIZES } from '../../components/print'
-import { getActiveSavedSupplemental, getSupplementalDraft } from './lib/supplementalSavedStorage'
+import { PAPER_SIZES, getPaperPageSpec } from '../../components/print'
+import { getActiveSavedSupplemental, getSupplementalDraft, saveSupplementalDraft, saveOrUpdateSupplemental } from './lib/supplementalSavedStorage'
 import {
   getDefaultSupplementalTransmittalFields,
   pickTransmittalStateFromDraft,
 } from './lib/supplementalTransmittalDefaults'
-import {
-  buildForm1aDataForSupplemental,
-  form1aDataFromLegitimationRecord,
-  listLegitimationSourcesForForm1a,
-  searchLegitimationForForm1a,
-} from './lib/supplementalForm1a'
 import { defaultLegitimation } from '../legitimation/lib/legitimationDefaults'
+import { defaultCourtDecree } from '../courtDecree/lib/courtDecreeDefaults'
 
 const defaultSupplementalDraft = {
   supplementType: 'geographical',
@@ -38,7 +35,11 @@ const defaultSupplementalDraft = {
   item3Custom: '',
   item5Custom: '',
   includeForm1a: false,
-  form1aMatchName: '',
+  lcrType: '1A',
+  lcrData: { ...defaultLegitimation },
+  lcrSource: 'courtDecree',
+  lcrSourceId: '',
+  lcrPrefillLabel: '',
   ...getDefaultSupplementalTransmittalFields(),
 }
 
@@ -46,7 +47,7 @@ const PRINT_SIZE_STYLE_ID = 'print-paper-size-supplemental'
 
 function usePrintPageSize(paperId) {
   useEffect(() => {
-    const spec = PAPER_SIZES.find((p) => p.id === paperId) || PAPER_SIZES[0]
+    const spec = getPaperPageSpec(paperId)
     document.documentElement.dataset.paperSize = paperId
     let el = document.getElementById(PRINT_SIZE_STYLE_ID)
     if (!el) {
@@ -68,7 +69,10 @@ const sidebarBtnForm1a = `${sidebarBtnBase} bg-[#283750] hover:bg-[#1e2d42]`
 const sidebarBtnTransmittal = `${sidebarBtnBase} bg-[#1a4d3a] hover:bg-[#143d2d]`
 const sidebarBtnSelected = ' ring-2 ring-offset-1 ring-[var(--primary-blue)]'
 
+const LCR_SOURCE_LABEL = { ausf: 'AUSF', courtDecree: 'Court Decree', legitimation: 'Legitimation' }
+
 export default function SupplementalPrint() {
+  const location = useLocation()
   const baseData = useMemo(() => {
     const active = getActiveSavedSupplemental()
     const merged = active?.data
@@ -76,7 +80,7 @@ export default function SupplementalPrint() {
       : getSupplementalDraft(defaultSupplementalDraft)
     const transmittalSlice = pickTransmittalStateFromDraft(merged)
     return { ...merged, ...transmittalSlice }
-  }, [])
+  }, [location.key])
   const [item3Custom, setItem3Custom] = useState(baseData.item3Custom || '')
   const [item5Custom, setItem5Custom] = useState(baseData.item5Custom || '')
   const [paperSize, setPaperSize] = useState('a4')
@@ -123,54 +127,26 @@ export default function SupplementalPrint() {
   const showForm1a =
     data.includeForm1a === true || (supType === 'sex' && data.includeForm1a === undefined)
 
-  const [form1aRecord, setForm1aRecord] = useState(() => ({ ...defaultLegitimation }))
-  const [form1aSearchQuery, setForm1aSearchQuery] = useState('')
-  const form1aSearchInputRef = useRef(null)
-
-  const form1aAllRegistered = useMemo(
-    () => (showForm1a ? listLegitimationSourcesForForm1a() : []),
-    [showForm1a]
-  )
-
-  const form1aLegitimationMatches = useMemo(
-    () => (showForm1a ? searchLegitimationForForm1a(form1aSearchQuery) : []),
-    [showForm1a, form1aSearchQuery]
-  )
-
-  const form1aAutoFromLegitimation = useMemo(() => {
-    if (!showForm1a) return null
-    return buildForm1aDataForSupplemental(data)
-  }, [
-    showForm1a,
-    data.supplementType,
-    data.colbSubject,
-    data.affiantName,
-    data.subjectColbName,
-    data.form1aMatchName,
-    data.includeForm1a,
-  ])
-  const form1aHasAutoLegitimationMatch = form1aAutoFromLegitimation != null
+  const [lcrData, setLcrData] = useState(() => ({ ...baseData.lcrData }))
 
   useEffect(() => {
-    if (!showForm1a) return
-    setForm1aRecord(form1aAutoFromLegitimation ?? { ...defaultLegitimation })
-    setForm1aSearchQuery('')
-  }, [showForm1a, form1aAutoFromLegitimation])
+    setItem3Custom(baseData.item3Custom || '')
+    setItem5Custom(baseData.item5Custom || '')
+    const raw = baseData.lcrData
+    const fallback = baseData.lcrType === '1A' ? { ...defaultLegitimation } : { ...defaultCourtDecree }
+    setLcrData(raw && typeof raw === 'object' ? { ...raw } : { ...fallback })
+  }, [location.key, baseData])
 
-  useEffect(() => {
-    if (!showForm1a) return
-    const typed = form1aSearchQuery.trim()
-    if (!typed) return
-    if (form1aLegitimationMatches.length === 1) {
-      setForm1aRecord(form1aDataFromLegitimationRecord(form1aLegitimationMatches[0].data))
-    }
-  }, [showForm1a, form1aSearchQuery, form1aLegitimationMatches])
-  const effectivePaperSize = savingPdf && exportMode === 'bundle' ? 'short' : paperSize
-  const paperSpec = useMemo(
-    () => PAPER_SIZES.find((p) => p.id === effectivePaperSize) || PAPER_SIZES[0],
-    [effectivePaperSize]
-  )
-  usePrintPageSize(effectivePaperSize)
+  const handleLcrDataChange = (next) => {
+    setLcrData(next)
+    // Persist to storage immediately so PDF generation and navigation work with latest
+    const updated = { ...data, lcrData: next }
+    saveSupplementalDraft(updated)
+    saveOrUpdateSupplemental(updated)
+  }
+  /** Same @page sizing as Court Decree / Legitimation / AUSF — honor paper picker for Save PDF + Preview (Electron uses preferCSSPageSize). */
+  const paperSpec = useMemo(() => getPaperPageSpec(paperSize), [paperSize])
+  usePrintPageSize(paperSize)
 
   useEffect(() => {
     if (!showAffidavitOutput) {
@@ -189,13 +165,21 @@ export default function SupplementalPrint() {
   const PDF_EXPORT_CLASS = {
     bundle: 'supplemental-pdf-export--bundle-only',
     transmittal: 'supplemental-pdf-export--transmittal-only',
+    lcr: 'supplemental-pdf-export--lcr-only',
   }
-  const showBundleForRender = showAffidavitOutput && exportMode !== 'transmittal'
-  const showTransmittalForRender = showTransmittalOutput && exportMode !== 'bundle'
+
+  /** Affidavit bundle and/or LCR block — hide transmittal unless exporting transmittal only */
+  const showBundleForRender =
+    (showAffidavitOutput || showForm1a) && exportMode !== 'transmittal'
+  const showTransmittalForRender = showTransmittalOutput && exportMode !== 'bundle' && exportMode !== 'lcr'
 
   const savePdfWithExportMode = async (mode, suggestedBaseName) => {
     if (mode === 'bundle' && !showAffidavitOutput) {
       window.alert('No supplemental affidavit data yet. Fill the Supplemental form first, or use Save transmittal PDF.')
+      return
+    }
+    if (mode === 'lcr' && !showForm1a) {
+      window.alert('No LCR form in this supplemental. Add Form 1A, 2A, or 3A on the Supplemental form first.')
       return
     }
     if (mode === 'transmittal' && !showTransmittalOutput) {
@@ -229,6 +213,12 @@ export default function SupplementalPrint() {
     }
   }
 
+  const getExportModeForActivePanel = () => {
+    if (activePanel === 'transmittal' && showTransmittalOutput) return 'transmittal'
+    if (activePanel === 'form1a' && showForm1a) return 'lcr'
+    return 'bundle'
+  }
+
   const handlePreviewPdfModal = async () => {
     try {
       const bridge = window?.electronAPI
@@ -236,7 +226,29 @@ export default function SupplementalPrint() {
         window.alert('PDF preview bridge is unavailable. Restart Electron.')
         return
       }
-      const result = await bridge.previewPdfData()
+      const previewMode = getExportModeForActivePanel()
+      const previewClass = PDF_EXPORT_CLASS[previewMode]
+      const root = document.documentElement
+      root.classList.add(previewClass)
+      await new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve))
+      })
+      let result
+      try {
+        result = await bridge.previewPdfData()
+      } catch (invokeErr) {
+        const msg = String(invokeErr?.message || '')
+        if (msg.includes("No handler registered for 'pdf:get-current-window-base64'") && typeof bridge.previewPdf === 'function') {
+          const fallback = await bridge.previewPdf(`Supplemental-preview`)
+          if (fallback?.ok) {
+            window.alert('Preview opened externally (fallback). Restart Electron for in-app modal preview.')
+            return
+          }
+        }
+        throw invokeErr
+      } finally {
+        root.classList.remove(previewClass)
+      }
       if (!result?.ok || !result?.base64) {
         window.alert(result?.reason || 'Unable to generate PDF preview.')
         return
@@ -284,7 +296,19 @@ export default function SupplementalPrint() {
               <option key={p.id} value={p.id}>{p.label}</option>
             ))}
           </select>
-          {activePanel !== 'transmittal' ? (
+          {activePanel === 'form1a' && showForm1a ? (
+            <button
+              type="button"
+              onClick={() =>
+                savePdfWithExportMode('lcr', `Supplemental-LCR-${data.lcrType || '1A'}`)
+              }
+              disabled={savingPdf || !showForm1a}
+              className="px-3 py-1.5 rounded-md bg-[#283750] text-white text-sm font-medium hover:bg-[#1e2d42] disabled:opacity-60"
+              title={`Save PDF for LCR Form ${data.lcrType || '1A'} only (same layout as Court Decree / AUSF / Legitimation)`}
+            >
+              {savingPdf ? 'Saving...' : `Save LCR Form ${data.lcrType || '1A'} PDF`}
+            </button>
+          ) : activePanel !== 'transmittal' ? (
             <button
               type="button"
               onClick={() => savePdfWithExportMode('bundle', 'Supplemental-Report')}
@@ -292,7 +316,7 @@ export default function SupplementalPrint() {
               className="px-3 py-1.5 rounded-md bg-[var(--primary-blue)] text-white text-sm font-medium hover:bg-[var(--primary-blue-light)] disabled:opacity-60"
               title={
                 showAffidavitOutput
-                  ? 'Affidavit and Form 1A only (no transmittal pages)'
+                  ? `Affidavit${showForm1a ? ` + LCR Form ${data.lcrType || '1A'}` : ''} (no transmittal pages)`
                   : 'No supplemental affidavit data yet'
               }
             >
@@ -314,6 +338,13 @@ export default function SupplementalPrint() {
             type="button"
             onClick={handlePreviewPdfModal}
             className="px-3 py-1.5 rounded-md bg-gray-600 text-white text-sm font-medium hover:bg-gray-700"
+            title={
+              activePanel === 'form1a' && showForm1a
+                ? `Preview LCR Form ${data.lcrType || '1A'} PDF`
+                : activePanel === 'transmittal'
+                  ? 'Preview transmittal letter PDF'
+                  : 'Preview affidavit PDF (and LCR pages if included)'
+            }
           >
             Preview PDF
           </button>
@@ -356,20 +387,16 @@ export default function SupplementalPrint() {
               onClick={() => {
                 if (!showForm1a) return
                 setActivePanel('form1a')
-                window.setTimeout(() => {
-                  form1aSearchInputRef.current?.focus()
-                  form1aSearchInputRef.current?.select?.()
-                }, 0)
               }}
               disabled={!showForm1a}
               title={
                 showForm1a
-                  ? 'LCR Form No. 1A (Birth-Available)'
-                  : 'Turn on “Include Form 1A” on the Supplemental form to enable this output.'
+                  ? `LCR Form No. ${data.lcrType}`
+                  : 'Turn on “Include LCR Form” on the Supplemental form to enable this output.'
               }
               className={`${sidebarBtnForm1a}${activePanel === 'form1a' ? sidebarBtnSelected : ''} ${!showForm1a ? 'opacity-45 cursor-not-allowed hover:bg-[#283750]' : ''}`}
             >
-              FORM 1A
+              FORM {data.lcrType}
             </button>
           </div>
         </aside>
@@ -378,6 +405,7 @@ export default function SupplementalPrint() {
           {showBundleForRender ? (
           <div id="supplemental-print-bundle">
             <div
+              id="supplemental-print-affidavit"
               className={
                 activePanel === 'affidavit'
                   ? 'block'
@@ -395,80 +423,50 @@ export default function SupplementalPrint() {
 
             {showForm1a ? (
             <div
+              id="supplemental-print-lcr"
               className={
                 activePanel === 'form1a'
                   ? 'block mt-0'
                   : 'hidden print:block print:mt-0 print:[page-break-before:always]'
               }
             >
-              <div className="no-print mb-3 max-w-[210mm] mx-auto rounded-lg border border-gray-200 bg-gray-50 p-3">
-                <p
-                  className={
-                    form1aHasAutoLegitimationMatch
-                      ? 'text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-md px-2 py-1.5 mb-2'
-                      : 'text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5 mb-2'
-                  }
-                >
-                  {form1aHasAutoLegitimationMatch
-                    ? 'Form 1A is pre-filled from the Legitimation/Court Decree record that matches this supplemental name (exact or single search match). You can still edit or pick another row below.'
-                    : 'No single Legitimation/Court Decree match for this supplemental name — Form 1A starts blank. Choose a registered row below or type the form manually.'}
-                </p>
-                <label className="block text-xs font-semibold text-gray-800 mb-1">Registered Legitimation / Court Decree records</label>
-                <input
-                  ref={form1aSearchInputRef}
-                  type="text"
-                  className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm bg-white"
-                  value={form1aSearchQuery}
-                  onChange={(e) => setForm1aSearchQuery(e.target.value)}
-                  placeholder="Leave empty to list everyone; type a name to narrow (child, parent, owner, or registry no.)"
-                />
-                <p className="text-[11px] text-gray-600 mt-1.5 leading-snug">
-                  Registered entries from Legitimation and Court Decree (current draft + saved files) are listed below. Typing filters to rows where each word matches child/owner names, parents, saved label, or registry fields. Click a row to load Form 1A.
-                </p>
-                <p className="text-[11px] font-medium text-gray-700 mt-2">
-                  {form1aAllRegistered.length === 0
-                    ? 'No Legitimation/Court Decree draft or saved files yet.'
-                    : form1aSearchQuery.trim()
-                      ? `Showing ${form1aLegitimationMatches.length} of ${form1aAllRegistered.length} registered`
-                      : `Showing all ${form1aAllRegistered.length} registered`}
-                </p>
-                {form1aAllRegistered.length > 0 && form1aLegitimationMatches.length > 0 ? (
-                  <ul className="mt-2 max-h-60 overflow-y-auto rounded-md border border-gray-200 bg-white divide-y divide-gray-100">
-                    {form1aLegitimationMatches.map((row) => (
-                      <li key={row.sourceId}>
-                        <button
-                          type="button"
-                          className="w-full text-left px-2 py-2 text-sm text-gray-800 hover:bg-[var(--primary-blue)]/10"
-                          onClick={() => setForm1aRecord(form1aDataFromLegitimationRecord(row.data))}
-                        >
-                          <span className="font-medium">{row.childName || row.label}</span>
-                          {row.sourceType ? (
-                            <span className="block text-[11px] text-[var(--primary-blue)]">{row.sourceType}</span>
-                          ) : null}
-                          {row.childName && row.label && row.childName !== row.label ? (
-                            <span className="block text-xs text-gray-500">{row.label}</span>
-                          ) : null}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : form1aAllRegistered.length > 0 ? (
-                  <p className="text-xs text-amber-800 mt-2">No rows match that search. Try fewer words or clear the box to see everyone.</p>
-                ) : null}
-                <button
-                  type="button"
-                  className="mt-2 text-xs font-medium text-[var(--primary-blue)] hover:underline"
-                  onClick={() => setForm1aRecord({ ...defaultLegitimation })}
-                >
-                  Clear form (blank manual entry)
-                </button>
+              <div className="no-print mb-3 max-w-[210mm] mx-auto rounded-lg border border-emerald-200 bg-emerald-50/90 px-3 py-2 text-[11px] text-emerald-900 leading-snug">
+                <span className="font-semibold">LCR Form {data.lcrType}</span>
+                {' — same court print layout for all sources. '}
+                {data.lcrPrefillLabel ? (
+                  <>
+                    Prefilled from <span className="font-semibold">{LCR_SOURCE_LABEL[data.lcrSource] || data.lcrSource}</span>
+                    {': '}
+                    <span className="italic">{data.lcrPrefillLabel}</span>
+                    {'. '}
+                  </>
+                ) : (
+                  <>No record selected on the supplemental form — manual entry. </>
+                )}
+                Table cells are editable below; changes are saved with this supplemental file.
               </div>
               <div className="max-w-[210mm] mx-auto">
-                <LcrForm1ABirthAvailable
-                  data={form1aRecord}
-                  editableTable
-                  onDataChange={setForm1aRecord}
-                />
+                {data.lcrType === '1A' && (
+                  <LcrForm1ABirthAvailable
+                    data={lcrData}
+                    editableTable
+                    onDataChange={handleLcrDataChange}
+                  />
+                )}
+                {data.lcrType === '2A' && (
+                  <LcrForm2ADeathAvailable
+                    data={lcrData}
+                    editableTable
+                    onDataChange={handleLcrDataChange}
+                  />
+                )}
+                {data.lcrType === '3A' && (
+                  <LcrForm3AMarriageAvailable
+                    data={lcrData}
+                    editableTable
+                    onDataChange={handleLcrDataChange}
+                  />
+                )}
               </div>
             </div>
             ) : null}

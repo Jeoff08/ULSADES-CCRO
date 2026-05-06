@@ -1,30 +1,30 @@
 import React from 'react'
-import { LOGO_RIGHT_SRC, SEAL_LEFT_SRC } from '../../../components/print/constants'
+const SEAL_LEFT_SRC = '/Screenshot_2026-05-05_114926-removebg-preview.png'
+const LOGO_RIGHT_SRC = '/logo-shortcut.png'
 
 /**
  * LCRO letterhead matching RA samples — header only (no footer).
  * @param {{ formCornerLeft?: string, children?: React.ReactNode }} props
  */
-export default function LcroRaHeader({ formCornerLeft, children }) {
+export default function LcroRaHeader({ children }) {
   return (
-    <header className="correction-print-header mb-3">
-      {formCornerLeft ? (
-        <p className="text-left text-[11px] font-bold mb-2 m-0">{formCornerLeft}</p>
-      ) : null}
-      <div className="flex justify-between items-start gap-3">
-        <img src={SEAL_LEFT_SRC} alt="" className="w-[72px] h-[72px] object-contain shrink-0" />
-        <div className="flex-1 text-center min-w-0 px-1">
-          <p className="text-[11px] font-semibold m-0 leading-tight">Republic of the Philippines</p>
-          <p className="text-[11px] font-semibold m-0 leading-tight">Province of Lanao del Norte</p>
-          <p className="text-[11px] font-semibold m-0 leading-tight">City of Iligan</p>
-          <p className="text-[12px] font-bold m-0 mt-1 leading-tight uppercase tracking-tight">
-            Office of the Local Civil Registrar
+    <header className="correction-print-header mb-8">
+      <div className="h-2 mb-2 overflow-hidden" />
+      <div className="flex justify-between items-center mb-1">
+        <img src={SEAL_LEFT_SRC} alt="" className="w-[100px] h-[100px] object-contain shrink-0" />
+        <div className="text-center flex-1">
+          <p className="text-[12px] font-bold m-0 leading-tight">Republic of the Philippines</p>
+          <p className="text-[12px] font-bold m-0 leading-tight">Province of Lanao del Norte</p>
+          <p className="text-[12px] font-bold m-0 leading-tight">City of Iligan</p>
+          <p className="text-[13px] font-bold m-0 uppercase mt-1 leading-tight tracking-tight">
+            OFFICE OF THE LOCAL CIVIL REGISTRAR
           </p>
           {children}
         </div>
-        <img src={LOGO_RIGHT_SRC} alt="" className="w-[72px] h-[72px] object-contain shrink-0" />
+        <img src={LOGO_RIGHT_SRC} alt="" className="w-[100px] h-[100px] object-contain shrink-0" />
       </div>
-      <hr className="border-black border-t mt-2 mb-2" />
+      <div className="border-t-[1px] border-black mb-[1px]" aria-hidden="true" />
+      <div className="border-t-[1px] border-black" aria-hidden="true" />
     </header>
   )
 }

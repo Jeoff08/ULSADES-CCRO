@@ -6,11 +6,16 @@ import {
   saveOrUpdateSupplemental,
   saveSupplementalDraft,
 } from './lib/supplementalSavedStorage'
-import { listLegitimationSourcesForForm1a, searchLegitimationForForm1a } from './lib/supplementalForm1a'
 import {
   getDefaultSupplementalTransmittalFields,
   pickTransmittalStateFromDraft,
 } from './lib/supplementalTransmittalDefaults'
+import { defaultLegitimation } from '../legitimation/lib/legitimationDefaults'
+import { defaultCourtDecree } from '../courtDecree/lib/courtDecreeDefaults'
+import { getSavedAUSFList, getAUSFDraft } from '../ausf/lib/ausfStorage'
+import { getSavedCourtDecreeList, getCourtDecreeDraft } from '../courtDecree/lib/courtDecreeStorage'
+import { getSavedLegitimationList, getLegitimationDraft } from '../legitimation/lib/legitimationStorage'
+import { mapSourceToSupplementalLcrData } from './lib/supplementalLcrPrefill'
 import SupplementalTransmittalFieldsEditor from './SupplementalTransmittalFieldsEditor'
 
 const defaultSupplementalDraft = {
@@ -31,7 +36,12 @@ const defaultSupplementalDraft = {
   missingGeo: '',
   correctedGeo: '',
   includeForm1a: false,
-  form1aMatchName: '',
+  lcrType: '1A', // '1A', '2A', or '3A'
+  lcrData: { ...defaultLegitimation },
+  /** Where to pull LCR table data from when using “Prefill from record”. */
+  lcrSource: 'courtDecree', // 'ausf' | 'courtDecree' | 'legitimation'
+  lcrSourceId: '',
+  lcrPrefillLabel: '',
   ...getDefaultSupplementalTransmittalFields(),
 }
 
@@ -43,13 +53,35 @@ export default function SupplementalForm() {
     return { ...loaded, ...pickTransmittalStateFromDraft(loaded) }
   })
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const [form1aModalOpen, setForm1aModalOpen] = useState(false)
-  const [form1aRemoveModalOpen, setForm1aRemoveModalOpen] = useState(false)
   const [activeSection, setActiveSection] = useState('affidavit')
-  const [colbMatchFocused, setColbMatchFocused] = useState(false)
   const activeSavedId = getActiveSupplementalId()
-  const form1aColbMatchInputRef = useRef(null)
   const affiantNameInputRef = useRef(null)
+  const [lcrSearchQuery, setLcrSearchQuery] = useState('')
+  const [lcrSearchFocused, setLcrSearchFocused] = useState(false)
+
+  const lcrRecords = useMemo(() => {
+    const sources = {
+      ausf: { list: getSavedAUSFList(), draft: getAUSFDraft() },
+      courtDecree: { list: getSavedCourtDecreeList(), draft: getCourtDecreeDraft() },
+      legitimation: { list: getSavedLegitimationList(), draft: getLegitimationDraft() },
+    }
+    const key = form.lcrSource === 'ausf' || form.lcrSource === 'legitimation' ? form.lcrSource : 'courtDecree'
+    const { list, draft } = sources[key]
+    const rows = []
+    if (draft && typeof draft === 'object') {
+      rows.push({ id: '__draft__', label: '[Current draft]', data: draft })
+    }
+    list.forEach((r) => {
+      if (r?.data) rows.push({ id: r.id, label: r.label || r.id, data: r.data })
+    })
+    return rows
+  }, [form.lcrSource])
+
+  const filteredLcrRecords = useMemo(() => {
+    const q = lcrSearchQuery.trim().toLowerCase()
+    if (!q) return lcrRecords
+    return lcrRecords.filter((r) => String(r.label || '').toLowerCase().includes(q))
+  }, [lcrRecords, lcrSearchQuery])
 
   useEffect(() => {
     const loaded = getSupplementalDraft(defaultSupplementalDraft)
@@ -94,42 +126,78 @@ export default function SupplementalForm() {
     setConfirmOpen(true)
   }
 
-  const handleEnableForm1a = () => {
-    update('includeForm1a', true)
-    setForm1aModalOpen(false)
-    window.setTimeout(() => {
-      const needsColbMatch = type === 'geographical' || type === 'middleName'
-      const target = needsColbMatch ? form1aColbMatchInputRef.current : affiantNameInputRef.current
-      target?.focus?.()
-      target?.select?.()
-    }, 0)
-  }
-
-  const handleRemoveForm1a = () => {
+  const handleEnableLcr = (type) => {
     setForm((prev) => {
-      const next = { ...prev, includeForm1a: false, form1aMatchName: '' }
+      let lcrData = type === '1A' ? { ...defaultLegitimation } : { ...defaultCourtDecree }
+      if (prev.lcrSourceId && prev.lcrSource) {
+        const sources = {
+          ausf: { list: getSavedAUSFList(), draft: getAUSFDraft() },
+          courtDecree: { list: getSavedCourtDecreeList(), draft: getCourtDecreeDraft() },
+          legitimation: { list: getSavedLegitimationList(), draft: getLegitimationDraft() },
+        }
+        const key = prev.lcrSource === 'ausf' || prev.lcrSource === 'legitimation' ? prev.lcrSource : 'courtDecree'
+        const { list, draft } = sources[key]
+        const rows = []
+        if (draft && typeof draft === 'object') rows.push({ id: '__draft__', label: '[Current draft]', data: draft })
+        list.forEach((r) => {
+          if (r?.data) rows.push({ id: r.id, label: r.label || r.id, data: r.data })
+        })
+        const rec = rows.find((r) => r.id === prev.lcrSourceId)
+        if (rec) lcrData = mapSourceToSupplementalLcrData(prev.lcrSource, rec.data, type)
+      }
+      const next = {
+        ...prev,
+        includeForm1a: true,
+        lcrType: type,
+        lcrData,
+        ...(prev.lcrSourceId ? {} : { lcrSourceId: '', lcrPrefillLabel: '' }),
+      }
       saveSupplementalDraft(next)
       return next
     })
-    setForm1aRemoveModalOpen(false)
+    window.setTimeout(() => {
+      affiantNameInputRef.current?.focus?.()
+      affiantNameInputRef.current?.select?.()
+    }, 0)
+  }
+
+  const handleRemoveLcr = () => {
+    setForm((prev) => {
+      const next = { ...prev, includeForm1a: false, lcrSourceId: '', lcrPrefillLabel: '' }
+      saveSupplementalDraft(next)
+      return next
+    })
+    setLcrSearchQuery('')
+  }
+
+  const handleLcrSourceChange = (src) => {
+    setForm((prev) => {
+      const next = { ...prev, lcrSource: src, lcrSourceId: '', lcrPrefillLabel: '' }
+      saveSupplementalDraft(next)
+      return next
+    })
+    setLcrSearchQuery('')
+  }
+
+  const handleSelectLcrRecord = (record) => {
+    const mapped = mapSourceToSupplementalLcrData(form.lcrSource, record.data, form.lcrType)
+    setForm((prev) => {
+      const next = {
+        ...prev,
+        lcrData: mapped,
+        lcrSourceId: record.id,
+        lcrPrefillLabel: record.label || '',
+      }
+      saveSupplementalDraft(next)
+      return next
+    })
+    setLcrSearchFocused(false)
+    setLcrSearchQuery(record.label || '')
   }
 
   const inputClass = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white'
   const type = form.supplementType || 'geographical'
   const showItem1ChoiceBlock = type === 'sex'
-  const legitimationSourceCount = useMemo(
-    () => (form.includeForm1a ? listLegitimationSourcesForForm1a().length : 0),
-    [form.includeForm1a]
-  )
-  const colbMatchList = useMemo(
-    () =>
-      form.includeForm1a && (type === 'geographical' || type === 'middleName')
-        ? searchLegitimationForForm1a(form.form1aMatchName || '')
-        : [],
-    [form.includeForm1a, form.form1aMatchName, type]
-  )
-  const showColbLegitimationDropdown =
-    form.includeForm1a && colbMatchFocused && (type === 'geographical' || type === 'middleName')
   const missingLabel =
     type === 'sex'
       ? 'Missing on COLB (optional — leave blank for NOT STATED)'
@@ -179,88 +247,62 @@ export default function SupplementalForm() {
             </span>
           </button>
           {!form.includeForm1a ? (
-            <button
-              type="button"
-              onClick={() => setForm1aModalOpen(true)}
-              className="w-full text-left rounded-xl border-2 border-slate-300 bg-white px-4 py-3.5 shadow-sm hover:bg-slate-50 transition-colors"
-            >
-              <span className="block text-sm font-bold text-slate-700">LCR Form 1A</span>
-              <span className="block text-xs text-gray-600 mt-1 leading-snug">
-                Tap to add Birth-Available form to the print bundle
-              </span>
-            </button>
+            <div className="flex flex-col gap-2 p-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 px-1">Add LCR Form</p>
+              <button
+                type="button"
+                onClick={() => handleEnableLcr('1A')}
+                className="w-full text-left rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm hover:border-[var(--primary-blue)] hover:bg-slate-50 transition-all group"
+              >
+                <span className="block text-xs font-bold text-slate-700 group-hover:text-[var(--primary-blue)]">Form 1A (Birth)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleEnableLcr('2A')}
+                className="w-full text-left rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm hover:border-[var(--primary-blue)] hover:bg-slate-50 transition-all group"
+              >
+                <span className="block text-xs font-bold text-slate-700 group-hover:text-[var(--primary-blue)]">Form 2A (Death)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleEnableLcr('3A')}
+                className="w-full text-left rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm hover:border-[var(--primary-blue)] hover:bg-slate-50 transition-all group"
+              >
+                <span className="block text-xs font-bold text-slate-700 group-hover:text-[var(--primary-blue)]">Form 3A (Marriage)</span>
+              </button>
+            </div>
           ) : (
             <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                disabled
-                className="w-full text-left rounded-xl border-2 border-emerald-500 bg-emerald-50/90 px-4 py-3.5 shadow-sm cursor-default"
-              >
-                <span className="block text-sm font-bold text-emerald-900">LCR Form 1A</span>
-                <span className="block text-xs text-emerald-800 mt-1 font-medium">Included in bundle</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setForm1aRemoveModalOpen(true)}
-                className="w-full rounded-lg px-3 py-2 text-xs font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
-              >
-                Remove Form 1A
-              </button>
-              {(type === 'geographical' || type === 'middleName') && (
-                <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 mt-1 relative">
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    COLB name match (optional)
-                  </label>
-                  <input
-                    ref={form1aColbMatchInputRef}
-                    className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm text-gray-800 bg-white"
-                    value={form.form1aMatchName || ''}
-                    onChange={(e) => update('form1aMatchName', e.target.value)}
-                    onFocus={() => setColbMatchFocused(true)}
-                    onBlur={() => {
-                      window.setTimeout(() => setColbMatchFocused(false), 180)
-                    }}
-                    placeholder="Type to filter; pick from list or type freely"
-                    autoComplete="off"
-                  />
-                  {showColbLegitimationDropdown && colbMatchList.length > 0 ? (
-                    <ul
-                      className="absolute left-3 right-3 top-full z-20 mt-1 max-h-48 overflow-y-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg"
-                      role="listbox"
+              <div className="w-full text-left rounded-xl border-2 border-emerald-500 bg-emerald-50/90 px-4 py-3.5 shadow-sm">
+                <span className="block text-sm font-bold text-emerald-900">Form {form.lcrType} Included</span>
+                <span className="block text-xs text-emerald-800 mt-1 font-medium">Bundle updated</span>
+                <button
+                  type="button"
+                  onClick={handleRemoveLcr}
+                  className="mt-3 w-full rounded-lg px-3 py-1.5 text-xs font-semibold border border-emerald-200 text-emerald-700 bg-white hover:bg-emerald-100 transition-colors"
+                >
+                  Remove Form {form.lcrType}
+                </button>
+              </div>
+              <div className="mt-1">
+                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Change LCR Type</label>
+                <div className="grid grid-cols-3 gap-1">
+                  {['1A', '2A', '3A'].map(t => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => handleEnableLcr(t)}
+                      className={`py-1.5 text-[11px] font-bold rounded border transition-all ${
+                        form.lcrType === t 
+                          ? 'bg-[var(--primary-blue)] text-white border-[var(--primary-blue)]' 
+                          : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                      }`}
                     >
-                      {colbMatchList.map((row) => (
-                        <li key={row.sourceId} role="option">
-                          <button
-                            type="button"
-                            className="w-full text-left px-2 py-2 text-sm text-gray-800 hover:bg-[var(--primary-blue)]/10"
-                            onMouseDown={(e) => e.preventDefault()}
-                            onClick={() => {
-                              const v = (row.childName || row.label || '').trim()
-                              update('form1aMatchName', v)
-                              setColbMatchFocused(false)
-                            }}
-                          >
-                            <span className="font-medium">{row.childName || row.label}</span>
-                            {row.sourceType ? (
-                              <span className="block text-xs text-[var(--primary-blue)]">{row.sourceType}</span>
-                            ) : null}
-                            {row.childName && row.label && row.childName !== row.label ? (
-                              <span className="block text-xs text-gray-500">{row.label}</span>
-                            ) : null}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                  {showColbLegitimationDropdown && colbMatchList.length === 0 ? (
-                    <p className="absolute left-3 right-3 top-full z-20 mt-1 rounded-md border border-gray-200 bg-white px-2 py-2 text-sm text-gray-600 shadow-lg">
-                      {legitimationSourceCount === 0
-                        ? 'No Legitimation/Court Decree draft or saved files yet.'
-                        : 'No registered name matches that text. Clear the field to see everyone, or type a different name.'}
-                    </p>
-                  ) : null}
+                      {t}
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
             </div>
           )}
 
@@ -294,6 +336,95 @@ export default function SupplementalForm() {
                 </select>
                 <p className="text-xs text-gray-500 mt-1">Output for items 3 and 5 follows this choice.</p>
               </div>
+
+              {form.includeForm1a ? (
+                <div className="md:col-span-2 p-4 rounded-xl border border-emerald-200 bg-emerald-50/40 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-sm font-bold text-emerald-900">
+                      LCR Form {form.lcrType} — pull from module
+                    </h3>
+                    {form.lcrPrefillLabel ? (
+                      <span className="text-[11px] font-medium text-emerald-800 truncate max-w-[14rem]" title={form.lcrPrefillLabel}>
+                        Prefilled: {form.lcrPrefillLabel}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-gray-700 uppercase mb-1">Source module</label>
+                      <select
+                        className={inputClass}
+                        value={form.lcrSource === 'ausf' || form.lcrSource === 'legitimation' ? form.lcrSource : 'courtDecree'}
+                        onChange={(e) => handleLcrSourceChange(e.target.value)}
+                      >
+                        <option value="ausf">AUSF</option>
+                        <option value="courtDecree">Court Decree</option>
+                        <option value="legitimation">Legitimation</option>
+                      </select>
+                    </div>
+                    <div className="relative">
+                      <label className="block text-[11px] font-semibold text-gray-700 uppercase mb-1">Prefill from record</label>
+                      <input
+                        type="text"
+                        className={`${inputClass} pr-8`}
+                        placeholder="Search; click a row to load LCR fields"
+                        value={lcrSearchQuery}
+                        onChange={(e) => setLcrSearchQuery(e.target.value)}
+                        onFocus={() => setLcrSearchFocused(true)}
+                        onBlur={() => window.setTimeout(() => setLcrSearchFocused(false), 200)}
+                      />
+                      {lcrSearchQuery ? (
+                        <button
+                          type="button"
+                          className="absolute right-2 top-[1.85rem] text-gray-400 hover:text-gray-600"
+                          aria-label="Clear search"
+                          onClick={() => setLcrSearchQuery('')}
+                        >
+                          ×
+                        </button>
+                      ) : null}
+                      {lcrSearchFocused ? (
+                        <ul
+                          className="absolute z-30 left-0 right-0 mt-1 max-h-52 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg"
+                          role="listbox"
+                        >
+                          {filteredLcrRecords.length === 0 ? (
+                            <li className="px-3 py-2 text-xs text-gray-500">No records match.</li>
+                          ) : (
+                            filteredLcrRecords.map((r) => (
+                              <li key={r.id} className="border-b border-gray-100 last:border-0">
+                                <button
+                                  type="button"
+                                  className="w-full text-left px-3 py-2 text-sm hover:bg-emerald-50"
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() => handleSelectLcrRecord(r)}
+                                >
+                                  <span className="font-medium text-gray-900 block truncate">{r.label}</span>
+                                  {r.id === '__draft__' ? (
+                                    <span className="text-[10px] font-bold text-emerald-600 uppercase">Draft</span>
+                                  ) : null}
+                                </button>
+                              </li>
+                            ))
+                          )}
+                        </ul>
+                      ) : null}
+                    </div>
+                  </div>
+                  {(form.lcrSource === 'ausf' || form.lcrSource === 'legitimation') &&
+                  (form.lcrType === '2A' || form.lcrType === '3A') ? (
+                    <p className="text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5">
+                      Form {form.lcrType} is only fully prefilled from <strong className="font-semibold">Court Decree</strong>. With AUSF or Legitimation,
+                      shared header fields are copied and the table starts mostly blank — you can still edit every cell on the print screen.
+                    </p>
+                  ) : (
+                    <p className="text-[11px] text-gray-600 leading-snug">
+                      Choosing a row copies that record into this supplemental&apos;s LCR output (your originals are not changed). Edit the table on the print page.
+                    </p>
+                  )}
+                </div>
+              ) : null}
+
               <div><label className="block text-sm font-medium mb-1">REG. NO.</label><input className={inputClass} value={form.regNo} onChange={(e) => update('regNo', e.target.value)} placeholder="e.g. 2380-67" /></div>
               <div>
                 <label className="block text-sm font-medium mb-1">Certificate belongs to</label>
@@ -476,87 +607,6 @@ export default function SupplementalForm() {
         </div>
       )}
 
-      {form1aModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-slate-900/45 backdrop-blur-[1px]"
-            onClick={() => setForm1aModalOpen(false)}
-          />
-          <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
-            <div className="h-1.5 w-full bg-gradient-to-r from-[var(--primary-blue)] via-cyan-500 to-emerald-500" />
-            <div className="p-5 sm:p-6">
-              <div className="inline-flex items-center rounded-full border border-[var(--primary-blue)]/25 bg-[var(--primary-blue)]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--primary-blue)]">
-                Print bundle
-              </div>
-              <h3 className="mt-3 text-lg font-bold text-slate-900">Add LCR Form No. 1A</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                Include LCR Form No. 1A (Birth-Available) after the supplemental affidavit.
-                Form 1A can auto-fill from Legitimation or Court Decree when a single matching record is found.
-              </p>
-              <p className="mt-2 text-xs text-slate-500">
-                After you continue, the form will focus the first relevant field so you can type immediately.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/70 px-5 py-4 sm:px-6">
-              <button
-                type="button"
-                onClick={() => setForm1aModalOpen(false)}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleEnableForm1a}
-                className="rounded-lg bg-[var(--primary-blue)] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[var(--primary-blue-light)]"
-              >
-                Continue and Enable
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {form1aRemoveModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-rose-950/35 backdrop-blur-[1px]"
-            onClick={() => setForm1aRemoveModalOpen(false)}
-          />
-          <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-rose-200 bg-white shadow-2xl">
-            <div className="h-1.5 w-full bg-gradient-to-r from-rose-500 via-orange-400 to-amber-400" />
-            <div className="p-5 sm:p-6">
-              <div className="inline-flex items-center rounded-full border border-rose-300 bg-rose-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-rose-700">
-                Remove from bundle
-              </div>
-              <h3 className="mt-3 text-lg font-bold text-slate-900">Remove LCR Form 1A?</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                This will remove Form 1A from the supplemental print output and clear the current COLB name match field.
-              </p>
-              <p className="mt-2 text-xs text-slate-500">
-                You can enable it again anytime.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center justify-end gap-2 border-t border-rose-100 bg-rose-50/40 px-5 py-4 sm:px-6">
-              <button
-                type="button"
-                onClick={() => setForm1aRemoveModalOpen(false)}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-              >
-                Keep Form 1A
-              </button>
-              <button
-                type="button"
-                onClick={handleRemoveForm1a}
-                className="rounded-lg bg-rose-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-700"
-              >
-                Yes, Remove
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   )
 }
-

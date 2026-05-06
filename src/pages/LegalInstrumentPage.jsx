@@ -1,9 +1,14 @@
 import React from 'react'
 import { useParams, Link } from 'react-router-dom'
 import SupplementalForm from './legalInstrument/SupplementalForm'
+import LcrSearchAndPrint from './legalInstrument/LcrSearchAndPrint'
 
 const TITLES = {
   supplemental: 'Supplemental',
+  negative: 'Negative',
+  'mc2010-04': 'MC2010-04',
+  'negative-2': 'Negative',
+  'clear-copy': 'Clear Copy',
 }
 
 export default function LegalInstrumentPage() {
@@ -12,6 +17,11 @@ export default function LegalInstrumentPage() {
 
   if (slug === 'supplemental') {
     return <SupplementalForm />
+  }
+
+  // New flow for the other legal instruments
+  if (TITLES[slug]) {
+    return <LcrSearchAndPrint title={title} type={slug} />
   }
 
   return (

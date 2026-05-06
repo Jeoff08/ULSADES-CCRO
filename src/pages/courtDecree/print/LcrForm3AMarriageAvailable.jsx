@@ -3,10 +3,36 @@ import { formatDateCert, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { buildLcr3aTableDisplay } from '../lib/lcr3aTable'
 
+function cellEditText(displayed) {
+  const s = String(displayed ?? '').trim()
+  if (!s || s === '—') return ''
+  return s
+}
+
+const LCR_3A_EDITABLE_PAIRS = [
+  { label: 'Name:', hk: 'husbandName', wk: 'wifeName', hp: (v) => ({ lcr3aHusbandName: v }), wp: (v) => ({ lcr3aWifeName: v }) },
+  { label: 'Date of Birth/Age:', hk: 'husbandDobAge', wk: 'wifeDobAge', hp: (v) => ({ lcr3aHusbandDobAge: v }), wp: (v) => ({ lcr3aWifeDobAge: v }) },
+  { label: 'Citizenship:', hk: 'husbandCitizenship', wk: 'wifeCitizenship', hp: (v) => ({ lcr3aHusbandCitizenship: v }), wp: (v) => ({ lcr3aWifeCitizenship: v }) },
+  { label: 'Civil Status:', hk: 'husbandCivilStatus', wk: 'wifeCivilStatus', hp: (v) => ({ lcr3aHusbandCivilStatus: v }), wp: (v) => ({ lcr3aWifeCivilStatus: v }) },
+  { label: 'Mother:', hk: 'husbandMother', wk: 'wifeMother', hp: (v) => ({ lcr3aHusbandMother: v }), wp: (v) => ({ lcr3aWifeMother: v }) },
+  { label: 'Father:', hk: 'husbandFather', wk: 'wifeFather', hp: (v) => ({ lcr3aHusbandFather: v }), wp: (v) => ({ lcr3aWifeFather: v }) },
+]
+
+const LCR_3A_EDITABLE_FULL = [
+  { k: 'registry', label: 'Registry Number', patch: (v) => ({ lcr3aRegistryNumber: v, marriageRegistryNo: v }) },
+  { k: 'dateRegistration', label: 'Date of Registration', patch: (v) => ({ lcr3aDateRegistration: v }) },
+  { k: 'dateMarriage', label: 'Date of Marriage', patch: (v) => ({ lcr3aDateMarriage: v, dateOfMarriage: v }) },
+  { k: 'placeMarriage', label: 'Place of Marriage', patch: (v) => ({ lcr3aPlaceMarriage: v }) },
+]
+
 /** LCR Form No. 3A (Marriage-Available). Full print; table via buildLcr3aTableDisplay. */
-export default function LcrForm3AMarriageAvailable({ data }) {
+export default function LcrForm3AMarriageAvailable({ data, editableTable = false, onDataChange }) {
   const t = buildLcr3aTableDisplay(data)
   const [editableRemarks, setEditableRemarks] = useState(data?.remarks || '')
+
+  const patchData = (partial) => {
+    onDataChange?.({ ...data, ...partial })
+  }
 
   useEffect(() => {
     setEditableRemarks(data?.remarks || '')
@@ -60,68 +86,112 @@ export default function LcrForm3AMarriageAvailable({ data }) {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td className="py-1 px-2 border border-black font-medium align-top">Name:</td>
-                <td className={`${cell} uppercase`}>{t.husbandName}</td>
-                <td className={`${cell} uppercase`}>{t.wifeName}</td>
-              </tr>
-              <tr>
-                <td className="py-1 px-2 border border-black font-medium align-top">Date of Birth/Age:</td>
-                <td className={cell}>{t.husbandDobAge}</td>
-                <td className={cell}>{t.wifeDobAge}</td>
-              </tr>
-              <tr>
-                <td className="py-1 px-2 border border-black font-medium align-top">Citizenship:</td>
-                <td className={`${cell} uppercase`}>{t.husbandCitizenship}</td>
-                <td className={`${cell} uppercase`}>{t.wifeCitizenship}</td>
-              </tr>
-              <tr>
-                <td className="py-1 px-2 border border-black font-medium align-top">Civil Status:</td>
-                <td className={`${cell} uppercase`}>{t.husbandCivilStatus}</td>
-                <td className={`${cell} uppercase`}>{t.wifeCivilStatus}</td>
-              </tr>
-              <tr>
-                <td className="py-1 px-2 border border-black font-medium align-top">Mother:</td>
-                <td className={`${cell} uppercase`}>{t.husbandMother}</td>
-                <td className={`${cell} uppercase`}>{t.wifeMother}</td>
-              </tr>
-              <tr>
-                <td className="py-1 px-2 border border-black font-medium align-top">Father:</td>
-                <td className={`${cell} uppercase`}>{t.husbandFather}</td>
-                <td className={`${cell} uppercase`}>{t.wifeFather}</td>
-              </tr>
-              <tr>
-                <td className="py-1 px-2 border border-black font-medium align-top">Registry Number</td>
-                <td className={`${cell} uppercase`} colSpan={2}>
-                  {t.registry}
-                </td>
-              </tr>
-              <tr>
-                <td className="py-1 px-2 border border-black font-medium align-top leading-tight">
-                  Date of
-                  <br />
-                  Registration
-                </td>
-                <td className={cell} colSpan={2}>
-                  {t.dateRegistration}
-                </td>
-              </tr>
-              <tr>
-                <td className="py-1 px-2 border border-black font-medium align-top">Date of Marriage</td>
-                <td className={cell} colSpan={2}>
-                  {t.dateMarriage}
-                </td>
-              </tr>
-              <tr>
-                <td className="py-1 px-2 border border-black font-medium align-top leading-tight">
-                  Place of
-                  <br />
-                  Marriage
-                </td>
-                <td className={`${cell} uppercase text-left sm:text-center align-top min-h-[2.5rem] whitespace-pre-wrap`} colSpan={2}>
-                  {t.placeMarriage}
-                </td>
-              </tr>
+              {editableTable && onDataChange ? (
+                <>
+                  {LCR_3A_EDITABLE_PAIRS.map((row, idx) => (
+                    <tr key={idx}>
+                      <td className="py-1 px-2 border border-black font-medium align-top">{row.label}</td>
+                      <td className={`${cell} uppercase`}>
+                        <input
+                          type="text"
+                          className="no-print w-full min-w-0 text-center font-bold border-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none focus:border-[var(--primary-blue)] px-1"
+                          value={cellEditText(t[row.hk])}
+                          onChange={(e) => patchData(row.hp(e.target.value))}
+                        />
+                        <span className="hidden print:inline">{t[row.hk]}</span>
+                      </td>
+                      <td className={`${cell} uppercase`}>
+                        <input
+                          type="text"
+                          className="no-print w-full min-w-0 text-center font-bold border-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none focus:border-[var(--primary-blue)] px-1"
+                          value={cellEditText(t[row.wk])}
+                          onChange={(e) => patchData(row.wp(e.target.value))}
+                        />
+                        <span className="hidden print:inline">{t[row.wk]}</span>
+                      </td>
+                    </tr>
+                  ))}
+                  {LCR_3A_EDITABLE_FULL.map((row) => (
+                    <tr key={row.k}>
+                      <td className="py-1 px-2 border border-black font-medium align-top">{row.label}</td>
+                      <td className={`${cell} uppercase`} colSpan={2}>
+                        <input
+                          type="text"
+                          className="no-print w-full min-w-0 text-center font-bold border-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none focus:border-[var(--primary-blue)] px-1"
+                          value={cellEditText(t[row.k])}
+                          onChange={(e) => patchData(row.patch(e.target.value))}
+                        />
+                        <span className="hidden print:inline">{t[row.k]}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <tr>
+                    <td className="py-1 px-2 border border-black font-medium align-top">Name:</td>
+                    <td className={`${cell} uppercase`}>{t.husbandName}</td>
+                    <td className={`${cell} uppercase`}>{t.wifeName}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-1 px-2 border border-black font-medium align-top">Date of Birth/Age:</td>
+                    <td className={cell}>{t.husbandDobAge}</td>
+                    <td className={cell}>{t.wifeDobAge}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-1 px-2 border border-black font-medium align-top">Citizenship:</td>
+                    <td className={`${cell} uppercase`}>{t.husbandCitizenship}</td>
+                    <td className={`${cell} uppercase`}>{t.wifeCitizenship}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-1 px-2 border border-black font-medium align-top">Civil Status:</td>
+                    <td className={`${cell} uppercase`}>{t.husbandCivilStatus}</td>
+                    <td className={`${cell} uppercase`}>{t.wifeCivilStatus}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-1 px-2 border border-black font-medium align-top">Mother:</td>
+                    <td className={`${cell} uppercase`}>{t.husbandMother}</td>
+                    <td className={`${cell} uppercase`}>{t.wifeMother}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-1 px-2 border border-black font-medium align-top">Father:</td>
+                    <td className={`${cell} uppercase`}>{t.husbandFather}</td>
+                    <td className={`${cell} uppercase`}>{t.wifeFather}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-1 px-2 border border-black font-medium align-top">Registry Number</td>
+                    <td className={`${cell} uppercase`} colSpan={2}>
+                      {t.registry}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-1 px-2 border border-black font-medium align-top leading-tight">
+                      Date of
+                      <br />
+                      Registration
+                    </td>
+                    <td className={cell} colSpan={2}>
+                      {t.dateRegistration}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-1 px-2 border border-black font-medium align-top">Date of Marriage</td>
+                    <td className={cell} colSpan={2}>
+                      {t.dateMarriage}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-1 px-2 border border-black font-medium align-top leading-tight">
+                      Place of
+                      <br />
+                      Marriage
+                    </td>
+                    <td className={`${cell} uppercase text-left sm:text-center align-top min-h-[2.5rem] whitespace-pre-wrap`} colSpan={2}>
+                      {t.placeMarriage}
+                    </td>
+                  </tr>
+                </>
+              )}
             </tbody>
           </table>
           <p className="mb-2 text-sm court-decree-lcr-body">
@@ -132,7 +202,11 @@ export default function LcrForm3AMarriageAvailable({ data }) {
             <div className="no-print mb-1">
               <textarea
                 value={editableRemarks}
-                onChange={(e) => setEditableRemarks(e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value
+                  setEditableRemarks(v)
+                  onDataChange?.({ ...data, remarks: v })
+                }}
                 rows={3}
                 className="w-full border border-gray-300 rounded px-2 py-1 text-[14px]"
                 placeholder="Type or edit remarks here..."
@@ -152,7 +226,7 @@ export default function LcrForm3AMarriageAvailable({ data }) {
               <p className="font-bold text-sm border-b border-black inline-block uppercase">{regOfficer}</p>
               <p className="text-xs mt-0">LCRO - Staff</p>
             </div>
-            <div className="flex flex-col items-center text-center">
+            <div className="court-decree-lcr-3a-ccr-right flex flex-col items-center text-center">
               <p className="font-bold text-sm border-b border-black inline-block uppercase">{ccrName}</p>
               <p className="text-xs mt-0 italic">City Civil Registrar</p>
             </div>

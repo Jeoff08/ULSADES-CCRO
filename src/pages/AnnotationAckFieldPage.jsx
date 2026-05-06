@@ -820,7 +820,7 @@ export default function AnnotationAckFieldPage() {
 
         <div className="flex-1 flex flex-col px-4 py-6 max-w-[210mm] mx-auto w-full">
           <h2 className="text-base font-bold uppercase mb-3 text-center print:hidden">
-            Annotation (Child Acknowledged) — COLB Office File
+            Annotation Ack Field — COLB Office File
           </h2>
 
           <div className="no-print mb-4">

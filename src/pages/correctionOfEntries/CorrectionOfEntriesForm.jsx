@@ -18,6 +18,43 @@ function Field({ label, children, className = '' }) {
   )
 }
 
+function StyledSection({ title, children, footer = false }) {
+  return (
+    <section className="mb-8 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md">
+      <div className="bg-[#1e3a8a] py-2.5 text-center text-sm font-bold uppercase text-white tracking-widest">
+        {title}
+      </div>
+      <div className="divide-y divide-gray-100">
+        {children}
+      </div>
+      {footer && (
+        <div className="bg-[#1e3a8a] py-3 text-center">
+          <p className="text-[10px] italic text-white leading-tight">
+            City Civil Registrar&apos;s Office - Iligan City, Always Ready and Happy to Serve You...
+          </p>
+          <p className="text-[10px] italic text-white mt-0.5">
+            We serve with Love, Care &amp; Respect
+          </p>
+        </div>
+      )}
+    </section>
+  )
+}
+
+function StyledRow({ label, children, isEven = false, className = '' }) {
+  const labelBg = isEven ? 'bg-[#3b82f6]/10' : 'bg-[#3b82f6]/20'
+  return (
+    <div className={`flex flex-col sm:flex-row sm:min-h-[2.5rem] ${className}`}>
+      <div className={`${labelBg} px-4 py-2 flex items-center text-xs font-bold text-[#1e3a8a] sm:w-1/3 min-h-[2.5rem]`}>
+        {label}
+      </div>
+      <div className="flex-1 px-2 py-1 flex items-center bg-white">
+        {children}
+      </div>
+    </div>
+  )
+}
+
 export default function CorrectionOfEntriesForm() {
   const [data, setData] = useState(getCorrectionOfEntriesDraft)
 
@@ -49,6 +86,8 @@ export default function CorrectionOfEntriesForm() {
     persist({ corrections: list.length ? list : [defaultCorrectionRow()] })
   }
 
+  const cleanInputCls =
+    'w-full text-sm focus:outline-none bg-transparent text-gray-900 placeholder:text-gray-400 px-1'
   const inputCls =
     'border border-gray-300 rounded-lg px-2 py-1.5 text-sm bg-white text-gray-900 focus:ring-2 focus:ring-[#0d9488]/30 focus:border-[#0d9488]'
 
@@ -68,559 +107,214 @@ export default function CorrectionOfEntriesForm() {
           <p className="text-sm text-gray-600 mt-1">
             RA 9048 / RA 10172 — petition for correction of clerical error (COLB).{' '}
             <strong className="font-semibold text-gray-800">Enter data only on this form.</strong> Every certificate,
-            petition page, and transmittal is generated from these fields. Print opens the full packet (one PDF with all
-            outputs), or you can open a single document from the list there.
+            petition page, and transmittal is generated from these fields.
           </p>
         </div>
         <Link
           to={`/correction-of-entries/print?view=${CORRECTION_COMPLETE_PACKET_ID}`}
-          className="shrink-0 px-4 py-2.5 rounded-lg bg-[#0d9488] text-white text-sm font-semibold hover:bg-[#0f766e] transition"
+          className="shrink-0 px-4 py-2.5 rounded-lg bg-[#0d9488] text-white text-sm font-semibold hover:bg-[#0f766e] transition shadow-md"
         >
           Print / outputs
         </Link>
       </div>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-4 md:p-5 shadow-sm mb-5">
-        <h2 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">General information</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field label="Type of petition">
-            <select value={data.typeOfPetition} onChange={(e) => persist({ typeOfPetition: e.target.value })} className={inputCls}>
-              <option value="RA 9048">RA 9048</option>
-              <option value="RA 10172">RA 10172</option>
-              <option value="RA 9048/RA 10172">RA 9048/RA 10172</option>
-              <option value="RA 9048 CFN">RA 9048 CFN</option>
-            </select>
-          </Field>
-          <Field label="Migrant petition?">
-            <select value={data.migrantPetition} onChange={(e) => persist({ migrantPetition: e.target.value })} className={inputCls}>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
-          </Field>
-          <Field label="Petition no. (series)">
-            <input
-              className={inputCls}
-              value={data.petitionNumber}
-              onChange={(e) => persist({ petitionNumber: e.target.value })}
-              placeholder="e.g. 0141"
-            />
-          </Field>
-          <Field label="Petition year">
-            <input
-              type="number"
-              className={inputCls}
-              value={data.petitionYear}
-              onChange={(e) => persist({ petitionYear: Number(e.target.value) || new Date().getFullYear() })}
-            />
-          </Field>
-          <Field label="Type of document" className="sm:col-span-2">
-            <select
-              className={inputCls}
-              value={data.typeOfDocument}
-              onChange={(e) => persist({ typeOfDocument: e.target.value })}
-            >
-              {DOCUMENT_TYPE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Registry number">
-            <input
-              className={inputCls}
-              value={data.registryNumber}
-              onChange={(e) => persist({ registryNumber: e.target.value })}
-            />
-          </Field>
-          <Field label="Name of owner of document">
-            <input
-              className={inputCls}
-              value={data.documentOwnerName}
-              onChange={(e) => persist({ documentOwnerName: e.target.value })}
-            />
-          </Field>
-          <Field label="Date of birth">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.dateOfBirth}
-              onChange={(e) => persist({ dateOfBirth: e.target.value })}
-            />
-          </Field>
-          <Field label="Place of birth">
-            <input
-              className={inputCls}
-              value={data.placeOfBirth}
-              onChange={(e) => persist({ placeOfBirth: e.target.value })}
-            />
-          </Field>
-          <Field label="Name of petitioner" className="sm:col-span-2">
-            <input
-              className={inputCls}
-              value={data.petitionerName}
-              onChange={(e) => persist({ petitionerName: e.target.value })}
-            />
-          </Field>
-          <Field label="Petitioner owner of the document?">
-            <select
-              value={data.petitionerOwnerOfDocument}
-              onChange={(e) => persist({ petitionerOwnerOfDocument: e.target.value })}
-              className={inputCls}
-            >
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
-          </Field>
-          <Field label="Nationality">
-            <select
-              className={inputCls}
-              value={data.nationality || ''}
-              onChange={(e) => persist({ nationality: e.target.value })}
-            >
-              <option value="">Select nationality</option>
-              {NATIONALITY_OPTIONS.map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Address" className="sm:col-span-2">
-            <input
-              className={inputCls}
-              value={data.petitionerAddress}
-              onChange={(e) => persist({ petitionerAddress: e.target.value })}
-            />
-          </Field>
-          <Field label="ID presented / Cedula" className="sm:col-span-2">
-            <input
-              className={inputCls}
-              value={data.idPresented}
-              onChange={(e) => persist({ idPresented: e.target.value })}
-            />
-          </Field>
-        </div>
-      </section>
+      <StyledSection title="General information">
+        <StyledRow label="Type of petition" isEven={false}>
+          <select value={data.typeOfPetition} onChange={(e) => persist({ typeOfPetition: e.target.value })} className={cleanInputCls}>
+            <option value="RA 9048">RA 9048</option>
+            <option value="RA 10172">RA 10172</option>
+            <option value="RA 9048/RA 10172">RA 9048/RA 10172</option>
+            <option value="RA 9048 CFN">RA 9048 CFN</option>
+          </select>
+        </StyledRow>
+        <StyledRow label="Migrant petition?" isEven={true}>
+          <select value={data.migrantPetition} onChange={(e) => persist({ migrantPetition: e.target.value })} className={cleanInputCls}>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </StyledRow>
+        <StyledRow label="Petition no. (series)" isEven={false}>
+          <input className={cleanInputCls} value={data.petitionNumber} onChange={(e) => persist({ petitionNumber: e.target.value })} placeholder="e.g. 0141" />
+        </StyledRow>
+        <StyledRow label="Type of document" isEven={true}>
+          <select className={cleanInputCls} value={data.typeOfDocument} onChange={(e) => persist({ typeOfDocument: e.target.value })}>
+            {DOCUMENT_TYPE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </StyledRow>
+        <StyledRow label="Registry number" isEven={false}>
+          <input className={cleanInputCls} value={data.registryNumber} onChange={(e) => persist({ registryNumber: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="Name of owner of document" isEven={true}>
+          <input className={cleanInputCls} value={data.documentOwnerName} onChange={(e) => persist({ documentOwnerName: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="Date of birth" isEven={false}>
+          <input type="date" className={cleanInputCls} value={data.dateOfBirth} onChange={(e) => persist({ dateOfBirth: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="Place of birth" isEven={true}>
+          <input className={cleanInputCls} value={data.placeOfBirth} onChange={(e) => persist({ placeOfBirth: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="Name of petitioner" isEven={false}>
+          <input className={cleanInputCls} value={data.petitionerName} onChange={(e) => persist({ petitionerName: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="Petitioner owner of the document?" isEven={true}>
+          <select value={data.petitionerOwnerOfDocument} onChange={(e) => persist({ petitionerOwnerOfDocument: e.target.value })} className={cleanInputCls}>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </StyledRow>
+        <StyledRow label="Nationality" isEven={false}>
+          <select className={cleanInputCls} value={data.nationality || ''} onChange={(e) => persist({ nationality: e.target.value })}>
+            <option value="">Select nationality</option>
+            {NATIONALITY_OPTIONS.map((n) => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
+        </StyledRow>
+        <StyledRow label="Address" isEven={true}>
+          <input className={cleanInputCls} value={data.petitionerAddress} onChange={(e) => persist({ petitionerAddress: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="ID presented / Cedula" isEven={false}>
+          <input className={cleanInputCls} value={data.idPresented} onChange={(e) => persist({ idPresented: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="Name of father" isEven={true}>
+          <input className={cleanInputCls} value={data.fatherName} onChange={(e) => persist({ fatherName: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="Name of mother" isEven={false}>
+          <input className={cleanInputCls} value={data.motherName} onChange={(e) => persist({ motherName: e.target.value })} />
+        </StyledRow>
+      </StyledSection>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-4 md:p-5 shadow-sm mb-5">
-        <h2 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-2">Clerical error/s to be corrected</h2>
-        <p className="text-xs text-gray-500 mb-3">Unused box must be blank; description uses the dropdown list.</p>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs border-collapse">
-            <thead>
-              <tr className="bg-gray-50 text-left">
-                <th className="p-2 border border-gray-200 w-12">Item</th>
-                <th className="p-2 border border-gray-200 min-w-[14rem]">Description</th>
-                <th className="p-2 border border-gray-200 min-w-[8rem]">From</th>
-                <th className="p-2 border border-gray-200 min-w-[8rem]">To</th>
-                <th className="p-2 border border-gray-200 w-16" />
-              </tr>
-            </thead>
-            <tbody>
-              {(data.corrections || []).map((row, i) => (
-                <tr key={row.id || i}>
-                  <td className="p-2 border border-gray-200 align-top">{i + 1}</td>
-                  <td className="p-2 border border-gray-200 align-top">
-                    <select
-                      className={`${inputCls} w-full max-w-xs`}
-                      value={row.description}
-                      onChange={(e) => setCorrection(i, 'description', e.target.value)}
-                    >
-                      {CLERICAL_DESCRIPTION_OPTIONS.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="p-2 border border-gray-200 align-top">
-                    <input
-                      className={inputCls}
-                      value={row.from}
-                      onChange={(e) => setCorrection(i, 'from', e.target.value)}
-                    />
-                  </td>
-                  <td className="p-2 border border-gray-200 align-top">
-                    <input
-                      className={inputCls}
-                      value={row.to}
-                      onChange={(e) => setCorrection(i, 'to', e.target.value)}
-                    />
-                  </td>
-                  <td className="p-2 border border-gray-200 align-top">
-                    <button
-                      type="button"
-                      onClick={() => removeCorrectionRow(i)}
-                      className="text-red-600 text-xs font-medium hover:underline"
-                    >
-                      Remove
-                    </button>
-                  </td>
+      <StyledSection title="Clerical error/s to be corrected">
+        <div className="p-4 bg-white">
+          <p className="text-xs text-gray-500 mb-3 italic">Unused box must be blank; description uses the dropdown list.</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs border-collapse border border-gray-200">
+              <thead>
+                <tr className="bg-[#1e3a8a] text-white">
+                  <th className="p-2 border border-blue-900 w-12">Item</th>
+                  <th className="p-2 border border-blue-900 min-w-[14rem]">Description</th>
+                  <th className="p-2 border border-blue-900 min-w-[8rem]">From</th>
+                  <th className="p-2 border border-blue-900 min-w-[8rem]">To</th>
+                  <th className="p-2 border border-blue-900 w-16" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {(data.corrections || []).map((row, i) => (
+                  <tr key={row.id || i} className={i % 2 === 0 ? 'bg-white' : 'bg-blue-50/30'}>
+                    <td className="p-2 border border-gray-100 text-center font-bold text-blue-900">{i + 1}</td>
+                    <td className="p-1 border border-gray-100">
+                      <select
+                        className="w-full bg-transparent p-1 focus:outline-none"
+                        value={row.description}
+                        onChange={(e) => setCorrection(i, 'description', e.target.value)}
+                      >
+                        {CLERICAL_DESCRIPTION_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="p-1 border border-gray-100">
+                      <input className="w-full bg-transparent p-1 focus:outline-none" value={row.from} onChange={(e) => setCorrection(i, 'from', e.target.value)} />
+                    </td>
+                    <td className="p-1 border border-gray-100">
+                      <input className="w-full bg-transparent p-1 focus:outline-none" value={row.to} onChange={(e) => setCorrection(i, 'to', e.target.value)} />
+                    </td>
+                    <td className="p-1 border border-gray-100 text-center">
+                      <button type="button" onClick={() => removeCorrectionRow(i)} className="text-red-600 hover:text-red-800 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <button type="button" onClick={addCorrectionRow} className="mt-4 flex items-center gap-1 text-xs font-bold text-[#1e3a8a] hover:underline">
+            <span className="text-lg">+</span> Add correction row
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={addCorrectionRow}
-          className="mt-3 text-xs font-semibold text-[#0d9488] hover:underline"
-        >
-          + Add row
-        </button>
-      </section>
+      </StyledSection>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-4 md:p-5 shadow-sm mb-5">
-        <h2 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">Payment &amp; filing</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field label="OR number (filing fee)">
-            <input
-              className={inputCls}
-              value={data.orFilingFeeNumber}
-              onChange={(e) => persist({ orFilingFeeNumber: e.target.value })}
-            />
-          </Field>
-          <Field label="Amount paid (filing)">
-            <input
-              className={inputCls}
-              value={data.amountPaidFiling}
-              onChange={(e) => persist({ amountPaidFiling: e.target.value })}
-            />
-          </Field>
-          <Field label="Date of receipt (filing)">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.dateOfReceiptFiling}
-              onChange={(e) => persist({ dateOfReceiptFiling: e.target.value })}
-            />
-          </Field>
-          <Field label="OR number (certification)">
-            <input
-              className={inputCls}
-              value={data.orCertificationNumber}
-              onChange={(e) => persist({ orCertificationNumber: e.target.value })}
-            />
-          </Field>
-          <Field label="Amount (certification)">
-            <input
-              className={inputCls}
-              value={data.amountCertification}
-              onChange={(e) => persist({ amountCertification: e.target.value })}
-            />
-          </Field>
-          <Field label="Date of receipt (certification)">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.dateOfReceiptCertification}
-              onChange={(e) => persist({ dateOfReceiptCertification: e.target.value })}
-            />
-          </Field>
-          <Field label="Received by">
-            <input
-              className={inputCls}
-              value={data.receivedByName}
-              onChange={(e) => persist({ receivedByName: e.target.value })}
-            />
-          </Field>
-          <Field label="Subscribe by CCR?">
-            <select value={data.subscribeByCcr} onChange={(e) => persist({ subscribeByCcr: e.target.value })} className={inputCls}>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
-          </Field>
-          <Field label="Suggested date of decision">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.suggestedDateOfDecision}
-              onChange={(e) => persist({ suggestedDateOfDecision: e.target.value })}
-            />
-          </Field>
-          <Field label="Suggested decision date is a holiday?">
-            <select
-              value={data.suggestedDateHoliday}
-              onChange={(e) => persist({ suggestedDateHoliday: e.target.value })}
-              className={inputCls}
-            >
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
-          </Field>
-          <Field label="Date of filing (petition)">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.dateOfFiling}
-              onChange={(e) => persist({ dateOfFiling: e.target.value })}
-            />
-          </Field>
-          <Field label="Date of receipt (LCRO)">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.dateOfReceipt}
-              onChange={(e) => persist({ dateOfReceipt: e.target.value })}
-            />
-          </Field>
-          <Field label="Posting period from">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.postingPeriodFrom}
-              onChange={(e) => persist({ postingPeriodFrom: e.target.value })}
-            />
-          </Field>
-          <Field label="Posting period to">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.postingPeriodTo}
-              onChange={(e) => persist({ postingPeriodTo: e.target.value })}
-            />
-          </Field>
-          <Field label="Certification issued date">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.certificationIssuedDate}
-              onChange={(e) => persist({ certificationIssuedDate: e.target.value })}
-            />
-          </Field>
-          <Field label="Certificate of posting — issued at">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.certificatePostingIssuedAt}
-              onChange={(e) => persist({ certificatePostingIssuedAt: e.target.value })}
-            />
-          </Field>
-        </div>
-      </section>
+      <StyledSection title="Payment & filing">
+        <StyledRow label="OR number (filing fee)" isEven={false}>
+          <input className={cleanInputCls} value={data.orFilingFeeNumber} onChange={(e) => persist({ orFilingFeeNumber: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="Amount paid (filing)" isEven={true}>
+          <input className={cleanInputCls} value={data.amountPaidFiling} onChange={(e) => persist({ amountPaidFiling: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="Date of receipt (filing)" isEven={false}>
+          <input type="date" className={cleanInputCls} value={data.dateOfReceiptFiling} onChange={(e) => persist({ dateOfReceiptFiling: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="OR number (certification)" isEven={true}>
+          <input className={cleanInputCls} value={data.orCertificationNumber} onChange={(e) => persist({ orCertificationNumber: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="Received by" isEven={false}>
+          <input className={cleanInputCls} value={data.receivedByName} onChange={(e) => persist({ receivedByName: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="Subscribe by CCR?" isEven={true}>
+          <select value={data.subscribeByCcr} onChange={(e) => persist({ subscribeByCcr: e.target.value })} className={cleanInputCls}>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </StyledRow>
+        <StyledRow label="Suggested date of decision" isEven={false}>
+          <input type="date" className={cleanInputCls} value={data.suggestedDateOfDecision} onChange={(e) => persist({ suggestedDateOfDecision: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="Suggested decision date is a holiday?" isEven={true}>
+          <select value={data.suggestedDateHoliday} onChange={(e) => persist({ suggestedDateHoliday: e.target.value })} className={cleanInputCls}>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </StyledRow>
+      </StyledSection>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-4 md:p-5 shadow-sm mb-5">
-        <h2 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-3">Supporting documents</h2>
+      <StyledSection title="Supporting documents">
         {(data.supportingDocuments || []).map((line, i) => (
-          <input
-            key={i}
-            className={`${inputCls} mb-2 w-full`}
-            value={line}
-            placeholder={`Document ${i + 1}`}
-            onChange={(e) => {
-              const next = [...(data.supportingDocuments || [])]
-              next[i] = e.target.value
-              persist({ supportingDocuments: next })
-            }}
-          />
+          <StyledRow key={i} label={`Document ${i + 1}`} isEven={i % 2 !== 0}>
+            <input
+              className={cleanInputCls}
+              value={line}
+              placeholder={`Enter document description...`}
+              onChange={(e) => {
+                const next = [...(data.supportingDocuments || [])]
+                next[i] = e.target.value
+                persist({ supportingDocuments: next })
+              }}
+            />
+          </StyledRow>
         ))}
-      </section>
+      </StyledSection>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-4 md:p-5 shadow-sm mb-5">
-        <h2 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">Petition form — sworn / received</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field label="Received — office line" className="sm:col-span-2">
-            <input
-              className={inputCls}
-              value={data.receivedAtOfficeLine}
-              onChange={(e) => persist({ receivedAtOfficeLine: e.target.value })}
-            />
-          </Field>
-          <Field label="Received date">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.receivedDate}
-              onChange={(e) => persist({ receivedDate: e.target.value })}
-            />
-          </Field>
-          <Field label="Received by (officer)">
-            <input
-              className={inputCls}
-              value={data.receivedOfficerName}
-              onChange={(e) => persist({ receivedOfficerName: e.target.value })}
-            />
-          </Field>
-          <Field label="Sworn — day">
-            <input className={inputCls} value={data.swornDay} onChange={(e) => persist({ swornDay: e.target.value })} />
-          </Field>
-          <Field label="Sworn — month">
-            <input className={inputCls} value={data.swornMonth} onChange={(e) => persist({ swornMonth: e.target.value })} />
-          </Field>
-          <Field label="Sworn — year">
-            <input className={inputCls} value={data.swornYear} onChange={(e) => persist({ swornYear: e.target.value })} />
-          </Field>
-          <Field label="Sworn — place">
-            <input className={inputCls} value={data.swornPlace} onChange={(e) => persist({ swornPlace: e.target.value })} />
-          </Field>
-          <Field label="ID exhibited (sworn)">
-            <input
-              className={inputCls}
-              value={data.idTypeForSworn}
-              onChange={(e) => persist({ idTypeForSworn: e.target.value })}
-            />
-          </Field>
-          <Field label="Payment OR (filing) — duplicate">
-            <input
-              className={inputCls}
-              value={data.paymentOrFiling}
-              onChange={(e) => persist({ paymentOrFiling: e.target.value })}
-            />
-          </Field>
-          <Field label="Payment amount">
-            <input
-              className={inputCls}
-              value={data.paymentAmountFiling}
-              onChange={(e) => persist({ paymentAmountFiling: e.target.value })}
-            />
-          </Field>
-          <Field label="Payment date">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.paymentDateFiling}
-              onChange={(e) => persist({ paymentDateFiling: e.target.value })}
-            />
-          </Field>
-        </div>
-      </section>
-
-      <section className="rounded-xl border border-gray-200 bg-white p-4 md:p-5 shadow-sm mb-5">
-        <h2 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">Record sheet — decisions / finality</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-          <Field label="Decision C/MCR — date rendered">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.decisionCmcrDate}
-              onChange={(e) => persist({ decisionCmcrDate: e.target.value })}
-            />
-          </Field>
-          <Field label="Decision CRG — date rendered">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.decisionCrgDate}
-              onChange={(e) => persist({ decisionCrgDate: e.target.value })}
-            />
-          </Field>
-          <Field label="Certificate of Finality — issued on">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.certificateOfFinalityIssuedOn}
-              onChange={(e) => persist({ certificateOfFinalityIssuedOn: e.target.value })}
-            />
-          </Field>
-          <Field label="COF — decision date">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.cofDecisionDate}
-              onChange={(e) => persist({ cofDecisionDate: e.target.value })}
-            />
-          </Field>
-          <Field label="COF — issuance date">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.cofIssuanceDate}
-              onChange={(e) => persist({ cofIssuanceDate: e.target.value })}
-            />
-          </Field>
-          <Field label="COF — OCRG number">
-            <input className={inputCls} value={data.cofOcrgNo} onChange={(e) => persist({ cofOcrgNo: e.target.value })} />
-          </Field>
-          <Field label="Remarks (record sheet)" className="sm:col-span-2">
-            <textarea
-              className={`${inputCls} min-h-[5rem]`}
-              value={data.remarksRecordSheet}
-              onChange={(e) => persist({ remarksRecordSheet: e.target.value })}
-            />
-          </Field>
-          <Field label="Certificate of Finality — custom annotation text" className="sm:col-span-2">
-            <textarea
-              className={`${inputCls} min-h-[4rem]`}
-              value={data.cofAnnotationBody}
-              onChange={(e) => persist({ cofAnnotationBody: e.target.value })}
-              placeholder="Leave blank to generate from first correction row."
-            />
-          </Field>
-        </div>
-      </section>
-
-      <section className="rounded-xl border border-gray-200 bg-white p-4 md:p-5 shadow-sm mb-5">
-        <h2 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">For Certificate of Finality (reference)</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field label="OCRG affirmed date">
-            <input type="date" className={inputCls} value={data.ocrgAffirmedDate} onChange={(e) => persist({ ocrgAffirmedDate: e.target.value })} />
-          </Field>
-          <Field label="Affirmed number">
-            <input className={inputCls} value={data.affirmedNumber} onChange={(e) => persist({ affirmedNumber: e.target.value })} />
-          </Field>
-          <Field label="OCRG impugned date">
-            <input type="date" className={inputCls} value={data.ocrgImpugnedDate} onChange={(e) => persist({ ocrgImpugnedDate: e.target.value })} />
-          </Field>
-          <Field label="Impugned number">
-            <input className={inputCls} value={data.impugnedNumber} onChange={(e) => persist({ impugnedNumber: e.target.value })} />
-          </Field>
-          <Field label="Certificate of Finality date">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.certificateOfFinalityDate}
-              onChange={(e) => persist({ certificateOfFinalityDate: e.target.value })}
-            />
-          </Field>
-        </div>
-      </section>
-
-      <section className="rounded-xl border border-gray-200 bg-white p-4 md:p-5 shadow-sm mb-5">
-        <h2 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">Second transmittal (PSA)</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field label="Letter date">
-            <input
-              type="date"
-              className={inputCls}
-              value={data.secondTransmittalDate}
-              onChange={(e) => persist({ secondTransmittalDate: e.target.value })}
-            />
-          </Field>
-          <Field label="City Civil Registrar (signatory)">
-            <input
-              className={inputCls}
-              value={data.cityCivilRegistrarName}
-              onChange={(e) => persist({ cityCivilRegistrarName: e.target.value })}
-            />
-          </Field>
-          <Field label="PSA addressee" className="sm:col-span-2">
-            <input className={inputCls} value={data.psaAddressee} onChange={(e) => persist({ psaAddressee: e.target.value })} />
-          </Field>
-          <Field label="Thru name">
-            <input className={inputCls} value={data.thruName} onChange={(e) => persist({ thruName: e.target.value })} />
-          </Field>
-        </div>
-        <p className="text-xs font-semibold text-gray-700 mt-4 mb-2">Enclosed documents list (one per line)</p>
-        {(data.secondTransmittalBullets || []).map((line, i) => (
-          <input
-            key={i}
-            className={`${inputCls} mb-2 w-full`}
-            value={line}
-            onChange={(e) => {
-              const next = [...(data.secondTransmittalBullets || [])]
-              next[i] = e.target.value
-              persist({ secondTransmittalBullets: next })
-            }}
-          />
-        ))}
-      </section>
+      <StyledSection title="FOR CERTIFICATE OF FINALITY" footer={true}>
+        <StyledRow label="OCRG Affirmed Date" isEven={false}>
+          <input type="date" className={cleanInputCls} value={data.ocrgAffirmedDate} onChange={(e) => persist({ ocrgAffirmedDate: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="Affirmed Number" isEven={true}>
+          <input className={cleanInputCls} value={data.affirmedNumber} onChange={(e) => persist({ affirmedNumber: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="OCRG Impugned Date" isEven={false}>
+          <input type="date" className={cleanInputCls} value={data.ocrgImpugnedDate} onChange={(e) => persist({ ocrgImpugnedDate: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="Impugned Number" isEven={true}>
+          <input className={cleanInputCls} value={data.impugnedNumber} onChange={(e) => persist({ impugnedNumber: e.target.value })} />
+        </StyledRow>
+        <StyledRow label="Certificate of Finality Date" isEven={false}>
+          <input type="date" className={cleanInputCls} value={data.certificateOfFinalityDate} onChange={(e) => persist({ certificateOfFinalityDate: e.target.value })} />
+        </StyledRow>
+      </StyledSection>
 
       <div className="flex justify-end">
         <Link
           to={`/correction-of-entries/print?view=${CORRECTION_COMPLETE_PACKET_ID}`}
-          className="px-5 py-2.5 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:bg-black transition"
+          className="px-6 py-3 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-black transition-all shadow-lg hover:shadow-xl active:scale-95 flex items-center gap-2"
         >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
           Open print outputs
         </Link>
       </div>
