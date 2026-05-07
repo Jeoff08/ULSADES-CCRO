@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { clearSupplementalActive, clearSupplementalDraft } from '../pages/legalInstrument/lib/supplementalSavedStorage'
+import { clearMc2010Active, clearMc2010Draft } from '../pages/legalInstrument/lib/mc2010SavedStorage'
 
 const LOGOUT_EXIT_MS = 450
 
@@ -58,7 +59,7 @@ function legalSubLinkClass(isActive) {
     }`
 }
 
-const FILES_SAVED_PATHS = ['/ausf/saved', '/legitimation/saved', '/court-decree/saved']
+const FILES_SAVED_PATHS = ['/ausf/saved', '/legitimation/saved', '/court-decree/saved', '/legal-instrument/supplemental/saved', '/legal-instrument/mc2010-04/saved']
 
 /** CCRO seal used in sidebar (public filename contains spaces). */
 const CCRO_APP_BRAND_SRC = encodeURI('/ChatGPT Image Feb 11, 2026, 03_26_31 PM.png')
@@ -97,6 +98,7 @@ export default function Layout() {
   const ausfFormActive = location.pathname.startsWith('/ausf') && location.pathname !== '/ausf/saved'
 
   const correctionEntriesActive = location.pathname.startsWith('/correction-of-entries')
+  const systemDataActive = location.pathname.startsWith('/system-data')
 
   const handleLogout = () => {
     if (isExiting) return
@@ -195,6 +197,24 @@ export default function Layout() {
                   <span>Supplemental</span>
                 </NavLink>
                 <NavLink
+                  to="/legal-instrument/mc2010-04"
+                  onClick={() => {
+                    clearMc2010Active()
+                    clearMc2010Draft()
+                  }}
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>MC2010-04</span>
+                </NavLink>
+                <NavLink
+                  to="/legal-instrument/wrongly-register"
+                  className={({ isActive }) => legalSubLinkClass(isActive)}
+                >
+                  <IconLegalSub />
+                  <span>Wrongly register</span>
+                </NavLink>
+                <NavLink
                   to="/ausf"
                   className={() => legalSubLinkClass(ausfFormActive)}
                 >
@@ -285,6 +305,21 @@ export default function Layout() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
             <span>Correction of entries</span>
+          </NavLink>
+          <NavLink
+            to="/system-data"
+            className={() =>
+              `${navRowBase} ${
+                systemDataActive
+                  ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
+                  : 'text-white/90 hover:bg-white/10 text-white'
+              }`
+            }
+          >
+            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16M6 7v10m6-10v10m6-10v10" />
+            </svg>
+            <span>Export / Import</span>
           </NavLink>
         </nav>
         <div className="p-3 border-t border-white/10 shrink-0">

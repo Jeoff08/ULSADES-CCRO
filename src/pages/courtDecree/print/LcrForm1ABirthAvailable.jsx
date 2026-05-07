@@ -100,7 +100,7 @@ export default function LcrForm1ABirthAvailable({ data, editableTable = false, o
               )}
               .
             </p>
-            <table className="w-full border-collapse text-sm mt-4 mb-2 border border-black court-decree-lcr-table">
+            <table className="w-full border-collapse text-sm mt-4 mb-0 border border-black court-decree-lcr-table">
               <tbody>
                 {editableTable && onDataChange
                   ? LCR_1A_EDITABLE_ROWS.map((row) => (
@@ -135,8 +135,18 @@ export default function LcrForm1ABirthAvailable({ data, editableTable = false, o
                   )}
               </tbody>
             </table>
-            <p className="mb-2 text-sm court-decree-lcr-body">
-              This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.
+            <p className="mb-2 text-sm court-decree-lcr-body court-decree-lcr-cert-after-table">
+            {editableTable
+              ? (
+                <span className="pl-8 inline-block">
+                  This certification is issued to <span className="font-bold underline">CCR-FILE</span> for any legal purpose.
+                </span>
+              )
+              : (
+                <>
+                  This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.
+                </>
+              )}
             </p>
             <div className="mb-2 court-decree-lcr-body court-decree-lcr-1a-remarks-block">
               <p className="font-bold text-sm mb-0.5">REMARKS:</p>

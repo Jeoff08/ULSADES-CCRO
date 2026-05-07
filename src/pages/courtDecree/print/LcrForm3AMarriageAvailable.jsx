@@ -72,7 +72,7 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
             <span className="inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold">{colbPage ?? ''}</span> of Book number{' '}
             <span className="inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold">{colbBook ?? ''}</span>.
           </p>
-          <table className="w-full border-collapse text-sm mt-4 mb-2 border border-black table-fixed court-decree-lcr-table">
+          <table className="w-full border-collapse text-sm mt-4 mb-0 border border-black table-fixed court-decree-lcr-table">
             <colgroup>
               <col style={{ width: '28%' }} />
               <col style={{ width: '36%' }} />
@@ -194,8 +194,18 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
               )}
             </tbody>
           </table>
-          <p className="mb-2 text-sm court-decree-lcr-body">
-            This certification is issued upon the request of <span className="font-bold">OCRG/DOCUMENT OWNER</span> for any legal purposes.
+          <p className="mb-2 text-sm court-decree-lcr-body court-decree-lcr-cert-after-table">
+            {editableTable
+              ? (
+                <span className="pl-8 inline-block">
+                  This certification is issued to <span className="font-bold underline">CCR-FILE</span> for any legal purpose.
+                </span>
+              )
+              : (
+                <>
+                  This certification is issued upon the request of <span className="font-bold">OCRG/DOCUMENT OWNER</span> for any legal purposes.
+                </>
+              )}
           </p>
           <div className="mb-2 court-decree-lcr-body court-decree-lcr-3a-remarks-block">
             <p className="font-bold text-sm mb-0.5">REMARKS:</p>

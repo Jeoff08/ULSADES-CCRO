@@ -13,7 +13,7 @@ const tdLblCls = 'border border-black px-2 py-0.5'
 /**
  * Transmittal (CCR letter) inputs for the Supplemental form. Values are stored on the same draft as the affidavit.
  */
-export default function SupplementalTransmittalFieldsEditor({ data, onPatch, inputClass }) {
+export default function SupplementalTransmittalFieldsEditor({ data, onPatch, inputClass, showRecipientCity = true }) {
   const docType = data.transmittalDocType || ''
   const endorsementIds = Array.isArray(data.transmittalEndorsementIds) ? data.transmittalEndorsementIds : []
   const attachmentIds = Array.isArray(data.transmittalAttachmentIds) ? data.transmittalAttachmentIds : []
@@ -128,15 +128,17 @@ export default function SupplementalTransmittalFieldsEditor({ data, onPatch, inp
               onChange={(e) => onPatch({ transmittalToOffice1: e.target.value })}
             />
           </label>
-          <label className="block">
-            <span className="text-xs font-medium text-gray-700">City</span>
-            <input
-              type="text"
-              className={`mt-0.5 ${fieldClass} uppercase`}
-              value={data.transmittalToOffice2 || ''}
-              onChange={(e) => onPatch({ transmittalToOffice2: e.target.value })}
-            />
-          </label>
+          {showRecipientCity ? (
+            <label className="block">
+              <span className="text-xs font-medium text-gray-700">City</span>
+              <input
+                type="text"
+                className={`mt-0.5 ${fieldClass} uppercase`}
+                value={data.transmittalToOffice2 || ''}
+                onChange={(e) => onPatch({ transmittalToOffice2: e.target.value })}
+              />
+            </label>
+          ) : null}
         </fieldset>
 
         <fieldset className="rounded-lg border border-gray-100 bg-gray-50/50 p-3 space-y-3">
@@ -167,6 +169,24 @@ export default function SupplementalTransmittalFieldsEditor({ data, onPatch, inp
                 className={`mt-0.5 ${fieldClass} uppercase`}
                 value={data.transmittalThruPosition2 || ''}
                 onChange={(e) => onPatch({ transmittalThruPosition2: e.target.value })}
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-gray-700">Attn title — line 3</span>
+              <input
+                type="text"
+                className={`mt-0.5 ${fieldClass} uppercase`}
+                value={data.transmittalThruPosition3 || ''}
+                onChange={(e) => onPatch({ transmittalThruPosition3: e.target.value })}
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-gray-700">Attn title — line 4</span>
+              <input
+                type="text"
+                className={`mt-0.5 ${fieldClass} uppercase`}
+                value={data.transmittalThruPosition4 || ''}
+                onChange={(e) => onPatch({ transmittalThruPosition4: e.target.value })}
               />
             </label>
           </div>

@@ -41,6 +41,8 @@ export function getDefaultSupplementalTransmittalFields() {
     transmittalThru: '',
     transmittalThruPosition1: '',
     transmittalThruPosition2: '',
+    transmittalThruPosition3: '',
+    transmittalThruPosition4: '',
     transmittalColbName: '',
     transmittalRegistryNo: '',
     transmittalDob: '',
@@ -112,7 +114,9 @@ export function transmittalRecipientOfficeLinesForPrint(data) {
 export function transmittalThruPositionLinesForPrint(data) {
   const a = String(data.transmittalThruPosition1 || '').trim()
   const b = String(data.transmittalThruPosition2 || '').trim()
-  if (a || b) return [a, b].filter(Boolean)
+  const c = String(data.transmittalThruPosition3 || '').trim()
+  const d = String(data.transmittalThruPosition4 || '').trim()
+  if (a || b || c || d) return [a, b, c, d].filter(Boolean)
   return splitFieldLines(data.transmittalThruTitle)
 }
 

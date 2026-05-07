@@ -676,7 +676,7 @@ export default function CourtDecreeForm() {
             <div className="court-decree-form-page__section" style={sectionDelay(0)}>
               <LcrFormNavLinks form={form} activeType="lcr-form-1a" />
               <CourtDecreeSection number="1" title="Table fields">
-                <div className="space-y-4 max-w-2xl">
+                <div className="space-y-4 max-w-8xl">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">LCR Registry Number</label>
                     <input type="text" value={form.lcr1aRegistryNumber} onChange={scInput('lcr1aRegistryNumber')} placeholder="e.g. 2002-1956" className={inputClass} />

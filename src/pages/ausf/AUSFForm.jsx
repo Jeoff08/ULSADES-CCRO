@@ -233,9 +233,6 @@ export default function AUSFForm() {
         const nextId = await updateSavedAUSFToApi(effectiveEditId, draftPayload)
         if (nextId) {
           finalSavedId = String(nextId).trim()
-          if (finalSavedId && finalSavedId !== effectiveEditId) {
-            migrateRecordUploads('ausf', effectiveEditId, finalSavedId)
-          }
         }
       } else {
         const createdId = await addSavedAUSFToApi(draftPayload)
@@ -253,6 +250,14 @@ export default function AUSFForm() {
       } else {
         const createdId = addSavedAUSF(draftPayload)
         if (createdId) finalSavedId = String(createdId).trim()
+      }
+    }
+    /** Print uses keys ausf:(record id):(type); uploads before first save use record id "draft". */
+    if (finalSavedId) {
+      if (!isEdit) {
+        migrateRecordUploads('ausf', 'draft', finalSavedId)
+      } else if (effectiveEditId && effectiveEditId !== finalSavedId) {
+        migrateRecordUploads('ausf', effectiveEditId, finalSavedId)
       }
     }
     setShowConfirmModal(false)

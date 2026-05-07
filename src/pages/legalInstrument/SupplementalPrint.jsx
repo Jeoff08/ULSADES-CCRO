@@ -5,9 +5,15 @@ import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailabl
 import LcrForm2ADeathAvailable from '../courtDecree/print/LcrForm2ADeathAvailable'
 import LcrForm3AMarriageAvailable from '../courtDecree/print/LcrForm3AMarriageAvailable'
 import SupplementalTransmittal from './print/SupplementalTransmittal'
-import { saveCurrentViewAsPdf } from '../../lib/savePdf'
+import ToastHost from '../../components/toast/ToastHost'
+import { useToasts } from '../../components/toast/useToasts'
+import { saveCurrentViewAsPdf, openSavedPdfInBrowser } from '../../lib/savePdf'
 import { PAPER_SIZES, getPaperPageSpec } from '../../components/print'
 import { getActiveSavedSupplemental, getSupplementalDraft, saveSupplementalDraft, saveOrUpdateSupplemental } from './lib/supplementalSavedStorage'
+import { supplementalOutputUploadScope } from './lib/legalInstrumentAttachmentScope'
+import { getUploadedFile, restoreUploadedFileFromTrash } from '../../lib/uploadedFileStore'
+import UploadFileModal from '../../components/upload/UploadFileModal'
+import PrintSidebarNavAttachIcons from '../../components/upload/PrintSidebarNavAttachIcons'
 import {
   getDefaultSupplementalTransmittalFields,
   pickTransmittalStateFromDraft,
@@ -89,6 +95,33 @@ export default function SupplementalPrint() {
   const [activePanel, setActivePanel] = useState('affidavit')
   const [previewModalOpen, setPreviewModalOpen] = useState(false)
   const [previewPdfUrl, setPreviewPdfUrl] = useState('')
+  const { toasts, show, dismiss } = useToasts()
+  const [uploadTick, setUploadTick] = useState(0)
+  const [uploadModal, setUploadModal] = useState({ open: false, key: '', title: '' })
+
+  const { supplementalAffidavitKey, supplementalTransmittalKey, supplementalLcrKey } = useMemo(() => {
+    const row = getActiveSavedSupplemental()
+    const id = row?.id ?? null
+    return {
+      supplementalAffidavitKey: supplementalOutputUploadScope(id, 'affidavit'),
+      supplementalTransmittalKey: supplementalOutputUploadScope(id, 'transmittal'),
+      supplementalLcrKey: supplementalOutputUploadScope(id, 'lcr'),
+    }
+  }, [location.key])
+
+  const hasAffidavitScan = useMemo(
+    () => !!getUploadedFile(supplementalAffidavitKey),
+    [supplementalAffidavitKey, uploadTick]
+  )
+  const hasTransmittalScan = useMemo(
+    () => !!getUploadedFile(supplementalTransmittalKey),
+    [supplementalTransmittalKey, uploadTick]
+  )
+  const hasLcrScan = useMemo(
+    () => !!getUploadedFile(supplementalLcrKey),
+    [supplementalLcrKey, uploadTick]
+  )
+
   const data = useMemo(
     () => ({ ...baseData, item3Custom, item5Custom }),
     [baseData, item3Custom, item5Custom]
@@ -197,15 +230,31 @@ export default function SupplementalPrint() {
     })
     try {
       const result = await saveCurrentViewAsPdf(suggestedBaseName)
-      if (result?.ok) return
-      if (result?.cancelled) {
-        window.alert('Save cancelled. No PDF file was created.')
+      if (result?.ok) {
+        show({
+          type: 'success',
+          title: 'PDF saved',
+          message: result.filePath || '',
+          actionLabel: 'Open',
+          onAction: async () => {
+            if (!result.filePath) return
+            await openSavedPdfInBrowser(result.filePath)
+          },
+        })
         return
       }
-      window.alert(result?.reason || 'Unable to save PDF.')
+      if (result?.cancelled) {
+        show({ type: 'info', title: 'Save cancelled', message: 'No PDF file was created.' })
+        return
+      }
+      show({ type: 'error', title: 'Save failed', message: result?.reason || 'Unable to save PDF.' })
     } catch (error) {
       console.error('Failed to save PDF:', error)
-      window.alert(error?.message || 'Unable to save PDF right now. Please try again.')
+      show({
+        type: 'error',
+        title: 'Save failed',
+        message: error?.message || 'Unable to save PDF right now. Please try again.',
+      })
     } finally {
       root.classList.remove(cls)
       setExportMode(null)
@@ -277,7 +326,7 @@ export default function SupplementalPrint() {
   }, [previewPdfUrl])
 
   return (
-    <div className="p-4 print:p-0">
+    <div className="p-4 print:p-0 supplemental-print-anim-page">
       <div className="no-print mb-3 max-w-6xl mx-auto flex items-center justify-between gap-2">
         <Link
           to="/legal-instrument/supplemental/saved"
@@ -354,50 +403,92 @@ export default function SupplementalPrint() {
         <aside className="no-print w-56 shrink-0 flex flex-col gap-3">
           <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">View &amp; Print</h2>
           <div className="flex flex-col gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                if (!showAffidavitOutput) return
-                setActivePanel('affidavit')
-              }}
-              disabled={!showAffidavitOutput}
-              title={showAffidavitOutput ? 'Supplemental affidavit output' : 'No supplemental affidavit data yet'}
-              className={`${sidebarBtnAffidavit}${activePanel === 'affidavit' ? sidebarBtnSelected : ''} ${!showAffidavitOutput ? 'opacity-45 cursor-not-allowed hover:bg-[var(--primary-blue)]/80' : ''}`}
-            >
-              Supplemental affidavit
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (!showTransmittalOutput) return
-                setActivePanel('transmittal')
-              }}
-              disabled={!showTransmittalOutput}
-              title={
-                showTransmittalOutput
-                  ? 'CCR transmittal output'
-                  : 'No transmittal checklist/document selections yet'
-              }
-              className={`${sidebarBtnTransmittal}${activePanel === 'transmittal' ? sidebarBtnSelected : ''} ${!showTransmittalOutput ? 'opacity-45 cursor-not-allowed hover:bg-[#1a4d3a]' : ''}`}
-            >
-              Transmittal
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (!showForm1a) return
-                setActivePanel('form1a')
-              }}
-              disabled={!showForm1a}
-              title={
-                showForm1a
-                  ? `LCR Form No. ${data.lcrType}`
-                  : 'Turn on “Include LCR Form” on the Supplemental form to enable this output.'
-              }
-              className={`${sidebarBtnForm1a}${activePanel === 'form1a' ? sidebarBtnSelected : ''} ${!showForm1a ? 'opacity-45 cursor-not-allowed hover:bg-[#283750]' : ''}`}
-            >
-              FORM {data.lcrType}
-            </button>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  if (!showAffidavitOutput) return
+                  setActivePanel('affidavit')
+                }}
+                disabled={!showAffidavitOutput}
+                title={showAffidavitOutput ? 'Supplemental affidavit output' : 'No supplemental affidavit data yet'}
+                className={`${sidebarBtnAffidavit}${activePanel === 'affidavit' ? sidebarBtnSelected : ''} ${!showAffidavitOutput ? 'opacity-45 cursor-not-allowed hover:bg-[var(--primary-blue)]/80' : ''} pr-[5.75rem]`}
+              >
+                Supplemental affidavit
+              </button>
+              <PrintSidebarNavAttachIcons
+                scopeKey={supplementalAffidavitKey}
+                hasUpload={hasAffidavitScan}
+                iconsDisabled={!showAffidavitOutput}
+                onOpenUploadModal={() =>
+                  setUploadModal({
+                    open: true,
+                    key: supplementalAffidavitKey,
+                    title: 'Supplemental Report — Affidavit scan',
+                  })
+                }
+              />
+            </div>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  if (!showTransmittalOutput) return
+                  setActivePanel('transmittal')
+                }}
+                disabled={!showTransmittalOutput}
+                title={
+                  showTransmittalOutput
+                    ? 'CCR transmittal output'
+                    : 'No transmittal checklist/document selections yet'
+                }
+                className={`${sidebarBtnTransmittal}${activePanel === 'transmittal' ? sidebarBtnSelected : ''} ${!showTransmittalOutput ? 'opacity-45 cursor-not-allowed hover:bg-[#1a4d3a]' : ''} pr-[5.75rem]`}
+              >
+                Transmittal
+              </button>
+              <PrintSidebarNavAttachIcons
+                scopeKey={supplementalTransmittalKey}
+                hasUpload={hasTransmittalScan}
+                iconsDisabled={!showTransmittalOutput}
+                onOpenUploadModal={() =>
+                  setUploadModal({
+                    open: true,
+                    key: supplementalTransmittalKey,
+                    title: 'Supplemental Report — Transmittal scan',
+                  })
+                }
+              />
+            </div>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  if (!showForm1a) return
+                  setActivePanel('form1a')
+                }}
+                disabled={!showForm1a}
+                title={
+                  showForm1a
+                    ? `LCR Form No. ${data.lcrType}`
+                    : 'Turn on “Include LCR Form” on the Supplemental form to enable this output.'
+                }
+                className={`${sidebarBtnForm1a}${activePanel === 'form1a' ? sidebarBtnSelected : ''} ${!showForm1a ? 'opacity-45 cursor-not-allowed hover:bg-[#283750]' : ''} pr-[5.75rem]`}
+              >
+                FORM {data.lcrType}
+              </button>
+              <PrintSidebarNavAttachIcons
+                scopeKey={supplementalLcrKey}
+                hasUpload={hasLcrScan}
+                iconsDisabled={!showForm1a}
+                onOpenUploadModal={() =>
+                  setUploadModal({
+                    open: true,
+                    key: supplementalLcrKey,
+                    title: `Supplemental Report — LCR Form ${data.lcrType || '1A'} scan`,
+                  })
+                }
+              />
+            </div>
           </div>
         </aside>
 
@@ -491,6 +582,36 @@ export default function SupplementalPrint() {
           ) : null}
         </div>
       </div>
+      <UploadFileModal
+        open={uploadModal.open}
+        onClose={() => setUploadModal((m) => ({ ...m, open: false }))}
+        scopeKey={uploadModal.key}
+        title={uploadModal.title}
+        offerLibraryAttach
+        onChanged={(evt) => {
+          setUploadTick((t) => t + 1)
+          if (evt?.kind === 'uploaded') {
+            show({
+              type: 'success',
+              title: 'File uploaded',
+              message: evt.fileName ? `Saved: ${evt.fileName}` : '',
+            })
+          }
+          if (evt?.kind === 'removed') {
+            const key = evt.scopeKey
+            show({
+              type: 'info',
+              title: 'File removed',
+              message: 'You can undo within 5 seconds.',
+              actionLabel: 'Undo',
+              onAction: () => {
+                restoreUploadedFileFromTrash(key)
+                setUploadTick((t) => t + 1)
+              },
+            })
+          }
+        }}
+      />
       {previewModalOpen && (
         <div className="fixed inset-0 z-[70] bg-black/40 flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label="PDF preview">
           <div className="bg-white rounded-xl w-[95vw] h-[92vh] shadow-2xl flex flex-col overflow-hidden">
@@ -508,6 +629,7 @@ export default function SupplementalPrint() {
           </div>
         </div>
       )}
+      <ToastHost toasts={toasts} onDismiss={dismiss} />
     </div>
   )
 }

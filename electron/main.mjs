@@ -391,6 +391,55 @@ ipcMain.handle('pdf:open-in-browser', async (event, filePath) => {
   return openInBrowser(filePath, event)
 })
 
+ipcMain.handle('backup:save-json', async (event, payload) => {
+  const win = BrowserWindow.fromWebContents(event.sender)
+  if (!win || win.isDestroyed()) {
+    return { ok: false, cancelled: true, reason: 'Window unavailable' }
+  }
+
+  const backupText = typeof payload?.backupText === 'string' ? payload.backupText : ''
+  const suggestedFileName = typeof payload?.suggestedFileName === 'string'
+    ? payload.suggestedFileName
+    : `ulsades-backup-${new Date().toISOString().slice(0, 10)}.json`
+
+  if (!backupText.trim()) {
+    return { ok: false, reason: 'Missing backup data' }
+  }
+
+  const { canceled, filePath } = await dialog.showSaveDialog(win, {
+    title: 'Export ULSADES backup',
+    defaultPath: sanitizeFileName(suggestedFileName),
+    filters: [{ name: 'JSON Files', extensions: ['json'] }],
+  })
+
+  if (canceled || !filePath) return { ok: false, cancelled: true }
+
+  await writeFile(filePath, backupText, 'utf-8')
+  return { ok: true, filePath }
+})
+
+ipcMain.handle('backup:open-json', async (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender)
+  if (!win || win.isDestroyed()) {
+    return { ok: false, cancelled: true, reason: 'Window unavailable' }
+  }
+
+  const { canceled, filePaths } = await dialog.showOpenDialog(win, {
+    title: 'Import ULSADES backup',
+    properties: ['openFile'],
+    filters: [{ name: 'JSON Files', extensions: ['json'] }],
+  })
+
+  if (canceled || !filePaths?.[0]) return { ok: false, cancelled: true }
+
+  try {
+    const text = await readFile(filePaths[0], 'utf-8')
+    return { ok: true, text, filePath: filePaths[0] }
+  } catch (err) {
+    return { ok: false, reason: err?.message || 'Failed to read backup file' }
+  }
+})
+
 app.whenReady().then(async () => {
   const userData = app.getPath('userData')
   const devDbPath = join(rootDir, 'server', 'db', 'ulsades.db')

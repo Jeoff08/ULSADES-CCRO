@@ -9,12 +9,53 @@ const SCOPE_LABEL = {
   legitimation: 'Legitimation',
 }
 
+function formatScopeHeading(scopeParam) {
+  const s = scopeParam ? String(scopeParam) : ''
+  if (!s) return 'Uploaded File'
+  if (SCOPE_LABEL[s]) return SCOPE_LABEL[s]
+  if (s.startsWith('supplemental:')) {
+    const slug = s.split(':')[2]
+    const bySlug = {
+      affidavit: 'Supplemental — Affidavit',
+      transmittal: 'Supplemental — Transmittal',
+      lcr: 'Supplemental — LCR Form',
+      attachment: 'Supplemental Report — attachment',
+    }
+    return bySlug[slug] || 'Supplemental Report — attachment'
+  }
+  if (s.startsWith('mc2010:')) {
+    const slug = s.split(':')[2]
+    const bySlug = {
+      transmittal: 'MC2010-04 — Transmittal',
+      lcr: 'MC2010-04 — LCR Form',
+      packet: 'MC2010-04 — Form / scan output',
+      attachment: 'MC2010-04 — attachment',
+    }
+    return bySlug[slug] || 'MC2010-04 — attachment'
+  }
+  if (s.startsWith('ausf:')) {
+    const parts = s.split(':')
+    const recordId = parts.length >= 2 ? parts[1] : ''
+    const outputType = parts.length >= 3 ? parts.slice(2).join(':') : ''
+    const recLabel = recordId === 'draft' ? 'Draft record' : `Record ${recordId}`
+    return outputType ? `AUSF — ${recLabel} — ${outputType}` : `AUSF — ${recLabel}`
+  }
+  return s
+}
+
 function canInlinePreview(mimeType) {
   return (
     mimeType?.startsWith('image/') ||
     mimeType === 'application/pdf' ||
     mimeType?.startsWith('text/')
   )
+}
+
+/** e.g. mc2010 record id + `:packet` */
+function isMc2010PacketScope(scopeStr) {
+  if (!scopeStr || typeof scopeStr !== 'string') return false
+  const parts = scopeStr.split(':')
+  return parts[0] === 'mc2010' && parts.length >= 3 && parts[parts.length - 1] === 'packet'
 }
 
 export default function UploadedFileViewer() {
@@ -24,7 +65,7 @@ export default function UploadedFileViewer() {
   const [entered, setEntered] = useState(false)
   const [fileInfo, setFileInfo] = useState(() => (scope ? getUploadedFile(scope) : null))
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false)
-  const scopeLabel = SCOPE_LABEL[scope] || (scope ? String(scope) : 'Uploaded File')
+  const scopeLabel = formatScopeHeading(scope)
 
   useEffect(() => {
     setFileInfo(scope ? getUploadedFile(scope) : null)
@@ -174,6 +215,11 @@ export default function UploadedFileViewer() {
           moveUploadedFileToTrash(scope, meta)
           setFileInfo(null)
           setConfirmRemoveOpen(false)
+          window.requestAnimationFrame(() => {
+            if (isMc2010PacketScope(scope)) {
+              navigate('/legal-instrument/mc2010-04/print', { replace: true })
+            }
+          })
         }}
       />
     </div>

@@ -615,6 +615,11 @@ html[data-paper-size="long"] .print-doc-footer , html[data-paper-size="legal"] .
   padding-bottom: 0.25rem;
 }
 
+/* Gap after LCR facts table before certification paragraph (~2 lines; Supplemental editable + MC2010 + Court Decree print) */
+.court-decree-lcr-form p.court-decree-lcr-cert-after-table {
+  margin-top: 1em;
+}
+
 /* Court Decree LCR Forms 1A/2A/3A: screen preview body text 15px (A4/short) or 16px (long) */
 html[data-paper-size="a4"] .court-decree-lcr-form .lcr-form-bottom-content p,
 html[data-paper-size="a4"] .court-decree-lcr-form .lcr-form-bottom-content .court-decree-lcr-body,
@@ -747,6 +752,16 @@ html[data-paper-size="legal"] .print-doc-transmittal-elderly .oot-transmittal-ad
   font-size: 12pt !important;
   line-height: 1.35 !important;
 }
+html[data-paper-size="short"] .print-doc-transmittal-elderly .ausf-local-transmittal-addressee p,
+html[data-paper-size="long"] .print-doc-transmittal-elderly .ausf-local-transmittal-addressee p,
+html[data-paper-size="short"] .print-doc-transmittal-elderly .oot-transmittal-addressee-header p,
+html[data-paper-size="long"] .print-doc-transmittal-elderly .oot-transmittal-addressee-header p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 1 !important;
+}
 .print-doc-transmittal-elderly .oot-transmittal-addressee-header p {
   font-size: 12pt;
   line-height: 1.35;
@@ -870,6 +885,276 @@ html[data-paper-size="legal"] .print-doc-transmittal-elderly .court-decree-trans
 .print-doc-transmittal-elderly .court-decree-transmittal-attachments-print li {
   font-size: 12pt !important;
   line-height: 1.35 !important;
+}
+html[data-paper-size="a4"] .print-doc-transmittal-elderly .ausf-transmittal-attachments-print li,
+html[data-paper-size="short"] .print-doc-transmittal-elderly .ausf-transmittal-attachments-print li,
+html[data-paper-size="long"] .print-doc-transmittal-elderly .ausf-transmittal-attachments-print li,
+html[data-paper-size="legal"] .print-doc-transmittal-elderly .ausf-transmittal-attachments-print li,
+.print-doc-transmittal-elderly .ausf-transmittal-attachments-print li {
+  font-size: 12pt !important;
+  line-height: 1.35 !important;
+}
+
+/* MC2010-04 transmittal: 16px screen, 12pt print; compact lines and paper-fit */
+.mc2010-transmittal-doc,
+.mc2010-transmittal-doc h1,
+.mc2010-transmittal-doc p,
+.mc2010-transmittal-doc li,
+.mc2010-transmittal-doc td,
+.mc2010-transmittal-doc th,
+.mc2010-transmittal-doc div,
+.mc2010-transmittal-doc span,
+.mc2010-transmittal-doc ul,
+.mc2010-transmittal-doc label,
+.mc2010-transmittal-doc input,
+.mc2010-transmittal-doc textarea,
+.mc2010-transmittal-doc .print-doc-header p,
+.mc2010-transmittal-doc .print-header-address {
+  font-size: 16px !important;
+}
+.mc2010-transmittal-doc p {
+  margin: 0 !important;
+  line-height: 1.02 !important;
+}
+
+/* MC2010-04 LCR (1A/2A/3A): match transmittal — 16px screen */
+body .mc2010-print-root .court-decree-lcr-form,
+body .mc2010-print-root .court-decree-lcr-form-outer,
+body .mc2010-print-root .court-decree-lcr-form .court-decree-lcr-body,
+body .mc2010-print-root .court-decree-lcr-form .court-decree-lcr-table,
+body .mc2010-print-root .court-decree-lcr-form .court-decree-lcr-table td,
+body .mc2010-print-root .court-decree-lcr-form .court-decree-lcr-table th,
+body .mc2010-print-root .court-decree-lcr-form p,
+body .mc2010-print-root .court-decree-lcr-form .text-sm,
+body .mc2010-print-root .court-decree-lcr-form li,
+body .mc2010-print-root .court-decree-lcr-form label,
+body .mc2010-print-root .court-decree-lcr-form input,
+body .mc2010-print-root .court-decree-lcr-form textarea,
+body .mc2010-print-root .court-decree-lcr-form .lcr-form-bottom-content p,
+body .mc2010-print-root .court-decree-lcr-form .lcr-form-bottom-content .text-sm,
+body .mc2010-print-root .court-decree-lcr-form .print-doc-header p,
+body .mc2010-print-root .court-decree-lcr-form .print-header-address,
+body .mc2010-print-root .court-decree-lcr-form .print-doc-footer p,
+body .mc2010-print-root .court-decree-lcr-form .print-doc-footer .text-xs {
+  font-size: 16px !important;
+}
+.mc2010-transmittal-doc .print-doc-body {
+  padding-top: 0 !important;
+}
+/* Stacked labels (single <p> + <br />) — tighten vertical rhythm; do NOT zero attn left indent (ml-14) */
+.mc2010-transmittal-doc p.mc2010-stack-tight-p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+  line-height: 1.06 !important;
+}
+.mc2010-transmittal-doc p.mc2010-stack-tight-p:not(.mc2010-attn-block) {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+html[data-paper-size="a4"] .mc2010-transmittal-doc,
+html[data-paper-size="short"] .mc2010-transmittal-doc,
+html[data-paper-size="long"] .mc2010-transmittal-doc,
+html[data-paper-size="legal"] .mc2010-transmittal-doc {
+  overflow: hidden !important;
+}
+@media print {
+  .mc2010-transmittal-doc,
+  .mc2010-transmittal-doc h1,
+  .mc2010-transmittal-doc p,
+  .mc2010-transmittal-doc li,
+  .mc2010-transmittal-doc td,
+  .mc2010-transmittal-doc th,
+  .mc2010-transmittal-doc div,
+  .mc2010-transmittal-doc span,
+  .mc2010-transmittal-doc ul,
+  .mc2010-transmittal-doc label,
+  .mc2010-transmittal-doc input,
+  .mc2010-transmittal-doc textarea,
+  .mc2010-transmittal-doc .print-doc-header p,
+  .mc2010-transmittal-doc .print-header-address {
+    font-size: 12pt !important;
+    line-height: 1.0 !important;
+  }
+  .mc2010-transmittal-doc p {
+    margin: 0 !important;
+  }
+
+  body .mc2010-print-root .court-decree-lcr-form,
+  body .mc2010-print-root .court-decree-lcr-form-outer,
+  body .mc2010-print-root .court-decree-lcr-form .court-decree-lcr-body,
+  body .mc2010-print-root .court-decree-lcr-form .court-decree-lcr-table,
+  body .mc2010-print-root .court-decree-lcr-form .court-decree-lcr-table td,
+  body .mc2010-print-root .court-decree-lcr-form .court-decree-lcr-table th,
+  body .mc2010-print-root .court-decree-lcr-form p,
+  body .mc2010-print-root .court-decree-lcr-form .text-sm,
+  body .mc2010-print-root .court-decree-lcr-form li,
+  body .mc2010-print-root .court-decree-lcr-form label,
+  body .mc2010-print-root .court-decree-lcr-form input,
+  body .mc2010-print-root .court-decree-lcr-form textarea,
+  body .mc2010-print-root .court-decree-lcr-form .lcr-form-bottom-content p,
+  body .mc2010-print-root .court-decree-lcr-form .lcr-form-bottom-content .text-sm,
+  body .mc2010-print-root .court-decree-lcr-form .print-doc-header p,
+  body .mc2010-print-root .court-decree-lcr-form .print-header-address,
+  body .mc2010-print-root .court-decree-lcr-form .print-doc-footer p,
+  body .mc2010-print-root .court-decree-lcr-form .print-doc-footer .text-xs {
+    font-size: 12pt !important;
+    line-height: 1.25 !important;
+  }
+
+  .mc2010-transmittal-doc .print-doc-header img {
+    width: 3.15rem !important;
+    height: 3.15rem !important;
+    max-width: 3.15rem !important;
+    max-height: 3.15rem !important;
+  }
+  .mc2010-transmittal-doc .mc2010-attn-block {
+    line-height: 1.06 !important;
+  }
+  .mc2010-transmittal-doc .mc2010-stack-tight-p,
+  .mc2010-transmittal-doc .mc2010-stack-tight-p span {
+    line-height: inherit !important;
+  }
+  .mc2010-transmittal-doc p.mc2010-stack-tight-p {
+    margin-block: 0 !important;
+    padding: 0 !important;
+    line-height: 1.06 !important;
+    font-size: 12pt !important;
+  }
+  /* Keep attn block indented (Tailwind ml-14); stacking CSS must not wipe margin-inline */
+  .mc2010-transmittal-doc p.mc2010-stack-tight-p:not(.mc2010-attn-block) {
+    margin-inline: 0 !important;
+  }
+  .mc2010-transmittal-doc p.mc2010-stack-tight-p.mc2010-attn-block {
+    margin-left: 3.5rem !important;
+    margin-inline-end: 0 !important;
+    margin-inline-start: 3.5rem !important;
+  }
+  .mc2010-transmittal-doc .mc2010-selected-checklist-print-only {
+    grid-template-columns: 40% 48% !important;
+    column-gap: 0.86in !important;
+    row-gap: 0.16in !important;
+    margin-top: 0.05in !important;
+  }
+  .mc2010-transmittal-doc .mc2010-checklist-layout {
+    align-items: start !important;
+  }
+  .mc2010-transmittal-doc .mc2010-checklist-title {
+    font-size: 12pt !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.05in !important;
+    letter-spacing: 0 !important;
+    line-height: 1 !important;
+  }
+  .mc2010-transmittal-doc .mc2010-selected-table,
+  .mc2010-transmittal-doc .mc2010-checklist-table {
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+  .mc2010-transmittal-doc .mc2010-checklist-table td {
+    padding-top: 0.032in !important;
+    padding-bottom: 0.032in !important;
+    padding-left: 0.06in !important;
+    padding-right: 0.06in !important;
+    line-height: 1 !important;
+    vertical-align: middle !important;
+  }
+  .mc2010-transmittal-doc .mc2010-checklist-table td.mc2010-checklist-box-cell:first-child {
+    width: 0.26in !important;
+    min-width: 0.26in !important;
+    max-width: 0.26in !important;
+    text-align: center !important;
+    padding: 0.030in 0 !important;
+  }
+  .mc2010-transmittal-doc .mc2010-checklist-table td:first-child > div.mc2010-checklist-box {
+    width: 0.15in !important;
+    height: 0.15in !important;
+    min-width: 0.15in !important;
+    min-height: 0.15in !important;
+  }
+  .mc2010-transmittal-doc .mc2010-unchecked-row {
+    display: none !important;
+  }
+  .mc2010-transmittal-doc .mc2010-selected-doc-table {
+    max-width: 2.9in !important;
+  }
+  .mc2010-transmittal-doc .mc2010-selected-attach-table {
+    max-width: 4.2in !important;
+  }
+  .mc2010-transmittal-doc .mc2010-selected-endorse-table {
+    max-width: 4.2in !important;
+  }
+  /* MC2010-04: force transmittal + LCR to print (Tailwind “hidden” can win over “print:block” in some builds) */
+  .mc2010-print-root #supplemental-print-transmittal,
+  .mc2010-print-root #supplemental-print-lcr {
+    display: block !important;
+  }
+}
+
+/* MC2010-04 PDF capture / off-screen render: force 12pt when body.pdf-capture (screen pathway) */
+body.pdf-capture .mc2010-transmittal-doc,
+body.pdf-capture .mc2010-transmittal-doc h1,
+body.pdf-capture .mc2010-transmittal-doc p,
+body.pdf-capture .mc2010-transmittal-doc li,
+body.pdf-capture .mc2010-transmittal-doc td,
+body.pdf-capture .mc2010-transmittal-doc th,
+body.pdf-capture .mc2010-transmittal-doc label,
+body.pdf-capture .mc2010-transmittal-doc input,
+body.pdf-capture .mc2010-transmittal-doc textarea,
+body.pdf-capture .mc2010-transmittal-doc .print-doc-header p,
+body.pdf-capture .mc2010-transmittal-doc .print-header-address {
+  font-size: 12pt !important;
+}
+body.pdf-capture .mc2010-transmittal-doc p.mc2010-stack-tight-p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+  line-height: 1.06 !important;
+}
+body.pdf-capture .mc2010-transmittal-doc p.mc2010-stack-tight-p:not(.mc2010-attn-block) {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+body.pdf-capture .mc2010-transmittal-doc p.mc2010-stack-tight-p.mc2010-attn-block {
+  margin-left: 3.5rem !important;
+  margin-inline-start: 3.5rem !important;
+}
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form,
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form-outer,
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form .court-decree-lcr-body,
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form .court-decree-lcr-table,
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form .court-decree-lcr-table td,
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form .court-decree-lcr-table th,
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form p,
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form .text-sm,
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form li,
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form label,
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form input,
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form textarea,
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form .lcr-form-bottom-content p,
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form .lcr-form-bottom-content .text-sm,
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form .print-doc-footer p,
+body.pdf-capture .mc2010-print-root .court-decree-lcr-form .print-doc-footer .text-xs {
+  font-size: 12pt !important;
+}
+body.pdf-capture .mc2010-transmittal-doc .mc2010-selected-table,
+body.pdf-capture .mc2010-transmittal-doc .mc2010-checklist-table {
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+}
+body.pdf-capture .mc2010-transmittal-doc .mc2010-checklist-table td.mc2010-checklist-box-cell:first-child {
+  width: 0.26in !important;
+  min-width: 0.26in !important;
+  max-width: 0.26in !important;
+  text-align: center !important;
+  padding: 0.026in 0 !important;
+}
+body.pdf-capture .mc2010-transmittal-doc .mc2010-checklist-table td:first-child > div.mc2010-checklist-box {
+  width: 0.12in !important;
+  height: 0.12in !important;
+  min-width: 0.12in !important;
+  min-height: 0.12in !important;
 }
 
 /* Supplemental Report scaling */
@@ -1164,6 +1449,14 @@ body.pdf-capture .print-doc-transmittal-elderly .oot-transmittal-addressee-heade
   font-size: 12pt !important;
   line-height: 1.35 !important;
 }
+body.pdf-capture .print-doc-transmittal-elderly .ausf-local-transmittal-addressee p,
+body.pdf-capture .print-doc-transmittal-elderly .oot-transmittal-addressee-header p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 1 !important;
+}
 body.pdf-capture .print-doc-transmittal-elderly.legitimation-transmittal-doc .print-doc-header hr.legitimation-transmittal-header-rule {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
@@ -1215,6 +1508,10 @@ body.pdf-capture .print-doc-transmittal-elderly ol li {
   font-size: 14pt !important;
 }
 body.pdf-capture .print-doc-transmittal-elderly .court-decree-transmittal-attachments-print li {
+  font-size: 12pt !important;
+  line-height: 1.35 !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly .ausf-transmittal-attachments-print li {
   font-size: 12pt !important;
   line-height: 1.35 !important;
 }
@@ -1784,6 +2081,9 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     break-before: auto !important;
     page-break-before: auto !important;
   }
+  html.supplemental-pdf-export--transmittal-only #supplemental-print-enclosure {
+    display: none !important;
+  }
   /* LCR only (same single-document capture as Court Decree / AUSF / Legitimation LCR views) */
   html.supplemental-pdf-export--lcr-only #supplemental-print-transmittal {
     display: none !important;
@@ -1792,6 +2092,19 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     display: none !important;
   }
   html.supplemental-pdf-export--lcr-only #supplemental-print-lcr {
+    display: block !important;
+    page-break-before: auto !important;
+    break-before: auto !important;
+  }
+  html.supplemental-pdf-export--lcr-only #supplemental-print-enclosure {
+    display: none !important;
+  }
+  /* MC2010-04 attached form / scanned PDF output only */
+  html.supplemental-pdf-export--enclosure-only #supplemental-print-transmittal,
+  html.supplemental-pdf-export--enclosure-only #supplemental-print-bundle {
+    display: none !important;
+  }
+  html.supplemental-pdf-export--enclosure-only #supplemental-print-enclosure {
     display: block !important;
     page-break-before: auto !important;
     break-before: auto !important;
@@ -3092,6 +3405,10 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
   .court-decree-lcr-form .court-decree-lcr-table {
     margin-bottom: 0.08in !important;
+  }
+  /* ~2 blank lines between facts table and certification sentence (Supplemental + MC2010 LCR) */
+  .court-decree-lcr-form p.court-decree-lcr-cert-after-table {
+    margin-top: 1em !important;
   }
   .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table thead td {
     color: #000 !important;
@@ -4459,24 +4776,48 @@ html[data-paper-size="short"] .print-doc-footer p {
 }
 .ausf-saved-anim-page,
 .court-decree-saved-anim-page,
-.legitimation-saved-anim-page { animation: ausfSavedPageIn 0.35s ease-out forwards; }
+.legitimation-saved-anim-page,
+.supplemental-saved-anim-page,
+.mc2010-saved-anim-page { animation: ausfSavedPageIn 0.35s ease-out forwards; }
 .ausf-saved-anim-action,
 .court-decree-saved-anim-action,
-.legitimation-saved-anim-action { animation: ausfSavedActionIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.legitimation-saved-anim-action,
+.supplemental-saved-anim-action,
+.mc2010-saved-anim-action { animation: ausfSavedActionIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .ausf-saved-anim-item,
 .court-decree-saved-anim-item,
-.legitimation-saved-anim-item { animation: ausfSavedItemIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.legitimation-saved-anim-item,
+.supplemental-saved-anim-item,
+.mc2010-saved-anim-item { animation: ausfSavedItemIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .ausf-saved-anim-empty,
 .court-decree-saved-anim-empty,
-.legitimation-saved-anim-empty { animation: ausfSavedEmptyIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.legitimation-saved-anim-empty,
+.supplemental-saved-anim-empty,
+.mc2010-saved-anim-empty { animation: ausfSavedEmptyIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .ausf-saved-anim-backdrop,
 .court-decree-saved-anim-backdrop,
-.legitimation-saved-anim-backdrop { animation: ausfSavedModalBackdropIn 0.2s ease-out forwards; }
+.legitimation-saved-anim-backdrop,
+.supplemental-saved-anim-backdrop,
+.mc2010-saved-anim-backdrop { animation: ausfSavedModalBackdropIn 0.2s ease-out forwards; }
+
+/* Supplemental + MC2010-04 form/print: match entry motion of other workflows */
+.supplemental-form-page-content,
+.mc2010-form-page-content { animation: ausfSavedPageIn 0.35s ease-out forwards; }
+.supplemental-print-anim-page,
+.mc2010-print-anim-page { animation: ausfSavedPageIn 0.35s ease-out forwards; }
+@media print {
+  .supplemental-print-anim-page,
+  .mc2010-print-anim-page {
+    animation: none;
+  }
+}
 
 /* AUSF + Court Decree + Legitimation form pages: modern form layout and motion */
 .ausf-form-page,
 .court-decree-form-page,
-.legitimation-form-page {
+.legitimation-form-page,
+.supplemental-form-page,
+.mc2010-form-page {
   min-height: 100%;
   background: linear-gradient(165deg, #e8eef4 0%, #f1f5f9 35%, #f8fafc 100%);
   padding: 1.5rem 0 3rem;
@@ -4484,7 +4825,7 @@ html[data-paper-size="short"] .print-doc-footer p {
 .ausf-form-page__card,
 .court-decree-form-page__card,
 .legitimation-form-page__card {
-  max-width: 52rem;
+  max-width: 72rem;
   margin-left: auto;
   margin-right: auto;
   background: var(--card-bg);
@@ -4492,6 +4833,11 @@ html[data-paper-size="short"] .print-doc-footer p {
   box-shadow: 0 1px 3px rgba(30, 58, 95, 0.06), 0 10px 40px -12px rgba(30, 58, 95, 0.15);
   overflow: hidden;
   border: 1px solid rgba(30, 58, 95, 0.08);
+}
+/* Fill-out forms only: Supplemental and MC2010-04 use the same widened shell. */
+.supplemental-form-page .legitimation-form-page__card,
+.mc2010-form-page .legitimation-form-page__card {
+  max-width: 72rem;
 }
 .ausf-form-page__header,
 .court-decree-form-page__header,

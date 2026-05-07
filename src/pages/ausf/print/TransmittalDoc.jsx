@@ -202,7 +202,17 @@ export default function TransmittalDoc({
   const showCourtDecreeOot = isCourtDecreeTransmittal && isOutOfTown
   const showStyledOotAddressee = isLegOot || isAusfOot || showCourtDecreeOot
 
-  const ootDefaults = showCourtDecreeOot ? DEFAULT_COURT_DECREE_OOT_LINES : isLegOot ? DEFAULT_LEGITIMATION_OOT_LINES : ['', '', '']
+  const ootDefaults = showCourtDecreeOot
+    ? DEFAULT_COURT_DECREE_OOT_LINES
+    : isLegOot
+      ? DEFAULT_LEGITIMATION_OOT_LINES
+      : isAusfOot
+        ? [
+            DEFAULT_AUSF_LOCAL_TRANSMITTAL.recipientName,
+            DEFAULT_AUSF_LOCAL_TRANSMITTAL.recipientTitle,
+            DEFAULT_AUSF_LOCAL_TRANSMITTAL.recipientOffice,
+          ]
+        : ['', '', '']
 
   const [ootDraft, setOotDraft] = useState({
     n: safe.recipientName != null ? String(safe.recipientName) : '',
@@ -220,11 +230,12 @@ export default function TransmittalDoc({
   const ootLine1 = (ootDraft.n || '').trim() || ootDefaults[0] || '\u00a0'
   const ootLine2 = (ootDraft.t || '').trim() || ootDefaults[1] || '\u00a0'
   const ootLine3 = (ootDraft.o || '').trim() || ootDefaults[2] || '\u00a0'
+  const hasAnyOotAddressee = [ootDraft.n, ootDraft.t, ootDraft.o].some((v) => String(v || '').trim().length > 0)
 
-  /** AUSF local “To” lines for print (draft + defaults) */
-  const ausfLocalLine1 = ((ootDraft.n || '').trim() || DEFAULT_AUSF_LOCAL_TRANSMITTAL.recipientName).toUpperCase()
-  const ausfLocalLine2 = ((ootDraft.t || '').trim() || DEFAULT_AUSF_LOCAL_TRANSMITTAL.recipientTitle).toUpperCase()
-  const ausfLocalLine3 = ((ootDraft.o || '').trim() || DEFAULT_AUSF_LOCAL_TRANSMITTAL.recipientOffice).toUpperCase()
+  /** AUSF local “To” lines for print (only when user filled fields). */
+  const ausfLocalLine1 = (ootDraft.n || '').trim().toUpperCase()
+  const ausfLocalLine2 = (ootDraft.t || '').trim().toUpperCase()
+  const ausfLocalLine3 = (ootDraft.o || '').trim().toUpperCase()
 
   const needsPsaEditor = (isCourtDecreeTransmittal || isLegitimationTransmittal) && !isOutOfTown
   const readPsaDraftFrom = useCallback(
@@ -385,6 +396,7 @@ export default function TransmittalDoc({
               showCourtDecreeOot ? 'court-decree-oot-transmittal-mcr-header' : '',
               isCourtDecreeTransmittal && isOutOfTown ? '' : 'mt-2 text-base leading-snug',
               isLegOot ? 'legitimation-oot-addressee-print' : '',
+              isAusfOot && !hasAnyOotAddressee ? 'print:hidden' : '',
             ]
               .filter(Boolean)
               .join(' ')}
@@ -438,7 +450,14 @@ export default function TransmittalDoc({
             ) : null}
           </div>
         ) : isPsaLetter && isAusfTransmittal ? (
-          <div className="ausf-local-transmittal-addressee mb-3 max-w-full space-y-0 font-serif text-left text-base leading-snug">
+          <div
+            className={[
+              'ausf-local-transmittal-addressee mb-3 max-w-full space-y-0 font-serif text-left text-base leading-snug',
+              !hasAnyOotAddressee ? 'print:hidden' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
             <div className="m-0 text-left">
               <p className="print-only m-0 text-left font-bold uppercase tracking-wide">{ausfLocalLine1}</p>
               <input
@@ -448,7 +467,7 @@ export default function TransmittalDoc({
                 className={`${inlineAusfLocalAddrInput} font-bold uppercase tracking-wide`}
                 value={ootDraft.n}
                 onChange={(e) => setOotDraft((d) => ({ ...d, n: e.target.value }))}
-                placeholder="NAME"
+                placeholder={DEFAULT_AUSF_LOCAL_TRANSMITTAL.recipientName}
               />
             </div>
             <div className="m-0 text-left">
@@ -460,7 +479,7 @@ export default function TransmittalDoc({
                 className={`${inlineAusfLocalAddrInput} font-normal uppercase tracking-wide`}
                 value={ootDraft.t}
                 onChange={(e) => setOotDraft((d) => ({ ...d, t: e.target.value }))}
-                placeholder="TITLE"
+                placeholder={DEFAULT_AUSF_LOCAL_TRANSMITTAL.recipientTitle}
               />
             </div>
             <div className="m-0 text-left">
@@ -472,7 +491,7 @@ export default function TransmittalDoc({
                 className={`${inlineAusfLocalAddrInput} font-normal uppercase tracking-wide`}
                 value={ootDraft.o}
                 onChange={(e) => setOotDraft((d) => ({ ...d, o: e.target.value }))}
-                placeholder="LOCATION"
+                placeholder={DEFAULT_AUSF_LOCAL_TRANSMITTAL.recipientOffice}
               />
             </div>
             {recipientAgency ? <p className="uppercase">{recipientAgency}</p> : null}
@@ -488,7 +507,7 @@ export default function TransmittalDoc({
               </div>
             ) : null}
           </div>
-        ) : isPsaLetter ? (
+        ) : isPsaLetter && !isAusfTransmittal ? (
           <div className="mb-3 space-y-0.5">
             <p className="font-bold uppercase">{ausfLocalLine1}</p>
             <p className="uppercase">{ausfLocalLine2}</p>
@@ -575,6 +594,7 @@ export default function TransmittalDoc({
               <ol
                 className={[
                   'print-only list-decimal list-inside space-y-1 text-left w-[28rem]',
+                  isAusfTransmittal ? 'ausf-transmittal-attachments-print' : '',
                   isCourtDecreeTransmittal ? 'court-decree-transmittal-attachments-print' : '',
                   isLegitimationTransmittal ? 'legitimation-transmittal-attachments-print' : '',
                 ]

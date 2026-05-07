@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getUploadedFile, readFileAsDataUrl, setUploadedFile, moveUploadedFileToTrash } from '../../lib/uploadedFileStore'
 import ConfirmRemoveModal from './ConfirmRemoveModal'
+import AttachFromLibraryModal from './AttachFromLibraryModal'
 
 function IconUpload(props) {
   return (
@@ -31,12 +32,27 @@ function IconEye(props) {
   )
 }
 
-export default function UploadFileModal({ open, onClose, scopeKey, title, accept = 'image/*,application/pdf,text/*', onChanged }) {
+export default function UploadFileModal({
+  open,
+  onClose,
+  scopeKey,
+  title,
+  accept = 'image/*,application/pdf,text/*',
+  onChanged,
+  /** Supplemental / MC2010-04: reuse scans already stored for other print types */
+  offerLibraryAttach = false,
+  libraryExcludeScopes = [],
+}) {
   const navigate = useNavigate()
   const inputRef = useRef(null)
   const [busy, setBusy] = useState(false)
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false)
+  const [libraryOpen, setLibraryOpen] = useState(false)
   const existing = useMemo(() => (scopeKey ? getUploadedFile(scopeKey) : null), [scopeKey, open])
+
+  useEffect(() => {
+    if (!open) setLibraryOpen(false)
+  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -78,6 +94,7 @@ export default function UploadFileModal({ open, onClose, scopeKey, title, accept
     moveUploadedFileToTrash(scopeKey, meta)
     onChanged?.({ kind: 'removed', scopeKey, title: title || '', ...meta })
     setConfirmRemoveOpen(false)
+    onClose?.()
   }
 
   return (
@@ -156,12 +173,42 @@ export default function UploadFileModal({ open, onClose, scopeKey, title, accept
               </div>
             ) : null}
 
+            {offerLibraryAttach && scopeKey ? (
+              <button
+                type="button"
+                onClick={() => setLibraryOpen(true)}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-900 text-sm font-semibold hover:bg-gray-50"
+              >
+                Use file already in ULSADES
+              </button>
+            ) : null}
+
             <p className="text-xs text-gray-500 leading-relaxed">
               Supported: images, PDF, and text files.
             </p>
           </div>
         </div>
       </div>
+      {offerLibraryAttach && scopeKey ? (
+        <AttachFromLibraryModal
+          open={libraryOpen}
+          onClose={() => setLibraryOpen(false)}
+          targetScopeKey={scopeKey}
+          targetTitle={title || ''}
+          excludeScopeKeys={[scopeKey, ...libraryExcludeScopes].filter(Boolean)}
+          onAttached={() => {
+            setLibraryOpen(false)
+            onChanged?.()
+            onChanged?.({
+              kind: 'uploaded',
+              scopeKey,
+              title: title || '',
+              fileName: 'From saved uploads',
+            })
+            onClose?.()
+          }}
+        />
+      ) : null}
       <ConfirmRemoveModal
         open={confirmRemoveOpen}
         title={title ? `${title} — Remove attachment` : 'Remove attachment'}

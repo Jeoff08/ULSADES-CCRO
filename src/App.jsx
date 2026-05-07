@@ -10,6 +10,10 @@ import { LegitimationForm, LegitimationPrint, LegitimationSaved } from './pages/
 import LegalInstrumentPage from './pages/LegalInstrumentPage'
 import SupplementalPrint from './pages/legalInstrument/SupplementalPrint'
 import SupplementalSaved from './pages/legalInstrument/SupplementalSaved'
+import Mc2010Print from './pages/legalInstrument/Mc2010Print'
+import Mc2010Saved from './pages/legalInstrument/Mc2010Saved'
+import WronglyRegisterPrint from './pages/legalInstrument/WronglyRegisterPrint'
+import WronglyRegisterSaved from './pages/legalInstrument/WronglyRegisterSaved'
 import CourtDecreeWorkflowPage from './pages/CourtDecreeWorkflowPage'
 import UploadedFileViewer from './pages/UploadedFileViewer'
 import Log from './pages/Log'
@@ -17,6 +21,7 @@ import AnnotationFieldPage from './pages/AnnotationFieldPage'
 import AnnotationAckFieldPage from './pages/AnnotationAckFieldPage'
 import CorrectionOfEntriesForm from './pages/correctionOfEntries/CorrectionOfEntriesForm'
 import CorrectionOfEntriesPrint from './pages/correctionOfEntries/CorrectionOfEntriesPrint'
+import SystemDataPage from './pages/SystemDataPage'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth()
@@ -53,12 +58,17 @@ export default function App() {
         <Route path="legal-instrument/:slug" element={<LegalInstrumentPage />} />
         <Route path="legal-instrument/supplemental/print" element={<SupplementalPrint />} />
         <Route path="legal-instrument/supplemental/saved" element={<SupplementalSaved />} />
+        <Route path="legal-instrument/mc2010-04/print" element={<Mc2010Print />} />
+        <Route path="legal-instrument/mc2010-04/saved" element={<Mc2010Saved />} />
+        <Route path="legal-instrument/wrongly-register/print" element={<WronglyRegisterPrint />} />
+        <Route path="legal-instrument/wrongly-register/saved" element={<WronglyRegisterSaved />} />
         <Route path="uploaded/:scope" element={<UploadedFileViewer />} />
         <Route path="logs" element={<Log />} />
         <Route path="annotation-field" element={<AnnotationFieldPage />} />
         <Route path="annotation-ack-field" element={<AnnotationAckFieldPage />} />
         <Route path="correction-of-entries" element={<CorrectionOfEntriesForm />} />
         <Route path="correction-of-entries/print" element={<CorrectionOfEntriesPrint />} />
+        <Route path="system-data" element={<SystemDataPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

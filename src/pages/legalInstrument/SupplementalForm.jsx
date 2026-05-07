@@ -251,10 +251,13 @@ export default function SupplementalForm() {
         : 'Correct province entry'
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="mb-2">
-        <h1 className="text-2xl font-bold text-gray-900">Supplemental Report Form</h1>
-      </div>
+    <div className="supplemental-form-page no-print">
+      <div className="legitimation-form-page__card">
+        <header className="legitimation-form-page__header no-print">
+          <h1>Supplemental Report Automated Data Entry Form</h1>
+          <p>Unified Legal Status Automated Data Entry System — Iligan City</p>
+        </header>
+        <div className="legitimation-form-page__body supplemental-form-page-content">
       <p className="text-sm text-gray-600 mb-5">
         Fill out this form to generate the Affidavit for Supplemental Report output.
       </p>
@@ -266,6 +269,7 @@ export default function SupplementalForm() {
         </div>
       ) : null}
 
+      <div className="legitimation-form-page__section">
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
         <aside className="w-full lg:w-56 shrink-0 lg:sticky lg:top-6 flex flex-col gap-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Form Sections</p>
@@ -361,6 +365,7 @@ export default function SupplementalForm() {
               Edit the transmittal letter for this report
             </span>
           </button>
+
         </aside>
 
         <div className="flex-1 min-w-0">
@@ -579,12 +584,13 @@ export default function SupplementalForm() {
           )}
         </div>
       </div>
+      </div>
 
-      <div className="mt-6 flex flex-wrap items-center gap-3">
+      <div className="ausf-form-page__actions mt-6 flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={handleSave}
-          className="px-4 py-2.5 bg-[var(--primary-blue)] text-white rounded-lg text-sm font-medium hover:bg-[var(--primary-blue-light)]"
+          className="ausf-form-page__btn ausf-form-page__btn--primary px-4 py-2.5 text-sm font-medium"
         >
           Save
         </button>
@@ -592,7 +598,7 @@ export default function SupplementalForm() {
           <button
             type="button"
             onClick={handleBackToSaved}
-            className="px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            className="ausf-form-page__btn ausf-form-page__btn--secondary px-4 py-2.5 text-sm font-medium"
           >
             Back to saved files
           </button>
@@ -646,6 +652,8 @@ export default function SupplementalForm() {
         </div>
       )}
 
+        </div>
+      </div>
     </div>
   )
 }

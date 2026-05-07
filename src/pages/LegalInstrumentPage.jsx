@@ -1,7 +1,9 @@
 import React from 'react'
 import { useParams, Link } from 'react-router-dom'
 import SupplementalForm from './legalInstrument/SupplementalForm'
+import Mc2010Form from './legalInstrument/Mc2010Form'
 import LcrSearchAndPrint from './legalInstrument/LcrSearchAndPrint'
+import WronglyRegisterForm from './legalInstrument/WronglyRegisterForm'
 
 const TITLES = {
   supplemental: 'Supplemental',
@@ -9,6 +11,7 @@ const TITLES = {
   'mc2010-04': 'MC2010-04',
   'negative-2': 'Negative',
   'clear-copy': 'Clear Copy',
+  'wrongly-register': 'Wrongly register',
 }
 
 export default function LegalInstrumentPage() {
@@ -17,6 +20,14 @@ export default function LegalInstrumentPage() {
 
   if (slug === 'supplemental') {
     return <SupplementalForm />
+  }
+
+  if (slug === 'mc2010-04') {
+    return <Mc2010Form />
+  }
+
+  if (slug === 'wrongly-register') {
+    return <WronglyRegisterForm />
   }
 
   // New flow for the other legal instruments

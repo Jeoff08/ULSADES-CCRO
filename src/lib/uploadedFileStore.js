@@ -150,3 +150,33 @@ export function readFileAsDataUrl(file) {
   })
 }
 
+/** Light index of all uploads (includes dataUrl-backed entries only) — for attach-from-library pickers */
+export function listUploadedFileIndex() {
+  const out = []
+  try {
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i)
+      if (!key || !key.startsWith(STORAGE_PREFIX)) continue
+      const scope = key.slice(STORAGE_PREFIX.length)
+      try {
+        const raw = localStorage.getItem(key)
+        const parsed = raw ? JSON.parse(raw) : null
+        if (!parsed?.dataUrl || !parsed?.mimeType) continue
+        out.push({
+          scope,
+          name: parsed.name || 'uploaded-file',
+          title: parsed.title || '',
+          mimeType: parsed.mimeType || '',
+          uploadedAt: parsed.uploadedAt || '',
+        })
+      } catch (_) {
+        /* skip */
+      }
+    }
+  } catch {
+    return []
+  }
+  out.sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt)))
+  return out
+}
+
