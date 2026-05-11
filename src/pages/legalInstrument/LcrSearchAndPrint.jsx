@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react'
+import { useWarnIfUnsaved } from '../../hooks/useWarnIfUnsaved'
 import { searchLegitimationForForm1a } from './lib/supplementalForm1a'
 import PrintHeaderRow from '../../components/print/PrintHeaderRow'
 
@@ -34,6 +35,65 @@ export default function LcrSearchAndPrint({ title, type }) {
   const [lcrBirthDate, setLcrBirthDate] = useState('')
   const [lcrCitizenshipMother, setLcrCitizenshipMother] = useState('')
   const [lcrCitizenshipFather, setLcrCitizenshipFather] = useState('')
+
+  const formStateForDirtyGuard = useMemo(
+    () => ({
+      lcrForm,
+      clientName,
+      selectedClient,
+      cityOf,
+      regNo,
+      civilStatus,
+      address,
+      registeredIn,
+      registeredDate,
+      provinceMissing,
+      provinceCorrected,
+      affiantName,
+      isOutputMode,
+      lcrPage,
+      lcrBook,
+      lcrDateRegistration,
+      lcrPlaceBirth,
+      lcrMotherName,
+      lcrFatherName,
+      lcrDateMarriage,
+      lcrPlaceMarriage,
+      lcrSex,
+      lcrBirthDate,
+      lcrCitizenshipMother,
+      lcrCitizenshipFather,
+    }),
+    [
+      lcrForm,
+      clientName,
+      selectedClient,
+      cityOf,
+      regNo,
+      civilStatus,
+      address,
+      registeredIn,
+      registeredDate,
+      provinceMissing,
+      provinceCorrected,
+      affiantName,
+      isOutputMode,
+      lcrPage,
+      lcrBook,
+      lcrDateRegistration,
+      lcrPlaceBirth,
+      lcrMotherName,
+      lcrFatherName,
+      lcrDateMarriage,
+      lcrPlaceMarriage,
+      lcrSex,
+      lcrBirthDate,
+      lcrCitizenshipMother,
+      lcrCitizenshipFather,
+    ]
+  )
+
+  const _acknowledgeSaved = useWarnIfUnsaved(formStateForDirtyGuard, [type])
 
   const searchResults = useMemo(() => {
     if (!clientName.trim()) return []

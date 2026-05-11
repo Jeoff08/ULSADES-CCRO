@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { afterUnsavedAcknowledge, useWarnIfUnsaved } from '../../hooks/useWarnIfUnsaved'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import FormSection from '../../components/FormSection'
 import { FormInput, FormSelect, FormRadioGroup } from '../../components/FormField'
@@ -163,6 +164,12 @@ export default function AUSFForm() {
     }
   }, [searchParams])
 
+  const [dirtyBaselineTick, setDirtyBaselineTick] = useState(0)
+  useEffect(() => {
+    const id = setTimeout(() => setDirtyBaselineTick((x) => x + 1), 120)
+    return () => clearTimeout(id)
+  }, [searchParams])
+
   useEffect(() => {
     let mounted = true
     loadAUSFDraftFromApi()
@@ -178,6 +185,9 @@ export default function AUSFForm() {
         }
       })
       .catch(() => { })
+      .finally(() => {
+        if (mounted) setTimeout(() => setDirtyBaselineTick((x) => x + 1), 120)
+      })
     return () => {
       mounted = false
     }
@@ -205,6 +215,8 @@ export default function AUSFForm() {
   const showItems4to7 = form.childAlreadyAcknowledged === 'NO' || form.childAlreadyAcknowledged === 'YES' || form.formType === 'child-not-ack-transmittal' || form.formType === 'out-of-town' || form.formType === 'child-ack-annotation'
   const derivedJuratFormType = deriveAusfJuratAffidavitFormType(form)
   const isEditingSaved = searchParams.get('edit') === '1'
+
+  const acknowledgeSaved = useWarnIfUnsaved(form, [searchParams.toString(), dirtyBaselineTick])
 
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [showValidationModal, setShowValidationModal] = useState(false)
@@ -261,7 +273,8 @@ export default function AUSFForm() {
       }
     }
     setShowConfirmModal(false)
-    navigate(finalSavedId ? `/ausf/print?id=${encodeURIComponent(finalSavedId)}` : '/ausf/print')
+    const printPath = finalSavedId ? `/ausf/print?id=${encodeURIComponent(finalSavedId)}` : '/ausf/print'
+    afterUnsavedAcknowledge(acknowledgeSaved, () => navigate(printPath))
   }
   const handleCancelModal = () => setShowConfirmModal(false)
 

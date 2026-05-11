@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
+import { useWarnIfUnsaved } from '../hooks/useWarnIfUnsaved'
 import { defaultCourtDecree } from './courtDecree/lib/courtDecreeDefaults'
 import { getCourtDecreeDraft, saveCourtDecreeDraft } from './courtDecree/lib/courtDecreeStorage'
 import { MARRIAGE_ANNOTATION_MODES as MODES } from './courtDecree/lib/marriageAnnotationMode'
 import MarriageNullityArt42Annotation from './courtDecree/print/MarriageNullityArt42Annotation'
 import MarriageAnnotationModeSidebar from './courtDecree/print/MarriageAnnotationModeSidebar'
 import StandardAnnotationWithInstructions from './courtDecree/print/StandardAnnotationWithInstructions'
-import { getPaperPageSpec } from '../components/print'
+import { PAPER_SIZES, getPaperPageSpec } from '../components/print'
 import { saveCurrentViewAsPdf } from '../lib/savePdf'
 
 const TITLES = {
@@ -51,6 +52,14 @@ function NullityOfMarriageWorkflow() {
   const [paperSize, setPaperSize] = useState('legal')
 
   useWorkflowPrintSize(paperSize)
+
+  const [dirtyBaselineTick, setDirtyBaselineTick] = useState(0)
+  useEffect(() => {
+    const id = setTimeout(() => setDirtyBaselineTick((x) => x + 1), 120)
+    return () => clearTimeout(id)
+  }, [])
+
+  const _acknowledgeSaved = useWarnIfUnsaved(data, [dirtyBaselineTick])
 
   useEffect(() => {
     setData(mergeMarriageWorkflowDraft(MODES.nullity))
@@ -129,6 +138,14 @@ function DivorceWorkflow() {
   const [paperSize, setPaperSize] = useState('legal')
 
   useWorkflowPrintSize(paperSize)
+
+  const [dirtyBaselineTick, setDirtyBaselineTick] = useState(0)
+  useEffect(() => {
+    const id = setTimeout(() => setDirtyBaselineTick((x) => x + 1), 120)
+    return () => clearTimeout(id)
+  }, [])
+
+  const _acknowledgeSaved = useWarnIfUnsaved(data, [dirtyBaselineTick])
 
   useEffect(() => {
     setData(mergeMarriageWorkflowDraft(MODES.divorce))

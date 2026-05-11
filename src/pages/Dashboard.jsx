@@ -63,6 +63,12 @@ const categories = [
   },
 ]
 
+const CATEGORY_ACCENTS = {
+  ausf: { dot: 'bg-teal-500', soft: 'from-teal-50 to-cyan-100', ring: 'group-hover:ring-teal-200' },
+  'court-decree': { dot: 'bg-indigo-500', soft: 'from-indigo-50 to-blue-100', ring: 'group-hover:ring-indigo-200' },
+  legitimation: { dot: 'bg-amber-500', soft: 'from-amber-50 to-yellow-100', ring: 'group-hover:ring-amber-200' },
+}
+
 export default function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [ausfCount, setAusfCount] = useState(() => getSavedAUSFList().length)
@@ -88,38 +94,46 @@ export default function Dashboard() {
           }`}
         style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
       >
-        <div className="mb-6">
-          <h1 className="text-base font-bold text-gray-800 mb-1">Dashboard</h1>
-          <p className="text-sm text-gray-500">Choose a transaction type to start data entry.</p>
+        <div className="mb-6 rounded-2xl border border-slate-200/80 bg-white/85 backdrop-blur px-5 py-4 shadow-sm">
+          <p className="text-[11px] tracking-[0.18em] uppercase font-semibold text-slate-500 mb-1">Civil Registry Workspace</p>
+          <h1 className="text-xl font-bold text-slate-800 mb-1">Dashboard</h1>
+          <p className="text-sm text-slate-600">Choose a transaction type to start data entry.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map((cat) => (
             <section
               key={cat.id}
-              className="relative bg-[var(--card-bg)] rounded-xl shadow-sm border border-gray-100 overflow-visible flex flex-col"
+              className={`group relative bg-[var(--card-bg)] rounded-2xl shadow-sm border border-slate-200/80 overflow-visible flex flex-col transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-300/30 ${CATEGORY_ACCENTS[cat.id]?.ring || ''}`}
             >
+              <div className={`pointer-events-none absolute inset-x-0 top-0 h-20 rounded-t-2xl bg-gradient-to-br ${CATEGORY_ACCENTS[cat.id]?.soft || 'from-slate-50 to-slate-100'} opacity-80`} />
               <button
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
-                className="text-left w-full p-5 border-b border-gray-100 shrink-0 rounded-t-xl focus:bg-gray-50/50 focus:outline-none"
+                className="relative text-left w-full p-5 border-b border-slate-100 shrink-0 rounded-t-2xl focus:bg-gray-50/50 focus:outline-none"
               >
-                <h2 className="font-semibold text-gray-800 text-base mb-1">{cat.title}</h2>
-                <p className="text-sm text-gray-500">{cat.meaning}</p>
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <h2 className="font-semibold text-slate-800 text-base">{cat.title}</h2>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/90 px-2 py-1 text-[11px] font-semibold text-slate-600">
+                    <span className={`w-1.5 h-1.5 rounded-full ${CATEGORY_ACCENTS[cat.id]?.dot || 'bg-slate-500'}`} />
+                    Open
+                  </span>
+                </div>
+                <p className="text-sm text-slate-600 leading-relaxed">{cat.meaning}</p>
               </button>
-              <div className="p-4 pt-2 flex flex-col gap-1 flex-1">
-                <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide cursor-default">
-                  Files
+              <div className="p-4 pt-3 flex flex-col gap-1 flex-1">
+                <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-500 uppercase tracking-[0.14em] cursor-default">
+                  Available forms
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
-                <p className="text-xs text-gray-400">Click category to view files</p>
+                <p className="text-xs text-slate-500">Click this card to browse and start forms.</p>
               </div>
               <div
-                className="dashboard-card-total mt-4 mx-4 mb-4 p-4 rounded-lg border-2 flex items-center justify-center min-h-[4.5rem] shrink-0 bg-[#e8f4f8] border-[#0d9488]"
+                className="dashboard-card-total mt-4 mx-4 mb-4 p-4 rounded-xl border-2 flex items-center justify-center min-h-[4.5rem] shrink-0 bg-gradient-to-r from-[#e8f4f8] to-[#f1fbff] border-[#7ac3bc]"
                 aria-label={`Total saved: ${totalCounts[cat.id]}`}
               >
-                <span className="text-2xl font-bold text-[#0f766e] tabular-nums">Total: {totalCounts[cat.id]}</span>
+                <span className="text-2xl font-extrabold text-[#0f766e] tabular-nums">Total: {totalCounts[cat.id]}</span>
               </div>
             </section>
           ))}
@@ -137,17 +151,19 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setSelectedCategory(null)}
-              className="flex items-center gap-2 text-sm font-medium text-[var(--primary-blue)] mb-8 transition focus:underline focus:outline-none"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--primary-blue)] mb-6 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow focus:underline focus:outline-none"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               Back to Dashboard
             </button>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">{selectedCategory.title}</h1>
-            <p className="text-base text-gray-600 leading-relaxed mb-2">{selectedCategory.meaning}</p>
-            <p className="text-sm text-gray-600 leading-relaxed mb-6">{selectedCategory.about}</p>
-            <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+            <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm mb-4">
+              <h1 className="text-2xl font-bold text-slate-800 mb-2">{selectedCategory.title}</h1>
+              <p className="text-base text-slate-700 leading-relaxed mb-2">{selectedCategory.meaning}</p>
+              <p className="text-sm text-slate-600 leading-relaxed">{selectedCategory.about}</p>
+            </div>
+            <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-500 uppercase tracking-[0.14em] mb-3">
               Files
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -159,17 +175,20 @@ export default function Dashboard() {
                   key={f.type}
                   to={f.to ?? { pathname: f.path, search: `?type=${f.type}` }}
                   onClick={() => setSelectedCategory(null)}
-                  className="block w-full px-4 py-2.5 rounded-lg text-left transition focus:bg-gray-100 focus:outline-none"
+                  className="group block w-full px-4 py-3 rounded-xl text-left border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md hover:border-slate-300 focus:bg-gray-100 focus:outline-none"
                 >
-                  <p className="font-medium text-gray-800 text-sm">{f.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{f.desc}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-semibold text-slate-800 text-sm">{f.title}</p>
+                    <span className="text-slate-400 transition-transform group-hover:translate-x-0.5">→</span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{f.desc}</p>
                 </Link>
               ))}
             </div>
             <button
               type="button"
               onClick={() => setSelectedCategory(null)}
-              className="mt-6 px-5 py-2.5 text-sm font-medium text-gray-600 border border-gray-300 rounded-lg transition focus:bg-gray-50 focus:outline-none"
+              className="mt-6 px-5 py-2.5 text-sm font-semibold text-slate-600 border border-slate-300 rounded-lg bg-white transition hover:-translate-y-0.5 hover:shadow focus:bg-gray-50 focus:outline-none"
             >
               Close
             </button>

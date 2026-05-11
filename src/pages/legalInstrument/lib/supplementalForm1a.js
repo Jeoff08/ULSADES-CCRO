@@ -2,6 +2,7 @@ import { fullName } from '../../../lib/printUtils'
 import { defaultLegitimation } from '../../legitimation/lib/legitimationDefaults'
 import { getLegitimationDraft, getSavedLegitimationList } from '../../legitimation/lib/legitimationStorage'
 import { getCourtDecreeDraft, getSavedCourtDecreeList } from '../../courtDecree/lib/courtDecreeStorage'
+import { getAUSFDraft, getSavedAUSFList } from '../../ausf/lib/ausfStorage'
 
 function normalizeName(s) {
   return String(s || '').trim().toUpperCase().replace(/\s+/g, ' ')
@@ -74,6 +75,7 @@ export function listLegitimationSourcesForForm1a() {
     out.push({
       sourceId: '__draft__',
       sourceType: 'Legitimation',
+      formType: 'lcr-form-1a',
       label: child || 'Current Legitimation draft',
       childName: child,
       data: draft,
@@ -85,6 +87,7 @@ export function listLegitimationSourcesForForm1a() {
     out.push({
       sourceId: item.id,
       sourceType: 'Legitimation',
+      formType: 'lcr-form-1a',
       label: item.label || child || 'Legitimation',
       childName: child,
       data: item.data,
@@ -97,6 +100,7 @@ export function listLegitimationSourcesForForm1a() {
     out.push({
       sourceId: '__court_draft__',
       sourceType: 'Court Decree',
+      formType: courtDraft.formType || 'lcr-form-1a',
       label: child || 'Current Court Decree draft',
       childName: child,
       data: courtDraft,
@@ -108,7 +112,33 @@ export function listLegitimationSourcesForForm1a() {
     out.push({
       sourceId: `court_${item.id}`,
       sourceType: 'Court Decree',
+      formType: item.formType || item.data.formType || 'lcr-form-1a',
       label: item.label || child || 'Court Decree',
+      childName: child,
+      data: item.data,
+    })
+  }
+
+  const ausfDraft = getAUSFDraft()
+  if (ausfDraft && typeof ausfDraft === 'object') {
+    const child = (ausfDraft.childFirst ? fullName(ausfDraft.childFirst, ausfDraft.childMiddle, ausfDraft.childLast) : ausfDraft.childName) || ''
+    out.push({
+      sourceId: '__ausf_draft__',
+      sourceType: 'AUSF',
+      formType: 'lcr-form-1a',
+      label: child || 'Current AUSF draft',
+      childName: child,
+      data: ausfDraft,
+    })
+  }
+  for (const item of getSavedAUSFList()) {
+    if (!item?.data) continue
+    const child = (item.data.childFirst ? fullName(item.data.childFirst, item.data.childMiddle, item.data.childLast) : item.data.childName) || ''
+    out.push({
+      sourceId: `ausf_${item.id}`,
+      sourceType: 'AUSF',
+      formType: 'lcr-form-1a',
+      label: item.label || child || 'AUSF',
       childName: child,
       data: item.data,
     })

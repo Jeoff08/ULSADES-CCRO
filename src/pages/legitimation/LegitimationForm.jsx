@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { afterUnsavedAcknowledge, useWarnIfUnsaved } from '../../hooks/useWarnIfUnsaved'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { defaultLegitimation, syncLegitimationTransmittalFlagWithFormType } from './lib/legitimationDefaults'
 import { addSavedLegitimation, getLegitimationDraft, updateSavedLegitimation } from './lib/legitimationStorage'
@@ -192,6 +193,14 @@ export default function LegitimationForm() {
     }
   })
 
+  const [dirtyBaselineTick, setDirtyBaselineTick] = useState(0)
+  useEffect(() => {
+    const id = setTimeout(() => setDirtyBaselineTick((x) => x + 1), 120)
+    return () => clearTimeout(id)
+  }, [searchParams])
+
+  const acknowledgeSaved = useWarnIfUnsaved(form, [searchParams.toString(), dirtyBaselineTick])
+
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
   const disableItem8 = form.acknowledgedByFatherInColb === 'YES'
   const disableItem11 = form.birthRegisteredIligan === 'NO'
@@ -229,7 +238,10 @@ export default function LegitimationForm() {
       const createdId = addSavedLegitimation(formForOutput)
       if (createdId) finalSavedId = String(createdId).trim()
     }
-    navigate(finalSavedId ? `/legitimation/print?type=${form.formType}&id=${encodeURIComponent(finalSavedId)}` : `/legitimation/print?type=${form.formType}`)
+    const path = finalSavedId
+      ? `/legitimation/print?type=${form.formType}&id=${encodeURIComponent(finalSavedId)}`
+      : `/legitimation/print?type=${form.formType}`
+    afterUnsavedAcknowledge(acknowledgeSaved, () => navigate(path))
   }
 
   useEffect(() => {

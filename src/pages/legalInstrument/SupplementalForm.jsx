@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { afterUnsavedAcknowledge, useWarnIfUnsaved } from '../../hooks/useWarnIfUnsaved'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   getActiveSupplementalId,
@@ -96,6 +97,14 @@ export default function SupplementalForm() {
   const [lcrSearchQuery, setLcrSearchQuery] = useState('')
   const [lcrSearchFocused, setLcrSearchFocused] = useState(false)
 
+  const [dirtyBaselineTick, setDirtyBaselineTick] = useState(0)
+  useEffect(() => {
+    const id = setTimeout(() => setDirtyBaselineTick((x) => x + 1), 120)
+    return () => clearTimeout(id)
+  }, [location.key, activeSavedId])
+
+  const acknowledgeSaved = useWarnIfUnsaved(form, [location.key, activeSavedId, dirtyBaselineTick])
+
   const lcrRecords = useMemo(() => {
     const sources = {
       ausf: { list: getSavedAUSFList(), draft: getAUSFDraft() },
@@ -131,7 +140,7 @@ export default function SupplementalForm() {
 
   const handleBackToSaved = () => {
     saveSupplementalDraft(form)
-    navigate('/legal-instrument/supplemental/saved')
+    afterUnsavedAcknowledge(acknowledgeSaved, () => navigate('/legal-instrument/supplemental/saved'))
   }
 
   const update = (key, value) => {
@@ -162,6 +171,7 @@ export default function SupplementalForm() {
   const handleSave = () => {
     saveSupplementalDraft(form)
     saveOrUpdateSupplemental(form)
+    acknowledgeSaved()
     setConfirmOpen(true)
   }
 
@@ -625,7 +635,7 @@ export default function SupplementalForm() {
                 type="button"
                 onClick={() => {
                   setConfirmOpen(false)
-                  navigate('/legal-instrument/supplemental/saved')
+                  afterUnsavedAcknowledge(acknowledgeSaved, () => navigate('/legal-instrument/supplemental/saved'))
                 }}
                 className="px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               >
@@ -641,7 +651,9 @@ export default function SupplementalForm() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => navigate('/legal-instrument/supplemental/print')}
+                  onClick={() =>
+                    afterUnsavedAcknowledge(acknowledgeSaved, () => navigate('/legal-instrument/supplemental/print'))
+                  }
                   className="px-3 py-2 rounded-lg text-sm font-medium bg-[var(--primary-blue)] text-white hover:bg-[var(--primary-blue-light)]"
                 >
                   Continue to Print

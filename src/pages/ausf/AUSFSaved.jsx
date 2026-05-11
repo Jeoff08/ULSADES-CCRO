@@ -162,7 +162,7 @@ export default function AUSFSaved() {
         AUSF forms saved when you click Done appear here. Start a new form or open a saved file to view and print.
       </p>
       <div className="mb-3 space-y-3">
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
           <span
             className="ausf-saved-anim-action inline-flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-emerald-600 bg-emerald-50 text-emerald-900 text-sm font-semibold rounded-lg opacity-0 text-center min-h-[2.75rem] cursor-default"
             style={{ animationDelay: '0.05s' }}
@@ -197,6 +197,13 @@ export default function AUSFSaved() {
             style={{ animationDelay: '0.2s' }}
           >
             MC2010-04 saved
+          </Link>
+          <Link
+            to="/legal-instrument/wrongly-register/saved"
+            className="ausf-saved-anim-action inline-flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all duration-200 ease-out hover:shadow-md active:scale-[0.98] opacity-0 no-underline text-center min-h-[2.75rem]"
+            style={{ animationDelay: '0.21s' }}
+          >
+            Wrongly Register saved
           </Link>
         </div>
         <Link

@@ -1,4 +1,6 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import { afterUnsavedAcknowledge, useWarnIfUnsaved } from '../../hooks/useWarnIfUnsaved'
 import { useNavigate } from 'react-router-dom'
 import { defaultLegitimation } from '../legitimation/lib/legitimationDefaults'
 import { defaultCourtDecree } from '../courtDecree/lib/courtDecreeDefaults'
@@ -15,6 +17,7 @@ import {
   saveMc2010Draft,
   saveOrUpdateMc2010,
 } from './lib/mc2010SavedStorage'
+import { deriveAffectedDocumentsForPrint } from '../courtDecree/lib/courtDecreeAffectedDocuments'
 
 function hasValue(v) {
   return String(v ?? '').trim().length > 0
@@ -26,6 +29,45 @@ function recordHasLcrType(data, lcrType) {
   if (lcrType === '2A') return hasValue(data.lcr2aNameDeceased) || hasValue(data.lcr2aRegistryNumber)
   if (lcrType === '3A') return hasValue(data.lcr3aHusbandName) || hasValue(data.lcr3aWifeName) || hasValue(data.marriageRegistryNo)
   return true
+}
+
+/** Court Decree LCR 1A/3A saves must not appear when prefilling 2A. Other form types (e.g. cert-authenticity) often still hold 2A fields. */
+const COURT_DECREE_LCR_NOT_2A_FORM_TYPES = new Set([
+  'lcr-form-1a',
+  'annotation-form-1a',
+  'lcr-form-3a',
+  'annotation-form-3a',
+])
+
+/** Court Decree death/LCR-2A data may live on lcr2a* fields or (for cert-authenticity etc.) on documentOwnerName + date fields. */
+function courtDecreeHas2AFieldsForPrefill(data) {
+  if (!data || typeof data !== 'object') return false
+  if (recordHasLcrType(data, '2A')) return true
+  const ft = String(data.formType || '').trim()
+  if (COURT_DECREE_LCR_NOT_2A_FORM_TYPES.has(ft)) return false
+  const name =
+    hasValue(data.documentOwnerName) ||
+    hasValue(data.lcr2aNameDeceased)
+  const deathContext =
+    hasValue(data.dateOfDeath) ||
+    hasValue(data.lcr2aDateDeath) ||
+    hasValue(data.lcr2aPlaceDeath) ||
+    hasValue(data.placeOfDeath) ||
+    hasValue(data.lcr2aCauseDeath) ||
+    hasValue(data.causeOfDeath)
+  return name && deathContext
+}
+
+function courtDecreeRecordEligibleForMc20102A(data) {
+  if (!courtDecreeHas2AFieldsForPrefill(data)) return false
+  const ft = String(data.formType || '').trim()
+  if (COURT_DECREE_LCR_NOT_2A_FORM_TYPES.has(ft)) return false
+  if (recordHasLcrType(data, '3A')) return false
+
+  const derived = deriveAffectedDocumentsForPrint(data)
+  if (derived.includes('MARRIAGE_CERTIFICATE') || derived.includes('BIRTH_CERTIFICATE')) return false
+  if (derived.includes('DEATH_CERTIFICATE')) return true
+  return derived.length === 0
 }
 
 const defaultMc2010Draft = {
@@ -41,6 +83,7 @@ const defaultMc2010Draft = {
 
 export default function Mc2010Form() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [form, setForm] = useState(() => {
     const loaded = getMc2010Draft(defaultMc2010Draft)
     return { ...loaded, ...pickTransmittalStateFromDraft(loaded) }
@@ -49,6 +92,14 @@ export default function Mc2010Form() {
   const [lcrSearchQuery, setLcrSearchQuery] = useState('')
   const [lcrSearchFocused, setLcrSearchFocused] = useState(false)
   const activeSavedId = getActiveMc2010Id()
+
+  const [dirtyBaselineTick, setDirtyBaselineTick] = useState(0)
+  useEffect(() => {
+    const id = setTimeout(() => setDirtyBaselineTick((x) => x + 1), 120)
+    return () => clearTimeout(id)
+  }, [location.key, activeSavedId])
+
+  const acknowledgeSaved = useWarnIfUnsaved(form, [location.key, activeSavedId, dirtyBaselineTick])
 
   const lcrRecords = useMemo(() => {
     const sources = {
@@ -59,9 +110,19 @@ export default function Mc2010Form() {
     const key = form.lcrSource === 'ausf' || form.lcrSource === 'legitimation' ? form.lcrSource : 'courtDecree'
     const { list, draft } = sources[key]
     const rows = []
-    if (draft && typeof draft === 'object' && recordHasLcrType(draft, form.lcrType)) rows.push({ id: '__draft__', label: '[Current draft]', data: draft })
+    const includeDraft =
+      draft && typeof draft === 'object' &&
+      (key === 'courtDecree' && form.lcrType === '2A'
+        ? courtDecreeRecordEligibleForMc20102A(draft)
+        : recordHasLcrType(draft, form.lcrType))
+    if (includeDraft) rows.push({ id: '__draft__', label: '[Current draft]', data: draft })
     list.forEach((r) => {
-      if (r?.data && recordHasLcrType(r.data, form.lcrType)) rows.push({ id: r.id, label: r.label || r.id, data: r.data })
+      if (!r?.data) return
+      const ok =
+        key === 'courtDecree' && form.lcrType === '2A'
+          ? courtDecreeRecordEligibleForMc20102A(r.data)
+          : recordHasLcrType(r.data, form.lcrType)
+      if (ok) rows.push({ id: r.id, label: r.label || r.id, data: r.data })
     })
     return rows
   }, [form.lcrSource, form.lcrType])
@@ -123,6 +184,7 @@ export default function Mc2010Form() {
   const handleSave = () => {
     saveMc2010Draft(form)
     saveOrUpdateMc2010(form)
+    acknowledgeSaved()
     setConfirmOpen(true)
   }
 
@@ -261,7 +323,9 @@ export default function Mc2010Form() {
               </button>
               <button
                 type="button"
-                onClick={() => navigate('/legal-instrument/mc2010-04/print')}
+                onClick={() =>
+                  afterUnsavedAcknowledge(acknowledgeSaved, () => navigate('/legal-instrument/mc2010-04/print'))
+                }
                 className="px-3 py-2 rounded-lg text-sm font-medium bg-[var(--primary-blue)] text-white hover:bg-[var(--primary-blue-light)]"
               >
                 Continue to Print

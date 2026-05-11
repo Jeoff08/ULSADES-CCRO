@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { afterUnsavedAcknowledge, useWarnIfUnsaved } from '../../hooks/useWarnIfUnsaved'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { defaultCourtDecree, syncCourtDecreeTransmittalFlagFromFormType } from './lib/courtDecreeDefaults'
 import { deriveAffectedDocumentsForPrint, primaryAffectedDocumentForSave } from './lib/courtDecreeAffectedDocuments'
@@ -438,6 +439,13 @@ export default function CourtDecreeForm() {
     return base
   })
 
+  const [dirtyBaselineTick, setDirtyBaselineTick] = useState(0)
+  useEffect(() => {
+    const id = setTimeout(() => setDirtyBaselineTick((x) => x + 1), 150)
+    return () => clearTimeout(id)
+  }, [searchParams])
+
+  const acknowledgeSaved = useWarnIfUnsaved(form, [searchParams.toString(), dirtyBaselineTick])
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
   const updateAndPersistDraft = (key, value) =>
@@ -557,7 +565,10 @@ export default function CourtDecreeForm() {
       const createdId = addSavedCourtDecree(formForOutput)
       if (createdId) finalSavedId = String(createdId).trim()
     }
-    navigate(finalSavedId ? `/court-decree/print?type=${nextPrintType}&id=${encodeURIComponent(finalSavedId)}` : `/court-decree/print?type=${nextPrintType}`)
+    const path = finalSavedId
+      ? `/court-decree/print?type=${nextPrintType}&id=${encodeURIComponent(finalSavedId)}`
+      : `/court-decree/print?type=${nextPrintType}`
+    afterUnsavedAcknowledge(acknowledgeSaved, () => navigate(path))
   }
 
   useEffect(() => {
@@ -624,7 +635,9 @@ export default function CourtDecreeForm() {
       documentOwnerName: doc || form.documentOwnerName,
     })
     setShowContinueDecreeModal(false)
-    navigate('/court-decree/form?type=cert-authenticity&hydrateDraft=1')
+    afterUnsavedAcknowledge(acknowledgeSaved, () =>
+      navigate('/court-decree/form?type=cert-authenticity&hydrateDraft=1')
+    )
   }
 
   useEffect(() => {
@@ -746,7 +759,7 @@ export default function CourtDecreeForm() {
             <div className="court-decree-form-page__section" style={sectionDelay(0)}>
               <LcrFormNavLinks form={form} activeType="lcr-form-2a" />
               <CourtDecreeSection number="1" title="Table fields">
-                <div className="space-y-4 max-w-2xl">
+                <div className="space-y-4 max-w-8xl">
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">LCR Registry Number</label><input type="text" value={form.lcr2aRegistryNumber} onChange={scInput('lcr2aRegistryNumber')} className={inputClass} /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Registration</label><DateInput value={form.lcr2aDateRegistration} onChange={(v) => update('lcr2aDateRegistration', v)} /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Name of Deceased</label><input type="text" value={form.lcr2aNameDeceased} onChange={scInput('lcr2aNameDeceased')} className={inputClass} /></div>
@@ -781,7 +794,7 @@ export default function CourtDecreeForm() {
             <div className="court-decree-form-page__section" style={sectionDelay(0)}>
               <LcrFormNavLinks form={form} activeType="lcr-form-3a" />
               <CourtDecreeSection number="1" title="Table fields (Husband / Wife / Marriage)">
-                <div className="space-y-6 max-w-3xl">
+                <div className="space-y-6 max-w-8xl">
                   <div>
                     <p className="font-semibold text-gray-800 border-b border-gray-200 pb-1 mb-3">Husband</p>
                     <div className="space-y-3">

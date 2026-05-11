@@ -112,7 +112,7 @@ export default function LegitimationSaved() {
         Legitimation forms saved when you click Done appear here. Open a saved file to view and print, or start a new form.
       </p>
       <div className="mb-6 space-y-3">
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
           <Link
             to="/ausf/saved"
             className="legitimation-saved-anim-action inline-flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all duration-200 ease-out hover:shadow-md active:scale-[0.98] opacity-0 no-underline text-center min-h-[2.75rem]"
@@ -147,6 +147,13 @@ export default function LegitimationSaved() {
             style={{ animationDelay: '0.16s' }}
           >
             MC2010-04 saved
+          </Link>
+          <Link
+            to="/legal-instrument/wrongly-register/saved"
+            className="legitimation-saved-anim-action inline-flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all duration-200 ease-out hover:shadow-md active:scale-[0.98] opacity-0 no-underline text-center min-h-[2.75rem]"
+            style={{ animationDelay: '0.18s' }}
+          >
+            Wrongly Register saved
           </Link>
         </div>
         <Link

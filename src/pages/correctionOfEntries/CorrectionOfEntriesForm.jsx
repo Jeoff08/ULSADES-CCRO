@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import { useWarnIfUnsaved } from '../../hooks/useWarnIfUnsaved'
 import { Link } from 'react-router-dom'
 import {
   CLERICAL_DESCRIPTION_OPTIONS,
@@ -61,6 +62,14 @@ export default function CorrectionOfEntriesForm() {
   useEffect(() => {
     setData(getCorrectionOfEntriesDraft())
   }, [])
+
+  const [dirtyBaselineTick, setDirtyBaselineTick] = useState(0)
+  useEffect(() => {
+    const id = setTimeout(() => setDirtyBaselineTick((x) => x + 1), 120)
+    return () => clearTimeout(id)
+  }, [])
+
+  const _acknowledgeSaved = useWarnIfUnsaved(data, [dirtyBaselineTick])
 
   const persist = useCallback((patch) => {
     setData((prev) => {

@@ -43,28 +43,28 @@ export default function WronglyRegisterSaved() {
   }, [])
 
   return (
-    <div className="p-6 supplemental-saved-anim-page">
+    <div className="p-6 wrongly-register-saved-anim-page">
       <h1 className="text-base font-bold text-gray-800 mb-1">Wrongly Register – Files Saved</h1>
       <p className="text-sm text-gray-500 mb-4">Wrongly Register transmittals saved from the form appear here.</p>
 
       <div className="mb-6 space-y-3">
         <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
-          <Link to="/ausf/saved" className="supplemental-saved-anim-action inline-flex items-center justify-center px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all opacity-0 no-underline text-center min-h-[2.75rem]" style={{ animationDelay: '0.05s' }}>
+          <Link to="/ausf/saved" className="wrongly-register-saved-anim-action inline-flex items-center justify-center px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all opacity-0 no-underline text-center min-h-[2.75rem]" style={{ animationDelay: '0.05s' }}>
             AUSF saved
           </Link>
-          <Link to="/court-decree/saved" className="supplemental-saved-anim-action inline-flex items-center justify-center px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all opacity-0 no-underline text-center min-h-[2.75rem]" style={{ animationDelay: '0.1s' }}>
+          <Link to="/court-decree/saved" className="wrongly-register-saved-anim-action inline-flex items-center justify-center px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all opacity-0 no-underline text-center min-h-[2.75rem]" style={{ animationDelay: '0.1s' }}>
             Court Decree saved
           </Link>
-          <Link to="/legitimation/saved" className="supplemental-saved-anim-action inline-flex items-center justify-center px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all opacity-0 no-underline text-center min-h-[2.75rem]" style={{ animationDelay: '0.12s' }}>
+          <Link to="/legitimation/saved" className="wrongly-register-saved-anim-action inline-flex items-center justify-center px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all opacity-0 no-underline text-center min-h-[2.75rem]" style={{ animationDelay: '0.12s' }}>
             Legitimation saved
           </Link>
-          <Link to="/legal-instrument/supplemental/saved" className="supplemental-saved-anim-action inline-flex items-center justify-center px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all opacity-0 no-underline text-center min-h-[2.75rem]" style={{ animationDelay: '0.14s' }}>
+          <Link to="/legal-instrument/supplemental/saved" className="wrongly-register-saved-anim-action inline-flex items-center justify-center px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all opacity-0 no-underline text-center min-h-[2.75rem]" style={{ animationDelay: '0.14s' }}>
             Supplemental saved
           </Link>
-          <Link to="/legal-instrument/mc2010-04/saved" className="supplemental-saved-anim-action inline-flex items-center justify-center px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all opacity-0 no-underline text-center min-h-[2.75rem]" style={{ animationDelay: '0.16s' }}>
+          <Link to="/legal-instrument/mc2010-04/saved" className="wrongly-register-saved-anim-action inline-flex items-center justify-center px-4 py-2.5 border-2 border-[var(--primary-blue)] text-[var(--primary-blue)] text-sm font-medium rounded-lg hover:bg-[var(--primary-blue)]/10 transition-all opacity-0 no-underline text-center min-h-[2.75rem]" style={{ animationDelay: '0.16s' }}>
             MC2010-04 saved
           </Link>
-          <span className="supplemental-saved-anim-action inline-flex items-center justify-center px-4 py-2.5 border-2 border-emerald-600 bg-emerald-50 text-emerald-900 text-sm font-semibold rounded-lg opacity-0 text-center min-h-[2.75rem] cursor-default" style={{ animationDelay: '0.18s' }} aria-current="page">
+          <span className="wrongly-register-saved-anim-action inline-flex items-center justify-center px-4 py-2.5 border-2 border-emerald-600 bg-emerald-50 text-emerald-900 text-sm font-semibold rounded-lg opacity-0 text-center min-h-[2.75rem] cursor-default" style={{ animationDelay: '0.18s' }} aria-current="page">
             Wrongly Register saved
           </span>
         </div>
@@ -75,7 +75,7 @@ export default function WronglyRegisterSaved() {
             clearWronglyRegisterActive()
             clearWronglyRegisterDraft()
           }}
-          className="supplemental-saved-anim-action inline-flex items-center justify-center px-4 py-2.5 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:bg-[var(--primary-blue-light)] transition-all opacity-0 no-underline w-full sm:w-auto"
+          className="wrongly-register-saved-anim-action inline-flex items-center justify-center px-4 py-2.5 bg-[var(--primary-blue)] text-white text-sm font-medium rounded-lg hover:bg-[var(--primary-blue-light)] transition-all opacity-0 no-underline w-full sm:w-auto"
           style={{ animationDelay: '0.2s' }}
         >
           New Wrongly Register
@@ -110,7 +110,7 @@ export default function WronglyRegisterSaved() {
       </div>
 
       {list.length === 0 ? (
-        <div className="supplemental-saved-anim-empty rounded-xl border border-dashed border-gray-300 bg-white p-6 text-sm text-gray-500 text-center">
+        <div className="wrongly-register-saved-anim-empty rounded-xl border border-dashed border-gray-300 bg-white p-6 text-sm text-gray-500 text-center">
           No saved Wrongly Register files yet.
         </div>
       ) : filtered.length === 0 ? (
@@ -122,7 +122,7 @@ export default function WronglyRegisterSaved() {
           {filtered.map((item, idx) => (
             <li
               key={item.id}
-              className="supplemental-saved-anim-item rounded-xl border border-gray-200 bg-white p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm opacity-0 transition-all duration-200 ease-out hover:shadow-md hover:border-gray-300 hover:-translate-y-0.5"
+              className="wrongly-register-saved-anim-item rounded-xl border border-gray-200 bg-white p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm opacity-0 transition-all duration-200 ease-out hover:shadow-md hover:border-gray-300 hover:-translate-y-0.5"
               style={{ animationDelay: `${0.2 + idx * 0.05}s` }}
             >
               <div className="min-w-0">

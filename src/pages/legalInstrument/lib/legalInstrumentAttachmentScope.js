@@ -10,3 +10,8 @@ export function supplementalOutputUploadScope(activeRecordId, output) {
 export function mc2010OutputUploadScope(activeRecordId, output) {
   return `mc2010:${draftId(activeRecordId)}:${output}`
 }
+
+/** One upload slot per Wrongly Register print output (transmittal, ocr1a, forwarding). */
+export function wronglyRegisterOutputUploadScope(activeRecordId, output) {
+  return `wrongly-register:${draftId(activeRecordId)}:${output}`
+}
