@@ -128,8 +128,9 @@ export default function SystemDataPage() {
     <div className="p-6 md:p-8 space-y-5">
       <header>
         <h1 className="text-2xl font-semibold text-slate-800">Export / Import</h1>
-        <p className="text-sm text-slate-600 mt-1">
-          Export all current system data (including uploaded attachment files), then import to merge without duplicating existing records.
+        <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+          Export all system data (AUSF, Court Decree, Legitimation, Supplemental, MC2010-04, and Wrongly Register), including uploaded attachment files. 
+          Importing will merge missing records into your system without duplicating existing ones.
         </p>
       </header>
 

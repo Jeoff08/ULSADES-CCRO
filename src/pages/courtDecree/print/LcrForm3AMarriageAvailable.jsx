@@ -26,7 +26,7 @@ const LCR_3A_EDITABLE_FULL = [
 ]
 
 /** LCR Form No. 3A (Marriage-Available). Full print; table via buildLcr3aTableDisplay. */
-export default function LcrForm3AMarriageAvailable({ data, editableTable = false, onDataChange }) {
+export default function LcrForm3AMarriageAvailable({ data, editableTable = false, onDataChange, isCourtDecree = false }) {
   const t = buildLcr3aTableDisplay(data)
   const [editableRemarks, setEditableRemarks] = useState(data?.remarks || '')
 
@@ -47,7 +47,7 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
   })()
   const regOfficer = data.certificateSignatoryName || 'SHIRLY L. DEMECILLO'
   const ccrName = data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL'
-  const cell = 'py-1 px-2 border border-black text-center font-bold text-sm align-top'
+  const cell = 'py-2 px-2 border border-black text-center font-bold text-sm align-top'
 
   return (
     <div className="ausf-doc print-doc print-doc-lcr-3a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col w-full">
@@ -69,8 +69,29 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
           <p className="font-bold mb-1 pl-8">TO WHOM IT MAY CONCERN:</p>
           <p className="mb-2 text-left court-decree-lcr-body">
             <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of marriage appear in our Register of Marriages on Page{' '}
-            <span className="inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold">{colbPage ?? ''}</span> of Book number{' '}
-            <span className="inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold">{colbBook ?? ''}</span>.
+            {editableTable && onDataChange ? (
+                <input
+                  type="text"
+                  className="inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold max-w-[4rem] bg-white print:!hidden no-print focus:outline-none focus:bg-blue-50"
+                  value={String(colbPage ?? '')}
+                  onChange={(e) => patchData({ colbPageNo: e.target.value, colbPageNumber: e.target.value })}
+                />
+            ) : null}
+            <span className={`${editableTable && onDataChange ? 'hidden print:inline-block' : 'inline-block'} border-b border-black px-1 min-w-[2rem] text-center font-bold`}>
+              {colbPage || ''}
+            </span>
+            {' '}of Book number{' '}
+            {editableTable && onDataChange ? (
+                <input
+                  type="text"
+                  className="inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold max-w-[5rem] bg-white print:!hidden no-print focus:outline-none focus:bg-blue-50"
+                  value={String(colbBook ?? '')}
+                  onChange={(e) => patchData({ colbBookNo: e.target.value, colbBookNumber: e.target.value })}
+                />
+            ) : null}
+            <span className={`${editableTable && onDataChange ? 'hidden print:inline-block' : 'inline-block'} border-b border-black px-1 min-w-[3rem] text-center font-bold`}>
+              {colbBook || ''}
+            </span> .
           </p>
           <table className="w-full border-collapse text-sm mt-4 mb-0 border border-black table-fixed court-decree-lcr-table">
             <colgroup>
@@ -80,9 +101,9 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
             </colgroup>
             <thead>
               <tr>
-                <td className="py-1 px-2 border border-black font-bold align-top" />
-                <td className="py-1 px-2 border border-black font-bold text-center bg-gray-800 text-white">HUSBAND</td>
-                <td className="py-1 px-2 border border-black font-bold text-center bg-gray-800 text-white">WIFE</td>
+                <td className="py-2 px-2 border border-black font-bold align-top" />
+                <td className="py-2 px-2 border border-black font-bold text-center uppercase tracking-wider">HUSBAND</td>
+                <td className="py-2 px-2 border border-black font-bold text-center uppercase tracking-wider">WIFE</td>
               </tr>
             </thead>
             <tbody>
@@ -90,7 +111,7 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
                 <>
                   {LCR_3A_EDITABLE_PAIRS.map((row, idx) => (
                     <tr key={idx}>
-                      <td className="py-1 px-2 border border-black font-medium align-top">{row.label}</td>
+                      <td className="py-2 px-2 border border-black font-medium align-top">{row.label}</td>
                       <td className={`${cell} uppercase`}>
                         <input
                           type="text"
@@ -113,7 +134,7 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
                   ))}
                   {LCR_3A_EDITABLE_FULL.map((row) => (
                     <tr key={row.k}>
-                      <td className="py-1 px-2 border border-black font-medium align-top">{row.label}</td>
+                      <td className="py-2 px-2 border border-black font-medium align-top">{row.label}</td>
                       <td className={`${cell} uppercase`} colSpan={2}>
                         <input
                           type="text"
@@ -129,43 +150,43 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
               ) : (
                 <>
                   <tr>
-                    <td className="py-1 px-2 border border-black font-medium align-top">Name:</td>
+                    <td className="py-2 px-2 border border-black font-medium align-top">Name:</td>
                     <td className={`${cell} uppercase`}>{t.husbandName}</td>
                     <td className={`${cell} uppercase`}>{t.wifeName}</td>
                   </tr>
                   <tr>
-                    <td className="py-1 px-2 border border-black font-medium align-top">Date of Birth/Age:</td>
+                    <td className="py-2 px-2 border border-black font-medium align-top">Date of Birth/Age:</td>
                     <td className={cell}>{t.husbandDobAge}</td>
                     <td className={cell}>{t.wifeDobAge}</td>
                   </tr>
                   <tr>
-                    <td className="py-1 px-2 border border-black font-medium align-top">Citizenship:</td>
+                    <td className="py-2 px-2 border border-black font-medium align-top">Citizenship:</td>
                     <td className={`${cell} uppercase`}>{t.husbandCitizenship}</td>
                     <td className={`${cell} uppercase`}>{t.wifeCitizenship}</td>
                   </tr>
                   <tr>
-                    <td className="py-1 px-2 border border-black font-medium align-top">Civil Status:</td>
+                    <td className="py-2 px-2 border border-black font-medium align-top">Civil Status:</td>
                     <td className={`${cell} uppercase`}>{t.husbandCivilStatus}</td>
                     <td className={`${cell} uppercase`}>{t.wifeCivilStatus}</td>
                   </tr>
                   <tr>
-                    <td className="py-1 px-2 border border-black font-medium align-top">Mother:</td>
+                    <td className="py-2 px-2 border border-black font-medium align-top">Mother:</td>
                     <td className={`${cell} uppercase`}>{t.husbandMother}</td>
                     <td className={`${cell} uppercase`}>{t.wifeMother}</td>
                   </tr>
                   <tr>
-                    <td className="py-1 px-2 border border-black font-medium align-top">Father:</td>
+                    <td className="py-2 px-2 border border-black font-medium align-top">Father:</td>
                     <td className={`${cell} uppercase`}>{t.husbandFather}</td>
                     <td className={`${cell} uppercase`}>{t.wifeFather}</td>
                   </tr>
                   <tr>
-                    <td className="py-1 px-2 border border-black font-medium align-top">Registry Number</td>
+                    <td className="py-2 px-2 border border-black font-medium align-top">Registry Number</td>
                     <td className={`${cell} uppercase`} colSpan={2}>
                       {t.registry}
                     </td>
                   </tr>
                   <tr>
-                    <td className="py-1 px-2 border border-black font-medium align-top leading-tight">
+                    <td className="py-2 px-2 border border-black font-medium align-top leading-tight">
                       Date of
                       <br />
                       Registration
@@ -175,13 +196,13 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
                     </td>
                   </tr>
                   <tr>
-                    <td className="py-1 px-2 border border-black font-medium align-top">Date of Marriage</td>
+                    <td className="py-2 px-2 border border-black font-medium align-top">Date of Marriage</td>
                     <td className={cell} colSpan={2}>
                       {t.dateMarriage}
                     </td>
                   </tr>
                   <tr>
-                    <td className="py-1 px-2 border border-black font-medium align-top leading-tight">
+                    <td className="py-2 px-2 border border-black font-medium align-top leading-tight">
                       Place of
                       <br />
                       Marriage
@@ -195,17 +216,11 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
             </tbody>
           </table>
           <p className="mb-2 text-sm court-decree-lcr-body court-decree-lcr-cert-after-table">
-            {editableTable
-              ? (
-                <span className="pl-8 inline-block">
-                  This certification is issued to <span className="font-bold underline">CCR-FILE</span> for any legal purpose.
-                </span>
-              )
-              : (
-                <>
-                  This certification is issued upon the request of <span className="font-bold">OCRG/DOCUMENT OWNER</span> for any legal purposes.
-                </>
-              )}
+            {isCourtDecree ? (
+              <>This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.</>
+            ) : (
+              <>This certification is issued to <span className="font-bold underline">CCR-FILE</span> for any legal purpose.</>
+            )}
           </p>
           <div className="mb-2 court-decree-lcr-body court-decree-lcr-3a-remarks-block">
             <p className="font-bold text-sm mb-0.5">REMARKS:</p>

@@ -21,6 +21,13 @@ function namesMatch(a, b) {
 
 function childFullFromCourtDecree(d) {
   if (!d || typeof d !== 'object') return ''
+  if (d.formType === 'lcr-form-2a' && d.lcr2aNameDeceased) return String(d.lcr2aNameDeceased).trim()
+  if (d.formType === 'lcr-form-3a') {
+    const h = (d.lcr3aHusbandName || '').trim()
+    const w = (d.lcr3aWifeName || '').trim()
+    if (h && w) return `${h} & ${w}`
+    return (h || w || '').trim()
+  }
   return String(d.lcr1aNameOfChild || d.documentOwnerName || d.caseTitle || '').trim()
 }
 

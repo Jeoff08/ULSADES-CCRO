@@ -27,7 +27,7 @@ const LCR_1A_EDITABLE_ROWS = [
 
 /** LCR Form No. 1A (Birth-Available). Uses Court Decree Form 1A fields as primary source.
  *  When editableTable + onDataChange (e.g. Supplemental print), table cells are manual inputs on screen. */
-export default function LcrForm1ABirthAvailable({ data, editableTable = false, onDataChange }) {
+export default function LcrForm1ABirthAvailable({ data, editableTable = false, onDataChange, isCourtDecree = false }) {
   const table = buildLcr1aTableDisplay(data)
   const [editableRemarks, setEditableRemarks] = useState(data?.remarks || '')
 
@@ -74,31 +74,28 @@ export default function LcrForm1ABirthAvailable({ data, editableTable = false, o
             <p className="mb-2 text-left court-decree-lcr-body">
               <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of birth appear in our Register of Births on Page{' '}
               {editableTable && onDataChange ? (
-                <>
-                  <input
-                    type="text"
-                    className="inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold max-w-[4rem] bg-white"
-                    value={String(colbPage ?? '')}
-                    onChange={(e) => patchData({ colbPageNo: e.target.value, colbPageNumber: e.target.value })}
-                  />
-                </>
-              ) : (
-                <span className="inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold">{colbPage || ''}</span>
-              )}
+                <input
+                  type="text"
+                  className="inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold max-w-[4rem] bg-white print:!hidden no-print focus:outline-none focus:bg-blue-50"
+                  value={String(colbPage ?? '')}
+                  onChange={(e) => patchData({ colbPageNo: e.target.value, colbPageNumber: e.target.value })}
+                />
+              ) : null}
+              <span className={`${editableTable && onDataChange ? 'hidden print:inline-block' : 'inline-block'} border-b border-black px-1 min-w-[2rem] text-center font-bold`}>
+                {colbPage || ''}
+              </span>
               {' '}of Book number{' '}
               {editableTable && onDataChange ? (
-                <>
-                  <input
-                    type="text"
-                    className="inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold max-w-[5rem] bg-white"
-                    value={String(colbBook ?? '')}
-                    onChange={(e) => patchData({ colbBookNo: e.target.value, colbBookNumber: e.target.value })}
-                  />
-                </>
-              ) : (
-                <span className="inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold">{colbBook || ''}</span>
-              )}
-              .
+                <input
+                  type="text"
+                  className="inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold max-w-[5rem] bg-white print:!hidden no-print focus:outline-none focus:bg-blue-50"
+                  value={String(colbBook ?? '')}
+                  onChange={(e) => patchData({ colbBookNo: e.target.value, colbBookNumber: e.target.value })}
+                />
+              ) : null}
+              <span className={`${editableTable && onDataChange ? 'hidden print:inline-block' : 'inline-block'} border-b border-black px-1 min-w-[3rem] text-center font-bold`}>
+                {colbBook || ''}
+              </span>.
             </p>
             <table className="w-full border-collapse text-sm mt-4 mb-0 border border-black court-decree-lcr-table">
               <tbody>
@@ -136,16 +133,10 @@ export default function LcrForm1ABirthAvailable({ data, editableTable = false, o
               </tbody>
             </table>
             <p className="mb-2 text-sm court-decree-lcr-body court-decree-lcr-cert-after-table">
-            {editableTable
-              ? (
-                <span className="pl-8 inline-block">
-                  This certification is issued to <span className="font-bold underline">CCR-FILE</span> for any legal purpose.
-                </span>
-              )
-              : (
-                <>
-                  This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.
-                </>
+              {isCourtDecree ? (
+                <>This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.</>
+              ) : (
+                <>This certification is issued to <span className="font-bold underline">CCR-FILE</span> for any legal purpose.</>
               )}
             </p>
             <div className="mb-2 court-decree-lcr-body court-decree-lcr-1a-remarks-block">

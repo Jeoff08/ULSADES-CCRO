@@ -18,6 +18,7 @@ import { mergeBirthRegisterPageBookFields, pickBirthRegisterPageBook } from './l
 import { getSavedAUSFList } from '../ausf/lib/ausfStorage'
 import { getSavedCourtDecreeList } from '../courtDecree/lib/courtDecreeStorage'
 import { getSavedLegitimationList } from '../legitimation/lib/legitimationStorage'
+import { formatDateLong, formatLcrFormShortDate } from '../../lib/printUtils'
 
 const defaultWronglyRegisterDraft = {
   ...getDefaultSupplementalTransmittalFields(),
@@ -58,6 +59,23 @@ const defaultWronglyRegisterDraft = {
   forwardingClosing: 'Very Truly Yours,',
   forwardingSignerName: '',
   forwardingSignerTitle: 'Municipal Civil Registrar',
+  // Extra fields for 2A/3A pull
+  lcrCivilStatus: '',
+  lcrCitizenship: '',
+  lcrCauseDeath: '',
+  lcrCitizenshipFather: '',
+  lcr3aHusbandName: '',
+  lcr3aHusbandDobAge: '',
+  lcr3aHusbandCitizenship: '',
+  lcr3aHusbandCivilStatus: '',
+  lcr3aHusbandMother: '',
+  lcr3aHusbandFather: '',
+  lcr3aWifeName: '',
+  lcr3aWifeDobAge: '',
+  lcr3aWifeCitizenship: '',
+  lcr3aWifeCivilStatus: '',
+  lcr3aWifeMother: '',
+  lcr3aWifeFather: '',
 }
 
 function hasCourtLcrDataForType(data, lcrForm) {
@@ -89,6 +107,7 @@ function hasCourtLcrDataForType(data, lcrForm) {
 
 export default function WronglyRegisterForm() {
   const navigate = useNavigate()
+  const location = useLocation()
   const activeSavedId = getActiveWronglyRegisterId()
   const [form, setForm] = useState(() => {
     const loaded = getWronglyRegisterDraft(defaultWronglyRegisterDraft)
@@ -167,71 +186,69 @@ export default function WronglyRegisterForm() {
 
   const handleSelectClient = (client) => {
     const d = client.data || {}
-    const selectedLcr = String(form.lcrForm || '1A')
-    const is2A = selectedLcr === '2A' || client.formType === 'lcr-form-2a' || client.formType === 'annotation-form-2a'
-    const is3A = selectedLcr === '3A' || client.formType === 'lcr-form-3a' || client.formType === 'annotation-form-3a'
-
-    if (is2A) {
-      const { page, book } = pickBirthRegisterPageBook(d)
-      onPatch({
-        lcrChildName: d.lcr2aNameDeceased || '',
-        lcrRegistryNo: d.lcr2aRegistryNumber || '',
-        lcrSex: d.lcr2aSex || '',
-        lcrBirthDate: d.lcr2aDateDeath || '',
-        lcrPlaceBirth: d.lcr2aPlaceDeath || '',
-        lcrDateRegistration: d.lcr2aDateRegistration || '',
-        lcrMotherName: '',
-        lcrFatherName: '',
-        lcrPage: page,
-        lcrBook: book,
-        colbPageNumber: page,
-        colbBookNumber: book,
-        colbPageNo: page,
-        colbBookNo: book,
-      })
-    } else if (is3A) {
-      const { page, book } = pickBirthRegisterPageBook(d)
-      const h = (d.lcr3aHusbandName || '').trim()
-      const w = (d.lcr3aWifeName || '').trim()
-      onPatch({
-        lcrChildName: h && w ? `${h} & ${w}` : h || w || '',
-        lcrRegistryNo: d.lcr3aRegistryNumber || '',
-        lcrDateRegistration: d.lcr3aDateRegistration || '',
-        lcrBirthDate: d.lcr3aDateMarriage || '',
-        lcrPlaceBirth: d.lcr3aPlaceMarriage || '',
-        lcrMotherName: h,
-        lcrFatherName: w,
-        lcrSex: '',
-        lcrPage: page,
-        lcrBook: book,
-        colbPageNumber: page,
-        colbBookNumber: book,
-        colbPageNo: page,
-        colbBookNo: book,
-      })
-    } else {
-      const { page, book } = pickBirthRegisterPageBook(d)
-      onPatch({
-        lcrChildName: client.childName || '',
-        lcrRegistryNo: d.lcr1aRegistryNumber || d.colbRegistryNo || '',
-        lcrPage: page,
-        lcrBook: book,
-        colbPageNumber: page,
-        colbBookNumber: book,
-        colbPageNo: page,
-        colbBookNo: book,
-        lcrSex: d.sex || d.lcr1aSex || '',
-        lcrBirthDate: d.dateOfBirth || d.lcr1aDateOfBirth || '',
-        lcrPlaceBirth: d.placeOfBirth || d.lcr1aPlaceOfBirth || '',
-        lcrMotherName: d.motherName || d.lcr1aNameOfMother || '',
-        lcrMotherCitizenship: d.motherCitizenship || d.lcr1aMotherCitizenship || '',
-        lcrFatherName: d.fatherName || d.lcr1aNameOfFather || '',
-        lcrFatherCitizenship: d.fatherCitizenship || d.lcr1aFatherCitizenship || '',
-        lcrDateRegistration: d.lcr1aDateRegistration || '',
-        lcrDateMarriage: d.dateOfMarriage || d.lcr1aDateMarriageParents || '',
-        lcrPlaceMarriage: d.placeOfMarriage || d.lcr1aPlaceMarriageParents || '',
-      })
+    const formatDobAge = (dob, age) => {
+      if (!dob && !age) return ''
+      const datePart = formatDateLong(dob) || dob || ''
+      if (datePart && age) return `${datePart} (Age: ${age})`
+      return datePart || `(Age: ${age})`
     }
+
+    const { page, book } = pickBirthRegisterPageBook(d)
+    const h = (d.lcr3aHusbandName || [d.fatherFirst, d.fatherMiddle, d.fatherLast].filter(Boolean).join(' ')).trim()
+    const w = (d.lcr3aWifeName || [d.motherFirst, d.motherMiddle, d.motherLast].filter(Boolean).join(' ')).trim()
+
+    onPatch({
+      // Universal Registry Info
+      lcrRegistryNo: d.lcr3aRegistryNumber || d.lcr2aRegistryNumber || d.lcr1aRegistryNumber || d.colbRegistryNo || d.marriageRegistryNo || d.registryNumber || '',
+      lcrDateRegistration: d.lcr3aDateRegistration || d.lcr2aDateRegistration || d.lcr1aDateRegistration || d.colbRegDate || d.marriageDateOfRegistration || '',
+      lcrPage: page,
+      lcrBook: book,
+      colbPageNumber: page,
+      colbBookNumber: book,
+      colbPageNo: page,
+      colbBookNo: book,
+
+      // 1A / Birth Fields
+      lcrChildName: d.documentOwnerName || d.lcr1aNameOfChild || [d.childFirst, d.childMiddle, d.childLast].filter(Boolean).join(' ') || (h && w ? `${h} & ${w}` : h || w || ''),
+      lcrSex: d.sex || d.lcr1aSex || d.lcr2aSex || '',
+      lcrBirthDate: d.lcr1aDateOfBirth || d.dateOfBirth || formatDobAge(d.dateOfBirth || d.lcr1aDateOfBirth, d.age) || '',
+      lcrPlaceBirth: d.placeOfBirth || d.lcr1aPlaceOfBirth || '',
+      lcrMotherName: d.motherName || d.lcr1aNameOfMother || [d.motherFirst, d.motherMiddle, d.motherLast].filter(Boolean).join(' ') || '',
+      lcrMotherCitizenship: d.motherCitizenship || d.lcr1aMotherCitizenship || '',
+      lcrFatherName: d.fatherName || d.lcr1aNameOfFather || [d.fatherFirst, d.fatherMiddle, d.fatherLast].filter(Boolean).join(' ') || '',
+      lcrFatherCitizenship: d.fatherCitizenship || d.lcr1aFatherCitizenship || '',
+      lcrDateMarriage: d.lcr3aDateMarriage || d.dateOfMarriage || d.lcr1aDateMarriageParents || '',
+      lcrPlaceMarriage:
+        d.lcr3aPlaceMarriage
+        || d.placeOfMarriage
+        || d.lcr1aPlaceMarriageParents
+        || [d.placeOfMarriageCity, d.placeOfMarriageProvince].filter(Boolean).join(', ')
+        || '',
+
+      // 2A / Death Fields
+      lcrCivilStatus: d.lcr2aCivilStatus || d.civilStatus || '',
+      lcrCitizenship: d.lcr2aCitizenship || d.citizenship || '',
+      lcrCauseDeath: d.lcr2aCauseDeath || d.causeOfDeath || '',
+      lcrCitizenshipFather: d.lcr2aCitizenshipFather || d.citizenshipOfFather || '',
+      // Note: for 2A we use lcrBirthDate for Date of Death if it's the primary subject
+      // But handleSelectClient for 2A specifically:
+      ...( (d.lcr2aDateDeath || d.dateOfDeath) ? { lcrBirthDate: d.lcr2aDateDeath || d.dateOfDeath || formatDobAge(d.dateOfDeath || d.lcr2aDateDeath, d.age) } : {}),
+      ...( (d.lcr2aPlaceDeath || d.placeOfDeath) ? { lcrPlaceBirth: d.lcr2aPlaceDeath || d.placeOfDeath } : {}),
+
+      // 3A / Marriage Fields
+      lcr3aHusbandName: h,
+      lcr3aWifeName: w,
+      lcr3aHusbandDobAge: d.lcr3aHusbandDobAge || formatDobAge(d.husbandDateOfBirth, d.husbandAge) || '',
+      lcr3aWifeDobAge: d.lcr3aWifeDobAge || formatDobAge(d.wifeDateOfBirth, d.wifeAge) || '',
+      lcr3aHusbandCitizenship: d.lcr3aHusbandCitizenship || d.fatherCitizenship || '',
+      lcr3aWifeCitizenship: d.lcr3aWifeCitizenship || d.motherCitizenship || '',
+      lcr3aHusbandCivilStatus: d.lcr3aHusbandCivilStatus || d.husbandCivilStatus || '',
+      lcr3aWifeCivilStatus: d.lcr3aWifeCivilStatus || d.wifeCivilStatus || '',
+      lcr3aHusbandMother: d.lcr3aHusbandMother || d.husbandMotherName || '',
+      lcr3aWifeMother: d.lcr3aWifeMother || d.wifeMotherName || '',
+      lcr3aHusbandFather: d.lcr3aHusbandFather || d.husbandFatherName || '',
+      lcr3aWifeFather: d.lcr3aWifeFather || d.wifeFatherName || '',
+    })
     setShowRecordList(false)
   }
 
@@ -324,7 +341,7 @@ export default function WronglyRegisterForm() {
                   </div>
                   <div>
                     <span className={`block text-sm font-bold ${activeSection === 'ocr-form-1a' ? 'text-indigo-800' : 'text-gray-900'}`}>
-                      OCR Form No. 1A
+                      OCR Form No. {form.lcrForm || '1A'}
                     </span>
                     <span className="block text-xs text-gray-600 mt-0.5 leading-snug">
                       Birth available certificate
@@ -476,34 +493,6 @@ export default function WronglyRegisterForm() {
                                 </div>
                               </div>
 
-                              <div className="grid grid-cols-2 gap-4 p-4 bg-white rounded-xl border border-blue-100 shadow-sm">
-                                <label className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
-                                  Page Number
-                                  <input
-                                    type="text"
-                                    className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-bold text-gray-800"
-                                    value={form.lcrPage || ''}
-                                    onChange={(e) => {
-                                      const v = e.target.value
-                                      onPatch({ lcrPage: v, colbPageNumber: v, colbPageNo: v })
-                                    }}
-                                    placeholder="e.g. 61"
-                                  />
-                                </label>
-                                <label className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
-                                  Book Number
-                                  <input
-                                    type="text"
-                                    className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-bold text-gray-800"
-                                    value={form.lcrBook || ''}
-                                    onChange={(e) => {
-                                      const v = e.target.value
-                                      onPatch({ lcrBook: v, colbBookNumber: v, colbBookNo: v })
-                                    }}
-                                    placeholder="e.g. 25"
-                                  />
-                                </label>
-                              </div>
                             </div>
                           )}
                         </div>
@@ -522,7 +511,9 @@ export default function WronglyRegisterForm() {
                     {activeSection === 'ocr-form-1a' ? (
                       <section className="bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100 shadow-sm space-y-5">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-sm font-bold text-indigo-900">OCR Form No. 1A (Birth Available)</h3>
+                          <h3 className="text-sm font-bold text-indigo-900">
+                            OCR Form No. {form.lcrForm || '1A'} ({form.lcrForm === '2A' ? 'Death' : form.lcrForm === '3A' ? 'Marriage' : 'Birth'} Available)
+                          </h3>
                           <span className="text-[11px] text-indigo-700 font-semibold uppercase tracking-wide">Based on provided layout</span>
                         </div>
 
@@ -536,37 +527,101 @@ export default function WronglyRegisterForm() {
                           <label className="text-xs font-semibold text-gray-700">Date of Registration
                             <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrDateRegistration || ''} onChange={(e) => onPatch({ lcrDateRegistration: e.target.value })} placeholder="e.g. OCTOBER 10, 1964" />
                           </label>
-                          <label className="text-xs font-semibold text-gray-700">Name of Child
-                            <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrChildName || ''} onChange={(e) => onPatch({ lcrChildName: e.target.value })} />
+                          <label className="text-xs font-semibold text-gray-700">Page Number
+                            <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm" value={form.lcrPage || ''} onChange={(e) => onPatch({ lcrPage: e.target.value, colbPageNumber: e.target.value, colbPageNo: e.target.value })} placeholder="e.g. 61" />
                           </label>
-                          <label className="text-xs font-semibold text-gray-700">Sex
-                            <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrSex || ''} onChange={(e) => onPatch({ lcrSex: e.target.value })} />
+                          <label className="text-xs font-semibold text-gray-700">Book Number
+                            <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm" value={form.lcrBook || ''} onChange={(e) => onPatch({ lcrBook: e.target.value, colbBookNumber: e.target.value, colbBookNo: e.target.value })} placeholder="e.g. 25" />
                           </label>
-                          <label className="text-xs font-semibold text-gray-700">Date of Birth
-                            <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrBirthDate || ''} onChange={(e) => onPatch({ lcrBirthDate: e.target.value })} />
-                          </label>
-                          <label className="text-xs font-semibold text-gray-700 md:col-span-2">Place of Birth
-                            <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrPlaceBirth || ''} onChange={(e) => onPatch({ lcrPlaceBirth: e.target.value })} />
-                          </label>
-                          <label className="text-xs font-semibold text-gray-700">Name of Mother
-                            <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrMotherName || ''} onChange={(e) => onPatch({ lcrMotherName: e.target.value })} />
-                          </label>
-                          <label className="text-xs font-semibold text-gray-700">Citizenship of Mother
-                            <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrMotherCitizenship || ''} onChange={(e) => onPatch({ lcrMotherCitizenship: e.target.value })} />
-                          </label>
-                          <label className="text-xs font-semibold text-gray-700">Name of Father
-                            <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrFatherName || ''} onChange={(e) => onPatch({ lcrFatherName: e.target.value })} />
-                          </label>
-                          <label className="text-xs font-semibold text-gray-700">Citizenship of Father
-                            <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrFatherCitizenship || ''} onChange={(e) => onPatch({ lcrFatherCitizenship: e.target.value })} />
-                          </label>
-                          <label className="text-xs font-semibold text-gray-700">Date of Marriage of Parents
-                            <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrDateMarriage || ''} onChange={(e) => onPatch({ lcrDateMarriage: e.target.value })} />
-                          </label>
-                          <label className="text-xs font-semibold text-gray-700">Place of Marriage of Parents
-                            <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrPlaceMarriage || ''} onChange={(e) => onPatch({ lcrPlaceMarriage: e.target.value })} />
-                          </label>
-                          <label className="text-xs font-semibold text-gray-700">Register of Births — Page
+
+                          {form.lcrForm === '1A' && (
+                            <>
+                              <label className="text-xs font-semibold text-gray-700">Name of Child
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrChildName || ''} onChange={(e) => onPatch({ lcrChildName: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Sex
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrSex || ''} onChange={(e) => onPatch({ lcrSex: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Date of Birth
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrBirthDate || ''} onChange={(e) => onPatch({ lcrBirthDate: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700 md:col-span-2">Place of Birth
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrPlaceBirth || ''} onChange={(e) => onPatch({ lcrPlaceBirth: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Name of Mother
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrMotherName || ''} onChange={(e) => onPatch({ lcrMotherName: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Citizenship of Mother
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrMotherCitizenship || ''} onChange={(e) => onPatch({ lcrMotherCitizenship: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Name of Father
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrFatherName || ''} onChange={(e) => onPatch({ lcrFatherName: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Citizenship of Father
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrFatherCitizenship || ''} onChange={(e) => onPatch({ lcrFatherCitizenship: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Date of Marriage of Parents
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrDateMarriage || ''} onChange={(e) => onPatch({ lcrDateMarriage: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Place of Marriage of Parents
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrPlaceMarriage || ''} onChange={(e) => onPatch({ lcrPlaceMarriage: e.target.value })} />
+                              </label>
+                            </>
+                          )}
+
+                          {form.lcrForm === '2A' && (
+                            <>
+                              <label className="text-xs font-semibold text-gray-700">Name of Deceased
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrChildName || ''} onChange={(e) => onPatch({ lcrChildName: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Sex
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrSex || ''} onChange={(e) => onPatch({ lcrSex: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Civil Status
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrCivilStatus || ''} onChange={(e) => onPatch({ lcrCivilStatus: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Citizenship
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrCitizenship || ''} onChange={(e) => onPatch({ lcrCitizenship: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Date of Death
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrBirthDate || ''} onChange={(e) => onPatch({ lcrBirthDate: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Citizenship of Father
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrCitizenshipFather || ''} onChange={(e) => onPatch({ lcrCitizenshipFather: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700 md:col-span-2">Place of Death
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrPlaceBirth || ''} onChange={(e) => onPatch({ lcrPlaceBirth: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700 md:col-span-2">Cause of Death
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrCauseDeath || ''} onChange={(e) => onPatch({ lcrCauseDeath: e.target.value })} />
+                              </label>
+                            </>
+                          )}
+
+                          {form.lcrForm === '3A' && (
+                            <>
+                              <label className="text-xs font-semibold text-gray-700">Husband
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcr3aHusbandName || ''} onChange={(e) => onPatch({ lcr3aHusbandName: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Husband DOB/Age
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcr3aHusbandDobAge || ''} onChange={(e) => onPatch({ lcr3aHusbandDobAge: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Wife
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcr3aWifeName || ''} onChange={(e) => onPatch({ lcr3aWifeName: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Wife DOB/Age
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcr3aWifeDobAge || ''} onChange={(e) => onPatch({ lcr3aWifeDobAge: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Date of Marriage
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrBirthDate || ''} onChange={(e) => onPatch({ lcrBirthDate: e.target.value })} />
+                              </label>
+                              <label className="text-xs font-semibold text-gray-700">Place of Marriage
+                                <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.lcrPlaceBirth || ''} onChange={(e) => onPatch({ lcrPlaceBirth: e.target.value })} />
+                              </label>
+                            </>
+                          )}
+
+                          <label className="text-xs font-semibold text-gray-700">Register of {form.lcrForm === '2A' ? 'Deaths' : form.lcrForm === '3A' ? 'Marriages' : 'Births'} — Page
                             <input
                               className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase"
                               value={form.lcrPage || ''}
@@ -577,7 +632,7 @@ export default function WronglyRegisterForm() {
                               placeholder="from pulled COLB"
                             />
                           </label>
-                          <label className="text-xs font-semibold text-gray-700">Register of Births — Book number
+                          <label className="text-xs font-semibold text-gray-700">Register of {form.lcrForm === '2A' ? 'Deaths' : form.lcrForm === '3A' ? 'Marriages' : 'Births'} — Book number
                             <input
                               className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase"
                               value={form.lcrBook || ''}

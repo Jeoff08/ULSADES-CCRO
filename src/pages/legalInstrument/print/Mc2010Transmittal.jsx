@@ -59,11 +59,11 @@ export default function Mc2010Transmittal({ data, paperWidth = '210mm', paperHei
   }
   return (
     <div
-      className="ausf-doc print-doc print-doc-transmittal mc2010-transmittal-doc bg-white text-black mx-auto px-7 py-5 leading-snug flex flex-col"
+      className="ausf-doc print-doc print-doc-transmittal mc2010-transmittal-doc bg-white text-black mx-auto py-5 leading-snug flex flex-col"
       style={{ fontFamily: 'Arial, sans-serif', width: paperWidth, minHeight: paperHeight }}
     >
       <div className="print-doc-header shrink-0">
-        <PrintHeaderRow headerImageClassName="w-24 h-24 print:w-20 print:h-20 object-contain shrink-0" singleLineAddress />
+        <PrintHeaderRow headerImageClassName="mc2010-transmittal-header-img w-20 h-20 object-contain shrink-0" singleLineAddress />
         <hr className="border-black my-2" />
       </div>
 

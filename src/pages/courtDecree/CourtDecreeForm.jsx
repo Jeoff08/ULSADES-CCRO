@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { afterUnsavedAcknowledge, useWarnIfUnsaved } from '../../hooks/useWarnIfUnsaved'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { defaultCourtDecree, syncCourtDecreeTransmittalFlagFromFormType } from './lib/courtDecreeDefaults'
 import { deriveAffectedDocumentsForPrint, primaryAffectedDocumentForSave } from './lib/courtDecreeAffectedDocuments'
@@ -439,13 +438,6 @@ export default function CourtDecreeForm() {
     return base
   })
 
-  const [dirtyBaselineTick, setDirtyBaselineTick] = useState(0)
-  useEffect(() => {
-    const id = setTimeout(() => setDirtyBaselineTick((x) => x + 1), 150)
-    return () => clearTimeout(id)
-  }, [searchParams])
-
-  const acknowledgeSaved = useWarnIfUnsaved(form, [searchParams.toString(), dirtyBaselineTick])
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
   const updateAndPersistDraft = (key, value) =>
@@ -565,10 +557,7 @@ export default function CourtDecreeForm() {
       const createdId = addSavedCourtDecree(formForOutput)
       if (createdId) finalSavedId = String(createdId).trim()
     }
-    const path = finalSavedId
-      ? `/court-decree/print?type=${nextPrintType}&id=${encodeURIComponent(finalSavedId)}`
-      : `/court-decree/print?type=${nextPrintType}`
-    afterUnsavedAcknowledge(acknowledgeSaved, () => navigate(path))
+    navigate(finalSavedId ? `/court-decree/print?type=${nextPrintType}&id=${encodeURIComponent(finalSavedId)}` : `/court-decree/print?type=${nextPrintType}`)
   }
 
   useEffect(() => {
@@ -635,9 +624,7 @@ export default function CourtDecreeForm() {
       documentOwnerName: doc || form.documentOwnerName,
     })
     setShowContinueDecreeModal(false)
-    afterUnsavedAcknowledge(acknowledgeSaved, () =>
-      navigate('/court-decree/form?type=cert-authenticity&hydrateDraft=1')
-    )
+    navigate('/court-decree/form?type=cert-authenticity&hydrateDraft=1')
   }
 
   useEffect(() => {
@@ -697,6 +684,16 @@ export default function CourtDecreeForm() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Date of Registration</label>
                     <DateInput value={form.lcr1aDateRegistration} onChange={(v) => update('lcr1aDateRegistration', v)} />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Page Number</label>
+                      <input type="text" value={form.colbPageNumber} onChange={(e) => updateAndPersistDraft('colbPageNumber', e.target.value)} placeholder="e.g. 12" className={inputClass} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Book Number</label>
+                      <input type="text" value={form.colbBookNumber} onChange={(e) => updateAndPersistDraft('colbBookNumber', e.target.value)} placeholder="e.g. 34" className={inputClass} />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Name of Child</label>
@@ -759,9 +756,19 @@ export default function CourtDecreeForm() {
             <div className="court-decree-form-page__section" style={sectionDelay(0)}>
               <LcrFormNavLinks form={form} activeType="lcr-form-2a" />
               <CourtDecreeSection number="1" title="Table fields">
-                <div className="space-y-4 max-w-8xl">
+                <div className="space-y-4 max-w-2xl">
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">LCR Registry Number</label><input type="text" value={form.lcr2aRegistryNumber} onChange={scInput('lcr2aRegistryNumber')} className={inputClass} /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Registration</label><DateInput value={form.lcr2aDateRegistration} onChange={(v) => update('lcr2aDateRegistration', v)} /></div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Page Number</label>
+                      <input type="text" value={form.colbPageNumber} onChange={(e) => updateAndPersistDraft('colbPageNumber', e.target.value)} placeholder="e.g. 12" className={inputClass} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Book Number</label>
+                      <input type="text" value={form.colbBookNumber} onChange={(e) => updateAndPersistDraft('colbBookNumber', e.target.value)} placeholder="e.g. 34" className={inputClass} />
+                    </div>
+                  </div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Name of Deceased</label><input type="text" value={form.lcr2aNameDeceased} onChange={scInput('lcr2aNameDeceased')} className={inputClass} /></div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Sex</label>
@@ -794,7 +801,7 @@ export default function CourtDecreeForm() {
             <div className="court-decree-form-page__section" style={sectionDelay(0)}>
               <LcrFormNavLinks form={form} activeType="lcr-form-3a" />
               <CourtDecreeSection number="1" title="Table fields (Husband / Wife / Marriage)">
-                <div className="space-y-6 max-w-8xl">
+                <div className="space-y-6 max-w-3xl">
                   <div>
                     <p className="font-semibold text-gray-800 border-b border-gray-200 pb-1 mb-3">Husband</p>
                     <div className="space-y-3">
@@ -896,6 +903,16 @@ export default function CourtDecreeForm() {
                     <div className="space-y-3">
                       <div><label className="block text-sm font-medium text-gray-700 mb-1">Registry Number</label><input type="text" value={form.lcr3aRegistryNumber} onChange={scInput('lcr3aRegistryNumber')} placeholder="e.g. 2009-813" className={inputClass} /></div>
                       <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Registration</label><DateInput value={form.lcr3aDateRegistration} onChange={(v) => update('lcr3aDateRegistration', v)} /></div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Page Number</label>
+                          <input type="text" value={form.colbPageNumber} onChange={(e) => updateAndPersistDraft('colbPageNumber', e.target.value)} placeholder="e.g. 12" className={inputClass} />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Book Number</label>
+                          <input type="text" value={form.colbBookNumber} onChange={(e) => updateAndPersistDraft('colbBookNumber', e.target.value)} placeholder="e.g. 34" className={inputClass} />
+                        </div>
+                      </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Date of Marriage</label>
                         <DateInput
@@ -1105,6 +1122,16 @@ export default function CourtDecreeForm() {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Date Registered</label>
                         <DateInput value={form.dateRegistered} onChange={(v) => update('dateRegistered', v)} placeholder="dd/mm/yyyy" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Page Number</label>
+                        <input type="text" value={form.colbPageNumber} onChange={(e) => updateAndPersistDraft('colbPageNumber', e.target.value)} placeholder="e.g. 12" className={inputClass} />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Book Number</label>
+                        <input type="text" value={form.colbBookNumber} onChange={(e) => updateAndPersistDraft('colbBookNumber', e.target.value)} placeholder="e.g. 34" className={inputClass} />
                       </div>
                     </div>
                     <div>

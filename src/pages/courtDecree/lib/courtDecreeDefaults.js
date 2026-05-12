@@ -19,6 +19,8 @@ export const defaultCourtDecree = {
   registryNumber: '',
   dateRegistered: '',
   caseTitle: '',
+  colbPageNumber: '',
+  colbBookNumber: '',
   // For print: issuance date and signatory (optional)
   certificateIssuanceDate: '',
   cityCivilRegistrarName: '',

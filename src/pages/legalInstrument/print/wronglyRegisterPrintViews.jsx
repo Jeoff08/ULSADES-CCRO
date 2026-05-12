@@ -1,6 +1,8 @@
 import React from 'react'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { buildLcr1aTableDisplay } from '../../courtDecree/lib/lcr1aTable'
+import { buildLcr2aTableDisplay } from '../../courtDecree/lib/lcr2aTable'
+import { buildLcr3aTableDisplay } from '../../courtDecree/lib/lcr3aTable'
 import {
   SUPPLEMENTAL_TRANSMITTAL_ATTACHMENT_OPTIONS,
   SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS,
@@ -30,6 +32,49 @@ function MunicipalMcrHeader({ province, municipality }) {
       <p className="m-0">Municipality of {m}</p>
       <p className="m-0 font-bold uppercase tracking-tight mt-1.5 text-[1.1em]">Office of the Municipal Civil Registrar</p>
     </header>
+  )
+}
+
+const OCR_MUNI_NOTE =
+  'Note: This certification is not valid if it has mark of erasure or alteration of any entry.'
+
+/** Shared footer for Wrongly Register OCR municipal 1A / 2A / 3A (print + PDF). */
+function WronglyRegisterOcrMunicipalSignatureFooter({ data }) {
+  return (
+    <footer className="mt-auto pt-0 wrongly-wr-ocr-muni-footer shrink-0 overflow-visible">
+      <div className="grid grid-cols-2 gap-x-10 mb-4 text-left items-start">
+        <div>
+          <p className="m-0 min-h-[1.25rem] leading-tight">Verified by:</p>
+          <p className="mt-8 mb-0">
+            <span className="border-b border-black font-bold uppercase inline-block px-1 min-w-[8rem]">{data.ocrVerifiedBy || ''}</span>
+          </p>
+          <p className="text-[0.92em] m-0 mt-0">{data.ocrVerifiedByTitle || 'Bookbinder III'}</p>
+        </div>
+        <div>
+          <p className="m-0 min-h-[1.25rem] leading-tight invisible select-none" aria-hidden="true">
+            &nbsp;
+          </p>
+          <p className="mt-8 mb-0">
+            <span className="border-b border-black font-bold uppercase inline-block px-1 min-w-[8rem]">{data.ocrMunicipalRegistrar || ''}</span>
+          </p>
+          <p className="text-[0.92em] m-0 mt-0">Municipal Civil Registrar</p>
+        </div>
+      </div>
+
+      <div className="text-[0.92em] mb-2 leading-tight text-left">
+        <p className="m-0">Amount Paid : {data.ocrAmountPaid || ''}</p>
+        <p className="m-0">O. R. Number : {data.ocrORNumber || ''}</p>
+        <p className="m-0">Date Paid : {data.ocrDatePaid || ''}</p>
+      </div>
+
+      <p className="text-[0.85em] text-left mb-3 -mt-1 font-bold italic break-inside-avoid wrongly-wr-ocr-muni-cert-note">
+        {OCR_MUNI_NOTE}
+      </p>
+
+      <div className="break-inside-avoid">
+        <DocumentFooter sloganBlue contactPhone="(063) 224 - 5038" contactEmail="civilregistrar.iligan@gmail.com" contentClassName="text-[0.85em]" />
+      </div>
+    </footer>
   )
 }
 
@@ -142,11 +187,7 @@ export function WronglyRegisterTransmittalView({ data, displayDate }) {
           <li>
             Name of Mother: <span className="font-bold underline uppercase">{data.transmittalMother}</span>
           </li>
-          {data.lcrPage || data.lcrBook ? (
-            <li>
-              Page / Book No: <span className="font-bold underline uppercase">{data.lcrPage || '___'} / {data.lcrBook || '___'}</span>
-            </li>
-          ) : null}
+
         </ul>
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-3 sm:items-start print:grid print:grid-cols-2 print:gap-x-6 print:gap-y-3 print:items-start">
@@ -305,7 +346,221 @@ export function WronglyRegisterLcrCityForm1AView({ tableData, displayDate, issue
   )
 }
 
-/** Image 3 — LCR Form No. 1A (Birth Available), municipal MCR (OCR output). */
+/** Image 3 — LCR Form No. 2A (Death-Available), Iligan City CRC. */
+export function WronglyRegisterLcrCityForm2AView({ tableData, displayDate, issueDateIso, remarks, amountPaid, orNo, datePaid, colbPage: propPage, colbBook: propBook }) {
+  const table = buildLcr2aTableDisplay(tableData)
+  const pb = pickBirthRegisterPageBook(tableData)
+  const colbPage = propPage || pb.page
+  const colbBook = propBook || pb.book
+  const formDate = displayDate(issueDateIso || tableData.certificateIssuanceDate || '')
+  const remarksText = String(remarks || '').trim()
+  const verifiedName = String(tableData.certificateSignatoryName || tableData.ocrVerifiedBy || 'LORELIE L. CANTO').trim() || 'LORELIE L. CANTO'
+  const verifiedTitle = String(tableData.certificateSignatoryTitle || tableData.ocrVerifiedByTitle || 'Registration Officer IV').trim()
+
+  return (
+    <div className="wrongly-wr-lcr-city font-sans text-gray-900 text-[1em] leading-snug flex flex-col flex-1 min-h-0 mx-[0.5in]">
+      <header className="shrink-0">
+        <PrintHeaderRow headerImageClassName="w-28 h-28" singleLineAddress />
+        <hr className="border-black my-3 print:my-2" />
+      </header>
+
+      <main className="flex-1">
+        <div className="flex justify-between items-start gap-4 mb-2">
+          <div>
+            <p className="m-0 font-bold text-[1.15em]">Civil Registry Form No. 2A</p>
+            <p className="m-0 text-[1em]">(Death-Available)</p>
+          </div>
+          <div className="text-center w-44 shrink-0">
+            <p className="m-0 font-semibold border-b border-black min-h-[1.35rem] px-1">{formDate}</p>
+            <p className="m-0 text-[0.85em] mt-0.5">Date</p>
+          </div>
+        </div>
+
+        <p className="font-bold mt-2 mb-1 pl-6 sm:pl-10">TO WHOM IT MAY CONCERN:</p>
+        <p className="mb-3 text-justify pl-2 sm:pl-4">
+          We certify that, among others, the following facts of death appear in our Register of Deaths on Page{' '}
+          <span className="inline-block min-w-[1.5rem] border-b border-black text-center font-bold px-1">{colbPage}</span>
+          {' '}of Book number{' '}
+          <span className="inline-block min-w-[1.5rem] border-b border-black text-center font-bold px-1">{colbBook}</span>.
+        </p>
+
+        <table className="w-full border-collapse border border-black text-[1em] mb-3">
+          <tbody>
+            {[
+              ['LCR Registry Number', table.registry],
+              ['Date of Registration', table.dateRegistration],
+              ['Name of Deceased', table.nameDeceased],
+              ['Sex', table.sex],
+              ['Civil Status', table.civilStatus],
+              ['Citizenship', table.citizenship],
+              ['Date of Death', table.dateDeath],
+              ['Citizenship of Father', table.citizenshipFather],
+              ['Place of Death', table.placeDeath],
+              ['Cause of Death', table.causeOfDeath],
+            ].map(([label, val]) => (
+              <tr key={label}>
+                <td className="py-1 px-2 border border-black font-medium align-top w-[44%]">{label}</td>
+                <td className="py-1 px-2 border border-black font-bold text-center uppercase align-top">{val}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <p className="mb-3 text-justify">
+          This certification is issued upon the request of <span className="font-bold">OCRG/DOCUMENT OWNER</span> for any legal purposes.
+        </p>
+
+        <div className="mb-4">
+          <p className="font-bold m-0 mb-1">REMARKS:</p>
+          <p className="m-0 text-justify whitespace-pre-wrap min-h-[1.5rem]">{remarksText}</p>
+        </div>
+
+      </main>
+
+      <footer className="mt-auto pt-0 wrongly-wr-footer-push-bottom">
+        <div className="flex justify-between mb-4">
+          <div className="w-[45%]">
+            <p className="m-0">Verified by:</p>
+            <p className="mt-10">
+              <span className="border-b border-black font-bold uppercase inline-block px-1 min-w-[8rem]">{verifiedName}</span>
+            </p>
+            <p className="m-0 text-[0.92em]">{verifiedTitle}</p>
+          </div>
+        </div>
+
+        <div className="text-[0.92em] mb-8 leading-tight">
+          <p className="m-0">Amount : {amountPaid || 'Php ________'}</p>
+          <p className="m-0">O.R. No : {orNo || '________'}</p>
+          <p className="m-0">Date Paid : {datePaid || formDate}</p>
+        </div>
+
+        <p className="text-center font-bold italic text-[0.92em] mb-1">
+          Note: A mark, erasure or alteration of any entry invalidates this certification
+        </p>
+        <DocumentFooter sloganBlue contactPhone="(063) 224 - 5038" contactEmail="civilregistrar.iligan@gmail.com" contentClassName="text-[0.85em]" />
+      </footer>
+    </div>
+  )
+}
+
+/** Image 4 — LCR Form No. 3A (Marriage-Available), Iligan City CRC. */
+export function WronglyRegisterLcrCityForm3AView({ tableData, displayDate, issueDateIso, remarks, amountPaid, orNo, datePaid, colbPage: propPage, colbBook: propBook }) {
+  const table = buildLcr3aTableDisplay(tableData)
+  const pb = pickBirthRegisterPageBook(tableData)
+  const colbPage = propPage || pb.page
+  const colbBook = propBook || pb.book
+  const formDate = displayDate(issueDateIso || tableData.certificateIssuanceDate || '')
+  const remarksText = String(remarks || '').trim()
+  const verifiedName = String(tableData.certificateSignatoryName || tableData.ocrVerifiedBy || 'LORELIE L. CANTO').trim() || 'LORELIE L. CANTO'
+  const verifiedTitle = String(tableData.certificateSignatoryTitle || tableData.ocrVerifiedByTitle || 'Registration Officer IV').trim()
+
+  return (
+    <div className="wrongly-wr-lcr-city font-sans text-gray-900 text-[1em] leading-snug flex flex-col flex-1 min-h-0 mx-[0.5in]">
+      <header className="shrink-0">
+        <PrintHeaderRow headerImageClassName="w-28 h-28" singleLineAddress />
+        <hr className="border-black my-3 print:my-2" />
+      </header>
+
+      <main className="flex-1">
+        <div className="flex justify-between items-start gap-4 mb-2">
+          <div>
+            <p className="m-0 font-bold text-[1.15em]">Civil Registry Form No. 3A</p>
+            <p className="m-0 text-[1em]">(Marriage-Available)</p>
+          </div>
+          <div className="text-center w-44 shrink-0">
+            <p className="m-0 font-semibold border-b border-black min-h-[1.35rem] px-1">{formDate}</p>
+            <p className="m-0 text-[0.85em] mt-0.5">Date</p>
+          </div>
+        </div>
+
+        <p className="font-bold mt-2 mb-1 pl-6 sm:pl-10">TO WHOM IT MAY CONCERN:</p>
+        <p className="mb-3 text-justify pl-2 sm:pl-4">
+          We certify that, among others, the following facts of marriage appear in our Register of Marriages on Page{' '}
+          <span className="inline-block min-w-[1.5rem] border-b border-black text-center font-bold px-1">{colbPage}</span>
+          {' '}of Book number{' '}
+          <span className="inline-block min-w-[1.5rem] border-b border-black text-center font-bold px-1">{colbBook}</span>.
+        </p>
+
+        <table className="w-full border-collapse border border-black text-[1em] mb-3 table-fixed">
+          <colgroup>
+            <col style={{ width: '28%' }} />
+            <col style={{ width: '36%' }} />
+            <col style={{ width: '36%' }} />
+          </colgroup>
+          <thead>
+            <tr>
+              <td className="py-2 px-2 border border-black font-bold align-top" />
+              <td className="py-2 px-2 border border-black font-bold text-center uppercase tracking-wider">HUSBAND</td>
+              <td className="py-2 px-2 border border-black font-bold text-center uppercase tracking-wider">WIFE</td>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { label: 'Name:', h: table.husbandName, w: table.wifeName },
+              { label: 'Date of Birth/Age:', h: table.husbandDobAge, w: table.wifeDobAge },
+              { label: 'Citizenship:', h: table.husbandCitizenship, w: table.wifeCitizenship },
+              { label: 'Civil Status:', h: table.husbandCivilStatus, w: table.wifeCivilStatus },
+              { label: 'Mother:', h: table.husbandMother, w: table.wifeMother },
+              { label: 'Father:', h: table.husbandFather, w: table.wifeFather },
+            ].map((row, i) => (
+              <tr key={i}>
+                <td className="py-2 px-2 border border-black font-bold align-top">{row.label}</td>
+                <td className="py-2 px-2 border border-black text-center uppercase font-bold">{row.h}</td>
+                <td className="py-2 px-2 border border-black text-center uppercase font-bold">{row.w}</td>
+              </tr>
+            ))}
+            {[
+              { label: 'Registry Number', val: table.registry },
+              { label: 'Date of Registration', val: table.dateRegistration },
+              { label: 'Date of Marriage', val: table.dateMarriage },
+              { label: 'Place of Marriage', val: table.placeMarriage },
+            ].map((row, i) => (
+              <tr key={i}>
+                <td className="py-2 px-2 border border-black font-bold align-top">{row.label}</td>
+                <td className="py-2 px-2 border border-black text-center uppercase font-bold" colSpan={2}>{row.val}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <p className="mb-3 text-justify">
+          This certification is issued upon the request of <span className="font-bold">OCRG/DOCUMENT OWNER</span> for any legal purposes.
+        </p>
+
+        <div className="mb-4">
+          <p className="font-bold m-0 mb-1">REMARKS:</p>
+          <p className="m-0 text-justify whitespace-pre-wrap min-h-[1.5rem]">{remarksText}</p>
+        </div>
+
+      </main>
+
+      <footer className="mt-auto pt-0 wrongly-wr-footer-push-bottom">
+        <div className="flex justify-between mb-4">
+          <div className="w-[45%]">
+            <p className="m-0">Verified by:</p>
+            <p className="mt-10">
+              <span className="border-b border-black font-bold uppercase inline-block px-1 min-w-[8rem]">{verifiedName}</span>
+            </p>
+            <p className="m-0 text-[0.92em]">{verifiedTitle}</p>
+          </div>
+        </div>
+
+        <div className="text-[0.92em] mb-8 leading-tight">
+          <p className="m-0">Amount : {amountPaid || 'Php ________'}</p>
+          <p className="m-0">O.R. No : {orNo || '________'}</p>
+          <p className="m-0">Date Paid : {datePaid || formDate}</p>
+        </div>
+
+        <p className="text-center font-bold italic text-[0.92em] mb-1">
+          Note: A mark, erasure or alteration of any entry invalidates this certification
+        </p>
+        <DocumentFooter sloganBlue contactPhone="(063) 224 - 5038" contactEmail="civilregistrar.iligan@gmail.com" contentClassName="text-[0.85em]" />
+      </footer>
+    </div>
+  )
+}
+
+/** Image 5 — LCR Form No. 1A (Birth Available), municipal MCR (OCR output). */
 export function WronglyRegisterOcrMunicipalForm1AView({ data, colbPage: propPage, colbBook: propBook }) {
   const province = String(data.ocrMcrProvince || '').trim() || 'Lanao del Norte'
   const municipality = String(data.ocrMcrMunicipality || '').trim() || 'Tubod'
@@ -329,13 +584,13 @@ export function WronglyRegisterOcrMunicipalForm1AView({ data, colbPage: propPage
   ]
 
   return (
-    <div className="wrongly-wr-ocr-muni font-sans text-gray-900 text-[1em] flex flex-col flex-1 min-h-0 mx-[0.5in]">
+    <div className="wrongly-wr-ocr-muni font-sans text-gray-900 text-[1em] flex flex-col flex-1 min-h-min overflow-visible mx-[0.5in]">
       <header className="shrink-0">
         <MunicipalMcrHeader province={province} municipality={municipality} />
         <hr className="border-black border-t my-2" />
       </header>
 
-      <main className="flex-1">
+      <main className="flex-1 min-h-min">
         <div className="flex justify-between items-start gap-4 mb-2">
           <div>
             <p className="m-0 font-bold">LCR Form No. 1A</p>
@@ -384,37 +639,190 @@ export function WronglyRegisterOcrMunicipalForm1AView({ data, colbPage: propPage
 
       </main>
 
-      <footer className="mt-auto pt-0 -mb-2 wrongly-wr-footer-push-bottom">
-        <div className="grid grid-cols-2 gap-8 mb-6">
-          <div className="text-center">
-            <p className="m-0 text-left">Verified by:</p>
-            <p className="mt-8">
-              <span className="border-b border-black font-bold uppercase inline-block px-1 min-w-[8rem]">{data.ocrVerifiedBy || ''}</span>
-            </p>
-            <p className="text-[0.92em]">{data.ocrVerifiedByTitle || 'Bookbinder III'}</p>
-          </div>
-          <div className="text-center">
-            <p className="mt-8">
-              <span className="border-b border-black font-bold uppercase inline-block px-1 min-w-[8rem]">{data.ocrMunicipalRegistrar || ''}</span>
-            </p>
-            <p className="text-[0.92em]">Municipal Civil Registrar</p>
-          </div>
-        </div>
-
-        <div className="text-[0.92em] mb-8 leading-tight">
-          <p className="m-0">Amount Paid : {data.ocrAmountPaid || ''}</p>
-          <p className="m-0">O. R. Number : {data.ocrORNumber || ''}</p>
-          <p className="m-0">Date Paid : {data.ocrDatePaid || ''}</p>
-        </div>
-
-        <p className="text-[0.85em] text-center mb-1 font-bold italic">
-          Note: This certification is not valid if it has mark of erasure or alteration of any entry.
-        </p>
-        <DocumentFooter sloganBlue contactPhone="(063) 224 - 5038" contactEmail="civilregistrar.iligan@gmail.com" contentClassName="text-[0.85em]" />
-      </footer>
+      <WronglyRegisterOcrMunicipalSignatureFooter data={data} />
     </div>
   )
 }
+
+/** LCR Form No. 2A (Death Available), municipal MCR (OCR output). */
+export function WronglyRegisterOcrMunicipalForm2AView({ data, colbPage: propPage, colbBook: propBook }) {
+  const province = String(data.ocrMcrProvince || '').trim() || 'Lanao del Norte'
+  const municipality = String(data.ocrMcrMunicipality || '').trim() || 'Tubod'
+  const pb = pickBirthRegisterPageBook(data)
+  const page = propPage || pb.page
+  const book = propBook || pb.book
+
+  const rows = [
+    ['LCR Registry Number', data.lcrRegistryNo],
+    ['Date of Registration', data.lcrDateRegistration],
+    ['Name of Deceased', data.lcrChildName],
+    ['Sex', data.lcrSex],
+    ['Civil Status', data.lcrCivilStatus],
+    ['Citizenship', data.lcrCitizenship],
+    ['Date of Death', data.lcrBirthDate],
+    ['Citizenship of Father', data.lcrCitizenshipFather],
+    ['Place of Death', data.lcrPlaceBirth],
+    ['Cause of Death', data.lcrCauseDeath],
+  ]
+
+  return (
+    <div className="wrongly-wr-ocr-muni font-sans text-gray-900 text-[1em] flex flex-col flex-1 min-h-min overflow-visible mx-[0.5in]">
+      <header className="shrink-0">
+        <MunicipalMcrHeader province={province} municipality={municipality} />
+        <hr className="border-black border-t my-2" />
+      </header>
+
+      <main className="flex-1 min-h-min">
+        <div className="flex justify-between items-start gap-4 mb-2">
+          <div>
+            <p className="m-0 font-bold">LCR Form No. 2A</p>
+            <p className="m-0">(Death Available)</p>
+          </div>
+          <div className="text-center w-40 shrink-0">
+            <p className="m-0 font-medium border-b border-black min-h-[1.25rem]">{ocrLineDate(data.transmittalDate)}</p>
+            <p className="m-0 text-[0.85em]">Date</p>
+          </div>
+        </div>
+
+        <p className="font-bold mt-2 mb-1">To Whom It May Concern:</p>
+        <p className="mb-3 leading-relaxed">
+          We certify that, among others, the following facts of death appear in our Register of Deaths on page{' '}
+          <span className="inline-block min-w-[2rem] border-b border-black text-center font-semibold mx-0.5">{page}</span>
+          {' '}of book number{' '}
+          <span className="inline-block min-w-[2rem] border-b border-black text-center font-semibold mx-0.5">{book}</span>:
+        </p>
+
+        <div className="space-y-1 mb-4">
+          {rows.map(([label, value]) => (
+            <div key={label} className="grid grid-cols-[minmax(0,46%)_12px_1fr] gap-1 items-end">
+              <span>{label}</span>
+              <span>:</span>
+              <span className="border-b border-black min-h-[1.2rem] font-semibold uppercase px-1">{value || ''}</span>
+            </div>
+          ))}
+        </div>
+
+        <p className="mb-1">
+          This Certification is issued to:{' '}
+          <span className="inline-block min-w-[12rem] border-b border-black font-bold uppercase px-1">{data.ocrRequestorName || ''}</span>
+        </p>
+        <p className="mb-4">
+          upon his/her request for{' '}
+          <span className="inline-block min-w-[10rem] border-b border-black font-bold uppercase px-1">
+            {data.transmittalEndorsementOther || 'TRANSFER OF REGISTRATION'}
+          </span>
+          .
+        </p>
+
+        <p className="font-bold m-0">REMARKS:</p>
+        <p className="mt-1 mb-6 italic text-justify whitespace-pre-wrap min-h-[1.5rem]">
+          {data.ocrRemarks || ''}
+        </p>
+
+      </main>
+
+      <WronglyRegisterOcrMunicipalSignatureFooter data={data} />
+    </div>
+  )
+}
+
+/** LCR Form No. 3A (Marriage Available), municipal MCR (OCR output). */
+export function WronglyRegisterOcrMunicipalForm3AView({ data, colbPage: propPage, colbBook: propBook }) {
+  const province = String(data.ocrMcrProvince || '').trim() || 'Lanao del Norte'
+  const municipality = String(data.ocrMcrMunicipality || '').trim() || 'Tubod'
+  const pb = pickBirthRegisterPageBook(data)
+  const page = propPage || pb.page
+  const book = propBook || pb.book
+
+  return (
+    <div className="wrongly-wr-ocr-muni font-sans text-gray-900 text-[1em] flex flex-col flex-1 min-h-min overflow-visible mx-[0.5in]">
+      <header className="shrink-0">
+        <MunicipalMcrHeader province={province} municipality={municipality} />
+        <hr className="border-black border-t my-2" />
+      </header>
+
+      <main className="flex-1 min-h-min">
+        <div className="flex justify-between items-start gap-4 mb-2">
+          <div>
+            <p className="m-0 font-bold">LCR Form No. 3A</p>
+            <p className="m-0">(Marriage Available)</p>
+          </div>
+          <div className="text-center w-40 shrink-0">
+            <p className="m-0 font-medium border-b border-black min-h-[1.25rem]">{ocrLineDate(data.transmittalDate)}</p>
+            <p className="m-0 text-[0.85em]">Date</p>
+          </div>
+        </div>
+
+        <p className="font-bold mt-2 mb-1">To Whom It May Concern:</p>
+        <p className="mb-3 leading-relaxed">
+          We certify that, among others, the following facts of marriage appear in our Register of Marriages on page{' '}
+          <span className="inline-block min-w-[2rem] border-b border-black text-center font-semibold mx-0.5">{page}</span>
+          {' '}of book number{' '}
+          <span className="inline-block min-w-[2rem] border-b border-black text-center font-semibold mx-0.5">{book}</span>:
+        </p>
+
+        <div className="space-y-1 mb-4">
+          {[
+            ['Registry Number', data.lcrRegistryNo],
+            ['Date of Registration', data.lcrDateRegistration],
+            ['Name of Husband', data.lcr3aHusbandName],
+            ['Name of Wife', data.lcr3aWifeName],
+            ['Husband Date of Birth/Age', data.lcr3aHusbandDobAge],
+            ['Wife Date of Birth/Age', data.lcr3aWifeDobAge],
+            ['Husband Citizenship', data.lcr3aHusbandCitizenship],
+            ['Wife Citizenship', data.lcr3aWifeCitizenship],
+            ['Husband Civil Status', data.lcr3aHusbandCivilStatus],
+            ['Wife Civil Status', data.lcr3aWifeCivilStatus],
+            ['Husband Mother', data.lcr3aHusbandMother],
+            ['Wife Mother', data.lcr3aWifeMother],
+            ['Husband Father', data.lcr3aHusbandFather],
+            ['Wife Father', data.lcr3aWifeFather],
+            [
+              'Date of Marriage',
+              data.lcrDateMarriage || data.lcr3aDateMarriage || data.dateOfMarriage || data.lcr1aDateMarriageParents || '',
+            ],
+            [
+              'Place of Marriage',
+              data.lcrPlaceMarriage
+                || data.lcr3aPlaceMarriage
+                || data.lcr1aPlaceMarriageParents
+                || [data.placeOfMarriageCity, data.placeOfMarriageProvince].filter(Boolean).join(', ')
+                || data.placeOfMarriage
+                || '',
+            ],
+          ].map(([label, value]) => (
+            <div key={label} className="grid grid-cols-[minmax(0,46%)_12px_1fr] gap-1 items-end">
+              <span>{label}</span>
+              <span>:</span>
+              <span className="border-b border-black min-h-[1.2rem] font-semibold uppercase px-1">{value || ''}</span>
+            </div>
+          ))}
+        </div>
+
+        <p className="mb-1">
+          This Certification is issued to:{' '}
+          <span className="inline-block min-w-[12rem] border-b border-black font-bold uppercase px-1">{data.ocrRequestorName || ''}</span>
+        </p>
+        <p className="mb-4">
+          upon his/her request for{' '}
+          <span className="inline-block min-w-[10rem] border-b border-black font-bold uppercase px-1">
+            {data.transmittalEndorsementOther || 'TRANSFER OF REGISTRATION'}
+          </span>
+          .
+        </p>
+
+        <p className="font-bold m-0">REMARKS:</p>
+        <p className="mt-1 mb-6 italic text-justify whitespace-pre-wrap min-h-[1.5rem]">
+          {data.ocrRemarks || ''}
+        </p>
+
+      </main>
+
+      <WronglyRegisterOcrMunicipalSignatureFooter data={data} />
+    </div>
+  )
+}
+
 
 /** Image 4 — Municipal forwarding letter. */
 export function WronglyRegisterForwardingMunicipalView({ data, displayDate }) {

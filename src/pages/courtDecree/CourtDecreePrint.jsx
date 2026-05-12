@@ -207,6 +207,16 @@ export default function CourtDecreePrint() {
   }
   usePrintPageSize(pageSizeForPrint)
 
+  const handleDataPatch = useCallback((patch) => {
+    setData((prev) => {
+      const next = { ...prev, ...patch }
+      try {
+        saveCourtDecreeDraft(next)
+      } catch (_) { }
+      return next
+    })
+  }, [])
+
   useEffect(() => {
     const stored = getStoredData()
     if (stored) setData(stored)
@@ -313,7 +323,7 @@ export default function CourtDecreePrint() {
     'placeOfBirthStreet', 'placeOfBirthCity', 'placeOfBirthProvince',
     'motherFirst', 'motherMiddle', 'motherLast', 'motherCitizenship',
     'fatherFirst', 'fatherMiddle', 'fatherLast', 'fatherCitizenship',
-    'colbRegistryNo', 'colbRegDate', 'colbPageNo', 'colbBookNo',
+    'colbRegistryNo', 'colbRegDate', 'colbPageNo', 'colbBookNo', 'colbPageNumber', 'colbBookNumber',
     'dateOfMarriage', 'placeOfMarriageCity', 'placeOfMarriageProvince', 'placeOfMarriageCountry',
     'placeOfMarriageOfParents',
     'certificateIssuanceDate', 'cityCivilRegistrarName', 'certificateSignatoryName',
@@ -362,7 +372,7 @@ export default function CourtDecreePrint() {
   const LCR_2A_FORM_KEYS = [
     'lcr2aRegistryNumber', 'lcr2aDateRegistration', 'lcr2aNameDeceased', 'lcr2aSex', 'lcr2aCivilStatus',
     'lcr2aCitizenship', 'lcr2aDateDeath', 'lcr2aCitizenshipFather', 'lcr2aPlaceDeath', 'lcr2aCauseDeath',
-    'colbPageNo', 'colbBookNo', 'colbRegistryNo', 'colbRegDate', 'colbDateOfRegistration',
+    'colbPageNo', 'colbBookNo', 'colbPageNumber', 'colbBookNumber', 'colbRegistryNo', 'colbRegDate', 'colbDateOfRegistration',
     'deceasedParentFirst', 'deceasedParentMiddle', 'deceasedParentLast',
     'documentOwnerName', 'sex', 'civilStatus', 'citizenship', 'dateOfDeath',
     'citizenshipOfFather', 'placeOfDeath', 'causeOfDeath',
@@ -426,7 +436,7 @@ export default function CourtDecreePrint() {
     'husbandMotherName', 'wifeMotherName', 'husbandFatherName', 'wifeFatherName',
     'marriageRegistryNo', 'marriageDateOfRegistration', 'dateOfMarriage',
     'placeOfMarriageCity', 'placeOfMarriageProvince', 'placeOfMarriageCountry',
-    'colbPageNo', 'colbBookNo', 'documentOwnerName',
+    'colbPageNo', 'colbBookNo', 'colbPageNumber', 'colbBookNumber', 'documentOwnerName',
     'certificateIssuanceDate', 'cityCivilRegistrarName', 'certificateSignatoryName',
     'contactPhone', 'contactEmail',
   ]
@@ -546,21 +556,21 @@ export default function CourtDecreePrint() {
         effectiveAffectedDocs.length <= 1
           ? (
             <div className="court-decree-lcr-form-outer">
-              <LcrForm1ABirthAvailable data={dataForLcr1A} />
+              <LcrForm1ABirthAvailable data={dataForLcr1A} editableTable={true} onDataChange={handleDataPatch} isCourtDecree={true} />
             </div>
           )
           : (
             <div className="court-decree-lcr-form-outer space-y-6">
-              {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
-              {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
-              {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
+              {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} editableTable={true} onDataChange={handleDataPatch} isCourtDecree={true} /> : null}
+              {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} editableTable={true} onDataChange={handleDataPatch} isCourtDecree={true} /> : null}
+              {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} editableTable={true} onDataChange={handleDataPatch} isCourtDecree={true} /> : null}
             </div>
           )
       break
     case 'lcr-form-2a':
       content = (
         <div className="court-decree-lcr-form-outer">
-          <LcrForm2ADeathAvailable data={dataForLcr2A} />
+          <LcrForm2ADeathAvailable data={dataForLcr2A} editableTable={true} onDataChange={handleDataPatch} isCourtDecree={true} />
         </div>
       )
       break
@@ -569,14 +579,14 @@ export default function CourtDecreePrint() {
         effectiveAffectedDocs.length <= 1
           ? (
             <div className="court-decree-lcr-form-outer">
-              <LcrForm3AMarriageAvailable data={dataForLcr3A} />
+              <LcrForm3AMarriageAvailable data={dataForLcr3A} editableTable={true} onDataChange={handleDataPatch} isCourtDecree={true} />
             </div>
           )
           : (
             <div className="court-decree-lcr-form-outer space-y-6">
-              {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
-              {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
-              {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
+              {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} editableTable={true} onDataChange={handleDataPatch} isCourtDecree={true} /> : null}
+              {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} editableTable={true} onDataChange={handleDataPatch} isCourtDecree={true} /> : null}
+              {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} editableTable={true} onDataChange={handleDataPatch} isCourtDecree={true} /> : null}
             </div>
           )
       break

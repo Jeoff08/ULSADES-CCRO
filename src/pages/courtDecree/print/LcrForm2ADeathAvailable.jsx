@@ -23,7 +23,7 @@ const LCR_2A_EDITABLE_ROWS = [
 ]
 
 /** LCR Form No. 2A (Death-Available). Full print layout; table from buildLcr2aTableDisplay (court + legitimation). */
-export default function LcrForm2ADeathAvailable({ data, editableTable = false, onDataChange }) {
+export default function LcrForm2ADeathAvailable({ data, editableTable = false, onDataChange, isCourtDecree = false }) {
   const t = buildLcr2aTableDisplay(data)
   const [editableRemarks, setEditableRemarks] = useState(data?.remarks || '')
 
@@ -69,8 +69,29 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
           <p className="font-bold mb-1 pl-8">TO WHOM IT MAY CONCERN:</p>
           <p className="mb-2 text-left court-decree-lcr-body">
             <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of death appear in our Register of Deaths on Page{' '}
-            <span className="inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold">{colbPage ?? ''}</span> of Book number{' '}
-            <span className="inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold">{colbBook ?? ''}</span>.
+            {editableTable && onDataChange ? (
+                <input
+                  type="text"
+                  className="inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold max-w-[4rem] bg-white print:!hidden no-print focus:outline-none focus:bg-blue-50"
+                  value={String(colbPage ?? '')}
+                  onChange={(e) => patchData({ colbPageNo: e.target.value, colbPageNumber: e.target.value })}
+                />
+            ) : null}
+            <span className={`${editableTable && onDataChange ? 'hidden print:inline-block' : 'inline-block'} border-b border-black px-1 min-w-[2rem] text-center font-bold`}>
+              {colbPage || ''}
+            </span>
+            {' '}of Book number{' '}
+            {editableTable && onDataChange ? (
+                <input
+                  type="text"
+                  className="inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold max-w-[5rem] bg-white print:!hidden no-print focus:outline-none focus:bg-blue-50"
+                  value={String(colbBook ?? '')}
+                  onChange={(e) => patchData({ colbBookNo: e.target.value, colbBookNumber: e.target.value })}
+                />
+            ) : null}
+            <span className={`${editableTable && onDataChange ? 'hidden print:inline-block' : 'inline-block'} border-b border-black px-1 min-w-[3rem] text-center font-bold`}>
+              {colbBook || ''}
+            </span> .
           </p>
           <table className="w-full border-collapse text-sm mt-4 mb-0 border border-black table-fixed court-decree-lcr-table">
             <colgroup>
@@ -144,17 +165,11 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
             </tbody>
           </table>
           <p className="mb-2 text-sm court-decree-lcr-body court-decree-lcr-cert-after-table">
-            {editableTable
-              ? (
-                <span className="pl-8 inline-block">
-                  This certification is issued to <span className="font-bold underline">CCR-FILE</span> for any legal purpose.
-                </span>
-              )
-              : (
-                <>
-                  This certification is issued upon the request of <span className="font-bold">OCRG/DOCUMENT OWNER</span> for any legal purposes.
-                </>
-              )}
+            {isCourtDecree ? (
+              <>This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.</>
+            ) : (
+              <>This certification is issued to <span className="font-bold underline">CCR-FILE</span> for any legal purpose.</>
+            )}
           </p>
           <div className="mb-2 court-decree-lcr-body court-decree-lcr-2a-remarks-block">
             <p className="font-bold text-sm mb-0.5">REMARKS:</p>

@@ -657,15 +657,27 @@ html[data-paper-size="short"] .print-doc-lcr-1a .ausf-lcr-remarks-block {
 }
 html[data-paper-size="a4"] .print-doc-lcr-1a .ausf-lcr-verified-block,
 html[data-paper-size="long"] .print-doc-lcr-1a .ausf-lcr-verified-block,
-html[data-paper-size="legal"] .print-doc-lcr-1a .ausf-lcr-verified-block {
+html[data-paper-size="legal"] .print-doc-lcr-1a .ausf-lcr-verified-block,
+html[data-paper-size="short"] .print-doc-lcr-1a .ausf-lcr-verified-block {
   position: static !important;
   top: auto !important;
 }
-html[data-paper-size="a4"] .print-doc-lcr-1a .ausf-lcr-verified-block > .flex > div:first-child,
-html[data-paper-size="long"] .print-doc-lcr-1a .ausf-lcr-verified-block > .flex > div:first-child,
-html[data-paper-size="legal"] .print-doc-lcr-1a .ausf-lcr-verified-block > .flex > div:first-child {
-  position: relative !important;
-  top: -0.80in !important;
+/* AUSF LCR: CCR in .ausf-lcr-ccr-slot only; Verified-by is .ausf-lcr-verified-slot (separate DOM, independent layout) */
+html[data-paper-size="a4"] .print-doc-lcr-1a .ausf-lcr-ccr-bottom,
+html[data-paper-size="long"] .print-doc-lcr-1a .ausf-lcr-ccr-bottom,
+html[data-paper-size="legal"] .print-doc-lcr-1a .ausf-lcr-ccr-bottom,
+html[data-paper-size="short"] .print-doc-lcr-1a .ausf-lcr-ccr-bottom {
+  position: absolute !important;
+  bottom: 0 !important;
+  right: 0 !important;
+}
+html[data-paper-size="a4"] body.pdf-capture .print-doc-lcr-1a .ausf-lcr-ccr-bottom,
+html[data-paper-size="long"] body.pdf-capture .print-doc-lcr-1a .ausf-lcr-ccr-bottom,
+html[data-paper-size="legal"] body.pdf-capture .print-doc-lcr-1a .ausf-lcr-ccr-bottom,
+html[data-paper-size="short"] body.pdf-capture .print-doc-lcr-1a .ausf-lcr-ccr-bottom {
+  position: absolute !important;
+  bottom: 0 !important;
+  right: 0 !important;
 }
 /* AUSF LCR certification line: 11px only */
 .print-doc-lcr-1a .ausf-lcr-cert-line {
@@ -916,6 +928,19 @@ html[data-paper-size="legal"] .print-doc-transmittal-elderly .ausf-transmittal-a
   margin: 0 !important;
   line-height: 1.02 !important;
 }
+/* MC2010-04 transmittal: narrow side margins; larger seal (left) + logo (right) */
+.mc2010-transmittal-doc {
+  padding-left: 0.3in !important;
+  padding-right: 0.3in !important;
+}
+.mc2010-transmittal-doc .print-doc-header .ccr-header-logo,
+.mc2010-transmittal-doc .print-doc-header .mc2010-transmittal-header-img {
+  width: 7rem !important;
+  height: 7rem !important;
+  max-width: 7rem !important;
+  max-height: 7rem !important;
+  object-fit: contain !important;
+}
 
 /* MC2010-04 LCR (1A/2A/3A): match transmittal — 16px screen */
 body .mc2010-print-root .court-decree-lcr-form,
@@ -1002,11 +1027,13 @@ html[data-paper-size="legal"] .mc2010-transmittal-doc {
     line-height: 1.25 !important;
   }
 
-  .mc2010-transmittal-doc .print-doc-header img {
-    width: 3.15rem !important;
-    height: 3.15rem !important;
-    max-width: 3.15rem !important;
-    max-height: 3.15rem !important;
+  .mc2010-transmittal-doc .print-doc-header img,
+  .mc2010-transmittal-doc .print-doc-header .mc2010-transmittal-header-img {
+    width: 30mm !important;
+    height: 30mm !important;
+    max-width: 30mm !important;
+    max-height: 30mm !important;
+    object-fit: contain !important;
   }
   .mc2010-transmittal-doc .mc2010-attn-block {
     line-height: 1.06 !important;
@@ -1156,6 +1183,18 @@ body.pdf-capture .mc2010-transmittal-doc .mc2010-checklist-table td:first-child 
   min-width: 0.12in !important;
   min-height: 0.12in !important;
 }
+body.pdf-capture .mc2010-transmittal-doc {
+  padding-left: 0.3in !important;
+  padding-right: 0.3in !important;
+}
+body.pdf-capture .mc2010-transmittal-doc .print-doc-header img,
+body.pdf-capture .mc2010-transmittal-doc .print-doc-header .mc2010-transmittal-header-img {
+  width: 25mm !important;
+  height: 25mm !important;
+  max-width: 25mm !important;
+  max-height: 25mm !important;
+  object-fit: contain !important;
+}
 
 /* Supplemental Report scaling */
 html[data-paper-size="a4"] .supplemental-report-doc,
@@ -1169,6 +1208,22 @@ html[data-paper-size="short"] .supplemental-report-doc p,
 html[data-paper-size="short"] .supplemental-report-doc ol,
 html[data-paper-size="short"] .supplemental-report-doc li {
   font-size: 18px !important;
+}
+/* Short bond on screen: keep preview from top (bottom alignment is print + pdf-capture only below) */
+html[data-paper-size="short"] .supplemental-report-doc {
+  justify-content: flex-start !important;
+}
+html[data-paper-size="short"] .supplemental-report-doc .supplemental-bottom-wrap {
+  margin-top: 0 !important;
+}
+/* Supplemental module print only: short bond — hide bundled LCR form (MC2010-04 uses .mc2010-print-root; unchanged) */
+@media print {
+  html[data-paper-size="short"] #supplemental-print-page:not(.mc2010-print-root) #supplemental-print-lcr {
+    display: none !important;
+  }
+}
+html[data-paper-size="short"] body.pdf-capture #supplemental-print-page:not(.mc2010-print-root) #supplemental-print-lcr {
+  display: none !important;
 }
 html[data-paper-size="long"] .supplemental-report-doc,
 html[data-paper-size="long"] .supplemental-report-doc p,
@@ -1249,12 +1304,12 @@ html[data-paper-size="long"] .ausf-0-6-doc.print-doc , html[data-paper-size="leg
   hyphens: auto;
 }
 
-/* Registration: stronger chain beats generic .ausf-doc rules; slightly negative word-spacing for screen preview */
+/* Registration: stronger chain beats generic .ausf-doc rules; normal word gaps (print/PDF catch-all also enforces) */
 .ausf-doc.print-doc.print-doc-cert-registration .cert-reg-body,
 .ausf-doc.print-doc.print-doc-cert-registration .cert-reg-body p {
   text-align: justify !important;
   text-justify: auto !important;
-  word-spacing: -0.06em !important;
+  word-spacing: normal !important;
   letter-spacing: normal !important;
   hyphenate-character: '-';
   hyphens: auto;
@@ -1349,12 +1404,12 @@ body.pdf-capture .print-doc-cert-auth .cert-auth-body p {
   letter-spacing: normal !important;
   hyphens: auto !important;
 }
-/* CoR only: tighter gaps between words when PDF still uses full justification */
+/* CoR: same normal word spacing as other print outputs */
 body.pdf-capture .print-doc-cert-registration .cert-reg-body,
 body.pdf-capture .print-doc-cert-registration .cert-reg-body p {
   text-align: justify !important;
   text-justify: auto !important;
-  word-spacing: -0.06em !important;
+  word-spacing: normal !important;
   letter-spacing: normal !important;
   hyphens: auto !important;
 }
@@ -2166,6 +2221,18 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-left: 0 !important;
     margin-right: 0 !important;
   }
+  /* Wrongly Register OCR sheet: keep certification note + footer visible in print/PDF (no flex clipping) */
+  .wrongly-register-print-sheet.wrongly-wr-ocr-sheet {
+    overflow: visible !important;
+  }
+  .wrongly-register-print-sheet .wrongly-wr-ocr-muni,
+  .wrongly-register-print-sheet .wrongly-wr-ocr-muni-footer {
+    overflow: visible !important;
+  }
+  .wrongly-register-print-sheet .wrongly-wr-ocr-muni-cert-note {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
   /* Transmittal only: shift letter block right; header/footer stay full width inside sheet padding */
   .wrongly-register-print-sheet .wrongly-wr-transmittal-body-content {
     margin-left: 14mm !important;
@@ -2251,15 +2318,20 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-top: auto !important;
     padding-top: 0 !important;
   }
-  /* Short bondpaper: keep supplemental footer at page bottom */
+  /* Short bondpaper: full document block anchored to bottom of page (screen preview stays top-aligned) */
   html[data-paper-size="short"] .supplemental-report-doc {
     min-height: 11in !important;
     max-height: none !important;
     background: transparent !important;
+    justify-content: flex-end !important;
   }
   html[data-paper-size="short"] .supplemental-report-doc .supplemental-bottom-wrap {
-    margin-top: auto !important;
+    margin-top: 0 !important;
     padding-top: 0 !important;
+  }
+  /* Short bond: hide only seal + CCR office banner row; keep simple Republic / City / REG. NO. header */
+  html[data-paper-size="short"] .supplemental-report-doc .supplemental-report-print-header:has(> .grid) {
+    display: none !important;
   }
   html[data-paper-size="long"] .supplemental-report-doc {
     min-height: 13in !important;
@@ -3779,9 +3851,10 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .ausf-only-doc .print-doc-header {
     margin-bottom: 0 !important;
   }
-  /* Do not use inter-word on court CoA/CoR bodies — it creates huge gaps; those use .cert-auth-body / .cert-reg-body */
+  /* No inter-word expansion — single normal space between words */
   .ausf-doc .text-justify:not(.cert-auth-body):not(.cert-reg-body) {
-    text-justify: inter-word;
+    text-justify: auto !important;
+    word-spacing: normal !important;
   }
   /* Certificate of Registration: match CoA line-height (1.8) — 1.5 made lines shorter and justified gaps wider */
   .ausf-doc.print-doc.print-doc-cert-registration .cert-reg-body,
@@ -4054,10 +4127,6 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
   .registration-of-ack-doc .registration-of-ack-opening {
     text-indent: 0.25in !important;
-  }
-  /* Limit justified stretch so word spacing stays close to normal (one space) */
-  .ausf-doc ol li.text-justify {
-    word-spacing: 0.15em;
   }
   .ausf-doc .ausf-place-of-birth-line {
     word-spacing: normal;
@@ -6068,7 +6137,8 @@ body.pdf-capture .supplemental-report-doc h2 {
   .supplemental-report-doc.print-doc .supplemental-report-content p,
   .supplemental-report-doc.print-doc .supplemental-report-content li {
     text-align: justify !important;
-    text-justify: inter-word;
+    text-justify: auto !important;
+    word-spacing: normal !important;
   }
 }
 
@@ -6083,7 +6153,19 @@ body.pdf-capture .supplemental-report-doc.print-doc .supplemental-report-content
 body.pdf-capture .supplemental-report-doc.print-doc .supplemental-report-content p,
 body.pdf-capture .supplemental-report-doc.print-doc .supplemental-report-content li {
   text-align: justify !important;
-  text-justify: inter-word;
+  text-justify: auto !important;
+  word-spacing: normal !important;
+}
+
+html[data-paper-size="short"] body.pdf-capture .supplemental-report-doc .supplemental-report-print-header:has(> .grid) {
+  display: none !important;
+}
+html[data-paper-size="short"] body.pdf-capture .supplemental-report-doc {
+  min-height: 11in !important;
+  justify-content: flex-end !important;
+}
+html[data-paper-size="short"] body.pdf-capture .supplemental-report-doc .supplemental-bottom-wrap {
+  margin-top: 0 !important;
 }
 
 /* Legitimation affidavit (sole/joint): align with standard AUSF print/PDF shell */
@@ -7104,12 +7186,39 @@ html[data-paper-size="short"] body.pdf-capture .print-doc-lcr-1a .print-doc-foot
     padding-left: 2ch !important;
   }
 
+  /* AUSF LCR 1A: center certification disclaimer note */
+  .ausf-doc.print-doc-lcr-1a .lcr1a-note-line {
+    text-align: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
   /* LCR 1A note font size */
   html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-1a .lcr1a-note-line,
   html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-1a .lcr1a-note-line,
   html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-1a .lcr1a-note-line,
   html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-1a .lcr1a-note-line {
     font-size: 12pt !important;
+  }
+
+  /* AUSF LCR: A4 — fixed page height so signature row sits at bottom above footer */
+  html[data-paper-size="a4"] .ausf-module-lcr-form.court-decree-lcr-form {
+    height: 297mm !important;
+    min-height: 297mm !important;
+  }
+
+  /* AUSF LCR: A4 / short / long — CCR block ~2 lines above footer (Verified-by not aligned with CCR) */
+  html[data-paper-size="a4"] .ausf-module-lcr-form .ausf-lcr-ccr-bottom,
+  html[data-paper-size="short"] .ausf-module-lcr-form .ausf-lcr-ccr-bottom,
+  html[data-paper-size="long"] .ausf-module-lcr-form .ausf-lcr-ccr-bottom {
+    bottom: 2em !important;
+  }
+
+  /* AUSF LCR: short / long bond — CCR name (e.g. ATTY. … MARTIL) at 12pt */
+  html[data-paper-size="short"] .print-doc-lcr-1a .ausf-lcr-ccr-name,
+  html[data-paper-size="long"] .print-doc-lcr-1a .ausf-lcr-ccr-name {
+    font-size: 12pt !important;
+    line-height: 1.2 !important;
   }
 }
 
@@ -7124,6 +7233,36 @@ html[data-paper-size="long"] body.pdf-capture .print-doc-lcr-1a .lcr1a-note-line
 html[data-paper-size="long"] body.pdf-capture .print-doc-lcr-1a .lcr1a-note-line,
 html[data-paper-size="legal"] body.pdf-capture .print-doc-lcr-1a .lcr1a-note-line {
   padding-left: 2ch !important;
+}
+
+body.pdf-capture .ausf-doc.print-doc-lcr-1a .lcr1a-note-line {
+  text-align: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* AUSF LCR (module): A4 print/PDF — full page height so flex + mt-auto pins signature row above footer */
+html[data-paper-size="a4"] body.pdf-capture .ausf-module-lcr-form.court-decree-lcr-form {
+  height: 297mm !important;
+  min-height: 297mm !important;
+}
+
+/* AUSF LCR: Verified-by / Registration Officer — left column in PDF capture (print uses Tailwind print: on stack) */
+body.pdf-capture .ausf-module-lcr-form .ausf-lcr-verified-ro-stack {
+  text-align: left !important;
+  align-items: flex-start !important;
+}
+
+html[data-paper-size="short"] body.pdf-capture .print-doc-lcr-1a .ausf-lcr-ccr-name,
+html[data-paper-size="long"] body.pdf-capture .print-doc-lcr-1a .ausf-lcr-ccr-name {
+  font-size: 12pt !important;
+  line-height: 1.2 !important;
+}
+
+html[data-paper-size="a4"] body.pdf-capture .ausf-module-lcr-form .ausf-lcr-ccr-bottom,
+html[data-paper-size="short"] body.pdf-capture .ausf-module-lcr-form .ausf-lcr-ccr-bottom,
+html[data-paper-size="long"] body.pdf-capture .ausf-module-lcr-form .ausf-lcr-ccr-bottom {
+  bottom: 2em !important;
 }
 
 html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a .lcr1a-note-line,
@@ -7167,6 +7306,17 @@ body.pdf-capture .wrongly-register-print-sheet .wrongly-wr-ocr-muni,
 body.pdf-capture .wrongly-register-print-sheet .wrongly-wr-forward {
   margin-left: 0 !important;
   margin-right: 0 !important;
+}
+body.pdf-capture .wrongly-register-print-sheet.wrongly-wr-ocr-sheet {
+  overflow: visible !important;
+}
+body.pdf-capture .wrongly-register-print-sheet .wrongly-wr-ocr-muni,
+body.pdf-capture .wrongly-register-print-sheet .wrongly-wr-ocr-muni-footer {
+  overflow: visible !important;
+}
+body.pdf-capture .wrongly-register-print-sheet .wrongly-wr-ocr-muni-cert-note {
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 body.pdf-capture .wrongly-register-print-sheet .wrongly-wr-transmittal-body-content {
   margin-left: 14mm !important;
@@ -7487,6 +7637,101 @@ body.pdf-capture .wrongly-register-transmittal-signoff-docowner {
   margin-top: 0.32in !important;
 }
 
+/*
+ * Print / PDF capture: keep a single normal space between words (no extra justify stretch).
+ * AUSF, Court Decree, Legitimation, Supplemental, MC2010-04, Wrongly Register, etc.
+ */
+@media print {
+  :is(
+    .print-doc,
+    .ausf-doc,
+    .correction-print-doc,
+    .supplemental-report-doc,
+    .supplemental-transmittal-doc,
+    .mc2010-transmittal-doc,
+    .mc2010-print-root,
+    .wrongly-register-print-sheet,
+    .legitimation-lcr1a-doc,
+    .legitimation-affidavit-doc,
+    .legitimation-affidavit-print,
+    .registration-of-legitimation-doc,
+    .registration-of-ack-doc,
+    .print-doc-transmittal-elderly,
+    .lcr-a1-print-root,
+    .court-decree-lcr-form
+  )
+    :is(p, li, td, th, div, span, label, h1, h2, h3, h4, h5, h6):not(pre):not(code):not(textarea):not(kbd):not(samp):not(.whitespace-pre-wrap):not(.whitespace-pre) {
+    word-spacing: normal !important;
+  }
+  :is(
+    .print-doc,
+    .ausf-doc,
+    .correction-print-doc,
+    .supplemental-report-doc,
+    .supplemental-transmittal-doc,
+    .mc2010-transmittal-doc,
+    .mc2010-print-root,
+    .wrongly-register-print-sheet,
+    .legitimation-lcr1a-doc,
+    .legitimation-affidavit-doc,
+    .legitimation-affidavit-print,
+    .registration-of-legitimation-doc,
+    .registration-of-ack-doc,
+    .print-doc-transmittal-elderly,
+    .lcr-a1-print-root,
+    .court-decree-lcr-form
+  )
+    :is(.text-justify) {
+    text-justify: auto !important;
+    word-spacing: normal !important;
+  }
+}
+
+body.pdf-capture
+  :is(
+    .print-doc,
+    .ausf-doc,
+    .correction-print-doc,
+    .supplemental-report-doc,
+    .supplemental-transmittal-doc,
+    .mc2010-transmittal-doc,
+    .mc2010-print-root,
+    .wrongly-register-print-sheet,
+    .legitimation-lcr1a-doc,
+    .legitimation-affidavit-doc,
+    .legitimation-affidavit-print,
+    .registration-of-legitimation-doc,
+    .registration-of-ack-doc,
+    .print-doc-transmittal-elderly,
+    .lcr-a1-print-root,
+    .court-decree-lcr-form
+  )
+  :is(p, li, td, th, div, span, label, h1, h2, h3, h4, h5, h6):not(pre):not(code):not(textarea):not(kbd):not(samp):not(.whitespace-pre-wrap):not(.whitespace-pre) {
+  word-spacing: normal !important;
+}
+body.pdf-capture
+  :is(
+    .print-doc,
+    .ausf-doc,
+    .correction-print-doc,
+    .supplemental-report-doc,
+    .supplemental-transmittal-doc,
+    .mc2010-transmittal-doc,
+    .mc2010-print-root,
+    .wrongly-register-print-sheet,
+    .legitimation-lcr1a-doc,
+    .legitimation-affidavit-doc,
+    .legitimation-affidavit-print,
+    .registration-of-legitimation-doc,
+    .registration-of-ack-doc,
+    .print-doc-transmittal-elderly,
+    .lcr-a1-print-root,
+    .court-decree-lcr-form
+  )
+  :is(.text-justify) {
+  text-justify: auto !important;
+  word-spacing: normal !important;
+}
 
 /* Modern Modal Design & Animations */
 @keyframes modal-backdrop-in {

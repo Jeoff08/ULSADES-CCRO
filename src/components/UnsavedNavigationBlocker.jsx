@@ -10,13 +10,26 @@ export default function UnsavedNavigationBlocker() {
   const { dirty: isDirty } = useUnsavedChanges()
   const [showModal, setShowModal] = useState(false)
 
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      isDirty &&
-      (currentLocation.pathname !== nextLocation.pathname ||
-        currentLocation.search !== nextLocation.search ||
-        currentLocation.hash !== nextLocation.hash)
-  )
+  const blocker = useBlocker(({ currentLocation, nextLocation }) => {
+    if (!isDirty) return false
+    
+    // Ignore internal navigation within the same form (e.g. switching LCR types via search params)
+    const samePath = currentLocation.pathname === nextLocation.pathname
+    const isFormPath =
+      currentLocation.pathname === '/court-decree/form' ||
+      currentLocation.pathname === '/legitimation/form' ||
+      currentLocation.pathname === '/ausf'
+
+    if (samePath && isFormPath) {
+      return false
+    }
+
+    return (
+      currentLocation.pathname !== nextLocation.pathname ||
+      currentLocation.search !== nextLocation.search ||
+      currentLocation.hash !== nextLocation.hash
+    )
+  })
 
   useEffect(() => {
     if (blocker.state === 'blocked') {

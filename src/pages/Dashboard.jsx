@@ -5,6 +5,9 @@ import { LEGITIMATION_TYPES } from './legitimation/constants'
 import { getSavedAUSFList, loadSavedAUSFListFromApi } from './ausf/lib/ausfStorage'
 import { getSavedCourtDecreeList } from './courtDecree/lib/courtDecreeStorage'
 import { getSavedLegitimationList } from './legitimation/lib/legitimationStorage'
+import { getSavedSupplementalList, clearSupplementalActive, clearSupplementalDraft } from './legalInstrument/lib/supplementalSavedStorage'
+import { getSavedMc2010List, clearMc2010Active, clearMc2010Draft } from './legalInstrument/lib/mc2010SavedStorage'
+import { getSavedWronglyRegisterList, clearWronglyRegisterActive, clearWronglyRegisterDraft } from './legalInstrument/lib/wronglyRegisterSavedStorage'
 
 const AUSF_ITEMS = [
   { title: 'AUSF 0-6', desc: 'Affidavit to Use the Surname of Father (ages 0-6)', path: '/ausf', type: 'ausf' },
@@ -61,12 +64,60 @@ const categories = [
       type: t.id,
     })),
   },
+  {
+    id: 'supplemental',
+    title: 'Supplemental Report',
+    meaning: 'For adding missing information or correcting omissions in previously registered civil documents.',
+    about: 'A Supplemental Report is used to supply information that was inadvertently omitted when the document (Birth, Death, or Marriage) was originally registered. It cannot be used to change or correct existing entries, only to fill in blank fields. The process requires an affidavit explaining the omission and providing the missing facts, which are then integrated into the civil registry record.',
+    path: '/legal-instrument/supplemental',
+    onOpen: () => {
+      clearSupplementalActive()
+      clearSupplementalDraft()
+    },
+    files: [
+      { title: 'New Supplemental Report', desc: 'Start a new supplemental report workflow', path: '/legal-instrument/supplemental', type: 'new' },
+      { title: 'Saved Reports', desc: 'View previously saved supplemental reports', to: '/legal-instrument/supplemental/saved', type: 'saved' },
+    ],
+  },
+  {
+    id: 'mc2010-04',
+    title: 'MC2010-04',
+    meaning: 'Implementation of AO No. 1, Series of 2010 for use of the father\'s surname for children born 1988-2004.',
+    about: 'MC2010-04 (Memorandum Circular No. 2010-04) provides guidelines for the implementation of Administrative Order No. 1, Series of 2010. It specifically addresses the right of illegitimate children born between August 3, 1988, and March 19, 2004, to use the surname of their father, provided that the father has recognized the child through a public document or a private handwritten instrument.',
+    path: '/legal-instrument/mc2010-04',
+    onOpen: () => {
+      clearMc2010Active()
+      clearMc2010Draft()
+    },
+    files: [
+      { title: 'New MC2010-04 Form', desc: 'Start a new MC2010-04 transaction', path: '/legal-instrument/mc2010-04', type: 'new' },
+      { title: 'Saved Transactions', desc: 'View previously saved MC2010-04 records', to: '/legal-instrument/mc2010-04/saved', type: 'saved' },
+    ],
+  },
+  {
+    id: 'wrongly-register',
+    title: 'Wrongly Register',
+    meaning: 'Correction of registry documents that were erroneously filed in the wrong municipality or city.',
+    about: 'Wrongly Registered documents are those that were recorded in a Local Civil Registry Office (LCRO) other than the one having jurisdiction over the place of event. The process involves transferring the record to the correct LCRO through a transmittal and endorsement procedure, ensuring that the legal document is filed in its proper place of occurrence.',
+    path: '/legal-instrument/wrongly-register',
+    onOpen: () => {
+      clearWronglyRegisterActive()
+      clearWronglyRegisterDraft()
+    },
+    files: [
+      { title: 'New Wrongly Register', desc: 'Start a new wrongly registered document transfer', path: '/legal-instrument/wrongly-register', type: 'new' },
+      { title: 'Saved Records', desc: 'View previously saved wrongly registered records', to: '/legal-instrument/wrongly-register/saved', type: 'saved' },
+    ],
+  },
 ]
 
 const CATEGORY_ACCENTS = {
   ausf: { dot: 'bg-teal-500', soft: 'from-teal-50 to-cyan-100', ring: 'group-hover:ring-teal-200' },
   'court-decree': { dot: 'bg-indigo-500', soft: 'from-indigo-50 to-blue-100', ring: 'group-hover:ring-indigo-200' },
   legitimation: { dot: 'bg-amber-500', soft: 'from-amber-50 to-yellow-100', ring: 'group-hover:ring-amber-200' },
+  supplemental: { dot: 'bg-emerald-500', soft: 'from-emerald-50 to-green-100', ring: 'group-hover:ring-emerald-200' },
+  'mc2010-04': { dot: 'bg-rose-500', soft: 'from-rose-50 to-pink-100', ring: 'group-hover:ring-rose-200' },
+  'wrongly-register': { dot: 'bg-slate-600', soft: 'from-slate-50 to-slate-200', ring: 'group-hover:ring-slate-300' },
 }
 
 export default function Dashboard() {
@@ -79,6 +130,9 @@ export default function Dashboard() {
     ausf: ausfCount,
     'court-decree': getSavedCourtDecreeList().length,
     legitimation: getSavedLegitimationList().length,
+    supplemental: getSavedSupplementalList().length,
+    'mc2010-04': getSavedMc2010List().length,
+    'wrongly-register': getSavedWronglyRegisterList().length,
   }
 
   React.useEffect(() => {
@@ -88,9 +142,9 @@ export default function Dashboard() {
   }, [])
 
   return (
-    <div className="relative min-h-full overflow-hidden">
+    <div className="relative h-full overflow-hidden">
       <div
-        className={`absolute inset-0 w-full p-6 transition-transform duration-[550ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${showDetail ? 'translate-x-[-100%] pointer-events-none' : 'translate-x-0'
+        className={`absolute inset-0 w-full p-6 overflow-y-auto transition-transform duration-[550ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${showDetail ? 'translate-x-[-100%] pointer-events-none' : 'translate-x-0'
           }`}
         style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
       >
@@ -174,7 +228,12 @@ export default function Dashboard() {
                 <Link
                   key={f.type}
                   to={f.to ?? { pathname: f.path, search: `?type=${f.type}` }}
-                  onClick={() => setSelectedCategory(null)}
+                  onClick={() => {
+                    if (f.type === 'new' && selectedCategory.onOpen) {
+                      selectedCategory.onOpen()
+                    }
+                    setSelectedCategory(null)
+                  }}
                   className="group block w-full px-4 py-3 rounded-xl text-left border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md hover:border-slate-300 focus:bg-gray-100 focus:outline-none"
                 >
                   <div className="flex items-center justify-between gap-2">

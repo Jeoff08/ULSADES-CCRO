@@ -312,6 +312,7 @@ export default function Layout() {
             </svg>
             <span>Correction of entries</span>
           </NavLink>
+          <div className="border-t border-white/10 my-1 mx-2 no-print" />
           <NavLink
             to="/system-data"
             className={() =>

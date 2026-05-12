@@ -1,4 +1,5 @@
 import React from 'react'
+import { supplementalAffidavitRegisterSubtitle } from '../../legalInstrument/lib/supplementalAffidavitRegisterSubtitle'
 
 export default function SupplementalReportAffidavit({
   data,
@@ -87,6 +88,7 @@ export default function SupplementalReportAffidavit({
   const formattedRegisteredOn = (regMonthText && regDayText && regYearText)
     ? `${regMonthText} ${regDayText}, ${regYearText}`
     : registeredOn
+  const registerSubtitle = supplementalAffidavitRegisterSubtitle(data.lcrType)
 
   return (
     <div
@@ -94,7 +96,7 @@ export default function SupplementalReportAffidavit({
       style={{ fontFamily: 'Arial, sans-serif', width: paperWidth, minHeight: paperHeight }}
     >
       {supplementType === 'middleName' ? (
-        <div className="mb-4">
+        <div className="supplemental-report-print-header mb-4">
           <div className="grid grid-cols-[110px_1fr_110px] items-center gap-3">
             <img
               src="/iligan%20official%20seal.jpg"
@@ -117,7 +119,7 @@ export default function SupplementalReportAffidavit({
           <div className="border-b border-black mt-3" />
         </div>
       ) : (
-        <div className="flex justify-between items-start mb-4 text-[16px]">
+        <div className="supplemental-report-print-header flex justify-between items-start mb-4 text-[16px]">
           <div className="leading-tight">
             <p>{republicLine}</p>
             <p>
@@ -139,7 +141,7 @@ export default function SupplementalReportAffidavit({
 
       <h2 className="text-center font-bold text-[16px] uppercase mb-4 leading-tight">
         AFFIDAVIT FOR SUPPLEMENTAL REPORT
-        <span className="block normal-case font-normal">(for COLB)</span>
+        <span className="block normal-case font-normal">{registerSubtitle}</span>
       </h2>
 
       <div className="supplemental-report-content text-justify text-[15px] leading-[1.5] space-y-2.5">

@@ -15,7 +15,11 @@ import LcrForm3AMarriageAvailable from '../courtDecree/print/LcrForm3AMarriageAv
 import {
   WronglyRegisterForwardingMunicipalView,
   WronglyRegisterLcrCityForm1AView,
+  WronglyRegisterLcrCityForm2AView,
+  WronglyRegisterLcrCityForm3AView,
   WronglyRegisterOcrMunicipalForm1AView,
+  WronglyRegisterOcrMunicipalForm2AView,
+  WronglyRegisterOcrMunicipalForm3AView,
   WronglyRegisterTransmittalView,
 } from './print/wronglyRegisterPrintViews'
 
@@ -177,7 +181,10 @@ export default function WronglyRegisterPrint() {
         lcr2aDateDeath: data.lcrBirthDate || '',
         dateOfDeath: data.lcrBirthDate || '',
         lcr2aPlaceDeath: data.lcrPlaceBirth || '',
-        lcr2aCitizenshipFather: data.lcrFatherCitizenship || '',
+        lcr2aCivilStatus: data.lcrCivilStatus || '',
+        lcr2aCitizenship: data.lcrCitizenship || '',
+        lcr2aCauseDeath: data.lcrCauseDeath || '',
+        lcr2aCitizenshipFather: data.lcrCitizenshipFather || data.lcrFatherCitizenship || '',
         colbPageNumber: regPage,
         colbBookNumber: regBook,
         colbPageNo: regPage,
@@ -186,14 +193,32 @@ export default function WronglyRegisterPrint() {
     }
     if (selectedLcrForm === '3A') {
       return {
-        lcr3aHusbandName: data.lcrMotherName || '',
-        lcr3aWifeName: data.lcrFatherName || '',
+        lcr3aHusbandName: data.lcr3aHusbandName || '',
+        lcr3aWifeName: data.lcr3aWifeName || '',
+        lcr3aHusbandDobAge: data.lcr3aHusbandDobAge || '',
+        lcr3aWifeDobAge: data.lcr3aWifeDobAge || '',
+        lcr3aHusbandCitizenship: data.lcr3aHusbandCitizenship || '',
+        lcr3aWifeCitizenship: data.lcr3aWifeCitizenship || '',
+        lcr3aHusbandCivilStatus: data.lcr3aHusbandCivilStatus || '',
+        lcr3aWifeCivilStatus: data.lcr3aWifeCivilStatus || '',
+        lcr3aHusbandMother: data.lcr3aHusbandMother || '',
+        lcr3aWifeMother: data.lcr3aWifeMother || '',
+        lcr3aHusbandFather: data.lcr3aHusbandFather || '',
+        lcr3aWifeFather: data.lcr3aWifeFather || '',
         lcr3aRegistryNumber: data.lcrRegistryNo || '',
         marriageRegistryNo: data.lcrRegistryNo || '',
         lcr3aDateRegistration: data.lcrDateRegistration || '',
-        lcr3aDateMarriage: data.lcrBirthDate || '',
-        dateOfMarriage: data.lcrBirthDate || '',
-        lcr3aPlaceMarriage: data.lcrPlaceBirth || '',
+        lcr3aDateMarriage:
+          data.lcrDateMarriage || data.lcr3aDateMarriage || data.dateOfMarriage || data.lcr1aDateMarriageParents || '',
+        dateOfMarriage:
+          data.lcrDateMarriage || data.lcr3aDateMarriage || data.dateOfMarriage || data.lcr1aDateMarriageParents || '',
+        lcr3aPlaceMarriage:
+          data.lcrPlaceMarriage
+          || data.lcr3aPlaceMarriage
+          || data.lcr1aPlaceMarriageParents
+          || [data.placeOfMarriageCity, data.placeOfMarriageProvince].filter(Boolean).join(', ')
+          || data.placeOfMarriage
+          || '',
         colbPageNumber: regPage,
         colbBookNumber: regBook,
         colbPageNo: regPage,
@@ -347,13 +372,7 @@ export default function WronglyRegisterPrint() {
           >
             Preview PDF
           </button>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="px-3 py-2 rounded-lg bg-[var(--primary-blue)] text-white text-sm font-semibold hover:bg-[var(--primary-blue-light)]"
-          >
-            Print
-          </button>
+
         </div>
       </div>
 
@@ -383,7 +402,7 @@ export default function WronglyRegisterPrint() {
               className={`w-full text-left px-3 py-2.5 text-sm font-medium transition text-white rounded-lg bg-[#283750] pr-[5.75rem] ${activePanel === 'ocr-1a' ? 'ring-2 ring-offset-1 ring-[var(--primary-blue)]' : ''
                 }`}
             >
-              OCR Form 1A
+              OCR Form {selectedLcrForm}
             </button>
             <PrintSidebarNavAttachIcons
               scopeKey={scanScope.ocr1a}
@@ -447,7 +466,15 @@ export default function WronglyRegisterPrint() {
               className="wrongly-register-print-sheet wrongly-wr-ocr-sheet bg-white shadow-2xl mx-auto text-gray-900 print:shadow-none print:p-0 ring-1 ring-gray-200 print:ring-0 flex flex-col"
               style={pageShellStyle}
             >
-              <WronglyRegisterOcrMunicipalForm1AView data={data} colbPage={regPage} colbBook={regBook} />
+              {selectedLcrForm === '1A' ? (
+                <WronglyRegisterOcrMunicipalForm1AView data={data} colbPage={regPage} colbBook={regBook} />
+              ) : null}
+              {selectedLcrForm === '2A' ? (
+                <WronglyRegisterOcrMunicipalForm2AView data={data} colbPage={regPage} colbBook={regBook} />
+              ) : null}
+              {selectedLcrForm === '3A' ? (
+                <WronglyRegisterOcrMunicipalForm3AView data={data} colbPage={regPage} colbBook={regBook} />
+              ) : null}
             </div>
           </div>
 
@@ -488,8 +515,32 @@ export default function WronglyRegisterPrint() {
                   colbBook={regBook}
                 />
               ) : null}
-              {selectedLcrForm === '2A' ? <LcrForm2ADeathAvailable data={selectedLcrData} /> : null}
-              {selectedLcrForm === '3A' ? <LcrForm3AMarriageAvailable data={selectedLcrData} /> : null}
+              {selectedLcrForm === '2A' ? (
+                <WronglyRegisterLcrCityForm2AView
+                  tableData={selectedLcrData}
+                  displayDate={displayDate}
+                  issueDateIso={data.transmittalDate}
+                  remarks={data.ocrRemarks}
+                  amountPaid={data.ocrAmountPaid}
+                  orNo={data.ocrORNumber}
+                  datePaid={data.ocrDatePaid}
+                  colbPage={regPage}
+                  colbBook={regBook}
+                />
+              ) : null}
+              {selectedLcrForm === '3A' ? (
+                <WronglyRegisterLcrCityForm3AView
+                  tableData={selectedLcrData}
+                  displayDate={displayDate}
+                  issueDateIso={data.transmittalDate}
+                  remarks={data.ocrRemarks}
+                  amountPaid={data.ocrAmountPaid}
+                  orNo={data.ocrORNumber}
+                  datePaid={data.ocrDatePaid}
+                  colbPage={regPage}
+                  colbBook={regBook}
+                />
+              ) : null}
             </div>
           </div>
         </div>

@@ -41,7 +41,7 @@ export default function LcrForm1ABirthAvailable({ data }) {
   const colbBook = data.colbBookNumber || '—'
 
   return (
-    <div className="ausf-doc print-doc print-doc-lcr-1a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 pt-2 pb-0 flex flex-col min-h-0 h-full">
+    <div className="ausf-module-lcr-form ausf-doc print-doc print-doc-lcr-1a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 pt-2 pb-0 flex flex-col min-h-0 h-full">
       <div className="court-decree-lcr-header shrink-0">
         <header className="print-doc-header">
           <PrintHeaderRow />
@@ -57,8 +57,8 @@ export default function LcrForm1ABirthAvailable({ data }) {
       </div>
 
       <div className="court-decree-lcr-body-wrap flex-1 min-h-0 flex flex-col">
-        <div className="court-decree-lcr-body-scaled flex flex-col h-full">
-          <div className="flex-1">
+        <div className="court-decree-lcr-body-scaled flex flex-1 min-h-0 flex-col">
+          <div className="flex-1 min-h-0 flex flex-col">
             <p className="font-bold mb-1 pl-8">TO WHOM IT MAY CONCERN:</p>
             <p className="mb-2 text-left court-decree-lcr-body">
               <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of birth appear in our Register of Births on Page{' '}
@@ -68,7 +68,7 @@ export default function LcrForm1ABirthAvailable({ data }) {
               .
             </p>
 
-            <table className="w-full border-collapse text-sm mt-6 mb-2 border border-black court-decree-lcr-table">
+            <table className="w-full border-collapse text-sm mt-2 mb-0 border border-black court-decree-lcr-table">
               <tbody>
                 {tableData.map((row) => (
                   <tr key={row.label}>
@@ -79,42 +79,42 @@ export default function LcrForm1ABirthAvailable({ data }) {
               </tbody>
             </table>
 
-            <div className="lcr-form-bottom-content">
-              <p className="mb-2 text-[11.7pt] court-decree-lcr-body ausf-lcr-cert-line">
+            <div className="lcr-form-bottom-content flex flex-col shrink-0">
+              <p className="mt-4 mb-2 text-[11.7pt] court-decree-lcr-body ausf-lcr-cert-line">
                 This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.
               </p>
 
-              <div className="mt-10 mb-2 court-decree-lcr-body ausf-lcr-remarks-block">
+              <div className="mt-6 mb-2 court-decree-lcr-body ausf-lcr-remarks-block">
                 <p className="font-bold text-sm mb-0.5 uppercase">REMARKS:</p>
                 <p className="leading-[1.35] text-justify break-words [overflow-wrap:anywhere] text-sm">
                   &quot;The child shall be known as <span className="font-bold underline">{childFull || '—'}</span> pursuant to RA 9255.&quot;
                 </p>
               </div>
             </div>
-          </div>
 
-          {/* Signature Block & Note pushed to bottom */}
-          <div className="mt-auto lcr-form-bottom-content pb-0 mb-0">
-            <div className="mt-1 mb-4 court-decree-lcr-body ausf-lcr-verified-block">
-              <div className="flex justify-between items-end">
-                <div className="text-center flex flex-col items-center">
-                  <p className="text-sm mb-1 -mt-2 print:-mt-3 text-left self-start">{verifiedByLabel}</p>
-                  <div className="font-bold uppercase text-sm leading-none m-0 p-0">{regOfficerName}</div>
-                  <div className="text-sm leading-none m-0 p-0">Registration Officer IV</div>
-                </div>
-                <div className="text-center flex flex-col items-center">
-                  <div className="font-bold uppercase text-sm leading-none m-0 p-0">{ccrName}</div>
-                  <div className="italic text-xs leading-none m-0 p-0">City Civil Registrar</div>
+            <div className="ausf-lcr-verified-slot shrink-0 w-full">
+              <div className="pt-6 mb-4 lcr-form-bottom-content court-decree-lcr-body ausf-lcr-verified-block max-w-[55%] self-start">
+                <div className="ausf-lcr-verified-ro-stack text-center flex flex-col items-center print:text-left print:items-start">
+                  <p className="text-sm mb-1">{verifiedByLabel}</p>
+                  <div className="font-bold uppercase text-sm leading-snug m-0 p-0">{regOfficerName}</div>
+                  <div className="text-sm leading-snug m-0 p-0">Registration Officer IV</div>
                 </div>
               </div>
             </div>
-
+            <div className="ausf-lcr-ccr-slot flex-1 min-h-0 relative w-full">
+              <div className="ausf-lcr-ccr-bottom absolute bottom-0 right-0 text-center flex flex-col items-center max-w-[48%]">
+                <div className="ausf-lcr-ccr-name font-bold uppercase text-sm leading-snug m-0 p-0">{ccrName}</div>
+                <div className="italic text-xs leading-snug m-0 p-0">City Civil Registrar</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <footer className="print-doc-footer mt-auto shrink-0">
-        <p className="lcr1a-note-line font-bold text-sm mb-0">Note: This certification is not valid if it has mark, erasure or alteration of any entry.</p>
+        <p className="lcr1a-note-line font-bold text-sm mb-0 text-center px-2">
+          Note: This certification is not valid if it has mark, erasure or alteration of any entry.
+        </p>
         <DocumentFooter
           contactPhone={data.contactPhone || '228-1311'}
           contactEmail={data.contactEmail || 'civilregistrar.iligan@gmail.com'}
