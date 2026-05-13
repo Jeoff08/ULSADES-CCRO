@@ -1,4 +1,5 @@
 import { splitFieldLines } from '../../../lib/printUtils'
+import { DEFAULT_RECEIVED_BY } from '../../../lib/receivedByOptions'
 
 /** Iligan CCR transmittal — checklist options (supplemental print). */
 
@@ -52,6 +53,9 @@ export function getDefaultSupplementalTransmittalFields() {
     transmittalDocType: '',
     transmittalEndorsementIds: [],
     transmittalAttachmentIds: [],
+    /** Sign-off block on printed CCR transmittal (Respectfully yours, …). */
+    transmittalSignerName: DEFAULT_RECEIVED_BY.name,
+    transmittalSignerTitle: DEFAULT_RECEIVED_BY.title,
   }
 }
 

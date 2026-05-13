@@ -5,6 +5,7 @@ import LcrForm2ADeathAvailable from '../courtDecree/print/LcrForm2ADeathAvailabl
 import LcrForm3AMarriageAvailable from '../courtDecree/print/LcrForm3AMarriageAvailable'
 import Mc2010Transmittal from './print/Mc2010Transmittal'
 import Mc2010EnclosurePreview from './print/Mc2010EnclosurePreview'
+import LegalInstrumentLcrOutputPage from './LegalInstrumentLcrOutputPage'
 import ToastHost from '../../components/toast/ToastHost'
 import { useToasts } from '../../components/toast/useToasts'
 import { saveCurrentViewAsPdf, openSavedPdfInBrowser } from '../../lib/savePdf'
@@ -17,6 +18,10 @@ import { mc2010OutputUploadScope } from './lib/legalInstrumentAttachmentScope'
 import { getUploadedFile, restoreUploadedFileFromTrash } from '../../lib/uploadedFileStore'
 import UploadFileModal from '../../components/upload/UploadFileModal'
 import PrintSidebarNavAttachIcons from '../../components/upload/PrintSidebarNavAttachIcons'
+import {
+  getWronglyRegisterPrintStylesheetText,
+  wronglyRegisterTransmittalPageShellStyle,
+} from './lib/wronglyRegisterPrintSheetStyle'
 
 const defaultMc2010Draft = {
   includeForm1a: true,
@@ -45,7 +50,7 @@ function usePrintPageSize(paperId) {
       el.id = PRINT_SIZE_STYLE_ID
       document.head.appendChild(el)
     }
-    el.textContent = `@media print { @page { size: ${spec.size}; } }`
+    el.textContent = getWronglyRegisterPrintStylesheetText(spec, paperId)
     return () => {
       delete document.documentElement.dataset.paperSize
     }
@@ -105,6 +110,10 @@ export default function Mc2010Print() {
 
   const data = baseData
   const paperSpec = useMemo(() => getPaperPageSpec(paperSize), [paperSize])
+  const transmittalPageShellStyle = useMemo(
+    () => wronglyRegisterTransmittalPageShellStyle(paperSpec, paperSize),
+    [paperSpec, paperSize]
+  )
   usePrintPageSize(paperSize)
 
   useEffect(() => {
@@ -337,14 +346,27 @@ export default function Mc2010Print() {
             id="supplemental-print-transmittal"
             className={activePanel === 'transmittal' ? 'block' : 'hidden print:block'}
           >
-            <Mc2010Transmittal
-              data={data}
-              paperWidth={`${paperSpec.widthMm}mm`}
-              paperHeight={`${paperSpec.heightMm}mm`}
-            />
+            <div
+              className="wrongly-register-print-sheet wrongly-register-transmittal-sheet bg-white shadow-2xl mx-auto text-gray-900 print:shadow-none ring-1 ring-gray-200 print:ring-0 flex flex-col"
+              style={transmittalPageShellStyle}
+            >
+              <Mc2010Transmittal
+                data={data}
+                paperWidth={`${paperSpec.widthMm}mm`}
+                paperHeight={`${paperSpec.heightMm}mm`}
+                fillParentPrintShell
+              />
+            </div>
           </div>
           {showLcr ? (
             <div id="supplemental-print-bundle">
+              <LegalInstrumentLcrOutputPage
+                instrument="MC2010-04"
+                lcrType={data.lcrType}
+                wronglyRegisterCompatibleLcrSheet
+                paperSpec={paperSpec}
+                paperSizeId={paperSize}
+              >
               <div
                 id="supplemental-print-lcr"
                 className={
@@ -359,6 +381,7 @@ export default function Mc2010Print() {
                   {data.lcrType === '3A' ? <LcrForm3AMarriageAvailable data={lcrData} editableTable onDataChange={handleLcrDataChange} /> : null}
                 </div>
               </div>
+              </LegalInstrumentLcrOutputPage>
             </div>
           ) : null}
           {/* Kept off-screen layout for Electron/PDF enclosure-only capture; MC2010-04 viewing is /uploaded/... */}

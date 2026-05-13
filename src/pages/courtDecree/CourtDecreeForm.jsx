@@ -7,6 +7,7 @@ import { COURT_DECREE_TYPES, AFFECTED_DOCUMENT_OPTIONS, DATE_MONTHS } from './co
 import { isLcr1aTableComplete, isLcr2aTableComplete, isLcr3aTableComplete } from './lib/courtDecreeLcrCompletion'
 import { commitFirstLetterUpperFromInput } from '../../lib/sentenceCase'
 import { parseDdMmYyyyToDate, parseBirthToDate } from '../../lib/printUtils'
+import ReceivedByOfficerSelect from '../../components/ReceivedByOfficerSelect'
 const LCR_FORM_TYPES = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a']
 const PREFERRED_LCRO_STAFF_KEY = 'ulsades_preferred_lcr_staff'
 const LCRO_STAFF_LIST_KEY = 'ulsades_lcro_staff_list'
@@ -1200,6 +1201,20 @@ export default function CourtDecreeForm() {
               <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
                 <CourtDecreeSection number="6" title="Signatory">
                   <div className="space-y-4">
+                    <ReceivedByOfficerSelect
+                      label="Standard registration officers (LCR / certificate)"
+                      idPrefix="court-decree-received-by"
+                      value={{
+                        name: form.certificateSignatoryName || '',
+                        title: form.certificateSignatoryTitle || '',
+                      }}
+                      onChange={({ name, title }) => {
+                        update('certificateSignatoryName', name)
+                        update('certificateSignatoryTitle', title)
+                      }}
+                      selectClassName={`mt-0.5 ${inputClass}`}
+                      inputClassName={`mt-0.5 ${inputClass}`}
+                    />
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">LCRO - Staff (Verified by)</label>
                       <div className="relative">

@@ -112,6 +112,7 @@ export const defaultCourtDecree = {
   lcrForm3aRemarks: '',
   lcrForm3aRemarksTouched: false,
   certificateSignatoryName: '',
+  certificateSignatoryTitle: '',
   contactPhone: '228-1311',
   contactEmail: 'civilregistrar.iligan@gmail.com',
 }

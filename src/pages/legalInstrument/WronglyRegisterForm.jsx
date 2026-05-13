@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { afterUnsavedAcknowledge, useWarnIfUnsaved } from '../../hooks/useWarnIfUnsaved'
 import SupplementalTransmittalFieldsEditor from './SupplementalTransmittalFieldsEditor'
-import PrintHeaderRow from '../../components/print/PrintHeaderRow'
+import ManualLcrDataEditor from './ManualLcrDataEditor'
+import ReceivedByOfficerSelect from '../../components/ReceivedByOfficerSelect'
+import { DEFAULT_RECEIVED_BY } from '../../lib/receivedByOptions'
 import {
   getDefaultSupplementalTransmittalFields,
   pickTransmittalStateFromDraft,
@@ -38,8 +40,8 @@ const defaultWronglyRegisterDraft = {
   lcrDateMarriage: '',
   lcrPlaceMarriage: '',
   ocrRequestorName: '',
-  ocrVerifiedBy: '',
-  ocrVerifiedByTitle: 'Bookbinder II',
+  ocrVerifiedBy: DEFAULT_RECEIVED_BY.name,
+  ocrVerifiedByTitle: DEFAULT_RECEIVED_BY.title,
   ocrMunicipalRegistrar: '',
   ocrAmountPaid: '',
   ocrORNumber: '',
@@ -105,6 +107,149 @@ function hasCourtLcrDataForType(data, lcrForm) {
   return false
 }
 
+/** Bridge Wrongly flat draft fields ↔ ManualLcrDataEditor bag (court-style keys). */
+function wrongFormToLcrManualBag(form, lcrForm) {
+  const f = form || {}
+  const pageBook = {
+    colbPageNumber: f.lcrPage,
+    colbPageNo: f.lcrPage,
+    colbBookNumber: f.lcrBook,
+    colbBookNo: f.lcrBook,
+    remarks: f.ocrRemarks || '',
+  }
+  if (lcrForm === '1A') {
+    return {
+      ...pageBook,
+      colbRegistryNo: f.lcrRegistryNo,
+      lcr1aRegistryNumber: f.lcrRegistryNo,
+      colbRegDate: f.lcrDateRegistration,
+      lcr1aDateRegistration: f.lcrDateRegistration,
+      lcr1aNameOfChild: f.lcrChildName,
+      lcr1aSex: f.lcrSex,
+      sex: f.lcrSex,
+      lcr1aDateOfBirth: f.lcrBirthDate,
+      dateOfBirth: f.lcrBirthDate,
+      lcr1aPlaceOfBirth: f.lcrPlaceBirth,
+      lcr1aNameOfMother: f.lcrMotherName,
+      lcr1aMotherCitizenship: f.lcrMotherCitizenship,
+      motherCitizenship: f.lcrMotherCitizenship,
+      lcr1aNameOfFather: f.lcrFatherName,
+      lcr1aFatherCitizenship: f.lcrFatherCitizenship,
+      fatherCitizenship: f.lcrFatherCitizenship,
+      lcr1aDateMarriageParents: f.lcrDateMarriage,
+      dateOfMarriage: f.lcrDateMarriage,
+      lcr1aPlaceMarriageParents: f.lcrPlaceMarriage,
+      placeOfMarriageOfParents: f.lcrPlaceMarriage,
+    }
+  }
+  if (lcrForm === '2A') {
+    return {
+      ...pageBook,
+      colbRegistryNo: f.lcrRegistryNo,
+      lcr2aRegistryNumber: f.lcrRegistryNo,
+      colbRegDate: f.lcrDateRegistration,
+      lcr2aDateRegistration: f.lcrDateRegistration,
+      lcr2aNameDeceased: f.lcrChildName,
+      lcr2aSex: f.lcrSex,
+      sex: f.lcrSex,
+      lcr2aCivilStatus: f.lcrCivilStatus,
+      lcr2aCitizenship: f.lcrCitizenship,
+      lcr2aCitizenshipFather: f.lcrCitizenshipFather,
+      lcr2aDateDeath: f.lcrBirthDate,
+      dateOfDeath: f.lcrBirthDate,
+      lcr2aPlaceDeath: f.lcrPlaceBirth,
+      lcr2aCauseDeath: f.lcrCauseDeath,
+    }
+  }
+  return {
+    ...pageBook,
+    lcr3aHusbandName: f.lcr3aHusbandName,
+    lcr3aWifeName: f.lcr3aWifeName,
+    lcr3aHusbandDobAge: f.lcr3aHusbandDobAge,
+    lcr3aWifeDobAge: f.lcr3aWifeDobAge,
+    lcr3aHusbandCitizenship: f.lcr3aHusbandCitizenship,
+    lcr3aWifeCitizenship: f.lcr3aWifeCitizenship,
+    lcr3aHusbandCivilStatus: f.lcr3aHusbandCivilStatus,
+    lcr3aWifeCivilStatus: f.lcr3aWifeCivilStatus,
+    lcr3aHusbandMother: f.lcr3aHusbandMother,
+    lcr3aWifeMother: f.lcr3aWifeMother,
+    lcr3aHusbandFather: f.lcr3aHusbandFather,
+    lcr3aWifeFather: f.lcr3aWifeFather,
+    lcr3aRegistryNumber: f.lcrRegistryNo,
+    marriageRegistryNo: f.lcrRegistryNo,
+    lcr3aDateRegistration: f.lcrDateRegistration,
+    lcr3aDateMarriage: f.lcrBirthDate,
+    dateOfMarriage: f.lcrBirthDate,
+    lcr3aPlaceMarriage: f.lcrPlaceBirth,
+  }
+}
+
+function lcrManualBagToWronglyPatch(bag, lcrForm) {
+  const b = bag || {}
+  const page = String(b.colbPageNumber ?? b.colbPageNo ?? '').trim()
+  const book = String(b.colbBookNumber ?? b.colbBookNo ?? '').trim()
+  const basePb = {
+    lcrPage: page,
+    lcrBook: book,
+    colbPageNumber: page,
+    colbPageNo: page,
+    colbBookNumber: book,
+    colbBookNo: book,
+    ocrRemarks: b.remarks ?? '',
+  }
+  if (lcrForm === '1A') {
+    return {
+      ...basePb,
+      lcrRegistryNo: String(b.colbRegistryNo ?? b.lcr1aRegistryNumber ?? '').trim(),
+      lcrDateRegistration: b.colbRegDate ?? b.lcr1aDateRegistration ?? '',
+      lcrChildName: b.lcr1aNameOfChild ?? '',
+      lcrSex: b.lcr1aSex ?? b.sex ?? '',
+      lcrBirthDate: b.lcr1aDateOfBirth ?? b.dateOfBirth ?? '',
+      lcrPlaceBirth: b.lcr1aPlaceOfBirth ?? '',
+      lcrMotherName: b.lcr1aNameOfMother ?? '',
+      lcrMotherCitizenship: b.lcr1aMotherCitizenship ?? b.motherCitizenship ?? '',
+      lcrFatherName: b.lcr1aNameOfFather ?? '',
+      lcrFatherCitizenship: b.lcr1aFatherCitizenship ?? b.fatherCitizenship ?? '',
+      lcrDateMarriage: b.lcr1aDateMarriageParents ?? b.dateOfMarriage ?? '',
+      lcrPlaceMarriage: b.lcr1aPlaceMarriageParents ?? b.placeOfMarriageOfParents ?? '',
+    }
+  }
+  if (lcrForm === '2A') {
+    return {
+      ...basePb,
+      lcrRegistryNo: String(b.colbRegistryNo ?? b.lcr2aRegistryNumber ?? '').trim(),
+      lcrDateRegistration: b.colbRegDate ?? b.lcr2aDateRegistration ?? '',
+      lcrChildName: b.lcr2aNameDeceased ?? '',
+      lcrSex: b.lcr2aSex ?? b.sex ?? '',
+      lcrCivilStatus: b.lcr2aCivilStatus ?? '',
+      lcrCitizenship: b.lcr2aCitizenship ?? '',
+      lcrCitizenshipFather: b.lcr2aCitizenshipFather ?? '',
+      lcrBirthDate: b.lcr2aDateDeath ?? b.dateOfDeath ?? '',
+      lcrPlaceBirth: b.lcr2aPlaceDeath ?? '',
+      lcrCauseDeath: b.lcr2aCauseDeath ?? '',
+    }
+  }
+  return {
+    ...basePb,
+    lcrRegistryNo: String(b.lcr3aRegistryNumber ?? b.marriageRegistryNo ?? '').trim(),
+    lcrDateRegistration: b.lcr3aDateRegistration ?? '',
+    lcr3aHusbandName: b.lcr3aHusbandName ?? '',
+    lcr3aWifeName: b.lcr3aWifeName ?? '',
+    lcr3aHusbandDobAge: b.lcr3aHusbandDobAge ?? '',
+    lcr3aWifeDobAge: b.lcr3aWifeDobAge ?? '',
+    lcr3aHusbandCitizenship: b.lcr3aHusbandCitizenship ?? '',
+    lcr3aWifeCitizenship: b.lcr3aWifeCitizenship ?? '',
+    lcr3aHusbandCivilStatus: b.lcr3aHusbandCivilStatus ?? '',
+    lcr3aWifeCivilStatus: b.lcr3aWifeCivilStatus ?? '',
+    lcr3aHusbandMother: b.lcr3aHusbandMother ?? '',
+    lcr3aWifeMother: b.lcr3aWifeMother ?? '',
+    lcr3aHusbandFather: b.lcr3aHusbandFather ?? '',
+    lcr3aWifeFather: b.lcr3aWifeFather ?? '',
+    lcrBirthDate: b.lcr3aDateMarriage ?? b.dateOfMarriage ?? '',
+    lcrPlaceBirth: b.lcr3aPlaceMarriage ?? '',
+  }
+}
+
 export default function WronglyRegisterForm() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -117,6 +262,7 @@ export default function WronglyRegisterForm() {
   const [activeSection, setActiveSection] = useState('transmittal')
   const [selectedSourceType, setSelectedSourceType] = useState('')
   const [showRecordList, setShowRecordList] = useState(false)
+  const [lcrPrefillSearch, setLcrPrefillSearch] = useState('')
 
   const [dirtyBaselineTick, setDirtyBaselineTick] = useState(0)
   useEffect(() => {
@@ -184,6 +330,15 @@ export default function WronglyRegisterForm() {
     })
   }, [selectedSourceType, allSources, form.lcrForm])
 
+  const worksheetPrefillList = useMemo(() => {
+    const q = lcrPrefillSearch.trim().toLowerCase()
+    if (!q) return filteredSources
+    return filteredSources.filter((s) => {
+      const hay = `${s.childName || ''} ${s.label || ''} ${s.sourceId || ''}`.toLowerCase()
+      return hay.includes(q)
+    })
+  }, [filteredSources, lcrPrefillSearch])
+
   const handleSelectClient = (client) => {
     const d = client.data || {}
     const formatDobAge = (dob, age) => {
@@ -232,8 +387,8 @@ export default function WronglyRegisterForm() {
       lcrCitizenshipFather: d.lcr2aCitizenshipFather || d.citizenshipOfFather || '',
       // Note: for 2A we use lcrBirthDate for Date of Death if it's the primary subject
       // But handleSelectClient for 2A specifically:
-      ...( (d.lcr2aDateDeath || d.dateOfDeath) ? { lcrBirthDate: d.lcr2aDateDeath || d.dateOfDeath || formatDobAge(d.dateOfDeath || d.lcr2aDateDeath, d.age) } : {}),
-      ...( (d.lcr2aPlaceDeath || d.placeOfDeath) ? { lcrPlaceBirth: d.lcr2aPlaceDeath || d.placeOfDeath } : {}),
+      ...((d.lcr2aDateDeath || d.dateOfDeath) ? { lcrBirthDate: d.lcr2aDateDeath || d.dateOfDeath || formatDobAge(d.dateOfDeath || d.lcr2aDateDeath, d.age) } : {}),
+      ...((d.lcr2aPlaceDeath || d.placeOfDeath) ? { lcrPlaceBirth: d.lcr2aPlaceDeath || d.placeOfDeath } : {}),
 
       // 3A / Marriage Fields
       lcr3aHusbandName: h,
@@ -249,6 +404,7 @@ export default function WronglyRegisterForm() {
       lcr3aHusbandFather: d.lcr3aHusbandFather || d.husbandFatherName || '',
       lcr3aWifeFather: d.lcr3aWifeFather || d.wifeFatherName || '',
     })
+    setLcrPrefillSearch('')
     setShowRecordList(false)
   }
 
@@ -259,6 +415,27 @@ export default function WronglyRegisterForm() {
       return next
     })
   }
+
+  const wrongLcrManualBag = useMemo(
+    () => wrongFormToLcrManualBag(form, form.lcrForm || '1A'),
+    [form, form.lcrForm]
+  )
+
+  const handleWrongLcrManualPatch = (nextBag) => {
+    onPatch(lcrManualBagToWronglyPatch(nextBag, form.lcrForm || '1A'))
+  }
+
+  const wrongLcrInputClass =
+    'w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20'
+
+  const sourceModuleSelectValue =
+    selectedSourceType === 'AUSF'
+      ? 'ausf'
+      : selectedSourceType === 'Legitimation'
+        ? 'legitimation'
+        : selectedSourceType === 'Court Decree'
+          ? 'courtDecree'
+          : ''
 
   const handleSave = () => {
     saveWronglyRegisterDraft(form)
@@ -349,6 +526,30 @@ export default function WronglyRegisterForm() {
                   </div>
                 </div>
               </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveSection('lcr-worksheet')}
+                className={`w-full text-left rounded-xl border-2 px-4 py-4 shadow-sm transition-all duration-200 ${activeSection === 'lcr-worksheet'
+                  ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500/20'
+                  : 'border-transparent bg-white hover:bg-gray-50 text-gray-700'
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${activeSection === 'lcr-worksheet' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
+                  </div>
+                  <div>
+                    <span className={`block text-sm font-bold ${activeSection === 'lcr-worksheet' ? 'text-indigo-800' : 'text-gray-900'}`}>
+                      LCR Form No. {form.lcrForm || '1A'}
+                    </span>
+                    <span className="block text-xs text-gray-600 mt-0.5 leading-snug">
+                      {form.lcrForm === '2A' ? 'Death' : form.lcrForm === '3A' ? 'Marriage' : 'Birth'} — pull or manual
+                    </span>
+                  </div>
+                </div>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setActiveSection('forwarding-letter')}
@@ -377,128 +578,6 @@ export default function WronglyRegisterForm() {
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="p-1">
                   <div className="space-y-6">
-                    {activeSection === 'transmittal' ? (
-                      <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 shadow-sm">
-                        <div className="flex flex-col gap-4">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-bold text-blue-900 flex items-center gap-2">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                              1. Select Module
-                            </h3>
-                            <div className="flex gap-2">
-                              {['AUSF', 'Court Decree', 'Legitimation'].map(m => (
-                                <button
-                                  key={m}
-                                  type="button"
-                                  onClick={() => {
-                                    setSelectedSourceType(m)
-                                    if (m === 'AUSF' || m === 'Legitimation') onPatch({ lcrForm: '1A' })
-                                    setShowRecordList(false)
-                                  }}
-                                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${selectedSourceType === m
-                                    ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-500/20'
-                                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-                                    }`}
-                                >
-                                  {m}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-
-                          {selectedSourceType && (
-                            <div className="flex items-center justify-between animate-in fade-in slide-in-from-top-1 duration-200">
-                              <h3 className="text-sm font-bold text-blue-900 flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                2. Choose LCR Form
-                              </h3>
-                              <div className="flex gap-2">
-                                {['1A', '2A', '3A'].map(f => {
-                                  const isHidden = (selectedSourceType === 'AUSF' || selectedSourceType === 'Legitimation') && f !== '1A'
-                                  if (isHidden) return null
-                                  return (
-                                    <button
-                                      key={f}
-                                      type="button"
-                                      onClick={() => {
-                                        onPatch({ lcrForm: f })
-                                        setShowRecordList(true)
-                                      }}
-                                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${form.lcrForm === f
-                                        ? 'bg-amber-500 text-white shadow-md'
-                                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-                                        }`}
-                                    >
-                                      LCR {f} {f === '1A' ? '(Birth)' : f === '2A' ? '(Death)' : '(Marriage)'}
-                                    </button>
-                                  )
-                                })}
-                              </div>
-                            </div>
-                          )}
-
-                          {selectedSourceType && form.lcrForm && (
-                            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                              <div className="space-y-2">
-                                <h3 className="text-sm font-bold text-blue-900 flex items-center gap-2">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                  3. Pick {selectedSourceType} Record
-                                </h3>
-                                <div className="relative">
-                                  <div className="relative flex items-center">
-                                    <input
-                                      type="text"
-                                      className="w-full border border-blue-200 rounded-xl px-4 py-3 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold uppercase text-gray-800 pr-10"
-                                      placeholder={`Type name or select ${selectedSourceType} Record...`}
-                                      value={form.lcrChildName || ''}
-                                      onChange={(e) => onPatch({ lcrChildName: e.target.value })}
-                                      onFocus={() => setShowRecordList(true)}
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => setShowRecordList(!showRecordList)}
-                                      className="absolute right-3 p-1 hover:bg-blue-50 rounded-lg transition-colors text-blue-400"
-                                    >
-                                      <svg className={`w-5 h-5 transition-transform ${showRecordList ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                      </svg>
-                                    </button>
-                                  </div>
-
-                                  {showRecordList && (
-                                    <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-                                      <div className="max-h-60 overflow-y-auto p-1">
-                                        {filteredSources.length > 0 ? (
-                                          filteredSources.map((result) => (
-                                            <button
-                                              key={result.sourceId}
-                                              type="button"
-                                              className="w-full px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-none transition-colors text-left flex flex-col gap-0.5"
-                                              onClick={() => handleSelectClient(result)}
-                                            >
-                                              <div className="font-bold text-gray-900 text-sm">{result.childName || result.label}</div>
-                                              <div className="text-[10px] text-gray-500">
-                                                Registry: {result.data?.lcr1aRegistryNumber || result.data?.colbRegistryNo || 'N/A'}
-                                              </div>
-                                            </button>
-                                          ))
-                                        ) : (
-                                          <div className="px-4 py-8 text-center text-gray-500 text-sm">
-                                            No saved records found for {selectedSourceType}.
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ) : null}
-
                     {activeSection === 'transmittal' ? (
                       <SupplementalTransmittalFieldsEditor
                         data={form}
@@ -649,12 +728,16 @@ export default function WronglyRegisterForm() {
                           <label className="text-xs font-semibold text-gray-700">Requestor / Office
                             <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.ocrRequestorName || ''} onChange={(e) => onPatch({ ocrRequestorName: e.target.value })} placeholder="e.g. CITY CIVIL REGISTRAR OFFICE" />
                           </label>
-                          <label className="text-xs font-semibold text-gray-700">Verified By
-                            <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.ocrVerifiedBy || ''} onChange={(e) => onPatch({ ocrVerifiedBy: e.target.value })} />
-                          </label>
-                          <label className="text-xs font-semibold text-gray-700">Verified By Title
-                            <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm" value={form.ocrVerifiedByTitle || ''} onChange={(e) => onPatch({ ocrVerifiedByTitle: e.target.value })} />
-                          </label>
+                          <div className="md:col-span-2">
+                            <ReceivedByOfficerSelect
+                              label="Verified by (registration officer)"
+                              idPrefix="wrongly-ocr-verified"
+                              value={{ name: form.ocrVerifiedBy || '', title: form.ocrVerifiedByTitle || '' }}
+                              onChange={({ name, title }) => onPatch({ ocrVerifiedBy: name, ocrVerifiedByTitle: title })}
+                              selectClassName="mt-0.5 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white"
+                              inputClassName="mt-0.5 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white"
+                            />
+                          </div>
                           <label className="text-xs font-semibold text-gray-700">Municipal Civil Registrar
                             <input className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm uppercase" value={form.ocrMunicipalRegistrar || ''} onChange={(e) => onPatch({ ocrMunicipalRegistrar: e.target.value })} />
                           </label>
@@ -670,6 +753,141 @@ export default function WronglyRegisterForm() {
                           <label className="text-xs font-semibold text-gray-700 md:col-span-2">Remarks
                             <textarea className="mt-1 w-full border border-indigo-200 rounded-lg px-3 py-2 text-sm min-h-24" value={form.ocrRemarks || ''} onChange={(e) => onPatch({ ocrRemarks: e.target.value })} placeholder="Enter remarks..." />
                           </label>
+                        </div>
+                      </section>
+                    ) : null}
+
+                    {activeSection === 'lcr-worksheet' ? (
+                      <section className="space-y-5 p-1 sm:p-2">
+                        <div className="flex flex-col gap-1 border-b border-indigo-100 pb-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+                          <h2 className="text-base font-bold text-violet-900 sm:text-lg">
+                            LCR Form No. {form.lcrForm || '1A'} (
+                            {form.lcrForm === '2A' ? 'Death' : form.lcrForm === '3A' ? 'Marriage' : 'Birth'} available)
+                          </h2>
+                          <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-violet-700 sm:text-right">
+                            Prefill and manual entry
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:items-end">
+                          <div>
+                            <span className="mb-2 block text-[10px] font-bold uppercase tracking-wide text-gray-600">LCR type</span>
+                            <div className="grid grid-cols-3 gap-1.5">
+                              {['1A', '2A', '3A']
+                                .filter((t) => {
+                                  if (selectedSourceType === 'AUSF' || selectedSourceType === 'Legitimation') return t === '1A'
+                                  return true
+                                })
+                                .map((t) => (
+                                  <button
+                                    key={t}
+                                    type="button"
+                                    onClick={() => {
+                                      onPatch({ lcrForm: t })
+                                      setShowRecordList(false)
+                                    }}
+                                    className={`rounded-md py-2.5 text-xs font-bold transition-all ${
+                                      form.lcrForm === t
+                                        ? 'bg-violet-600 text-white shadow-md ring-1 ring-violet-500/30'
+                                        : 'border border-violet-200 bg-white text-gray-700 hover:border-violet-400'
+                                    }`}
+                                  >
+                                    {t}
+                                  </button>
+                                ))}
+                            </div>
+                          </div>
+                          <div>
+                            <label htmlFor="wrongly-lcr-source-module" className="mb-2 block text-[10px] font-bold uppercase tracking-wide text-gray-600">
+                              Source module
+                            </label>
+                            <select
+                              id="wrongly-lcr-source-module"
+                              className={wrongLcrInputClass}
+                              value={sourceModuleSelectValue}
+                              onChange={(e) => {
+                                const v = e.target.value
+                                const label = v === 'ausf' ? 'AUSF' : v === 'legitimation' ? 'Legitimation' : v === 'courtDecree' ? 'Court Decree' : ''
+                                setSelectedSourceType(label)
+                                if (v === 'ausf' || v === 'legitimation') onPatch({ lcrForm: '1A' })
+                                setShowRecordList(false)
+                                setLcrPrefillSearch('')
+                              }}
+                            >
+                              <option value="">Select module…</option>
+                              <option value="ausf">AUSF</option>
+                              <option value="courtDecree">Court Decree</option>
+                              <option value="legitimation">Legitimation</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label htmlFor="wrongly-lcr-prefill-search" className="block text-[10px] font-bold uppercase tracking-wide text-gray-600">
+                            Prefill from record
+                          </label>
+                          {!selectedSourceType ? (
+                            <p className="rounded-md border border-amber-200 bg-amber-50 px-2 py-2 text-xs text-amber-900">
+                              Choose a source module above before searching saved records.
+                            </p>
+                          ) : null}
+                          <div className="relative max-w-3xl">
+                            <div className="relative">
+                              <input
+                                id="wrongly-lcr-prefill-search"
+                                type="text"
+                                className={`${wrongLcrInputClass} pr-9`}
+                                placeholder="Search; click a row to load LCR fields"
+                                value={lcrPrefillSearch}
+                                onChange={(e) => setLcrPrefillSearch(e.target.value)}
+                                onFocus={() => setShowRecordList(true)}
+                                onBlur={() => window.setTimeout(() => setShowRecordList(false), 200)}
+                                disabled={!selectedSourceType}
+                              />
+                              <button
+                                type="button"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => setShowRecordList(!showRecordList)}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-violet-500 hover:bg-violet-50 disabled:opacity-40"
+                                aria-label="Toggle record list"
+                                disabled={!selectedSourceType}
+                              >
+                                <svg className={`h-4 w-4 transition-transform ${showRecordList ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
+                            </div>
+                            {showRecordList && selectedSourceType ? (
+                              <ul className="absolute left-0 right-0 z-30 mt-1 max-h-52 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                                {worksheetPrefillList.length === 0 ? (
+                                  <li className="px-3 py-2 text-xs text-gray-500">No records match.</li>
+                                ) : (
+                                  worksheetPrefillList.map((r) => (
+                                    <li key={r.sourceId} className="border-b border-gray-100 last:border-0">
+                                      <button
+                                        type="button"
+                                        className="w-full px-3 py-2 text-left text-sm hover:bg-violet-50"
+                                        onMouseDown={(e) => e.preventDefault()}
+                                        onClick={() => handleSelectClient(r)}
+                                      >
+                                        <span className="block truncate font-medium text-gray-900">{r.childName || r.label}</span>
+                                      </button>
+                                    </li>
+                                  ))
+                                )}
+                              </ul>
+                            ) : null}
+                          </div>
+                          <p className="text-[11px] leading-snug text-indigo-800/90">Pull copies data only; refine on print.</p>
+                        </div>
+
+                        <div className="rounded-xl border-2 border-sky-100 bg-sky-50/35 p-3 sm:p-4">
+                          <ManualLcrDataEditor
+                            lcrType={form.lcrForm || '1A'}
+                            data={wrongLcrManualBag}
+                            onPatch={handleWrongLcrManualPatch}
+                            inputClass={wrongLcrInputClass}
+                          />
                         </div>
                       </section>
                     ) : null}

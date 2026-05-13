@@ -7,6 +7,7 @@ export default function SupplementalReportAffidavit({
   onItem5CustomChange,
   paperWidth = '210mm',
   paperHeight = '297mm',
+  fillParentPrintShell = false,
 }) {
   const republicLine = 'Republic of the Philippines'
   const cityOfLabel = 'City of'
@@ -90,11 +91,15 @@ export default function SupplementalReportAffidavit({
     : registeredOn
   const registerSubtitle = supplementalAffidavitRegisterSubtitle(data.lcrType)
 
+  const rootClass = fillParentPrintShell
+    ? 'ausf-doc print-doc supplemental-report-doc bg-white text-black w-full min-h-full min-w-0 leading-relaxed flex flex-col'
+    : 'ausf-doc print-doc supplemental-report-doc bg-white text-black mx-auto px-7 py-5 leading-relaxed flex flex-col'
+  const rootStyle = fillParentPrintShell
+    ? { fontFamily: 'Arial, sans-serif', width: '100%', minHeight: '100%', boxSizing: 'border-box' }
+    : { fontFamily: 'Arial, sans-serif', width: paperWidth, minHeight: paperHeight }
+
   return (
-    <div
-      className="ausf-doc print-doc supplemental-report-doc bg-white text-black mx-auto px-7 py-5 leading-relaxed flex flex-col"
-      style={{ fontFamily: 'Arial, sans-serif', width: paperWidth, minHeight: paperHeight }}
-    >
+    <div className={rootClass} style={rootStyle}>
       {supplementType === 'middleName' ? (
         <div className="supplemental-report-print-header mb-4">
           <div className="grid grid-cols-[110px_1fr_110px] items-center gap-3">

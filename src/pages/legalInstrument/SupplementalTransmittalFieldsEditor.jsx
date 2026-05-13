@@ -5,6 +5,7 @@ import {
   SUPPLEMENTAL_TRANSMITTAL_ENDORSEMENT_OPTIONS,
   SUPPLEMENTAL_TRANSMITTAL_SALUTATION_PRESETS,
 } from './lib/supplementalTransmittalDefaults'
+import ReceivedByOfficerSelect from '../../components/ReceivedByOfficerSelect'
 
 const tableCls = 'w-full border-collapse border border-black text-[13px]'
 const tdBoxCls = 'border border-black w-9 text-center align-middle'
@@ -317,6 +318,25 @@ export default function SupplementalTransmittalFieldsEditor({ data, onPatch, inp
           </table>
         </div>
       </div>
+
+      <fieldset className="rounded-lg border border-gray-100 bg-gray-50/50 p-3 space-y-2">
+        <legend className="text-xs font-semibold uppercase tracking-wide text-gray-700 px-1">Transmittal sign-off</legend>
+        <p className="text-[11px] text-gray-600 leading-snug">
+          Printed as “Respectfully yours,” under the letter (same block as MC2010-04 / Wrongly Register transmittal).
+        </p>
+        <ReceivedByOfficerSelect
+          idPrefix="supp-transmittal-signer"
+          value={{
+            name: data.transmittalSignerName || '',
+            title: data.transmittalSignerTitle || '',
+          }}
+          onChange={({ name, title }) =>
+            onPatch({ transmittalSignerName: name, transmittalSignerTitle: title })
+          }
+          selectClassName={selectClass}
+          inputClassName={fieldClass}
+        />
+      </fieldset>
     </section>
   )
 }

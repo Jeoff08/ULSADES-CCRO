@@ -11,7 +11,6 @@ import { PAPER_SIZES, getPaperPageSpec } from '../components/print'
 import { saveCurrentViewAsPdf } from '../lib/savePdf'
 
 const TITLES = {
-  'correction-of-entries': 'Correction of entries',
   adoption: 'Adoption',
   'nullity-of-marriage': 'Nullity of marriage',
   divorce: 'Divorce',
@@ -232,7 +231,7 @@ export default function CourtDecreeWorkflowPage() {
   const title = TITLES[slug] || 'Court Decree'
 
   if (slug === 'correction-of-entries') {
-    return <Navigate to="/correction-of-entries" replace />
+    return <Navigate to="/court-decree/form?type=cert-authenticity" replace />
   }
 
   if (slug === 'nullity-of-marriage') {

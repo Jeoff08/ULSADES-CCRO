@@ -9,6 +9,7 @@ import {
   transmittalRecipientPositionLines,
   transmittalThruPositionLinesForPrint,
 } from '../lib/supplementalTransmittalDefaults'
+import { DEFAULT_RECEIVED_BY } from '../../../lib/receivedByOptions'
 
 const tableCls = 'w-full border-collapse border border-black text-[16px] print:text-[12pt] leading-tight'
 /** Narrow checkbox column + small box (screen); print tuned in index.css */
@@ -40,7 +41,12 @@ function emptyBox() {
   )
 }
 
-export default function Mc2010Transmittal({ data, paperWidth = '210mm', paperHeight = '297mm' }) {
+export default function Mc2010Transmittal({
+  data,
+  paperWidth = '210mm',
+  paperHeight = '297mm',
+  fillParentPrintShell = false,
+}) {
   const dateLine = formatTransmittalDateLong(data.transmittalDate || '')
   const dobLine = formatDobDayMonthYearUpper(data.transmittalDob || '')
   const docType = data.transmittalDocType || ''
@@ -57,11 +63,15 @@ export default function Mc2010Transmittal({ data, paperWidth = '210mm', paperHei
     if (!t) return <span className="inline-block min-w-[10ch] border-b border-black" />
     return <span className="font-bold underline">{t}</span>
   }
+  const rootClass = fillParentPrintShell
+    ? 'ausf-doc print-doc print-doc-transmittal mc2010-transmittal-doc bg-white text-black w-full min-h-full min-w-0 leading-snug flex flex-col'
+    : 'ausf-doc print-doc print-doc-transmittal mc2010-transmittal-doc bg-white text-black mx-auto py-5 leading-snug flex flex-col'
+  const rootStyle = fillParentPrintShell
+    ? { fontFamily: 'Arial, sans-serif', width: '100%', minHeight: '100%', boxSizing: 'border-box' }
+    : { fontFamily: 'Arial, sans-serif', width: paperWidth, minHeight: paperHeight }
+
   return (
-    <div
-      className="ausf-doc print-doc print-doc-transmittal mc2010-transmittal-doc bg-white text-black mx-auto py-5 leading-snug flex flex-col"
-      style={{ fontFamily: 'Arial, sans-serif', width: paperWidth, minHeight: paperHeight }}
-    >
+    <div className={rootClass} style={rootStyle}>
       <div className="print-doc-header shrink-0">
         <PrintHeaderRow headerImageClassName="mc2010-transmittal-header-img w-20 h-20 object-contain shrink-0" singleLineAddress />
         <hr className="border-black my-2" />
@@ -170,9 +180,11 @@ export default function Mc2010Transmittal({ data, paperWidth = '210mm', paperHei
           <div className="flex flex-col gap-0 pt-0 print:pb-0 shrink-0">
             <p className="mb-1.5">Respectfully yours,</p>
             <p className="mc2010-stack-tight-p mc2010-signatory-lines">
-              <span className="font-bold uppercase">LORELIE L. CANTO</span>
+              <span className="font-bold uppercase">
+                {(data.transmittalSignerName || '').trim() || DEFAULT_RECEIVED_BY.name}
+              </span>
               <br />
-              <span>Registration Officer IV</span>
+              <span>{(data.transmittalSignerTitle || '').trim() || DEFAULT_RECEIVED_BY.title}</span>
             </p>
             <p className="mt-4">Received and</p>
           </div>

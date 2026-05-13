@@ -31,25 +31,6 @@ body {
   body, .layout-root, .layout-main {
     background: #fff !important;
   }
-
-  /* Correction of entries — combined packet: one document per page break */
-  .correction-print-all-chunk {
-    page-break-after: always;
-    break-after: page;
-  }
-
-  .correction-print-all-chunk:last-child {
-    page-break-after: auto;
-    break-after: auto;
-  }
-}
-
-@media screen {
-  .correction-print-all-chunk:not(:last-child) {
-    margin-bottom: 2rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px dashed rgb(203 213 225);
-  }
 }
 
 body.pdf-capture,
@@ -61,25 +42,21 @@ body:has(.print-doc) .layout-main {
 }
 
 /* LCR Form Width Management (Screen & Print PDF) */
-.court-decree-lcr-form, .correction-print-doc {
+.court-decree-lcr-form {
   width: 100% !important;
   margin-left: auto !important;
   margin-right: auto !important;
 }
-html[data-paper-size="a4"] .court-decree-lcr-form, 
-html[data-paper-size="a4"] .correction-print-doc {
+html[data-paper-size="a4"] .court-decree-lcr-form {
   max-width: 210mm !important;
   min-height: 297mm !important;
 }
-html[data-paper-size="short"] .court-decree-lcr-form,
-html[data-paper-size="short"] .correction-print-doc {
+html[data-paper-size="short"] .court-decree-lcr-form {
   max-width: 215.9mm !important;
   height: 279.4mm !important;
 }
 html[data-paper-size="long"] .court-decree-lcr-form,
-html[data-paper-size="long"] .correction-print-doc,
-html[data-paper-size="legal"] .court-decree-lcr-form,
-html[data-paper-size="legal"] .correction-print-doc {
+html[data-paper-size="legal"] .court-decree-lcr-form {
   max-width: 215.9mm !important;
   height: 330.2mm !important;
 }
@@ -94,15 +71,13 @@ html[data-paper-size="legal"] .correction-print-doc {
     View & Print on-screen preview: slightly smaller than before (print/PDF unchanged — not screen).
   */
   body:not(.pdf-capture) .print-doc,
-  body:not(.pdf-capture) .ausf-doc,
-  body:not(.pdf-capture) .correction-print-doc {
+  body:not(.pdf-capture) .ausf-doc {
     zoom: 0.92;
   }
 
   /* Allow LCR form preview to grow vertically if content overflows on-screen */
   body:not(.pdf-capture) .court-decree-lcr-form,
-  body:not(.pdf-capture) .court-decree-lcr-body-scaled,
-  body:not(.pdf-capture) .correction-print-doc {
+  body:not(.pdf-capture) .court-decree-lcr-body-scaled {
     height: auto !important;
     min-height: 0 !important;
   }
@@ -1116,6 +1091,10 @@ html[data-paper-size="legal"] .mc2010-transmittal-doc {
   .mc2010-print-root #supplemental-print-transmittal,
   .mc2010-print-root #supplemental-print-lcr {
     display: block !important;
+  }
+  .legal-instrument-lcr-output-page {
+    break-before: page;
+    page-break-before: always;
   }
 }
 
@@ -7645,7 +7624,6 @@ body.pdf-capture .wrongly-register-transmittal-signoff-docowner {
   :is(
     .print-doc,
     .ausf-doc,
-    .correction-print-doc,
     .supplemental-report-doc,
     .supplemental-transmittal-doc,
     .mc2010-transmittal-doc,
@@ -7666,7 +7644,6 @@ body.pdf-capture .wrongly-register-transmittal-signoff-docowner {
   :is(
     .print-doc,
     .ausf-doc,
-    .correction-print-doc,
     .supplemental-report-doc,
     .supplemental-transmittal-doc,
     .mc2010-transmittal-doc,
@@ -7691,7 +7668,6 @@ body.pdf-capture
   :is(
     .print-doc,
     .ausf-doc,
-    .correction-print-doc,
     .supplemental-report-doc,
     .supplemental-transmittal-doc,
     .mc2010-transmittal-doc,
@@ -7713,7 +7689,6 @@ body.pdf-capture
   :is(
     .print-doc,
     .ausf-doc,
-    .correction-print-doc,
     .supplemental-report-doc,
     .supplemental-transmittal-doc,
     .mc2010-transmittal-doc,

@@ -326,7 +326,7 @@ export default function CourtDecreePrint() {
     'colbRegistryNo', 'colbRegDate', 'colbPageNo', 'colbBookNo', 'colbPageNumber', 'colbBookNumber',
     'dateOfMarriage', 'placeOfMarriageCity', 'placeOfMarriageProvince', 'placeOfMarriageCountry',
     'placeOfMarriageOfParents',
-    'certificateIssuanceDate', 'cityCivilRegistrarName', 'certificateSignatoryName',
+    'certificateIssuanceDate', 'cityCivilRegistrarName', 'certificateSignatoryName', 'certificateSignatoryTitle',
     'contactPhone', 'contactEmail',
   ]
 
@@ -376,7 +376,7 @@ export default function CourtDecreePrint() {
     'deceasedParentFirst', 'deceasedParentMiddle', 'deceasedParentLast',
     'documentOwnerName', 'sex', 'civilStatus', 'citizenship', 'dateOfDeath',
     'citizenshipOfFather', 'placeOfDeath', 'causeOfDeath',
-    'certificateIssuanceDate', 'cityCivilRegistrarName', 'certificateSignatoryName',
+    'certificateIssuanceDate', 'cityCivilRegistrarName', 'certificateSignatoryName', 'certificateSignatoryTitle',
     'contactPhone', 'contactEmail',
   ]
 
@@ -437,7 +437,7 @@ export default function CourtDecreePrint() {
     'marriageRegistryNo', 'marriageDateOfRegistration', 'dateOfMarriage',
     'placeOfMarriageCity', 'placeOfMarriageProvince', 'placeOfMarriageCountry',
     'colbPageNo', 'colbBookNo', 'colbPageNumber', 'colbBookNumber', 'documentOwnerName',
-    'certificateIssuanceDate', 'cityCivilRegistrarName', 'certificateSignatoryName',
+    'certificateIssuanceDate', 'cityCivilRegistrarName', 'certificateSignatoryName', 'certificateSignatoryTitle',
     'contactPhone', 'contactEmail',
   ]
 

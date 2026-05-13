@@ -9,7 +9,7 @@ export default function RegistrationOfAusf({ data }) {
   const issuedDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
   const affidavitLabel = 'Affidavit to Use Surname of the Father'
   const signatoryName = data.certificateSignatoryName || 'LORELIE L. CANTO'
-  const signatoryTitle = 'Registration Officer IV'
+  const signatoryTitle = data.certificateSignatoryTitle || 'Registration Officer IV'
 
   return (
     <div className="ausf-doc print-doc court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-16 pt-4 pb-0 flex flex-col min-h-0 h-full">

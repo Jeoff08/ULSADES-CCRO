@@ -99,7 +99,6 @@ export default function Layout() {
     location.pathname.startsWith('/legitimation') && location.pathname !== '/legitimation/saved'
   const ausfFormActive = location.pathname.startsWith('/ausf') && location.pathname !== '/ausf/saved'
 
-  const correctionEntriesActive = location.pathname.startsWith('/correction-of-entries')
   const systemDataActive = location.pathname.startsWith('/system-data')
 
   const handleLogout = () => {
@@ -297,21 +296,6 @@ export default function Layout() {
             <span>Files Saved</span>
           </NavLink>
 
-          <NavLink
-            to="/correction-of-entries"
-            className={() =>
-              `${navRowBase} ${
-                correctionEntriesActive
-                  ? 'bg-white text-gray-800 border-l-4 border-[var(--primary-green)] border-t-0 border-r-0 border-b-0 pl-[11px]'
-                  : 'text-white/90 hover:bg-white/10 text-white'
-              }`
-            }
-          >
-            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            <span>Correction of entries</span>
-          </NavLink>
           <div className="border-t border-white/10 my-1 mx-2 no-print" />
           <NavLink
             to="/system-data"

@@ -22,6 +22,12 @@ import {
   WronglyRegisterOcrMunicipalForm3AView,
   WronglyRegisterTransmittalView,
 } from './print/wronglyRegisterPrintViews'
+import LegalInstrumentLcrOutputPage from './LegalInstrumentLcrOutputPage'
+import {
+  getWronglyRegisterPrintStylesheetText,
+  wronglyRegisterSheetPaddingCss,
+  wronglyRegisterTransmittalPageShellStyle,
+} from './lib/wronglyRegisterPrintSheetStyle'
 
 function displayDate(iso) {
   if (!iso) return new Date().toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })
@@ -34,14 +40,6 @@ function displayDate(iso) {
 
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-wrongly-register'
 
-/** Screen + base inline padding; print/PDF overrides in index.css must match these values. */
-function wronglyRegisterSheetPaddingCss(paperId) {
-  if (paperId === 'short') return '5.5mm 6.5mm'
-  if (paperId === 'a4') return '8mm'
-  if (paperId === 'long') return '10mm 9mm'
-  return '10mm'
-}
-
 function usePrintPageSize(paperId) {
   useEffect(() => {
     const spec = getPaperPageSpec(paperId)
@@ -52,45 +50,7 @@ function usePrintPageSize(paperId) {
       el.id = PRINT_SIZE_STYLE_ID
       document.head.appendChild(el)
     }
-    el.textContent = `
-      .wrongly-register-print-sheet {
-        font-size: 16px;
-      }
-      /* Ensure nested components follow the base font size */
-      .wrongly-register-print-sheet .text-sm,
-      .wrongly-register-print-sheet .text-\\[13px\\],
-      .wrongly-register-print-sheet .text-\\[14px\\] {
-        font-size: 1em !important;
-      }
-      .wrongly-register-print-sheet .text-base,
-      .wrongly-register-print-sheet .text-\\[15px\\] {
-        font-size: 1.1em !important;
-      }
-      .wrongly-register-print-sheet .text-xs,
-      .wrongly-register-print-sheet .text-\\[11px\\],
-      .wrongly-register-print-sheet .text-\\[12px\\] {
-        font-size: 0.85em !important;
-      }
-
-      @media print {
-        @page { 
-          size: ${spec.size}; 
-          margin: 0; 
-        }
-        .wrongly-register-print-sheet {
-          font-size: 12pt !important;
-        }
-        html[data-paper-size="${paperId}"] .wrongly-register-print-sheet .wrongly-wr-transmittal-body-content {
-          margin-left: 14mm !important;
-          margin-right: 0 !important;
-        }
-        /* Move footer lower on Long bondpaper for LCR 1A (City & OCR) */
-        html[data-paper-size="long"] .wrongly-wr-lcr-sheet,
-        html[data-paper-size="long"] .wrongly-wr-ocr-sheet {
-          padding-bottom: 0 !important;
-        }
-      }
-    `
+    el.textContent = getWronglyRegisterPrintStylesheetText(spec, paperId)
     return () => {
       delete document.documentElement.dataset.paperSize
     }
@@ -113,21 +73,11 @@ export default function WronglyRegisterPrint() {
   const activeSavedId = getActiveWronglyRegisterId()
   const paperSpec = useMemo(() => getPaperPageSpec(paperSize), [paperSize])
   const pageShellStyle = useMemo(
-    () => ({
-      width: `${paperSpec.widthMm}mm`,
-      minHeight: `${paperSpec.heightMm}mm`,
-      padding: wronglyRegisterSheetPaddingCss(paperSize),
-      boxSizing: 'border-box',
-    }),
+    () => wronglyRegisterTransmittalPageShellStyle(paperSpec, paperSize),
     [paperSpec, paperSize]
   )
   const transmittalPageShellStyle = useMemo(
-    () => ({
-      width: `${paperSpec.widthMm}mm`,
-      minHeight: `${paperSpec.heightMm}mm`,
-      padding: wronglyRegisterSheetPaddingCss(paperSize),
-      boxSizing: 'border-box',
-    }),
+    () => wronglyRegisterTransmittalPageShellStyle(paperSpec, paperSize),
     [paperSpec, paperSize]
   )
   usePrintPageSize(paperSize)
@@ -493,6 +443,7 @@ export default function WronglyRegisterPrint() {
             id="wrongly-lcr-selected"
             className={activePanel === 'lcr-selected' ? 'block mt-0' : 'hidden print:block print:mt-0 print:[page-break-before:always]'}
           >
+            <LegalInstrumentLcrOutputPage instrument="Wrongly register" lcrType={selectedLcrForm}>
             <div
               className="wrongly-register-print-sheet wrongly-wr-lcr-sheet bg-white shadow-2xl mx-auto print:shadow-none print:p-0 ring-1 ring-gray-200 print:ring-0 px-4 py-3 print:px-8 flex flex-col"
               style={{
@@ -542,6 +493,7 @@ export default function WronglyRegisterPrint() {
                 />
               ) : null}
             </div>
+            </LegalInstrumentLcrOutputPage>
           </div>
         </div>
       </div>

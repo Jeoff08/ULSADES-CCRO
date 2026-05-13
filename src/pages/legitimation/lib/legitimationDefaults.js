@@ -1,3 +1,5 @@
+import { DEFAULT_RECEIVED_BY } from '../../../lib/receivedByOptions'
+
 export const defaultLegitimation = {
   formType: 'joint-affidavit',
   /** When true, print offers Out-of-Town Transmittal only; when false, local Transmittal only. */
@@ -53,6 +55,8 @@ export const defaultLegitimation = {
   deceasedParentLast: '',
   dateOfDeath: '',
   // Print
+  verifiedByName: DEFAULT_RECEIVED_BY.name,
+  verifiedByTitle: DEFAULT_RECEIVED_BY.title,
   certificateIssuanceDate: '',
   cityCivilRegistrarName: '',
   recipientName: '',

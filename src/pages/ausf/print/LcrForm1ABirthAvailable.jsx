@@ -17,6 +17,7 @@ export default function LcrForm1ABirthAvailable({ data }) {
   const placeOfBirth = joinCommaParts(data.placeOfBirthAddress, data.placeOfBirthCity, data.placeOfBirthProvince) || '—'
   const formDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
   const regOfficerName = (data.certificateSignatoryName || 'LORELIE L. CANTO').toUpperCase()
+  const regOfficerTitle = (data.certificateSignatoryTitle || 'REGISTRATION OFFICER IV').toUpperCase()
   const ccrName = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
   const registryNo = data.colbRegistryNo || '—'
   const verifiedByLabel = 'Verified by:'
@@ -97,7 +98,7 @@ export default function LcrForm1ABirthAvailable({ data }) {
                 <div className="ausf-lcr-verified-ro-stack text-center flex flex-col items-center print:text-left print:items-start">
                   <p className="text-sm mb-1">{verifiedByLabel}</p>
                   <div className="font-bold uppercase text-sm leading-snug m-0 p-0">{regOfficerName}</div>
-                  <div className="text-sm leading-snug m-0 p-0">Registration Officer IV</div>
+                  <div className="text-sm leading-snug m-0 p-0">{regOfficerTitle}</div>
                 </div>
               </div>
             </div>

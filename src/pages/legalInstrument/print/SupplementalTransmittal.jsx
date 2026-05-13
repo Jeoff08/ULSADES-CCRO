@@ -9,6 +9,7 @@ import {
   transmittalRecipientPositionLines,
   transmittalThruPositionLinesForPrint,
 } from '../lib/supplementalTransmittalDefaults'
+import { DEFAULT_RECEIVED_BY } from '../../../lib/receivedByOptions'
 
 const tableCls = 'w-full border-collapse border border-black text-[14px] leading-tight'
 const tablePrintCls = 'w-auto border-collapse border border-black text-[14px] leading-tight'
@@ -37,6 +38,8 @@ export default function SupplementalTransmittal({
   data,
   paperWidth = '210mm',
   paperHeight = '297mm',
+  /** When wrapped in `wrongly-register-print-sheet`, avoid duplicate page box + margins. */
+  fillParentPrintShell = false,
 }) {
   const dateLine = formatTransmittalDateLong(data.transmittalDate || '')
   const dobLine = formatDobDayMonthYearUpper(data.transmittalDob || '')
@@ -70,11 +73,15 @@ export default function SupplementalTransmittal({
     return <span className="font-bold underline">{t}</span>
   }
 
+  const rootClass = fillParentPrintShell
+    ? 'ausf-doc print-doc print-doc-transmittal supplemental-transmittal-doc bg-white text-black w-full min-h-full min-w-0 leading-snug flex flex-col'
+    : 'ausf-doc print-doc print-doc-transmittal supplemental-transmittal-doc bg-white text-black mx-auto px-7 py-5 leading-snug flex flex-col'
+  const rootStyle = fillParentPrintShell
+    ? { fontFamily: 'Arial, sans-serif', width: '100%', minHeight: '100%', boxSizing: 'border-box' }
+    : { fontFamily: 'Arial, sans-serif', width: paperWidth, minHeight: paperHeight }
+
   return (
-    <div
-      className="ausf-doc print-doc print-doc-transmittal supplemental-transmittal-doc bg-white text-black mx-auto px-7 py-5 leading-snug flex flex-col"
-      style={{ fontFamily: 'Arial, sans-serif', width: paperWidth, minHeight: paperHeight }}
-    >
+    <div className={rootClass} style={rootStyle}>
       <div className="print-doc-header shrink-0">
         <PrintHeaderRow headerImageClassName="w-28 h-28 object-contain shrink-0" singleLineAddress />
         <hr className="border-black my-2" />
@@ -265,8 +272,10 @@ export default function SupplementalTransmittal({
         <div className="supplemental-transmittal-body-spacer flex-1 min-h-0 min-w-0" aria-hidden />
         <div className="supplemental-transmittal-sign-off flex flex-col gap-0 pt-0 text-sm print:pb-0 shrink-0">
           <p className="mb-1.5">Respectfully yours,</p>
-          <p className="font-bold uppercase leading-none">LORELIE L. CANTO</p>
-          <p className="leading-none">Registration Officer IV</p>
+          <p className="font-bold uppercase leading-none">
+            {(data.transmittalSignerName || '').trim() || DEFAULT_RECEIVED_BY.name}
+          </p>
+          <p className="leading-none">{(data.transmittalSignerTitle || '').trim() || DEFAULT_RECEIVED_BY.title}</p>
         </div>
         </div>
       </div>

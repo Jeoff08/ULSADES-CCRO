@@ -22,6 +22,7 @@ import {
   applyDerivedJuratFormTypeIfApplicable,
   AUSF_JURAT_PRINT_TYPES,
 } from './lib/ausfJuratRouting'
+import ReceivedByOfficerSelect from '../../components/ReceivedByOfficerSelect'
 
 const RELATIONSHIP_OPTIONS = [
   { value: '', label: '—' },
@@ -325,7 +326,20 @@ export default function AUSFForm() {
                   <FormInput label="RECIPIENT NAME" id="recipientName" value={form.recipientName} onChange={(v) => update('recipientName', v)} />
                   <FormInput label="RECIPIENT TITLE" id="recipientTitle" value={form.recipientTitle} onChange={(v) => update('recipientTitle', v)} />
                   <FormInput label="RECIPIENT OFFICE / LOCATION" id="recipientOffice" value={form.recipientOffice} onChange={(v) => update('recipientOffice', v)} />
-                  <FormInput label="SIGNATORY NAME (optional)" id="transmittalSignatoryName" value={form.transmittalSignatoryName} onChange={(v) => update('transmittalSignatoryName', v)} placeholder="Leave blank for default" />
+                  <div className="sm:col-span-2">
+                    <ReceivedByOfficerSelect
+                      label="Transmittal signatory (optional — leave custom blank to use print default)"
+                      idPrefix="ausf-transmittal-signatory"
+                      value={{
+                        name: form.transmittalSignatoryName || '',
+                        title: form.transmittalSignatoryTitle || '',
+                      }}
+                      onChange={({ name, title }) => {
+                        update('transmittalSignatoryName', name)
+                        update('transmittalSignatoryTitle', title)
+                      }}
+                    />
+                  </div>
                 </div>
               </FormSection>
             </div>
@@ -569,6 +583,22 @@ export default function AUSFForm() {
               </FormSection>
             </div>
           )}
+
+          <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
+            <FormSection noNumber title="REGISTRATION OFFICER (CERTIFICATE &amp; LCR PRINT)">
+              <ReceivedByOfficerSelect
+                idPrefix="ausf-cert-signatory"
+                value={{
+                  name: form.certificateSignatoryName || '',
+                  title: form.certificateSignatoryTitle || '',
+                }}
+                onChange={({ name, title }) => {
+                  update('certificateSignatoryName', name)
+                  update('certificateSignatoryTitle', title)
+                }}
+              />
+            </FormSection>
+          </div>
 
           <div className="ausf-form-page__actions no-print">
             <button

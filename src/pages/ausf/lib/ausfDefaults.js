@@ -1,3 +1,5 @@
+import { DEFAULT_RECEIVED_BY } from '../../../lib/receivedByOptions'
+
 export const defaultAUSF = {
   formType: 'ausf-0-6',
   applicantName: '',
@@ -37,6 +39,7 @@ export const defaultAUSF = {
   affidavitExecutionDate: '',
   cityCivilRegistrarName: 'Atty. Yussif Don Justin F. Martil',
   certificateSignatoryName: 'LORELIE L. CANTO',
+  certificateSignatoryTitle: DEFAULT_RECEIVED_BY.title,
   certificateIssuanceDate: '',
   contactPhone: '228-1311',
   contactEmail: 'civilregistrar.iligan@gmail.com',
@@ -81,6 +84,7 @@ export const defaultAUSF = {
   recipientTitle: 'LAAGAN',
   recipientOffice: 'ILIGAN CITY, ILIGAN',
   transmittalSignatoryName: '',
+  transmittalSignatoryTitle: '',
   // Annotation (Child Ack): COLB scan and annotation text
   colbScanDataUrl: '',
   annotationChildAckText: '',

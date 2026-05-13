@@ -10,6 +10,7 @@ function sharedMetaFromSource(data) {
     colbPageNumber: data.colbPageNumber ?? data.colbPageNo ?? '',
     colbBookNumber: data.colbBookNumber ?? data.colbBookNo ?? '',
     certificateSignatoryName: data.certificateSignatoryName || '',
+    certificateSignatoryTitle: data.certificateSignatoryTitle || '',
     cityCivilRegistrarName: data.cityCivilRegistrarName || '',
     certificateIssuanceDate: data.certificateIssuanceDate || '',
     contactPhone: data.contactPhone || '',

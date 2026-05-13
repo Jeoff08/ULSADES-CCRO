@@ -12,6 +12,7 @@ import {
   transmittalThruPositionLinesForPrint,
 } from '../lib/supplementalTransmittalDefaults'
 import { pickBirthRegisterPageBook } from '../lib/registerBirthBookPagePick'
+import { DEFAULT_RECEIVED_BY } from '../../../lib/receivedByOptions'
 
 function ocrLineDate(iso) {
   if (!iso) return new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-')
@@ -48,7 +49,7 @@ function WronglyRegisterOcrMunicipalSignatureFooter({ data }) {
           <p className="mt-8 mb-0">
             <span className="border-b border-black font-bold uppercase inline-block px-1 min-w-[8rem]">{data.ocrVerifiedBy || ''}</span>
           </p>
-          <p className="text-[0.92em] m-0 mt-0">{data.ocrVerifiedByTitle || 'Bookbinder III'}</p>
+          <p className="text-[0.92em] m-0 mt-0">{data.ocrVerifiedByTitle || DEFAULT_RECEIVED_BY.title}</p>
         </div>
         <div>
           <p className="m-0 min-h-[1.25rem] leading-tight invisible select-none" aria-hidden="true">
@@ -222,9 +223,9 @@ export function WronglyRegisterTransmittalView({ data, displayDate }) {
           <div>
             <p className="m-0 text-[1em]">Respectfully yours,</p>
             <p className="m-0 mt-6 font-bold uppercase underline text-[1em] print:mt-4">
-              {(data.transmittalSignerName || '').trim() || 'LORELIE L. CANTO'}
+              {(data.transmittalSignerName || '').trim() || DEFAULT_RECEIVED_BY.name}
             </p>
-            <p className="m-0 text-[0.92em] leading-tight">{(data.transmittalSignerTitle || '').trim() || 'Registration Officer IV'}</p>
+            <p className="m-0 text-[0.92em] leading-tight">{(data.transmittalSignerTitle || '').trim() || DEFAULT_RECEIVED_BY.title}</p>
           </div>
           {(data.transmittalDocOwner || '').trim() ? (
             <div className="text-right">
@@ -255,8 +256,8 @@ export function WronglyRegisterLcrCityForm1AView({ tableData, displayDate, issue
   const colbBook = propBook || pb.book
   const formDate = displayDate(issueDateIso || tableData.certificateIssuanceDate || '')
   const remarksText = String(remarks || '').trim()
-  const verifiedName = String(tableData.certificateSignatoryName || tableData.ocrVerifiedBy || 'LORELIE L. CANTO').trim() || 'LORELIE L. CANTO'
-  const verifiedTitle = String(tableData.certificateSignatoryTitle || tableData.ocrVerifiedByTitle || 'Registration Officer IV').trim()
+  const verifiedName = String(tableData.certificateSignatoryName || tableData.ocrVerifiedBy || DEFAULT_RECEIVED_BY.name).trim() || DEFAULT_RECEIVED_BY.name
+  const verifiedTitle = String(tableData.certificateSignatoryTitle || tableData.ocrVerifiedByTitle || DEFAULT_RECEIVED_BY.title).trim() || DEFAULT_RECEIVED_BY.title
 
   return (
     <div className="wrongly-wr-lcr-city font-sans text-gray-900 text-[1em] leading-snug flex flex-col flex-1 min-h-0 mx-[0.5in]">
@@ -354,8 +355,8 @@ export function WronglyRegisterLcrCityForm2AView({ tableData, displayDate, issue
   const colbBook = propBook || pb.book
   const formDate = displayDate(issueDateIso || tableData.certificateIssuanceDate || '')
   const remarksText = String(remarks || '').trim()
-  const verifiedName = String(tableData.certificateSignatoryName || tableData.ocrVerifiedBy || 'LORELIE L. CANTO').trim() || 'LORELIE L. CANTO'
-  const verifiedTitle = String(tableData.certificateSignatoryTitle || tableData.ocrVerifiedByTitle || 'Registration Officer IV').trim()
+  const verifiedName = String(tableData.certificateSignatoryName || tableData.ocrVerifiedBy || DEFAULT_RECEIVED_BY.name).trim() || DEFAULT_RECEIVED_BY.name
+  const verifiedTitle = String(tableData.certificateSignatoryTitle || tableData.ocrVerifiedByTitle || DEFAULT_RECEIVED_BY.title).trim() || DEFAULT_RECEIVED_BY.title
 
   return (
     <div className="wrongly-wr-lcr-city font-sans text-gray-900 text-[1em] leading-snug flex flex-col flex-1 min-h-0 mx-[0.5in]">
@@ -451,8 +452,8 @@ export function WronglyRegisterLcrCityForm3AView({ tableData, displayDate, issue
   const colbBook = propBook || pb.book
   const formDate = displayDate(issueDateIso || tableData.certificateIssuanceDate || '')
   const remarksText = String(remarks || '').trim()
-  const verifiedName = String(tableData.certificateSignatoryName || tableData.ocrVerifiedBy || 'LORELIE L. CANTO').trim() || 'LORELIE L. CANTO'
-  const verifiedTitle = String(tableData.certificateSignatoryTitle || tableData.ocrVerifiedByTitle || 'Registration Officer IV').trim()
+  const verifiedName = String(tableData.certificateSignatoryName || tableData.ocrVerifiedBy || DEFAULT_RECEIVED_BY.name).trim() || DEFAULT_RECEIVED_BY.name
+  const verifiedTitle = String(tableData.certificateSignatoryTitle || tableData.ocrVerifiedByTitle || DEFAULT_RECEIVED_BY.title).trim() || DEFAULT_RECEIVED_BY.title
 
   return (
     <div className="wrongly-wr-lcr-city font-sans text-gray-900 text-[1em] leading-snug flex flex-col flex-1 min-h-0 mx-[0.5in]">

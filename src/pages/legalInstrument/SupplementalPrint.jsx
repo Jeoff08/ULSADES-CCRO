@@ -5,6 +5,7 @@ import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailabl
 import LcrForm2ADeathAvailable from '../courtDecree/print/LcrForm2ADeathAvailable'
 import LcrForm3AMarriageAvailable from '../courtDecree/print/LcrForm3AMarriageAvailable'
 import SupplementalTransmittal from './print/SupplementalTransmittal'
+import LegalInstrumentLcrOutputPage from './LegalInstrumentLcrOutputPage'
 import ToastHost from '../../components/toast/ToastHost'
 import { useToasts } from '../../components/toast/useToasts'
 import { saveCurrentViewAsPdf, openSavedPdfInBrowser } from '../../lib/savePdf'
@@ -20,6 +21,10 @@ import {
 } from './lib/supplementalTransmittalDefaults'
 import { defaultLegitimation } from '../legitimation/lib/legitimationDefaults'
 import { defaultCourtDecree } from '../courtDecree/lib/courtDecreeDefaults'
+import {
+  getWronglyRegisterPrintStylesheetText,
+  wronglyRegisterTransmittalPageShellStyle,
+} from './lib/wronglyRegisterPrintSheetStyle'
 
 const defaultSupplementalDraft = {
   supplementType: 'geographical',
@@ -61,7 +66,7 @@ function usePrintPageSize(paperId) {
       el.id = PRINT_SIZE_STYLE_ID
       document.head.appendChild(el)
     }
-    el.textContent = `@media print { @page { size: ${spec.size}; } }`
+    el.textContent = getWronglyRegisterPrintStylesheetText(spec, paperId)
     return () => {
       delete document.documentElement.dataset.paperSize
     }
@@ -145,7 +150,6 @@ export default function SupplementalPrint() {
     ]
     return values.some((v) => String(v || '').trim() !== '')
   }, [data])
-  const showAffidavitOutput = hasAffidavitData
   const hasTransmittalData = useMemo(() => {
     // Treat transmittal as "present" only when user selected checklist/doc items
     // specific to the transmittal output section.
@@ -159,6 +163,9 @@ export default function SupplementalPrint() {
   /** Opt-in button sets includeForm1a; sex-only backward compat when field was never saved. */
   const showForm1a =
     data.includeForm1a === true || (supType === 'sex' && data.includeForm1a === undefined)
+
+  /** When any LCR form is included, affidavit is omitted from this print bundle (LCR + transmittal only). */
+  const showAffidavitPrintBlock = hasAffidavitData && !showForm1a
 
   const [lcrData, setLcrData] = useState(() => ({ ...baseData.lcrData }))
 
@@ -179,11 +186,20 @@ export default function SupplementalPrint() {
   }
   /** Same @page sizing as Court Decree / Legitimation / AUSF — honor paper picker for Save PDF + Preview (Electron uses preferCSSPageSize). */
   const paperSpec = useMemo(() => getPaperPageSpec(paperSize), [paperSize])
+  const transmittalPageShellStyle = useMemo(
+    () => wronglyRegisterTransmittalPageShellStyle(paperSpec, paperSize),
+    [paperSpec, paperSize]
+  )
   usePrintPageSize(paperSize)
 
   useEffect(() => {
-    if (!showAffidavitOutput) {
-      if (showTransmittalOutput && (activePanel === 'affidavit' || activePanel === 'form1a')) {
+    if (showForm1a && activePanel === 'affidavit') {
+      setActivePanel('form1a')
+      return
+    }
+    if (!hasAffidavitData) {
+      // Without affidavit output, only the affidavit tab is invalid — do not steal focus from LCR when showForm1a.
+      if (showTransmittalOutput && activePanel === 'affidavit') {
         setActivePanel('transmittal')
       }
       return
@@ -193,7 +209,7 @@ export default function SupplementalPrint() {
       return
     }
     if (!showForm1a && activePanel === 'form1a') setActivePanel('affidavit')
-  }, [showAffidavitOutput, showForm1a, showTransmittalOutput, activePanel])
+  }, [hasAffidavitData, showForm1a, showTransmittalOutput, activePanel])
 
   const PDF_EXPORT_CLASS = {
     bundle: 'supplemental-pdf-export--bundle-only',
@@ -203,12 +219,12 @@ export default function SupplementalPrint() {
 
   /** Affidavit bundle and/or LCR block — hide transmittal unless exporting transmittal only */
   const showBundleForRender =
-    (showAffidavitOutput || showForm1a) && exportMode !== 'transmittal'
+    (showAffidavitPrintBlock || showForm1a) && exportMode !== 'transmittal'
   const showTransmittalForRender = showTransmittalOutput && exportMode !== 'bundle' && exportMode !== 'lcr'
 
   const savePdfWithExportMode = async (mode, suggestedBaseName) => {
-    if (mode === 'bundle' && !showAffidavitOutput) {
-      window.alert('No supplemental affidavit data yet. Fill the Supplemental form first, or use Save transmittal PDF.')
+    if (mode === 'bundle' && !showAffidavitPrintBlock && !showForm1a) {
+      window.alert('Nothing to save in this bundle yet. Add a supplemental affidavit or an LCR form on the Supplemental form, or use Save transmittal PDF.')
       return
     }
     if (mode === 'lcr' && !showForm1a) {
@@ -361,12 +377,14 @@ export default function SupplementalPrint() {
             <button
               type="button"
               onClick={() => savePdfWithExportMode('bundle', 'Supplemental-Report')}
-              disabled={savingPdf || !showAffidavitOutput}
+              disabled={savingPdf || (!showAffidavitPrintBlock && !showForm1a)}
               className="px-3 py-1.5 rounded-md bg-[var(--primary-blue)] text-white text-sm font-medium hover:bg-[var(--primary-blue-light)] disabled:opacity-60"
               title={
-                showAffidavitOutput
-                  ? `Affidavit${showForm1a ? ` + LCR Form ${data.lcrType || '1A'}` : ''} (no transmittal pages)`
-                  : 'No supplemental affidavit data yet'
+                showAffidavitPrintBlock
+                  ? `Affidavit (no transmittal pages)`
+                  : showForm1a
+                    ? `LCR Form ${data.lcrType || '1A'} (affidavit hidden while LCR is included)`
+                    : 'Add supplemental affidavit or LCR on the Supplemental form first'
               }
             >
               {savingPdf ? 'Saving...' : 'Save affidavit PDF'}
@@ -407,19 +425,25 @@ export default function SupplementalPrint() {
               <button
                 type="button"
                 onClick={() => {
-                  if (!showAffidavitOutput) return
+                  if (!showAffidavitPrintBlock) return
                   setActivePanel('affidavit')
                 }}
-                disabled={!showAffidavitOutput}
-                title={showAffidavitOutput ? 'Supplemental affidavit output' : 'No supplemental affidavit data yet'}
-                className={`${sidebarBtnAffidavit}${activePanel === 'affidavit' ? sidebarBtnSelected : ''} ${!showAffidavitOutput ? 'opacity-45 cursor-not-allowed hover:bg-[var(--primary-blue)]/80' : ''} pr-[5.75rem]`}
+                disabled={!showAffidavitPrintBlock}
+                title={
+                  showAffidavitPrintBlock
+                    ? 'Supplemental affidavit output'
+                    : showForm1a && hasAffidavitData
+                      ? 'Affidavit is not printed while an LCR form is included. Remove the LCR on the Supplemental form to show the affidavit here again.'
+                      : 'No supplemental affidavit data yet'
+                }
+                className={`${sidebarBtnAffidavit}${activePanel === 'affidavit' ? sidebarBtnSelected : ''} ${!showAffidavitPrintBlock ? 'opacity-45 cursor-not-allowed hover:bg-[var(--primary-blue)]/80' : ''} pr-[5.75rem]`}
               >
                 Supplemental affidavit
               </button>
               <PrintSidebarNavAttachIcons
                 scopeKey={supplementalAffidavitKey}
                 hasUpload={hasAffidavitScan}
-                iconsDisabled={!showAffidavitOutput}
+                iconsDisabled={!showAffidavitPrintBlock}
                 onOpenUploadModal={() =>
                   setUploadModal({
                     open: true,
@@ -494,74 +518,90 @@ export default function SupplementalPrint() {
 
         <div className="flex-1 min-w-0 print:w-full print:max-w-none">
           {showBundleForRender ? (
-          <div id="supplemental-print-bundle">
-            <div
-              id="supplemental-print-affidavit"
-              className={
-                activePanel === 'affidavit'
-                  ? 'block'
-                  : 'hidden print:block print:[page-break-before:avoid]'
-              }
-            >
-              <SupplementalReportAffidavit
-                data={data}
-                onItem3CustomChange={setItem3Custom}
-                onItem5CustomChange={setItem5Custom}
-                paperWidth={`${paperSpec.widthMm}mm`}
-                paperHeight={`${paperSpec.heightMm}mm`}
-              />
-            </div>
+            <div id="supplemental-print-bundle">
+              {showAffidavitPrintBlock ? (
+              <div
+                id="supplemental-print-affidavit"
+                className={
+                  activePanel === 'affidavit'
+                    ? 'block'
+                    : 'hidden print:block print:[page-break-before:avoid]'
+                }
+              >
+                <div
+                  className="wrongly-register-print-sheet wrongly-register-transmittal-sheet bg-white shadow-2xl mx-auto text-gray-900 print:shadow-none ring-1 ring-gray-200 print:ring-0 flex flex-col"
+                  style={transmittalPageShellStyle}
+                >
+                  <SupplementalReportAffidavit
+                    data={data}
+                    onItem3CustomChange={setItem3Custom}
+                    onItem5CustomChange={setItem5Custom}
+                    paperWidth={`${paperSpec.widthMm}mm`}
+                    paperHeight={`${paperSpec.heightMm}mm`}
+                    fillParentPrintShell
+                  />
+                </div>
+              </div>
+              ) : null}
 
-            {showForm1a ? (
-            <div
-              id="supplemental-print-lcr"
-              className={
-                activePanel === 'form1a'
-                  ? 'block mt-0'
-                  : 'hidden print:block print:mt-0 print:[page-break-before:always]'
-              }
-            >
-              <div className="no-print mb-3 max-w-[210mm] mx-auto rounded-lg border border-emerald-200 bg-emerald-50/90 px-3 py-2 text-[11px] text-emerald-900 leading-snug">
-                <span className="font-semibold">LCR Form {data.lcrType}</span>
-                {' — same court print layout for all sources. '}
-                {data.lcrPrefillLabel ? (
-                  <>
-                    Prefilled from <span className="font-semibold">{LCR_SOURCE_LABEL[data.lcrSource] || data.lcrSource}</span>
-                    {': '}
-                    <span className="italic">{data.lcrPrefillLabel}</span>
-                    {'. '}
-                  </>
-                ) : (
-                  <>No record selected on the supplemental form — manual entry. </>
-                )}
-                Table cells are editable below; changes are saved with this supplemental file.
-              </div>
-              <div className="max-w-[210mm] mx-auto">
-                {data.lcrType === '1A' && (
-                  <LcrForm1ABirthAvailable
-                    data={lcrData}
-                    editableTable
-                    onDataChange={handleLcrDataChange}
-                  />
-                )}
-                {data.lcrType === '2A' && (
-                  <LcrForm2ADeathAvailable
-                    data={lcrData}
-                    editableTable
-                    onDataChange={handleLcrDataChange}
-                  />
-                )}
-                {data.lcrType === '3A' && (
-                  <LcrForm3AMarriageAvailable
-                    data={lcrData}
-                    editableTable
-                    onDataChange={handleLcrDataChange}
-                  />
-                )}
-              </div>
+              {showForm1a ? (
+                <LegalInstrumentLcrOutputPage
+                  instrument="Supplemental Report"
+                  lcrType={data.lcrType}
+                  wronglyRegisterCompatibleLcrSheet
+                  paperSpec={paperSpec}
+                  paperSizeId={paperSize}
+                >
+                <div
+                  id="supplemental-print-lcr"
+                  className={
+                    activePanel === 'form1a'
+                      ? 'block mt-0'
+                      : 'hidden print:block print:mt-0 print:[page-break-before:always]'
+                  }
+                >
+                  <div className="no-print mb-3 max-w-[210mm] mx-auto rounded-lg border border-emerald-200 bg-emerald-50/90 px-3 py-2 text-[11px] text-emerald-900 leading-snug">
+                    <span className="font-semibold">LCR Form {data.lcrType}</span>
+                    {' — same court print layout for all sources. '}
+                    {data.lcrPrefillLabel ? (
+                      <>
+                        Prefilled from <span className="font-semibold">{LCR_SOURCE_LABEL[data.lcrSource] || data.lcrSource}</span>
+                        {': '}
+                        <span className="italic">{data.lcrPrefillLabel}</span>
+                        {'. '}
+                      </>
+                    ) : (
+                      <>No record selected on the supplemental form — manual entry. </>
+                    )}
+                    Table cells are editable below; changes are saved with this supplemental file.
+                  </div>
+                  <div className="max-w-[210mm] mx-auto">
+                    {data.lcrType === '1A' && (
+                      <LcrForm1ABirthAvailable
+                        data={lcrData}
+                        editableTable
+                        onDataChange={handleLcrDataChange}
+                      />
+                    )}
+                    {data.lcrType === '2A' && (
+                      <LcrForm2ADeathAvailable
+                        data={lcrData}
+                        editableTable
+                        onDataChange={handleLcrDataChange}
+                      />
+                    )}
+                    {data.lcrType === '3A' && (
+                      <LcrForm3AMarriageAvailable
+                        data={lcrData}
+                        editableTable
+                        onDataChange={handleLcrDataChange}
+                      />
+                    )}
+                  </div>
+                </div>
+                </LegalInstrumentLcrOutputPage>
+              ) : null}
             </div>
-            ) : null}
-          </div>
           ) : null}
 
           {showTransmittalForRender ? (
@@ -573,11 +613,17 @@ export default function SupplementalPrint() {
                   : `hidden print:block print:mt-0 ${showBundleForRender ? 'print:[page-break-before:always]' : ''}`
               }
             >
-              <SupplementalTransmittal
-                data={data}
-                paperWidth={`${paperSpec.widthMm}mm`}
-                paperHeight={`${paperSpec.heightMm}mm`}
-              />
+              <div
+                className="wrongly-register-print-sheet wrongly-register-transmittal-sheet bg-white shadow-2xl mx-auto text-gray-900 print:shadow-none ring-1 ring-gray-200 print:ring-0 flex flex-col"
+                style={transmittalPageShellStyle}
+              >
+                <SupplementalTransmittal
+                  data={data}
+                  paperWidth={`${paperSpec.widthMm}mm`}
+                  paperHeight={`${paperSpec.heightMm}mm`}
+                  fillParentPrintShell
+                />
+              </div>
             </div>
           ) : null}
         </div>

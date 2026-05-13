@@ -5,6 +5,7 @@ import { defaultLegitimation, syncLegitimationTransmittalFlagWithFormType } from
 import { addSavedLegitimation, getLegitimationDraft, updateSavedLegitimation } from './lib/legitimationStorage'
 import { DATE_MONTHS, LEGITIMATION_TYPES } from './constants'
 import { commitFirstLetterUpperFromInput } from '../../lib/sentenceCase'
+import ReceivedByOfficerSelect from '../../components/ReceivedByOfficerSelect'
 
 const inputClass = 'legitimation-form-page__input w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-gray-50 transition-colors duration-150'
 
@@ -594,6 +595,20 @@ export default function LegitimationForm() {
               <p className="text-sm text-gray-600">
                 B. ANNOTATION WITH ACKNOWLEDGEMENT: Legitimated by the subsequent marriage of parents (name of spouse) and (name of spouse) on (date of marriage) at (place of marriage) under registry number (Affidavit of Legitimation). The child shall be known as (complete name of child).
               </p>
+            </LegitimationSection>
+          </div>
+
+          <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
+            <LegitimationSection number="13" title="LCR print — Verified by (registration officer)">
+              <ReceivedByOfficerSelect
+                idPrefix="legitimation-lcr-verified"
+                value={{ name: form.verifiedByName || '', title: form.verifiedByTitle || '' }}
+                onChange={({ name, title }) =>
+                  setForm((prev) => ({ ...prev, verifiedByName: name, verifiedByTitle: title }))
+                }
+                selectClassName={`mt-0.5 ${inputClass}`}
+                inputClassName={`mt-0.5 ${inputClass}`}
+              />
             </LegitimationSection>
           </div>
 
