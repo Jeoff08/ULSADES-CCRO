@@ -8,6 +8,8 @@ import {
   transmittalRecipientOfficeLinesForPrint,
   transmittalRecipientPositionLines,
   transmittalThruPositionLinesForPrint,
+  RECEIVED_BY_OPTIONS,
+  clampTransmittalSignatoryIndex,
 } from '../lib/supplementalTransmittalDefaults'
 
 const tableCls = 'w-full border-collapse border border-black text-[16px] print:text-[12pt] leading-tight'
@@ -40,7 +42,11 @@ function emptyBox() {
   )
 }
 
-export default function Mc2010Transmittal({ data, paperWidth = '210mm', paperHeight = '297mm' }) {
+export default function Mc2010Transmittal({
+  data,
+  paperWidth = '210mm',
+  paperHeight = '297mm',
+}) {
   const dateLine = formatTransmittalDateLong(data.transmittalDate || '')
   const dobLine = formatDobDayMonthYearUpper(data.transmittalDob || '')
   const docType = data.transmittalDocType || ''
@@ -51,6 +57,8 @@ export default function Mc2010Transmittal({ data, paperWidth = '210mm', paperHei
   const thruTitleLines = transmittalThruPositionLinesForPrint(data)
   const trimmedThru = (data.transmittalThru || '').trim()
   const recipientName = ((data.transmittalRecipient || '').trim() || '\u00a0')
+  const signatoryIndex = clampTransmittalSignatoryIndex(data.transmittalSignatoryOptionIndex)
+  const signatory = RECEIVED_BY_OPTIONS[signatoryIndex] || RECEIVED_BY_OPTIONS[0]
 
   const emph = (v) => {
     const t = (v || '').trim().toUpperCase()
@@ -170,9 +178,9 @@ export default function Mc2010Transmittal({ data, paperWidth = '210mm', paperHei
           <div className="flex flex-col gap-0 pt-0 print:pb-0 shrink-0">
             <p className="mb-1.5">Respectfully yours,</p>
             <p className="mc2010-stack-tight-p mc2010-signatory-lines">
-              <span className="font-bold uppercase">LORELIE L. CANTO</span>
+              <span className="font-bold uppercase">{signatory.name}</span>
               <br />
-              <span>Registration Officer IV</span>
+              <span>{signatory.title}</span>
             </p>
             <p className="mt-4">Received and</p>
           </div>

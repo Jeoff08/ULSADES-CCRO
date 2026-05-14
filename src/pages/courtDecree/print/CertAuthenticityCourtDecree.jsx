@@ -5,6 +5,7 @@ import {
   formatAffectedDocumentLabel,
   resolveSingleAffectedDocumentForCertificate,
 } from '../lib/courtDecreeAffectedDocuments'
+import { resolveCourtDecreePrintCcr } from '../lib/courtDecreePrintCcr'
 
 /**
  * Court decree Certificate of Authenticity (output matches sample PDF).
@@ -31,6 +32,10 @@ function documentOwnerForCertificate(data, affectedCode) {
   return '—'
 }
 
+/**
+ * @param {object} props
+ * @param {object} props.data Court decree draft fields
+ */
 export default function CertAuthenticityCourtDecree({ data }) {
   const dateIssued = data.dateIssued || '—'
   const judgeName = data.issuedByName || (data.issuedByTitle ? `${data.issuedByTitle} ${data.issuedByName || ''}`.trim() : '') || '—'
@@ -42,7 +47,9 @@ export default function CertAuthenticityCourtDecree({ data }) {
   const affectedDoc = formatAffectedDocumentLabel(affectedCode)
   const documentOwner = documentOwnerForCertificate(data, affectedCode)
   const issuedDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
-  const signatory = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
+  const { row: ccrRow } = resolveCourtDecreePrintCcr(data)
+  const signatory = ccrRow.name.toUpperCase()
+  const signatoryTitle = ccrRow.title
 
   return (
     <div className="ausf-doc print-doc print-doc-cert-auth bg-white text-black text-base max-w-[210mm] mx-auto px-6 py-4 leading-relaxed flex flex-col min-h-[297mm]">
@@ -71,7 +78,7 @@ export default function CertAuthenticityCourtDecree({ data }) {
       <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-start flex-shrink-0">
         <div className="court-decree-cert-signatory-block ml-8 inline-flex flex-col items-center gap-0 leading-none mb-8">
           <p className="court-decree-cert-signatory-name m-0 font-bold uppercase text-[15px]">{signatory}</p>
-          <p className="court-decree-cert-signatory-title m-0 text-[13px] italic">City Civil Registrar</p>
+          <p className="court-decree-cert-signatory-title m-0 text-[13px] italic">{signatoryTitle}</p>
         </div>
         <div className="w-full">
           <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />

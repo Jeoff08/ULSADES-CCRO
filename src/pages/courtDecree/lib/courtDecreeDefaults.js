@@ -110,6 +110,17 @@ export const defaultCourtDecree = {
   lcrForm3aRemarks: '',
   lcrForm3aRemarksTouched: false,
   certificateSignatoryName: '',
+  certificateSignatoryTitle: '',
+  cityCivilRegistrarTitle: '',
+  /** Court decree transmittal “Respectfully yours” block — synced with CCR roster in print sidebar */
+  transmittalSignatoryName: '',
+  transmittalSignatoryTitle: '',
+  ccrScopeLcr1aName: '',
+  ccrScopeLcr1aTitle: '',
+  ccrScopeLcr2aName: '',
+  ccrScopeLcr2aTitle: '',
+  ccrScopeLcr3aName: '',
+  ccrScopeLcr3aTitle: '',
   contactPhone: '228-1311',
   contactEmail: 'civilregistrar.iligan@gmail.com',
 }

@@ -1,6 +1,7 @@
 import React from 'react'
 import { fullName, formatDateLong } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter, FILL_BOLD } from '../../../components/print'
+import { legitimationAffidavitCcrDisplayRow } from './legitimationAffidavitCcr'
 
 /** SOLE AFFIDAVIT OF LEGITIMATION – matching the header layout from the newest user provided image. */
 export default function SoleAffidavitLegitimation({ data }) {
@@ -26,6 +27,7 @@ export default function SoleAffidavitLegitimation({ data }) {
   const currentDayMonthYear = formatDateLong(new Date())
   const witnessDate = formatDateLong(data.affidavitExecutionDate) || currentDayMonthYear
   const registryNo = data.affidavitLegitRegistryNo || '—'
+  const ccrRow = legitimationAffidavitCcrDisplayRow(data, 'sole')
 
   return (
     <div className="sole-legitimation-doc ausf-doc print-doc legitimation-affidavit-doc bg-white text-black text-[17px] max-w-[210mm] mx-auto px-6 py-4 leading-snug flex flex-col min-h-0">
@@ -110,8 +112,8 @@ export default function SoleAffidavitLegitimation({ data }) {
 
         <div className="registrar-signature-zone mt-auto pt-4 flex min-h-[4rem] flex-col justify-end items-end">
           <div className="text-right city-registrar-signature">
-            <p className="font-bold text-right">{data.cityCivilRegistrarName || 'Atty. Yussif Don Justin F. Martil'}</p>
-            <p className="text-sm text-right">City Civil Registrar</p>
+            <p className="font-bold text-right">{ccrRow.name}</p>
+            <p className="text-sm text-right">{ccrRow.title}</p>
           </div>
         </div>
       </div>

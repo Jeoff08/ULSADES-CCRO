@@ -52,9 +52,18 @@ export const defaultLegitimation = {
   deceasedParentMiddle: '',
   deceasedParentLast: '',
   dateOfDeath: '',
-  // Print
+  // Print — shared LCRO/CCR (LCR 1A, registration, annotation, transmittal)
   certificateIssuanceDate: '',
   cityCivilRegistrarName: '',
+  cityCivilRegistrarTitle: '',
+  /** Joint affidavit “Received by” only; empty = follow cityCivilRegistrar* (shared) for display. */
+  legitimationJointAffidavitReceivedByName: '',
+  legitimationJointAffidavitReceivedByTitle: '',
+  /** Sole affidavit “Received by” only; empty = follow cityCivilRegistrar* for display. */
+  legitimationSoleAffidavitReceivedByName: '',
+  legitimationSoleAffidavitReceivedByTitle: '',
+  certificateSignatoryName: '',
+  certificateSignatoryTitle: '',
   recipientName: '',
   recipientTitle: '',
   recipientOffice: '',

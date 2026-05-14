@@ -41,6 +41,65 @@ export function parseBirthToDate(str) {
   return null
 }
 
+const LCR_REGISTRATION_MONTHS_FULL = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+]
+
+/** Days in month (1–12); invalid year/month fall back to 31 for max-day clamp while typing. */
+export function daysInCalendarMonth(year, month1to12) {
+  const y = Number(year)
+  const m = Number(month1to12)
+  if (!Number.isFinite(y) || !Number.isFinite(m) || m < 1 || m > 12) return 31
+  return new Date(y, m, 0).getDate()
+}
+
+/** Parse stored registration date (ISO, dd/mm/yyyy, etc.) to { d, m, y } strings for numeric inputs. */
+export function getRegistrationDmYFromRaw(str) {
+  const d = parseBirthToDate(String(str || '').trim())
+  if (!d || isNaN(d.getTime())) return { d: '', m: '', y: '' }
+  return {
+    d: String(d.getDate()),
+    m: String(d.getMonth() + 1),
+    y: String(d.getFullYear()),
+  }
+}
+
+/** LCR “Date of registration” table line: "5 January 2004" (day number, full month word, year). */
+export function formatLcrRegistrationWordMonth(str) {
+  const d = parseBirthToDate(String(str || '').trim())
+  if (!d || isNaN(d.getTime())) return ''
+  return `${d.getDate()} ${LCR_REGISTRATION_MONTHS_FULL[d.getMonth()]} ${d.getFullYear()}`
+}
+
+/**
+ * Build ISO yyyy-mm-dd from numeric day/month/year strings, or null if incomplete / invalid calendar date.
+ */
+export function tryIsoFromDmyStrings(dayStr, monthStr, yearStr) {
+  const d = parseInt(String(dayStr || '').replace(/\D/g, ''), 10)
+  const m = parseInt(String(monthStr || '').replace(/\D/g, ''), 10)
+  const y = parseInt(String(yearStr || '').replace(/\D/g, ''), 10)
+  if (!Number.isFinite(d) || !Number.isFinite(m) || !Number.isFinite(y)) return null
+  if (m < 1 || m > 12 || y < 1000 || y > 9999 || d < 1) return null
+  const maxD = daysInCalendarMonth(y, m)
+  if (d > maxD) return null
+  const test = new Date(y, m - 1, d)
+  if (test.getFullYear() !== y || test.getMonth() !== m - 1 || test.getDate() !== d) return null
+  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+}
+
+/** Full years between a birth date (ISO, dd/mm/yyyy, etc.) and a reference date (default: today). */
+export function computeAgeFullYears(isoOrAnyDateStr, asOf = new Date()) {
+  const d = parseBirthToDate(String(isoOrAnyDateStr || '').trim())
+  if (!d || isNaN(d.getTime())) return null
+  const ref = asOf instanceof Date && !isNaN(asOf.getTime()) ? asOf : new Date()
+  let age = ref.getFullYear() - d.getFullYear()
+  const refMd = ref.getMonth() * 100 + ref.getDate()
+  const birthMd = d.getMonth() * 100 + d.getDate()
+  if (refMd < birthMd) age -= 1
+  return Math.max(0, age)
+}
+
 /** Format for certificate: "04 March, 2026" */
 export function formatDateCert(str) {
   if (!str) return ''

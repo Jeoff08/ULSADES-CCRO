@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import SupplementalReportAffidavit from '../legitimation/print/SupplementalReportAffidavit'
 import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailable'
 import LcrForm2ADeathAvailable from '../courtDecree/print/LcrForm2ADeathAvailable'
 import LcrForm3AMarriageAvailable from '../courtDecree/print/LcrForm3AMarriageAvailable'
 import SupplementalTransmittal from './print/SupplementalTransmittal'
+import SupplementalLcrFooterSignatoryPickers from './SupplementalLcrFooterSignatoryPickers'
 import ToastHost from '../../components/toast/ToastHost'
 import { useToasts } from '../../components/toast/useToasts'
 import { saveCurrentViewAsPdf, openSavedPdfInBrowser } from '../../lib/savePdf'
@@ -17,10 +18,17 @@ import PrintSidebarNavAttachIcons from '../../components/upload/PrintSidebarNavA
 import {
   getDefaultSupplementalTransmittalFields,
   pickTransmittalStateFromDraft,
+  clampTransmittalSignatoryIndex,
+  RECEIVED_BY_OPTIONS,
 } from './lib/supplementalTransmittalDefaults'
 import { defaultLegitimation } from '../legitimation/lib/legitimationDefaults'
 import { defaultCourtDecree } from '../courtDecree/lib/courtDecreeDefaults'
 
+/**
+ * Transmittal sign-off roster (dropdown after “Respectfully yours,”): `RECEIVED_BY_OPTIONS` in
+ * `./lib/supplementalTransmittalDefaults.js` — ATTY. YUSSIF DON JUSTIN F. MARTIL; LORELIE L. CANTO;
+ * PHOEBE L. BENIGA; JAN FLAURENCE A. OBLENDA.
+ */
 const defaultSupplementalDraft = {
   supplementType: 'geographical',
   colbSubject: 'self',
@@ -43,7 +51,7 @@ const defaultSupplementalDraft = {
   includeForm1a: false,
   lcrType: '1A',
   lcrData: { ...defaultLegitimation },
-  lcrSource: 'courtDecree',
+  lcrSource: 'manual',
   lcrSourceId: '',
   lcrPrefillLabel: '',
   ...getDefaultSupplementalTransmittalFields(),
@@ -75,7 +83,12 @@ const sidebarBtnForm1a = `${sidebarBtnBase} bg-[#283750] hover:bg-[#1e2d42]`
 const sidebarBtnTransmittal = `${sidebarBtnBase} bg-[#1a4d3a] hover:bg-[#143d2d]`
 const sidebarBtnSelected = ' ring-2 ring-offset-1 ring-[var(--primary-blue)]'
 
-const LCR_SOURCE_LABEL = { ausf: 'AUSF', courtDecree: 'Court Decree', legitimation: 'Legitimation' }
+const LCR_SOURCE_LABEL = {
+  manual: 'Manual entry',
+  ausf: 'AUSF',
+  courtDecree: 'Court Decree',
+  legitimation: 'Legitimation',
+}
 
 export default function SupplementalPrint() {
   const location = useLocation()
@@ -98,6 +111,11 @@ export default function SupplementalPrint() {
   const { toasts, show, dismiss } = useToasts()
   const [uploadTick, setUploadTick] = useState(0)
   const [uploadModal, setUploadModal] = useState({ open: false, key: '', title: '' })
+  const [transmittalSignatoryIdxOverride, setTransmittalSignatoryIdxOverride] = useState(null)
+
+  useEffect(() => {
+    setTransmittalSignatoryIdxOverride(null)
+  }, [location.key])
 
   const { supplementalAffidavitKey, supplementalTransmittalKey, supplementalLcrKey } = useMemo(() => {
     const row = getActiveSavedSupplemental()
@@ -122,10 +140,19 @@ export default function SupplementalPrint() {
     [supplementalLcrKey, uploadTick]
   )
 
-  const data = useMemo(
-    () => ({ ...baseData, item3Custom, item5Custom }),
-    [baseData, item3Custom, item5Custom]
-  )
+  const data = useMemo(() => {
+    const rawIdx =
+      transmittalSignatoryIdxOverride !== null && transmittalSignatoryIdxOverride !== undefined
+        ? transmittalSignatoryIdxOverride
+        : baseData.transmittalSignatoryOptionIndex
+    return {
+      ...baseData,
+      item3Custom,
+      item5Custom,
+      transmittalSignatoryOptionIndex: clampTransmittalSignatoryIndex(rawIdx),
+    }
+  }, [baseData, item3Custom, item5Custom, transmittalSignatoryIdxOverride])
+
   const hasAffidavitData = useMemo(() => {
     const values = [
       data.affiantName,
@@ -170,10 +197,41 @@ export default function SupplementalPrint() {
     setLcrData(raw && typeof raw === 'object' ? { ...raw } : { ...fallback })
   }, [location.key, baseData])
 
+  const dataRef = useRef(data)
+  const lcrDataRef = useRef(lcrData)
+  dataRef.current = data
+  lcrDataRef.current = lcrData
+
   const handleLcrDataChange = (next) => {
     setLcrData(next)
-    // Persist to storage immediately so PDF generation and navigation work with latest
-    const updated = { ...data, lcrData: next }
+    lcrDataRef.current = next
+    const updated = { ...dataRef.current, lcrData: next }
+    saveSupplementalDraft(updated)
+    saveOrUpdateSupplemental(updated)
+  }
+
+  /** Merge partial LCR edits into latest `lcrData` so footer typing always persists (no stale closure). */
+  const patchLcrData = (partial) => {
+    if (!partial || typeof partial !== 'object') return
+    setLcrData((prev) => {
+      const base = prev && typeof prev === 'object' ? prev : {}
+      const next = { ...base, ...partial }
+      lcrDataRef.current = next
+      const updated = { ...dataRef.current, lcrData: next }
+      saveSupplementalDraft(updated)
+      saveOrUpdateSupplemental(updated)
+      return next
+    })
+  }
+
+  const handleTransmittalSignatoryIndexChange = (idx) => {
+    const clamped = clampTransmittalSignatoryIndex(idx)
+    setTransmittalSignatoryIdxOverride(clamped)
+    const updated = {
+      ...dataRef.current,
+      lcrData: lcrDataRef.current,
+      transmittalSignatoryOptionIndex: clamped,
+    }
     saveSupplementalDraft(updated)
     saveOrUpdateSupplemental(updated)
   }
@@ -489,79 +547,106 @@ export default function SupplementalPrint() {
                 }
               />
             </div>
+            {showTransmittalOutput ? (
+              <div className="no-print relative z-10 rounded-lg border border-slate-200 bg-slate-50/95 p-2.5 space-y-1.5 ring-1 ring-slate-100">
+                <label htmlFor="supplemental-print-prepared-signed" className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+                  Prepared / signed by
+                </label>
+                <select
+                  id="supplemental-print-prepared-signed"
+                  className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs text-gray-900 bg-white"
+                  value={clampTransmittalSignatoryIndex(data.transmittalSignatoryOptionIndex)}
+                  onChange={(e) => handleTransmittalSignatoryIndexChange(Number(e.target.value))}
+                  title="Signatory after “Respectfully yours,” on the supplemental transmittal"
+                >
+                  {RECEIVED_BY_OPTIONS.map((row, i) => (
+                    <option key={row.name} value={i}>
+                      {row.name} — {row.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
           </div>
         </aside>
 
         <div className="flex-1 min-w-0 print:w-full print:max-w-none">
           {showBundleForRender ? (
-          <div id="supplemental-print-bundle">
-            <div
-              id="supplemental-print-affidavit"
-              className={
-                activePanel === 'affidavit'
-                  ? 'block'
-                  : 'hidden print:block print:[page-break-before:avoid]'
-              }
-            >
-              <SupplementalReportAffidavit
-                data={data}
-                onItem3CustomChange={setItem3Custom}
-                onItem5CustomChange={setItem5Custom}
-                paperWidth={`${paperSpec.widthMm}mm`}
-                paperHeight={`${paperSpec.heightMm}mm`}
-              />
-            </div>
+            <div id="supplemental-print-bundle">
+              <div
+                id="supplemental-print-affidavit"
+                className={
+                  activePanel === 'affidavit'
+                    ? 'block'
+                    : 'hidden print:block print:[page-break-before:avoid]'
+                }
+              >
+                <SupplementalReportAffidavit
+                  data={data}
+                  onItem3CustomChange={setItem3Custom}
+                  onItem5CustomChange={setItem5Custom}
+                  paperWidth={`${paperSpec.widthMm}mm`}
+                  paperHeight={`${paperSpec.heightMm}mm`}
+                />
+              </div>
 
-            {showForm1a ? (
-            <div
-              id="supplemental-print-lcr"
-              className={
-                activePanel === 'form1a'
-                  ? 'block mt-0'
-                  : 'hidden print:block print:mt-0 print:[page-break-before:always]'
-              }
-            >
-              <div className="no-print mb-3 max-w-[210mm] mx-auto rounded-lg border border-emerald-200 bg-emerald-50/90 px-3 py-2 text-[11px] text-emerald-900 leading-snug">
-                <span className="font-semibold">LCR Form {data.lcrType}</span>
-                {' — same court print layout for all sources. '}
-                {data.lcrPrefillLabel ? (
-                  <>
-                    Prefilled from <span className="font-semibold">{LCR_SOURCE_LABEL[data.lcrSource] || data.lcrSource}</span>
-                    {': '}
-                    <span className="italic">{data.lcrPrefillLabel}</span>
-                    {'. '}
-                  </>
-                ) : (
-                  <>No record selected on the supplemental form — manual entry. </>
-                )}
-                Table cells are editable below; changes are saved with this supplemental file.
-              </div>
-              <div className="max-w-[210mm] mx-auto">
-                {data.lcrType === '1A' && (
-                  <LcrForm1ABirthAvailable
-                    data={lcrData}
-                    editableTable
-                    onDataChange={handleLcrDataChange}
+              {showForm1a ? (
+                <div
+                  id="supplemental-print-lcr"
+                  className={
+                    activePanel === 'form1a'
+                      ? 'block mt-0'
+                      : 'hidden print:block print:mt-0 print:[page-break-before:always]'
+                  }
+                >
+                  <div className="no-print mb-3 max-w-[210mm] mx-auto rounded-lg border border-emerald-200 bg-emerald-50/90 px-3 py-2 text-[11px] text-emerald-900 leading-snug">
+                    <span className="font-semibold">LCR Form {data.lcrType}</span>
+                    {' — same court print layout for all sources. '}
+                    {data.lcrPrefillLabel ? (
+                      <>
+                        Prefilled from <span className="font-semibold">{LCR_SOURCE_LABEL[data.lcrSource] || data.lcrSource}</span>
+                        {': '}
+                        <span className="italic">{data.lcrPrefillLabel}</span>
+                        {'. '}
+                      </>
+                    ) : data.lcrSource === 'manual' ? (
+                      <>Manual entry on the supplemental form — edit the table below. </>
+                    ) : (
+                      <>No record selected on the supplemental form — fill the table below or return to the form to prefill. </>
+                    )}
+                    Table cells are editable below; changes are saved with this supplemental file.
+                  </div>
+                  <SupplementalLcrFooterSignatoryPickers
+                    lcrData={lcrData}
+                    inputClass="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white"
+                    onPatch={patchLcrData}
                   />
-                )}
-                {data.lcrType === '2A' && (
-                  <LcrForm2ADeathAvailable
-                    data={lcrData}
-                    editableTable
-                    onDataChange={handleLcrDataChange}
-                  />
-                )}
-                {data.lcrType === '3A' && (
-                  <LcrForm3AMarriageAvailable
-                    data={lcrData}
-                    editableTable
-                    onDataChange={handleLcrDataChange}
-                  />
-                )}
-              </div>
+                  <div className="max-w-[210mm] mx-auto">
+                    {data.lcrType === '1A' && (
+                      <LcrForm1ABirthAvailable
+                        data={lcrData}
+                        editableTable
+                        onDataChange={handleLcrDataChange}
+                      />
+                    )}
+                    {data.lcrType === '2A' && (
+                      <LcrForm2ADeathAvailable
+                        data={lcrData}
+                        editableTable
+                        onDataChange={handleLcrDataChange}
+                      />
+                    )}
+                    {data.lcrType === '3A' && (
+                      <LcrForm3AMarriageAvailable
+                        data={lcrData}
+                        editableTable
+                        onDataChange={handleLcrDataChange}
+                      />
+                    )}
+                  </div>
+                </div>
+              ) : null}
             </div>
-            ) : null}
-          </div>
           ) : null}
 
           {showTransmittalForRender ? (
@@ -577,6 +662,7 @@ export default function SupplementalPrint() {
                 data={data}
                 paperWidth={`${paperSpec.widthMm}mm`}
                 paperHeight={`${paperSpec.heightMm}mm`}
+                onSignatoryOptionIndexChange={handleTransmittalSignatoryIndexChange}
               />
             </div>
           ) : null}

@@ -1,6 +1,7 @@
 import React from 'react'
 import { formatDateCert } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter } from '../../../components/print'
+import { resolveCourtDecreePrintCcr } from '../lib/courtDecreePrintCcr'
 
 /**
  * Court decree Certificate of Registration (output matches sample PDF).
@@ -16,7 +17,9 @@ export default function CertRegistrationCourtDecree({ data }) {
   const dateReceived = data.dateRegistered || '—'
   const registryNo = data.registryNumber != null && data.registryNumber !== '' ? data.registryNumber : '—'
   const issuedDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
-  const signatory = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
+  const { row: ccrRow } = resolveCourtDecreePrintCcr(data)
+  const signatory = ccrRow.name.toUpperCase()
+  const signatoryTitle = ccrRow.title
 
   return (
     <div className="ausf-doc print-doc print-doc-cert-registration bg-white text-black text-base max-w-[210mm] mx-auto px-6 py-4 leading-relaxed flex flex-col min-h-[297mm]">
@@ -45,7 +48,7 @@ export default function CertRegistrationCourtDecree({ data }) {
       <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-start flex-shrink-0">
         <div className="court-decree-cert-signatory-block ml-8 inline-flex flex-col items-center gap-0 leading-none mb-8">
           <p className="court-decree-cert-signatory-name m-0 font-bold uppercase text-[15px]">{signatory}</p>
-          <p className="court-decree-cert-signatory-title m-0 text-[13px] italic">City Civil Registrar</p>
+          <p className="court-decree-cert-signatory-title m-0 text-[13px] italic">{signatoryTitle}</p>
         </div>
         <div className="w-full">
           <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />

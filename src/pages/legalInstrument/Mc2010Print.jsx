@@ -1,15 +1,21 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailable'
 import LcrForm2ADeathAvailable from '../courtDecree/print/LcrForm2ADeathAvailable'
 import LcrForm3AMarriageAvailable from '../courtDecree/print/LcrForm3AMarriageAvailable'
+import SupplementalLcrFooterSignatoryPickers from './SupplementalLcrFooterSignatoryPickers'
 import Mc2010Transmittal from './print/Mc2010Transmittal'
 import Mc2010EnclosurePreview from './print/Mc2010EnclosurePreview'
 import ToastHost from '../../components/toast/ToastHost'
 import { useToasts } from '../../components/toast/useToasts'
 import { saveCurrentViewAsPdf, openSavedPdfInBrowser } from '../../lib/savePdf'
 import { PAPER_SIZES, getPaperPageSpec } from '../../components/print'
-import { getDefaultSupplementalTransmittalFields, pickTransmittalStateFromDraft } from './lib/supplementalTransmittalDefaults'
+import {
+  getDefaultSupplementalTransmittalFields,
+  pickTransmittalStateFromDraft,
+  clampTransmittalSignatoryIndex,
+  RECEIVED_BY_OPTIONS,
+} from './lib/supplementalTransmittalDefaults'
 import { defaultLegitimation } from '../legitimation/lib/legitimationDefaults'
 import { defaultCourtDecree } from '../courtDecree/lib/courtDecreeDefaults'
 import { getActiveSavedMc2010, getMc2010Draft, saveMc2010Draft, saveOrUpdateMc2010 } from './lib/mc2010SavedStorage'
@@ -29,7 +35,77 @@ const defaultMc2010Draft = {
   transmittalSalutation: "Sir/Ma'am:",
 }
 
+function trimStr(v) {
+  return String(v ?? '').trim()
+}
+
+/** True when the user entered any transmittal letter / checklist fields (not only defaults like salutation). */
+function mc2010TransmittalHasUserContent(data) {
+  if (!data || typeof data !== 'object') return false
+  if (trimStr(data.transmittalDate)) return true
+  if (trimStr(data.transmittalRecipient)) return true
+  if (trimStr(data.transmittalToPosition1) || trimStr(data.transmittalToPosition2)) return true
+  if (trimStr(data.transmittalToOffice1) || trimStr(data.transmittalToOffice2)) return true
+  if (
+    trimStr(data.transmittalThru) ||
+    trimStr(data.transmittalThruPosition1) ||
+    trimStr(data.transmittalThruPosition2) ||
+    trimStr(data.transmittalThruPosition3) ||
+    trimStr(data.transmittalThruPosition4)
+  ) {
+    return true
+  }
+  if (trimStr(data.transmittalColbName)) return true
+  if (trimStr(data.transmittalRegistryNo)) return true
+  if (trimStr(data.transmittalDob)) return true
+  if (trimStr(data.transmittalFather) || trimStr(data.transmittalMother)) return true
+  if (Array.isArray(data.transmittalEndorsementIds) && data.transmittalEndorsementIds.length > 0) return true
+  if (Array.isArray(data.transmittalAttachmentIds) && data.transmittalAttachmentIds.length > 0) return true
+  if (trimStr(data.transmittalDocType)) return true
+  return false
+}
+
+/** True when LCR is included and merged LCR data has meaningful entries for the selected form type. */
+function mc2010LcrHasUserContent(data) {
+  if (!data || data.includeForm1a === false) return false
+  const lcrType = data.lcrType || '1A'
+  const slice = data.lcrData && typeof data.lcrData === 'object' ? data.lcrData : {}
+  const base = lcrType === '1A' ? defaultLegitimation : defaultCourtDecree
+  const merged = { ...base, ...slice }
+  if (lcrType === '1A') {
+    return (
+      trimStr(merged.lcr1aNameOfChild) ||
+      trimStr(merged.lcr1aRegistryNumber) ||
+      trimStr(merged.colbRegistryNo) ||
+      trimStr(merged.childFirst)
+    )
+  }
+  if (lcrType === '2A') {
+    return (
+      trimStr(merged.lcr2aNameDeceased) ||
+      trimStr(merged.lcr2aRegistryNumber) ||
+      trimStr(merged.lcr2aDateDeath)
+    )
+  }
+  if (lcrType === '3A') {
+    return (
+      trimStr(merged.lcr3aHusbandName) ||
+      trimStr(merged.lcr3aWifeName) ||
+      trimStr(merged.marriageRegistryNo) ||
+      trimStr(merged.lcr3aRegistryNumber)
+    )
+  }
+  return false
+}
+
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-mc2010'
+
+const LCR_SOURCE_LABEL = {
+  manual: 'Manual entry',
+  ausf: 'AUSF',
+  courtDecree: 'Court Decree',
+  legitimation: 'Legitimation',
+}
 
 function mc2010UploadedUrl(scopeKey) {
   return `/uploaded/${encodeURIComponent(scopeKey)}`
@@ -104,20 +180,88 @@ export default function Mc2010Print() {
   const [lcrData, setLcrData] = useState(() => ({ ...baseData.lcrData }))
 
   const data = baseData
+  const dataRef = useRef(baseData)
+  const lcrDataRef = useRef(lcrData)
+  dataRef.current = baseData
+  lcrDataRef.current = lcrData
+
+  const [transmittalSignatoryIdx, setTransmittalSignatoryIdx] = useState(() =>
+    clampTransmittalSignatoryIndex(baseData.transmittalSignatoryOptionIndex)
+  )
+
+  const transmittalViewData = useMemo(
+    () => ({ ...data, transmittalSignatoryOptionIndex: transmittalSignatoryIdx }),
+    [data, transmittalSignatoryIdx]
+  )
+
+  const handleTransmittalSignatoryChange = (rawIdx) => {
+    const clamped = clampTransmittalSignatoryIndex(rawIdx)
+    setTransmittalSignatoryIdx(clamped)
+    const updated = { ...baseData, transmittalSignatoryOptionIndex: clamped }
+    saveMc2010Draft(updated)
+    saveOrUpdateMc2010(updated)
+  }
   const paperSpec = useMemo(() => getPaperPageSpec(paperSize), [paperSize])
   usePrintPageSize(paperSize)
+
+  const transmittalHasData = useMemo(() => mc2010TransmittalHasUserContent(baseData), [baseData])
+
+  const { printTransmittal, printLcr } = useMemo(() => {
+    const transmittalFilled = mc2010TransmittalHasUserContent(baseData)
+    const lcrFilled = mc2010LcrHasUserContent({ ...baseData, lcrData })
+    const bothEmpty = !transmittalFilled && !lcrFilled
+    const includeLcr = baseData.includeForm1a !== false
+    return {
+      printTransmittal: transmittalFilled || bothEmpty,
+      printLcr: includeLcr && (lcrFilled || bothEmpty),
+    }
+  }, [baseData, lcrData])
 
   useEffect(() => {
     const raw = baseData.lcrData
     const fallback = baseData.lcrType === '1A' ? { ...defaultLegitimation } : { ...defaultCourtDecree }
-    setLcrData(raw && typeof raw === 'object' ? { ...raw } : { ...fallback })
+    const next = raw && typeof raw === 'object' ? { ...raw } : { ...fallback }
+    setLcrData(next)
+    const t = mc2010TransmittalHasUserContent(baseData)
+    if (t) setActivePanel('transmittal')
+    else if (baseData.includeForm1a !== false) setActivePanel('form1a')
+    else setActivePanel('transmittal')
   }, [baseData])
+
+  useEffect(() => {
+    setTransmittalSignatoryIdx(clampTransmittalSignatoryIndex(baseData.transmittalSignatoryOptionIndex))
+  }, [baseData])
+
+  useEffect(() => {
+    if (!transmittalHasData && activePanel === 'transmittal' && baseData.includeForm1a !== false) {
+      setActivePanel('form1a')
+    }
+  }, [transmittalHasData, activePanel, baseData.includeForm1a])
 
   const handleLcrDataChange = (next) => {
     setLcrData(next)
-    const updated = { ...data, lcrData: next }
+    lcrDataRef.current = next
+    const updated = { ...dataRef.current, lcrData: next, transmittalSignatoryOptionIndex: transmittalSignatoryIdx }
     saveMc2010Draft(updated)
     saveOrUpdateMc2010(updated)
+  }
+
+  /** Merge partial LCR edits (e.g. footer pickers) into latest `lcrData` so saves never use a stale closure. */
+  const patchLcrFooter = (partial) => {
+    if (!partial || typeof partial !== 'object') return
+    setLcrData((prev) => {
+      const base = prev && typeof prev === 'object' ? prev : {}
+      const next = { ...base, ...partial }
+      lcrDataRef.current = next
+      const updated = {
+        ...dataRef.current,
+        lcrData: next,
+        transmittalSignatoryOptionIndex: transmittalSignatoryIdx,
+      }
+      saveMc2010Draft(updated)
+      saveOrUpdateMc2010(updated)
+      return next
+    })
   }
 
   const PDF_EXPORT_CLASS = {
@@ -164,7 +308,13 @@ export default function Mc2010Print() {
     try {
       const bridge = window?.electronAPI
       if (!bridge || typeof bridge.previewPdfData !== 'function') return
-      const previewMode = activePanel === 'form1a' ? 'lcr' : 'transmittal'
+      const t = mc2010TransmittalHasUserContent(baseData)
+      const l = mc2010LcrHasUserContent({ ...baseData, lcrData })
+      const bothEmpty = !t && !l
+      const pt = t || bothEmpty
+      const pl = baseData.includeForm1a !== false && (l || bothEmpty)
+      const previewMode =
+        pt && pl ? (activePanel === 'form1a' ? 'lcr' : 'transmittal') : pl ? 'lcr' : 'transmittal'
       const previewClass = PDF_EXPORT_CLASS[previewMode]
       const root = document.documentElement
       root.classList.add(previewClass)
@@ -184,7 +334,7 @@ export default function Mc2010Print() {
       if (previewPdfUrl) URL.revokeObjectURL(previewPdfUrl)
       setPreviewPdfUrl(url)
       setPreviewModalOpen(true)
-    } catch {}
+    } catch { }
   }
 
   const closePreviewModal = () => {
@@ -221,16 +371,7 @@ export default function Mc2010Print() {
               <option key={p.id} value={p.id}>{p.label}</option>
             ))}
           </select>
-          {activePanel === 'form1a' && showLcr ? (
-            <button
-              type="button"
-              onClick={() => savePdfWithExportMode('lcr', `MC2010-LCR-${data.lcrType || '1A'}`)}
-              disabled={savingPdf}
-              className="px-3 py-1.5 rounded-md bg-[#283750] text-white text-sm font-medium hover:bg-[#1e2d42] disabled:opacity-60"
-            >
-              {savingPdf ? 'Saving…' : `Save LCR Form ${data.lcrType || '1A'} PDF`}
-            </button>
-          ) : (
+          {printTransmittal ? (
             <button
               type="button"
               onClick={() => savePdfWithExportMode('transmittal', 'MC2010-Transmittal')}
@@ -239,7 +380,17 @@ export default function Mc2010Print() {
             >
               {savingPdf ? 'Saving…' : 'Save transmittal PDF'}
             </button>
-          )}
+          ) : null}
+          {printLcr && showLcr ? (
+            <button
+              type="button"
+              onClick={() => savePdfWithExportMode('lcr', `MC2010-LCR-${data.lcrType || '1A'}`)}
+              disabled={savingPdf}
+              className="px-3 py-1.5 rounded-md bg-[#283750] text-white text-sm font-medium hover:bg-[#1e2d42] disabled:opacity-60"
+            >
+              {savingPdf ? 'Saving…' : `Save LCR Form ${data.lcrType || '1A'} PDF`}
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={() => handlePreviewPdfModal()}
@@ -258,9 +409,20 @@ export default function Mc2010Print() {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setActivePanel('transmittal')}
-                className={`w-full text-left px-3 py-2.5 text-sm font-medium transition text-white rounded-lg bg-[#1a4d3a] pr-[5.75rem] ${
-                  activePanel === 'transmittal' ? 'ring-2 ring-offset-1 ring-[var(--primary-blue)]' : ''
+                disabled={!transmittalHasData}
+                title={
+                  transmittalHasData
+                    ? undefined
+                    : 'Fill out the transmittal on the MC2010 form first — this view is disabled until transmittal fields have data.'
+                }
+                onClick={() => {
+                  if (!transmittalHasData) return
+                  setActivePanel('transmittal')
+                }}
+                className={`w-full text-left px-3 py-2.5 text-sm font-medium transition rounded-lg pr-[5.75rem] ${
+                  transmittalHasData
+                    ? `text-white bg-[#1a4d3a] ${activePanel === 'transmittal' ? 'ring-2 ring-offset-1 ring-[var(--primary-blue)]' : ''}`
+                    : 'text-white/80 bg-[#1a4d3a]/45 cursor-not-allowed'
                 }`}
               >
                 MC2010 Transmittal
@@ -282,9 +444,8 @@ export default function Mc2010Print() {
                 type="button"
                 onClick={() => setActivePanel('form1a')}
                 disabled={!showLcr}
-                className={`w-full text-left px-3 py-2.5 text-sm font-medium transition text-white rounded-lg bg-[#283750] pr-[5.75rem] ${
-                  activePanel === 'form1a' ? 'ring-2 ring-offset-1 ring-[var(--primary-blue)]' : ''
-                } ${!showLcr ? 'opacity-45 cursor-not-allowed' : ''}`}
+                className={`w-full text-left px-3 py-2.5 text-sm font-medium transition text-white rounded-lg bg-[#283750] pr-[5.75rem] ${activePanel === 'form1a' ? 'ring-2 ring-offset-1 ring-[var(--primary-blue)]' : ''
+                  } ${!showLcr ? 'opacity-45 cursor-not-allowed' : ''}`}
               >
                 FORM {data.lcrType}
               </button>
@@ -315,11 +476,10 @@ export default function Mc2010Print() {
                     ? 'Open MC2010-04 attachment page'
                     : 'Use the upload icon to attach a scan first — this output enables after a file is saved'
                 }
-                className={`w-full text-left px-3 py-2.5 text-sm font-medium transition rounded-lg pr-[5.75rem] ${
-                  hasMc2010PacketScan
+                className={`w-full text-left px-3 py-2.5 text-sm font-medium transition rounded-lg pr-[5.75rem] ${hasMc2010PacketScan
                     ? 'text-white bg-slate-700 hover:bg-slate-800'
                     : 'text-slate-400 bg-slate-200 cursor-not-allowed'
-                }`}
+                  }`}
               >
                 MC2010-04
               </button>
@@ -329,16 +489,37 @@ export default function Mc2010Print() {
                 onOpenUploadModal={() => openPacketAttachmentPage()}
               />
             </div>
+            {activePanel === 'transmittal' ? (
+              <div className="no-print rounded-lg border border-slate-200 bg-slate-50/95 p-2.5 space-y-1.5 ring-1 ring-slate-100">
+                <label htmlFor="mc2010-print-prepared-signed" className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+                  Prepared / signed by
+                </label>
+                <select
+                  id="mc2010-print-prepared-signed"
+                  className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs text-gray-900 bg-white"
+                  value={transmittalSignatoryIdx}
+                  onChange={(e) => handleTransmittalSignatoryChange(Number(e.target.value))}
+                  title="Signatory shown after “Respectfully yours,” on the MC2010 transmittal"
+                >
+                  {RECEIVED_BY_OPTIONS.map((row, i) => (
+                    <option key={row.name} value={i}>
+                      {row.name} — {row.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
           </div>
         </aside>
 
         <div className="flex-1 min-w-0 print:w-full print:max-w-none">
           <div
             id="supplemental-print-transmittal"
-            className={activePanel === 'transmittal' ? 'block' : 'hidden print:block'}
+            className={`${activePanel === 'transmittal' ? 'block' : 'hidden'} ${printTransmittal ? 'print:block' : 'print:hidden'
+              }`}
           >
             <Mc2010Transmittal
-              data={data}
+              data={transmittalViewData}
               paperWidth={`${paperSpec.widthMm}mm`}
               paperHeight={`${paperSpec.heightMm}mm`}
             />
@@ -347,12 +528,34 @@ export default function Mc2010Print() {
             <div id="supplemental-print-bundle">
               <div
                 id="supplemental-print-lcr"
-                className={
-                  activePanel === 'form1a'
-                    ? 'block mt-0'
-                    : 'hidden print:block print:mt-0 print:[page-break-before:always]'
-                }
+                className={`${activePanel === 'form1a' ? 'block mt-0' : 'hidden'} ${printLcr
+                    ? `print:block print:mt-0 ${printTransmittal ? 'print:[page-break-before:always]' : 'print:[page-break-before:auto]'
+                    }`
+                    : 'print:hidden'
+                  }`}
               >
+                <div className="no-print mb-3 max-w-[210mm] mx-auto rounded-lg border border-emerald-200 bg-emerald-50/90 px-3 py-2 text-[11px] text-emerald-900 leading-snug">
+                  <span className="font-semibold">LCR Form {data.lcrType}</span>
+                  {' — same court print layout for all sources. '}
+                  {data.lcrPrefillLabel ? (
+                    <>
+                      Prefilled from <span className="font-semibold">{LCR_SOURCE_LABEL[data.lcrSource] || data.lcrSource}</span>
+                      {': '}
+                      <span className="italic">{data.lcrPrefillLabel}</span>
+                      {'. '}
+                    </>
+                  ) : data.lcrSource === 'manual' ? (
+                    <>Manual entry on the MC2010 form — edit the table below. </>
+                  ) : (
+                    <>No record selected on the MC2010 form — fill the table below or return to the form to prefill. </>
+                  )}
+                  Table cells are editable below; bottom signatures use the block under this note; changes are saved with this MC2010 file.
+                </div>
+                <SupplementalLcrFooterSignatoryPickers
+                  lcrData={lcrData}
+                  inputClass="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white"
+                  onPatch={patchLcrFooter}
+                />
                 <div className="max-w-[210mm] mx-auto">
                   {data.lcrType === '1A' ? <LcrForm1ABirthAvailable data={lcrData} editableTable onDataChange={handleLcrDataChange} /> : null}
                   {data.lcrType === '2A' ? <LcrForm2ADeathAvailable data={lcrData} editableTable onDataChange={handleLcrDataChange} /> : null}

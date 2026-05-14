@@ -4,6 +4,8 @@ import {
   SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS,
   SUPPLEMENTAL_TRANSMITTAL_ENDORSEMENT_OPTIONS,
   SUPPLEMENTAL_TRANSMITTAL_SALUTATION_PRESETS,
+  RECEIVED_BY_OPTIONS,
+  clampTransmittalSignatoryIndex,
 } from './lib/supplementalTransmittalDefaults'
 
 const tableCls = 'w-full border-collapse border border-black text-[13px]'
@@ -12,8 +14,15 @@ const tdLblCls = 'border border-black px-2 py-0.5'
 
 /**
  * Transmittal (CCR letter) inputs for the Supplemental form. Values are stored on the same draft as the affidavit.
+ * @param {'letter' | 'endorsementColumn'} [signatoryDropdownPlacement] — where to show "Prepared / signed by" (MC2010 uses endorsementColumn = right column with Request for Endorsement).
  */
-export default function SupplementalTransmittalFieldsEditor({ data, onPatch, inputClass, showRecipientCity = true }) {
+export default function SupplementalTransmittalFieldsEditor({
+  data,
+  onPatch,
+  inputClass,
+  showRecipientCity = true,
+  signatoryDropdownPlacement = 'letter',
+}) {
   const docType = data.transmittalDocType || ''
   const endorsementIds = Array.isArray(data.transmittalEndorsementIds) ? data.transmittalEndorsementIds : []
   const attachmentIds = Array.isArray(data.transmittalAttachmentIds) ? data.transmittalAttachmentIds : []
@@ -244,6 +253,26 @@ export default function SupplementalTransmittalFieldsEditor({ data, onPatch, inp
             </label>
           </div>
         </fieldset>
+
+        {signatoryDropdownPlacement === 'letter' ? (
+        <fieldset className="rounded-lg border border-gray-100 bg-gray-50/50 p-3 space-y-3">
+          <legend className="text-xs font-semibold uppercase tracking-wide text-gray-700 px-1">Signatory (closing)</legend>
+          <label className="block">
+            <span className="text-xs font-medium text-gray-700">Prepared / signed by</span>
+            <select
+              className={`mt-0.5 ${selectClass}`}
+              value={clampTransmittalSignatoryIndex(data.transmittalSignatoryOptionIndex)}
+              onChange={(e) => onPatch({ transmittalSignatoryOptionIndex: Number(e.target.value) })}
+            >
+              {RECEIVED_BY_OPTIONS.map((row, i) => (
+                <option key={row.name} value={i}>
+                  {row.name} — {row.title}
+                </option>
+              ))}
+            </select>
+          </label>
+        </fieldset>
+        ) : null}
       </div>
 
       <p className="text-xs text-gray-600">
@@ -272,7 +301,26 @@ export default function SupplementalTransmittalFieldsEditor({ data, onPatch, inp
             </tbody>
           </table>
         </div>
-        <div className="lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-start min-w-0">
+        <div className="lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-start min-w-0 space-y-3">
+          {signatoryDropdownPlacement === 'endorsementColumn' ? (
+            <fieldset className="rounded-lg border border-gray-100 bg-gray-50/50 p-3 space-y-3">
+              <legend className="text-xs font-semibold uppercase tracking-wide text-gray-700 px-1">Signatory (closing)</legend>
+              <label className="block">
+                <span className="text-xs font-medium text-gray-700">Prepared / signed by</span>
+                <select
+                  className={`mt-0.5 ${selectClass}`}
+                  value={clampTransmittalSignatoryIndex(data.transmittalSignatoryOptionIndex)}
+                  onChange={(e) => onPatch({ transmittalSignatoryOptionIndex: Number(e.target.value) })}
+                >
+                  {RECEIVED_BY_OPTIONS.map((row, i) => (
+                    <option key={row.name} value={i}>
+                      {row.name} — {row.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </fieldset>
+          ) : null}
           <p className="font-bold text-sm mb-1 text-gray-900 uppercase tracking-tight">Request for Endorsement</p>
           <table className={tableCls}>
             <tbody>

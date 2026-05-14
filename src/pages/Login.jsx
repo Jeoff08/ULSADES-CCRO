@@ -58,8 +58,13 @@ export default function Login() {
     return () => el.removeEventListener('animationend', handleEnd)
   }, [marqueeIdx]) // re-attach after each remount caused by key change
 
+  useEffect(() => {
+    if (isAuthenticated && !isLoading && !isTransitioning) {
+      navigate(from, { replace: true })
+    }
+  }, [isAuthenticated, isLoading, isTransitioning, from, navigate])
+
   if (isAuthenticated && !isLoading && !isTransitioning) {
-    navigate(from, { replace: true })
     return null
   }
 

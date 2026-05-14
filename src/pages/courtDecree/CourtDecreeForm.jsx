@@ -11,15 +11,27 @@ import { parseDdMmYyyyToDate, parseBirthToDate } from '../../lib/printUtils'
 const LCR_FORM_TYPES = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a']
 const PREFERRED_LCRO_STAFF_KEY = 'ulsades_preferred_lcr_staff'
 const LCRO_STAFF_LIST_KEY = 'ulsades_lcro_staff_list'
+const COURT_THAT_ISSUED_LIST_KEY = 'ulsades_court_that_issued_list'
 const COURT_THAT_ISSUED_OPTIONS = [
   "4TH SHARI'A CIRCUIT COURT, 4TH SHARIA JUDICIAL DISTRICT, ILIGAN CITY",
 ]
+const ISSUED_BY_NAME_LIST_KEY = 'ulsades_court_decree_issued_by_name_list'
+const ISSUED_BY_NAME_OPTIONS = []
+const AUTHENTICATED_BY_LIST_KEY = 'ulsades_court_decree_authenticated_by_list'
+const AUTHENTICATED_BY_OPTIONS = []
 
 function isLikelyFullStaffName(value) {
   const name = String(value || '').trim()
   if (name.length < 5) return false
   // Require at least two name parts (e.g., first + last).
   return name.split(/\s+/).filter(Boolean).length >= 2
+}
+
+/** Institutional court line: long enough and at least two words (e.g. "REGIONAL TRIAL COURT ..."). */
+function isLikelyCourtDecreeName(value) {
+  const s = String(value || '').trim()
+  if (s.length < 12) return false
+  return s.split(/\s+/).filter(Boolean).length >= 2
 }
 
 const inputClass = 'court-decree-form-page__input w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-gray-50 transition-colors duration-150'
@@ -110,17 +122,37 @@ function LcrFormCompleteIcon({ show }) {
 }
 
 /** FORM 1A / 2A / 3A switcher with green check when that table is fully filled */
-function LcrFormNavLinks({ form, activeType, showFullCourtLink = true, visibleTypes = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a'] }) {
+function LcrFormNavLinks({
+  form,
+  activeType,
+  showFullCourtLink = true,
+  visibleTypes = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a'],
+  /** When set, LCR type switches use this so the global “Unsaved Changes” guard does not block (e.g. section “Affected civil document?”). */
+  acknowledgeSavedBeforeLcrSwitch = null,
+}) {
+  const navigate = useNavigate()
   const c1 = isLcr1aTableComplete(form)
   const c2 = isLcr2aTableComplete(form)
   const c3 = isLcr3aTableComplete(form)
   const cls = (t) =>
     `court-decree-form-page__form-link inline-flex items-center gap-1${activeType === t ? ' court-decree-form-page__form-link--active' : ''}`
+  const lcrLinkProps = (to) =>
+    acknowledgeSavedBeforeLcrSwitch
+      ? {
+          to,
+          onClick: (e) => {
+            if (e.button !== 0) return
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+            e.preventDefault()
+            afterUnsavedAcknowledge(acknowledgeSavedBeforeLcrSwitch, () => navigate(to))
+          },
+        }
+      : { to }
   return (
     <div className={`court-decree-form-page__form-links flex flex-wrap items-center gap-2${showFullCourtLink ? ' mb-4' : ''}`}>
       {visibleTypes.includes('lcr-form-1a') ? (
         <Link
-          to="/court-decree/form?type=lcr-form-1a"
+          {...lcrLinkProps('/court-decree/form?type=lcr-form-1a')}
           className={cls('lcr-form-1a')}
           aria-label={c1 ? 'FORM 1A, all required fields filled' : 'FORM 1A'}
         >
@@ -130,7 +162,7 @@ function LcrFormNavLinks({ form, activeType, showFullCourtLink = true, visibleTy
       ) : null}
       {visibleTypes.includes('lcr-form-2a') ? (
         <Link
-          to="/court-decree/form?type=lcr-form-2a"
+          {...lcrLinkProps('/court-decree/form?type=lcr-form-2a')}
           className={cls('lcr-form-2a')}
           aria-label={c2 ? 'FORM 2A, all required fields filled' : 'FORM 2A'}
         >
@@ -140,7 +172,7 @@ function LcrFormNavLinks({ form, activeType, showFullCourtLink = true, visibleTy
       ) : null}
       {visibleTypes.includes('lcr-form-3a') ? (
         <Link
-          to="/court-decree/form?type=lcr-form-3a"
+          {...lcrLinkProps('/court-decree/form?type=lcr-form-3a')}
           className={cls('lcr-form-3a')}
           aria-label={c3 ? 'FORM 3A, all required fields filled' : 'FORM 3A'}
         >
@@ -406,6 +438,13 @@ export default function CourtDecreeForm() {
   const [staffSuggestionIndex, setStaffSuggestionIndex] = useState(-1)
   const [showCourtIssuedSuggestions, setShowCourtIssuedSuggestions] = useState(false)
   const [courtIssuedSuggestionIndex, setCourtIssuedSuggestionIndex] = useState(-1)
+  const [savedCourtsThatIssued, setSavedCourtsThatIssued] = useState([])
+  const [showIssuedByNameSuggestions, setShowIssuedByNameSuggestions] = useState(false)
+  const [issuedByNameSuggestionIndex, setIssuedByNameSuggestionIndex] = useState(-1)
+  const [savedIssuedByNames, setSavedIssuedByNames] = useState([])
+  const [showAuthenticatedBySuggestions, setShowAuthenticatedBySuggestions] = useState(false)
+  const [authenticatedBySuggestionIndex, setAuthenticatedBySuggestionIndex] = useState(-1)
+  const [savedAuthenticatedByNames, setSavedAuthenticatedByNames] = useState([])
 
   const editId = searchParams.get('id')
   const isEdit = searchParams.get('edit') === '1'
@@ -481,6 +520,36 @@ export default function CourtDecreeForm() {
       return next
     })
   }
+  const saveCourtThatIssuedName = (rawName) => {
+    const current = String(rawName || '').trim()
+    if (!isLikelyCourtDecreeName(current)) return
+    setSavedCourtsThatIssued((prev) => {
+      if (prev.some((name) => name.toUpperCase() === current.toUpperCase())) return prev
+      const next = [current, ...prev].slice(0, 50)
+      localStorage.setItem(COURT_THAT_ISSUED_LIST_KEY, JSON.stringify(next))
+      return next
+    })
+  }
+  const saveIssuedByNameToList = (rawName) => {
+    const current = String(rawName || '').trim()
+    if (!isLikelyFullStaffName(current)) return
+    setSavedIssuedByNames((prev) => {
+      if (prev.some((name) => name.toUpperCase() === current.toUpperCase())) return prev
+      const next = [current, ...prev].slice(0, 50)
+      localStorage.setItem(ISSUED_BY_NAME_LIST_KEY, JSON.stringify(next))
+      return next
+    })
+  }
+  const saveAuthenticatedByToList = (rawName) => {
+    const current = String(rawName || '').trim()
+    if (!isLikelyFullStaffName(current)) return
+    setSavedAuthenticatedByNames((prev) => {
+      if (prev.some((name) => name.toUpperCase() === current.toUpperCase())) return prev
+      const next = [current, ...prev].slice(0, 50)
+      localStorage.setItem(AUTHENTICATED_BY_LIST_KEY, JSON.stringify(next))
+      return next
+    })
+  }
   const scInput = (key) => (e) => {
     if (key === 'contactEmail') {
       update(key, e.target.value)
@@ -495,11 +564,75 @@ export default function CourtDecreeForm() {
       .filter((name) => name.toUpperCase().includes(query))
       .slice(0, 8)
   }, [savedLcroStaff, form.certificateSignatoryName])
+  const mergedCourtsThatIssued = React.useMemo(() => {
+    const seen = new Set()
+    const out = []
+    for (const name of savedCourtsThatIssued) {
+      const k = String(name || '').trim().toUpperCase()
+      if (!k || seen.has(k)) continue
+      seen.add(k)
+      out.push(String(name).trim())
+    }
+    for (const name of COURT_THAT_ISSUED_OPTIONS) {
+      const k = String(name || '').trim().toUpperCase()
+      if (!k || seen.has(k)) continue
+      seen.add(k)
+      out.push(name)
+    }
+    return out
+  }, [savedCourtsThatIssued])
   const filteredCourtIssued = React.useMemo(() => {
     const query = String(form.courtThatIssued || '').trim().toUpperCase()
-    if (!query) return COURT_THAT_ISSUED_OPTIONS
-    return COURT_THAT_ISSUED_OPTIONS.filter((name) => name.toUpperCase().includes(query))
-  }, [form.courtThatIssued])
+    const base = mergedCourtsThatIssued
+    if (!query) return base.slice(0, 15)
+    return base.filter((name) => name.toUpperCase().includes(query)).slice(0, 15)
+  }, [mergedCourtsThatIssued, form.courtThatIssued])
+  const mergedIssuedByNames = React.useMemo(() => {
+    const seen = new Set()
+    const out = []
+    for (const name of savedIssuedByNames) {
+      const k = String(name || '').trim().toUpperCase()
+      if (!k || seen.has(k)) continue
+      seen.add(k)
+      out.push(String(name).trim())
+    }
+    for (const name of ISSUED_BY_NAME_OPTIONS) {
+      const k = String(name || '').trim().toUpperCase()
+      if (!k || seen.has(k)) continue
+      seen.add(k)
+      out.push(name)
+    }
+    return out
+  }, [savedIssuedByNames])
+  const filteredIssuedByNames = React.useMemo(() => {
+    const query = String(form.issuedByName || '').trim().toUpperCase()
+    const base = mergedIssuedByNames
+    if (!query) return base.slice(0, 15)
+    return base.filter((name) => name.toUpperCase().includes(query)).slice(0, 15)
+  }, [mergedIssuedByNames, form.issuedByName])
+  const mergedAuthenticatedByNames = React.useMemo(() => {
+    const seen = new Set()
+    const out = []
+    for (const name of savedAuthenticatedByNames) {
+      const k = String(name || '').trim().toUpperCase()
+      if (!k || seen.has(k)) continue
+      seen.add(k)
+      out.push(String(name).trim())
+    }
+    for (const name of AUTHENTICATED_BY_OPTIONS) {
+      const k = String(name || '').trim().toUpperCase()
+      if (!k || seen.has(k)) continue
+      seen.add(k)
+      out.push(name)
+    }
+    return out
+  }, [savedAuthenticatedByNames])
+  const filteredAuthenticatedByNames = React.useMemo(() => {
+    const query = String(form.authenticatedBy || '').trim().toUpperCase()
+    const base = mergedAuthenticatedByNames
+    if (!query) return base.slice(0, 15)
+    return base.filter((name) => name.toUpperCase().includes(query)).slice(0, 15)
+  }, [mergedAuthenticatedByNames, form.authenticatedBy])
   const chooseLcroStaff = (name) => {
     update('certificateSignatoryName', name)
     saveLcroStaffName(name)
@@ -508,8 +641,21 @@ export default function CourtDecreeForm() {
   }
   const chooseCourtIssued = (name) => {
     updateAndPersistDraft('courtThatIssued', name)
+    saveCourtThatIssuedName(name)
     setShowCourtIssuedSuggestions(false)
     setCourtIssuedSuggestionIndex(-1)
+  }
+  const chooseIssuedByName = (name) => {
+    updateAndPersistDraft('issuedByName', name)
+    saveIssuedByNameToList(name)
+    setShowIssuedByNameSuggestions(false)
+    setIssuedByNameSuggestionIndex(-1)
+  }
+  const chooseAuthenticatedBy = (name) => {
+    updateAndPersistDraft('authenticatedBy', name)
+    saveAuthenticatedByToList(name)
+    setShowAuthenticatedBySuggestions(false)
+    setAuthenticatedBySuggestionIndex(-1)
   }
 
   // Persistence for LCRO - Staff (permanently saved as requested)
@@ -527,6 +673,63 @@ export default function CourtDecreeForm() {
       }
     } catch {
       setSavedLcroStaff([])
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      const rawList = localStorage.getItem(COURT_THAT_ISSUED_LIST_KEY)
+      const parsed = rawList ? JSON.parse(rawList) : []
+      if (Array.isArray(parsed)) {
+        const cleaned = parsed
+          .map((v) => String(v || '').trim())
+          .filter((v) => isLikelyCourtDecreeName(v))
+          .filter((v, i, arr) => arr.findIndex((x) => x.toUpperCase() === v.toUpperCase()) === i)
+        localStorage.setItem(COURT_THAT_ISSUED_LIST_KEY, JSON.stringify(cleaned))
+        setSavedCourtsThatIssued(cleaned)
+      } else {
+        setSavedCourtsThatIssued([])
+      }
+    } catch {
+      setSavedCourtsThatIssued([])
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      const rawList = localStorage.getItem(ISSUED_BY_NAME_LIST_KEY)
+      const parsed = rawList ? JSON.parse(rawList) : []
+      if (Array.isArray(parsed)) {
+        const cleaned = parsed
+          .map((v) => String(v || '').trim())
+          .filter((v) => isLikelyFullStaffName(v))
+          .filter((v, i, arr) => arr.findIndex((x) => x.toUpperCase() === v.toUpperCase()) === i)
+        localStorage.setItem(ISSUED_BY_NAME_LIST_KEY, JSON.stringify(cleaned))
+        setSavedIssuedByNames(cleaned)
+      } else {
+        setSavedIssuedByNames([])
+      }
+    } catch {
+      setSavedIssuedByNames([])
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      const rawList = localStorage.getItem(AUTHENTICATED_BY_LIST_KEY)
+      const parsed = rawList ? JSON.parse(rawList) : []
+      if (Array.isArray(parsed)) {
+        const cleaned = parsed
+          .map((v) => String(v || '').trim())
+          .filter((v) => isLikelyFullStaffName(v))
+          .filter((v, i, arr) => arr.findIndex((x) => x.toUpperCase() === v.toUpperCase()) === i)
+        localStorage.setItem(AUTHENTICATED_BY_LIST_KEY, JSON.stringify(cleaned))
+        setSavedAuthenticatedByNames(cleaned)
+      } else {
+        setSavedAuthenticatedByNames([])
+      }
+    } catch {
+      setSavedAuthenticatedByNames([])
     }
   }, [])
 
@@ -972,7 +1175,12 @@ export default function CourtDecreeForm() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Forms (checked when filled)</label>
-                      <LcrFormNavLinks form={form} activeType={form.formType} showFullCourtLink={false} />
+                      <LcrFormNavLinks
+                        form={form}
+                        activeType={form.formType}
+                        showFullCourtLink={false}
+                        acknowledgeSavedBeforeLcrSwitch={acknowledgeSaved}
+                      />
                     </div>
                   </div>
                 </CourtDecreeSection>
@@ -1012,7 +1220,10 @@ export default function CourtDecreeForm() {
                             setCourtIssuedSuggestionIndex(-1)
                           }}
                           onFocus={() => setShowCourtIssuedSuggestions(true)}
-                          onBlur={() => setTimeout(() => setShowCourtIssuedSuggestions(false), 120)}
+                          onBlur={(e) => {
+                            saveCourtThatIssuedName(e.target.value)
+                            setTimeout(() => setShowCourtIssuedSuggestions(false), 120)
+                          }}
                           onKeyDown={(e) => {
                             if (!showCourtIssuedSuggestions || filteredCourtIssued.length === 0) return
                             if (e.key === 'ArrowDown') {
@@ -1043,29 +1254,28 @@ export default function CourtDecreeForm() {
                             <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.166l3.71-3.935a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                           </svg>
                         </span>
-                        {showCourtIssuedSuggestions && (
+                        {showCourtIssuedSuggestions && filteredCourtIssued.length > 0 && (
                           <div className="absolute z-50 mt-1 w-full rounded-xl border border-indigo-100 bg-white shadow-[0_10px_30px_rgba(79,70,229,0.18)] overflow-hidden">
-                            {filteredCourtIssued.length > 0 ? (
-                              filteredCourtIssued.map((name, idx) => (
-                                <button
-                                  key={name}
-                                  type="button"
-                                  onMouseDown={(e) => e.preventDefault()}
-                                  onClick={() => chooseCourtIssued(name)}
-                                  className={`w-full px-3 py-2 text-left text-sm transition ${idx === courtIssuedSuggestionIndex
-                                    ? 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white'
-                                    : 'text-gray-800 hover:bg-indigo-50'
-                                    }`}
-                                >
-                                  {name}
-                                </button>
-                              ))
-                            ) : (
-                              <div className="px-3 py-2 text-sm text-gray-500">No matching court found</div>
-                            )}
+                            {filteredCourtIssued.map((name, idx) => (
+                              <button
+                                key={`${name}-${idx}`}
+                                type="button"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => chooseCourtIssued(name)}
+                                className={`w-full px-3 py-2 text-left text-sm transition ${idx === courtIssuedSuggestionIndex
+                                  ? 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white'
+                                  : 'text-gray-800 hover:bg-indigo-50'
+                                  }`}
+                              >
+                                {name}
+                              </button>
+                            ))}
                           </div>
                         )}
                       </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Courts you type are saved on this computer and suggested here when they match (at least two words and 12+ characters).
+                      </p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -1074,7 +1284,78 @@ export default function CourtDecreeForm() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                        <input type="text" value={form.issuedByName} onChange={scInput('issuedByName')} placeholder="e.g. HON. OSOP MANGOTARA ALI" className={inputClass} />
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={form.issuedByName}
+                            onChange={(e) => {
+                              commitFirstLetterUpperFromInput(e, (v) => updateAndPersistDraft('issuedByName', v))
+                              setShowIssuedByNameSuggestions(true)
+                              setIssuedByNameSuggestionIndex(-1)
+                            }}
+                            onFocus={() => setShowIssuedByNameSuggestions(true)}
+                            onBlur={(e) => {
+                              saveIssuedByNameToList(e.target.value)
+                              setTimeout(() => setShowIssuedByNameSuggestions(false), 120)
+                            }}
+                            onKeyDown={(e) => {
+                              if (!showIssuedByNameSuggestions || filteredIssuedByNames.length === 0) return
+                              if (e.key === 'ArrowDown') {
+                                e.preventDefault()
+                                setIssuedByNameSuggestionIndex((prev) => (prev + 1) % filteredIssuedByNames.length)
+                                return
+                              }
+                              if (e.key === 'ArrowUp') {
+                                e.preventDefault()
+                                setIssuedByNameSuggestionIndex((prev) =>
+                                  prev <= 0 ? filteredIssuedByNames.length - 1 : prev - 1
+                                )
+                                return
+                              }
+                              if (e.key === 'Enter' && issuedByNameSuggestionIndex >= 0) {
+                                e.preventDefault()
+                                chooseIssuedByName(filteredIssuedByNames[issuedByNameSuggestionIndex])
+                                return
+                              }
+                              if (e.key === 'Escape') {
+                                setShowIssuedByNameSuggestions(false)
+                                setIssuedByNameSuggestionIndex(-1)
+                              }
+                            }}
+                            placeholder="e.g. HON. OSOP MANGOTARA ALI"
+                            className={`${inputClass} pr-10`}
+                          />
+                          <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
+                            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4" aria-hidden>
+                              <path
+                                fillRule="evenodd"
+                                d="M5.23 7.21a.75.75 0 011.06.02L10 11.166l3.71-3.935a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </span>
+                          {showIssuedByNameSuggestions && filteredIssuedByNames.length > 0 && (
+                            <div className="absolute z-50 mt-1 w-full rounded-xl border border-indigo-100 bg-white shadow-[0_10px_30px_rgba(79,70,229,0.18)] overflow-hidden">
+                              {filteredIssuedByNames.map((name, idx) => (
+                                <button
+                                  key={`${name}-${idx}`}
+                                  type="button"
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() => chooseIssuedByName(name)}
+                                  className={`w-full px-3 py-2 text-left text-sm transition ${idx === issuedByNameSuggestionIndex
+                                    ? 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white'
+                                    : 'text-gray-800 hover:bg-indigo-50'
+                                    }`}
+                                >
+                                  {name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Names you type are saved on this computer and suggested here when they match (at least two words and five characters).
+                        </p>
                       </div>
                     </div>
                     <div>
@@ -1095,7 +1376,78 @@ export default function CourtDecreeForm() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Authenticated By</label>
-                      <input type="text" value={form.authenticatedBy} onChange={scInput('authenticatedBy')} placeholder="e.g. NASRODING A. ALI" className={inputClass} />
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={form.authenticatedBy}
+                          onChange={(e) => {
+                            commitFirstLetterUpperFromInput(e, (v) => updateAndPersistDraft('authenticatedBy', v))
+                            setShowAuthenticatedBySuggestions(true)
+                            setAuthenticatedBySuggestionIndex(-1)
+                          }}
+                          onFocus={() => setShowAuthenticatedBySuggestions(true)}
+                          onBlur={(e) => {
+                            saveAuthenticatedByToList(e.target.value)
+                            setTimeout(() => setShowAuthenticatedBySuggestions(false), 120)
+                          }}
+                          onKeyDown={(e) => {
+                            if (!showAuthenticatedBySuggestions || filteredAuthenticatedByNames.length === 0) return
+                            if (e.key === 'ArrowDown') {
+                              e.preventDefault()
+                              setAuthenticatedBySuggestionIndex((prev) => (prev + 1) % filteredAuthenticatedByNames.length)
+                              return
+                            }
+                            if (e.key === 'ArrowUp') {
+                              e.preventDefault()
+                              setAuthenticatedBySuggestionIndex((prev) =>
+                                prev <= 0 ? filteredAuthenticatedByNames.length - 1 : prev - 1
+                              )
+                              return
+                            }
+                            if (e.key === 'Enter' && authenticatedBySuggestionIndex >= 0) {
+                              e.preventDefault()
+                              chooseAuthenticatedBy(filteredAuthenticatedByNames[authenticatedBySuggestionIndex])
+                              return
+                            }
+                            if (e.key === 'Escape') {
+                              setShowAuthenticatedBySuggestions(false)
+                              setAuthenticatedBySuggestionIndex(-1)
+                            }
+                          }}
+                          placeholder="e.g. NASRODING A. ALI"
+                          className={`${inputClass} pr-10`}
+                        />
+                        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
+                          <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4" aria-hidden>
+                            <path
+                              fillRule="evenodd"
+                              d="M5.23 7.21a.75.75 0 011.06.02L10 11.166l3.71-3.935a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </span>
+                        {showAuthenticatedBySuggestions && filteredAuthenticatedByNames.length > 0 && (
+                          <div className="absolute z-50 mt-1 w-full rounded-xl border border-indigo-100 bg-white shadow-[0_10px_30px_rgba(79,70,229,0.18)] overflow-hidden">
+                            {filteredAuthenticatedByNames.map((name, idx) => (
+                              <button
+                                key={`${name}-${idx}`}
+                                type="button"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => chooseAuthenticatedBy(name)}
+                                className={`w-full px-3 py-2 text-left text-sm transition ${idx === authenticatedBySuggestionIndex
+                                  ? 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white'
+                                  : 'text-gray-800 hover:bg-indigo-50'
+                                  }`}
+                              >
+                                {name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Names you type are saved on this computer and suggested here when they match (at least two words and five characters).
+                      </p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -1147,22 +1499,20 @@ export default function CourtDecreeForm() {
                     <button
                       type="button"
                       onClick={() => setCourtDecreeTransmittalOutOfTown(false)}
-                      className={`min-h-[2.75rem] px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-colors ${
-                        !form.courtDecreeTransmittalIsOutOfTown
+                      className={`min-h-[2.75rem] px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-colors ${!form.courtDecreeTransmittalIsOutOfTown
                           ? 'border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm'
                           : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                      }`}
+                        }`}
                     >
                       Local — Transmittal only
                     </button>
                     <button
                       type="button"
                       onClick={() => setCourtDecreeTransmittalOutOfTown(true)}
-                      className={`min-h-[2.75rem] px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-colors ${
-                        form.courtDecreeTransmittalIsOutOfTown
+                      className={`min-h-[2.75rem] px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-colors ${form.courtDecreeTransmittalIsOutOfTown
                           ? 'border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm'
                           : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                      }`}
+                        }`}
                     >
                       Out of town — Out-of-Town Transmittal only
                     </button>

@@ -386,8 +386,8 @@ export default function AUSFForm() {
                         type="button"
                         onClick={() => update('ausfTransmittalIsOutOfTown', false)}
                         className={`min-h-[2.75rem] px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-colors ${!form.ausfTransmittalIsOutOfTown
-                            ? 'border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm'
-                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                          ? 'border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm'
+                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                           }`}
                       >
                         Local — Transmittal only
@@ -396,8 +396,8 @@ export default function AUSFForm() {
                         type="button"
                         onClick={() => update('ausfTransmittalIsOutOfTown', true)}
                         className={`min-h-[2.75rem] px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-colors ${form.ausfTransmittalIsOutOfTown
-                            ? 'border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm'
-                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                          ? 'border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm'
+                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                           }`}
                       >
                         Out of town — Out-of-Town Transmittal only

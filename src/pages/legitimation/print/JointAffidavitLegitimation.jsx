@@ -1,6 +1,7 @@
 import React from 'react'
 import { fullName, formatDateLong } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter, FILL_BOLD } from '../../../components/print'
+import { legitimationAffidavitCcrDisplayRow } from './legitimationAffidavitCcr'
 
 /** JOINT AFFIDAVIT OF LEGITIMATION – matching the specific JOINT layout from the user provided image. */
 export default function JointAffidavitLegitimation({ data }) {
@@ -19,6 +20,7 @@ export default function JointAffidavitLegitimation({ data }) {
   const currentDayMonthYear = formatDateLong(new Date())
   const witnessDate = formatDateLong(data.affidavitExecutionDate) || currentDayMonthYear
   const registryNo = data.affidavitLegitRegistryNo || '—'
+  const ccrRow = legitimationAffidavitCcrDisplayRow(data, 'joint')
 
   return (
     <div className="joint-legitimation-doc ausf-doc print-doc legitimation-affidavit-doc bg-white text-black text-[17px] max-w-[210mm] mx-auto px-6 py-4 leading-snug flex flex-col min-h-0">
@@ -103,8 +105,8 @@ export default function JointAffidavitLegitimation({ data }) {
 
         <div className="registrar-signature-zone mt-auto pt-4 flex min-h-[4rem] flex-col justify-end items-end">
           <div className="text-right city-registrar-signature">
-            <p className="font-bold text-right">{data.cityCivilRegistrarName || 'Atty. Yussif Don Justin F. Martil'}</p>
-            <p className="text-sm text-right">City Civil Registrar</p>
+            <p className="font-bold text-right">{ccrRow.name}</p>
+            <p className="text-sm text-right">{ccrRow.title}</p>
           </div>
         </div>
       </div>

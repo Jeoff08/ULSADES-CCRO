@@ -21,17 +21,21 @@ function formatSavedAt(iso) {
 }
 
 function formatSupplementType(type) {
-  const t = String(type || '').toLowerCase()
+  const raw = String(type ?? '').trim()
+  if (!raw) return 'Geographical'
+  const t = raw.toLowerCase()
   if (t === 'sex') return 'Sex'
   if (t === 'middlename' || t === 'middle_name' || t === 'middle name') return 'Middle Name'
-  return 'Geographical'
+  if (t === 'geographical') return 'Geographical'
+  return raw
 }
 
 function supplementTypeBadgeClass(type) {
   const t = String(type || '').toLowerCase()
   if (t === 'sex') return 'border-red-200 bg-red-50 text-red-700'
   if (t === 'middlename' || t === 'middle_name' || t === 'middle name') return 'border-blue-200 bg-blue-50 text-blue-700'
-  return 'border-green-200 bg-green-50 text-green-700'
+  if (t === 'geographical') return 'border-green-200 bg-green-50 text-green-700'
+  return 'border-slate-200 bg-slate-50 text-slate-700'
 }
 
 export default function SupplementalSaved() {

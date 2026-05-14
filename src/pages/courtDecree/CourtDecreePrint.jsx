@@ -14,6 +14,26 @@ import { useToasts } from '../../components/toast/useToasts'
 import { saveCurrentViewAsPdf, openSavedPdfInBrowser } from '../../lib/savePdf'
 import { isLcr1aTableComplete, isLcr2aTableComplete, isLcr3aTableComplete } from './lib/courtDecreeLcrCompletion'
 import { formTypeToAffectedCode } from './lib/courtDecreeAffectedDocuments'
+import {
+  RECEIVED_BY_OPTIONS,
+  courtDecreeSidebarCcrSelectValueForValidType,
+  courtDecreeSidebarCcrCustomLabelForValidType,
+  getLcrCcrScopeKeys,
+} from './lib/courtDecreePrintCcr'
+import {
+  CertAuthenticityCourtDecree,
+  CertRegistrationCourtDecree,
+  Transmittal,
+  OutOfTownTransmittal,
+  LcrForm1ABirthAvailable,
+  LcrForm2ADeathAvailable,
+  LcrForm3AMarriageAvailable,
+  AnnotationForForm1A,
+  AnnotationForForm2A,
+  AnnotationForForm3A,
+  MarriageNullityArt42Annotation,
+  MarriageAnnotationModeSidebar,
+} from './print'
 
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-court'
 
@@ -33,20 +53,6 @@ function usePrintPageSize(paperId) {
     }
   }, [paperId])
 }
-import {
-  CertAuthenticityCourtDecree,
-  CertRegistrationCourtDecree,
-  Transmittal,
-  OutOfTownTransmittal,
-  LcrForm1ABirthAvailable,
-  LcrForm2ADeathAvailable,
-  LcrForm3AMarriageAvailable,
-  AnnotationForForm1A,
-  AnnotationForForm2A,
-  AnnotationForForm3A,
-  MarriageNullityArt42Annotation,
-  MarriageAnnotationModeSidebar,
-} from './print'
 
 const TRANSMITTAL_PRINT_IDS = new Set(['transmittal', 'out-of-town-transmittal'])
 
@@ -119,6 +125,17 @@ const COURT_DECREE_ANNOTATION_TYPES = new Set([
   'annotation-form-2a',
   'annotation-form-3a',
   'marriage-nullity-art42',
+])
+
+/** Print types that share the sidebar CCR roster (certificates, transmittals, LCR 1A/2A/3A right column). */
+const COURT_DECREE_CCR_SIDEBAR_TYPES = new Set([
+  'cert-authenticity',
+  'cert-registration',
+  'transmittal',
+  'out-of-town-transmittal',
+  'lcr-form-1a',
+  'lcr-form-2a',
+  'lcr-form-3a',
 ])
 
 export default function CourtDecreePrint() {
@@ -316,7 +333,9 @@ export default function CourtDecreePrint() {
     'colbRegistryNo', 'colbRegDate', 'colbPageNo', 'colbBookNo',
     'dateOfMarriage', 'placeOfMarriageCity', 'placeOfMarriageProvince', 'placeOfMarriageCountry',
     'placeOfMarriageOfParents',
-    'certificateIssuanceDate', 'cityCivilRegistrarName', 'certificateSignatoryName',
+    'certificateIssuanceDate', 'cityCivilRegistrarName', 'cityCivilRegistrarTitle', 'certificateSignatoryName',
+    'certificateSignatoryTitle',
+    'ccrScopeLcr1aName', 'ccrScopeLcr1aTitle',
     'contactPhone', 'contactEmail',
   ]
 
@@ -366,7 +385,9 @@ export default function CourtDecreePrint() {
     'deceasedParentFirst', 'deceasedParentMiddle', 'deceasedParentLast',
     'documentOwnerName', 'sex', 'civilStatus', 'citizenship', 'dateOfDeath',
     'citizenshipOfFather', 'placeOfDeath', 'causeOfDeath',
-    'certificateIssuanceDate', 'cityCivilRegistrarName', 'certificateSignatoryName',
+    'certificateIssuanceDate', 'cityCivilRegistrarName', 'cityCivilRegistrarTitle', 'certificateSignatoryName',
+    'certificateSignatoryTitle',
+    'ccrScopeLcr2aName', 'ccrScopeLcr2aTitle',
     'contactPhone', 'contactEmail',
   ]
 
@@ -427,7 +448,9 @@ export default function CourtDecreePrint() {
     'marriageRegistryNo', 'marriageDateOfRegistration', 'dateOfMarriage',
     'placeOfMarriageCity', 'placeOfMarriageProvince', 'placeOfMarriageCountry',
     'colbPageNo', 'colbBookNo', 'documentOwnerName',
-    'certificateIssuanceDate', 'cityCivilRegistrarName', 'certificateSignatoryName',
+    'certificateIssuanceDate', 'cityCivilRegistrarName', 'cityCivilRegistrarTitle', 'certificateSignatoryName',
+    'certificateSignatoryTitle',
+    'ccrScopeLcr3aName', 'ccrScopeLcr3aTitle',
     'contactPhone', 'contactEmail',
   ]
 
@@ -520,6 +543,14 @@ export default function CourtDecreePrint() {
     : `SUBJECT: IN RE: JOINT PETITION TO APPROVE AND REGISTER THE DIVORCE OF SPOUSES ${(data.documentOwnerName || '').toUpperCase()}`
 
   const persistTransmittalDraft = useCallback((patch) => {
+    setData((prev) => {
+      const next = { ...prev, ...patch }
+      saveCourtDecreeDraft(next)
+      return next
+    })
+  }, [])
+
+  const persistCourtDecreeCcrLine = useCallback((patch) => {
     setData((prev) => {
       const next = { ...prev, ...patch }
       saveCourtDecreeDraft(next)
@@ -718,7 +749,7 @@ export default function CourtDecreePrint() {
         </div>
       </div>
       <div className={validType === 'marriage-nullity-art42' ? 'flex gap-3 items-start' : 'flex gap-6'}>
-        <aside className="no-print w-56 shrink-0 flex flex-col gap-3">
+        <aside className="no-print w-64 shrink-0 flex flex-col gap-3">
           <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">View &amp; Print</h2>
           <div className="flex flex-col gap-2">
             {effectiveAffectedDocs.length > 0 ? (
@@ -798,6 +829,51 @@ export default function CourtDecreePrint() {
                 } catch (_) { }
               }}
             />
+          ) : null}
+          {COURT_DECREE_CCR_SIDEBAR_TYPES.has(validType) ? (
+            <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+              <label htmlFor="court-decree-print-ccr-select" className="block text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1.5">
+                {['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a'].includes(validType)
+                  ? 'Prepared by (right column only)'
+                  : 'Prepared by (certificate & transmittal)'}
+              </label>
+              <select
+                id="court-decree-print-ccr-select"
+                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-2 py-2 text-xs text-gray-800 leading-snug"
+                value={courtDecreeSidebarCcrSelectValueForValidType(data, validType)}
+                onChange={(e) => {
+                  const v = e.target.value
+                  if (v === 'custom') return
+                  const opt = RECEIVED_BY_OPTIONS[Number(v)]
+                  if (!opt) return
+                  const scopeKeys = getLcrCcrScopeKeys(validType)
+                  if (scopeKeys) {
+                    persistCourtDecreeCcrLine({
+                      [scopeKeys.nameKey]: opt.name,
+                      [scopeKeys.titleKey]: opt.title,
+                    })
+                    return
+                  }
+                  persistCourtDecreeCcrLine({
+                    cityCivilRegistrarName: opt.name,
+                    cityCivilRegistrarTitle: opt.title,
+                    transmittalSignatoryName: opt.name,
+                    transmittalSignatoryTitle: opt.title,
+                  })
+                }}
+              >
+                {RECEIVED_BY_OPTIONS.map((opt, i) => (
+                  <option key={opt.name} value={String(i)}>
+                    {opt.name} — {opt.title}
+                  </option>
+                ))}
+                {courtDecreeSidebarCcrSelectValueForValidType(data, validType) === 'custom' ? (
+                  <option value="custom">
+                    {courtDecreeSidebarCcrCustomLabelForValidType(data, validType)} (from saved data)
+                  </option>
+                ) : null}
+              </select>
+            </div>
           ) : null}
         </aside>
         <div className="flex-1 min-w-0">

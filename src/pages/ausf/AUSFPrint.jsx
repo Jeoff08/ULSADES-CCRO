@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   getAUSFDraft,
@@ -43,6 +43,14 @@ import AnnotationChildAck from "./print/AnnotationChildAck";
 import AnnotationChildNotAck from "./print/AnnotationChildNotAck";
 import TransmittalDoc from "./print/TransmittalDoc";
 import LegacyPrintSummary from "./print/LegacyPrintSummary";
+import {
+  RECEIVED_BY_OPTIONS,
+  AUSF_PREPARED_BY_PRINT_TYPES,
+  preparedByOptionIndexForPrintType,
+  patchPreparedByForPrintType,
+  clearPreparedByOverrideForPrintType,
+  mergeAusfTransmittalSignatoryIntoData,
+} from "./lib/ausfPrintPreparedBy";
 
 const VIEW_PRINT_OPTIONS = [
   { label: "AUSF only", type: "ausf-only" },
@@ -156,6 +164,23 @@ export default function AUSFPrint() {
     }
     return base;
   }, [acknowledged, derivedJurat, data?.ausfTransmittalIsOutOfTown]);
+
+  const transmittalDocData = useMemo(() => {
+    if (!data) return null;
+    const t = displayType ?? data.formType;
+    if (t === "child-not-ack-transmittal" || t === "out-of-town") {
+      return mergeAusfTransmittalSignatoryIntoData(
+        data,
+        t === "out-of-town" ? "out-of-town" : "child-not-ack-transmittal",
+      );
+    }
+    return data;
+  }, [data, displayType]);
+
+  const showAusfPreparedBySidebar = useMemo(
+    () => viewPrintOptions.some((o) => AUSF_PREPARED_BY_PRINT_TYPES.has(o.type)),
+    [viewPrintOptions],
+  );
 
   /** Persist correct jurat formType on draft when age/ack changes */
   useEffect(() => {
@@ -525,6 +550,28 @@ export default function AUSFPrint() {
 
   const type = displayType || data.formType;
 
+  const preparedByIdx = AUSF_PREPARED_BY_PRINT_TYPES.has(type)
+    ? preparedByOptionIndexForPrintType(data, type)
+    : null;
+
+  const handleAusfPreparedByChange = (e) => {
+    const raw = e.target.value;
+    const curType = displayType || data.formType;
+    if (!AUSF_PREPARED_BY_PRINT_TYPES.has(curType)) return;
+    let patch;
+    if (raw === "") {
+      patch = clearPreparedByOverrideForPrintType(curType);
+    } else {
+      const idx = Number(raw);
+      if (!Number.isInteger(idx) || idx < 0 || idx >= RECEIVED_BY_OPTIONS.length) return;
+      patch = patchPreparedByForPrintType(curType, idx);
+    }
+    const next = { ...data, ...patch };
+    setData(next);
+    saveAUSFDraft(next);
+    saveAUSFDraftToApi(next).catch(() => { });
+  };
+
   let content;
   if (type === "ausf-only") content = <AusfOnly data={data} />;
   else if (type === "ausf-0-6") content = <Ausf06 data={data} />;
@@ -574,7 +621,7 @@ export default function AUSFPrint() {
   else if (type === "child-not-ack-transmittal")
     content = (
       <TransmittalDoc
-        data={data}
+        data={transmittalDocData ?? data}
         isOutOfTown={false}
         checklistConfig={{
           isOutOfTown: false,
@@ -591,7 +638,7 @@ export default function AUSFPrint() {
   else if (type === "out-of-town")
     content = (
       <TransmittalDoc
-        data={data}
+        data={transmittalDocData ?? data}
         isOutOfTown={true}
         checklistConfig={{
           isOutOfTown: true,
@@ -830,6 +877,37 @@ export default function AUSFPrint() {
                 </div>
               );
             })}
+            {showAusfPreparedBySidebar ? (
+              <div className="no-print relative z-10 rounded-lg border border-slate-200 bg-slate-50/95 p-2.5 space-y-1.5 ring-1 ring-slate-100">
+                <label htmlFor="ausf-print-prepared-signed" className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+                  Prepared / signed by
+                </label>
+                <select
+                  id="ausf-print-prepared-signed"
+                  className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs text-gray-900 bg-white disabled:opacity-50"
+                  disabled={!AUSF_PREPARED_BY_PRINT_TYPES.has(type)}
+                  value={preparedByIdx !== null ? String(preparedByIdx) : ""}
+                  onChange={handleAusfPreparedByChange}
+                  title={
+                    AUSF_PREPARED_BY_PRINT_TYPES.has(type)
+                      ? "Applies only to the print tab shown. Other outputs keep their own signatory until you change them there."
+                      : "Open Registration, LCR, or Transmittal to set signatory."
+                  }
+                >
+                  <option value="">Other (not in list)…</option>
+                  {RECEIVED_BY_OPTIONS.map((row, i) => (
+                    <option key={row.name} value={String(i)}>
+                      {row.name} — {row.title}
+                    </option>
+                  ))}
+                </select>
+                {!AUSF_PREPARED_BY_PRINT_TYPES.has(type) ? (
+                  <p className="text-[10px] text-slate-500 leading-snug">
+                    Choose Registration, LCR, or Transmittal above to enable.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           <div className="mt-2 pt-2 border-t border-gray-200 flex flex-col gap-2">
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">

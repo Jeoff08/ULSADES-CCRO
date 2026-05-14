@@ -5,6 +5,8 @@ import {
   SUPPLEMENTAL_TRANSMITTAL_ATTACHMENT_OPTIONS,
   SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS,
   SUPPLEMENTAL_TRANSMITTAL_ENDORSEMENT_OPTIONS,
+  RECEIVED_BY_OPTIONS,
+  clampTransmittalSignatoryIndex,
   transmittalRecipientOfficeLinesForPrint,
   transmittalRecipientPositionLines,
   transmittalThruPositionLinesForPrint,
@@ -37,6 +39,7 @@ export default function SupplementalTransmittal({
   data,
   paperWidth = '210mm',
   paperHeight = '297mm',
+  onSignatoryOptionIndexChange,
 }) {
   const dateLine = formatTransmittalDateLong(data.transmittalDate || '')
   const dobLine = formatDobDayMonthYearUpper(data.transmittalDob || '')
@@ -44,6 +47,9 @@ export default function SupplementalTransmittal({
   const docType = data.transmittalDocType || ''
   const endorsementIds = Array.isArray(data.transmittalEndorsementIds) ? data.transmittalEndorsementIds : []
   const attachmentIds = Array.isArray(data.transmittalAttachmentIds) ? data.transmittalAttachmentIds : []
+
+  const signatoryIndex = clampTransmittalSignatoryIndex(data.transmittalSignatoryOptionIndex)
+  const signatory = RECEIVED_BY_OPTIONS[signatoryIndex] || RECEIVED_BY_OPTIONS[0]
 
   const docTypeRowsPrint = useMemo(
     () => SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS.filter((row) => docType === row.id),
@@ -265,8 +271,8 @@ export default function SupplementalTransmittal({
         <div className="supplemental-transmittal-body-spacer flex-1 min-h-0 min-w-0" aria-hidden />
         <div className="supplemental-transmittal-sign-off flex flex-col gap-0 pt-0 text-sm print:pb-0 shrink-0">
           <p className="mb-1.5">Respectfully yours,</p>
-          <p className="font-bold uppercase leading-none">LORELIE L. CANTO</p>
-          <p className="leading-none">Registration Officer IV</p>
+          <p className="font-bold uppercase leading-none">{signatory.name}</p>
+          <p className="leading-none">{signatory.title}</p>
         </div>
         </div>
       </div>

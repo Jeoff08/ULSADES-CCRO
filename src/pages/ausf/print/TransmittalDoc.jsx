@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { formatDateCert, fullName } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter, TRANSMITTAL_ATTACHMENTS_LOCAL, TRANSMITTAL_ATTACHMENTS_PSA } from '../../../components/print'
+import { RECEIVED_BY_OPTIONS } from '../../legalInstrument/lib/supplementalTransmittalDefaults'
 import { loadTransmittalChecklist, saveTransmittalChecklist, labelsToChecklistItems } from '../lib/transmittalChecklistStorage'
 
 /** Default four-line “To PSA” block for Court Decree + Legitimation local transmittal */
@@ -180,14 +181,22 @@ export default function TransmittalDoc({
     }
     return null
   }, [isCourtDecreeLocalChecklist, isCourtDecreeOutOfTownChecklist, isLegitimationOutOfTownChecklist])
-  const defaultSignatoryName = 'LORELIE L. CANTO'
-  const defaultSignatoryTitle = 'Registration Officer IV'
-  const displaySignatory = (safe.transmittalSignatoryName || defaultSignatoryName).toUpperCase()
-  const signatoryTitle = safe.transmittalSignatoryTitle || defaultSignatoryTitle
   const listId = String(checklistConfig?.listId || '').trim()
   const isAusfTransmittal = !listId
   const isLegitimationTransmittal = Boolean(checklistConfig?.listId?.includes('legitimation'))
   const isCourtDecreeTransmittal = Boolean(checklistConfig?.listId?.includes('court-decree'))
+  const courtDecreeCcrFallback = RECEIVED_BY_OPTIONS[0]
+  const defaultSignatoryName = isCourtDecreeTransmittal ? courtDecreeCcrFallback.name : 'LORELIE L. CANTO'
+  const defaultSignatoryTitle = isCourtDecreeTransmittal ? courtDecreeCcrFallback.title : 'Registration Officer IV'
+  const displaySignatory = (
+    safe.transmittalSignatoryName
+    || (isCourtDecreeTransmittal ? safe.cityCivilRegistrarName : '')
+    || defaultSignatoryName
+  ).toUpperCase()
+  const signatoryTitle =
+    safe.transmittalSignatoryTitle
+    || (isCourtDecreeTransmittal ? safe.cityCivilRegistrarTitle : '')
+    || defaultSignatoryTitle
   const useAdjustedTransmittalLines = isAusfTransmittal || isLegitimationTransmittal || isCourtDecreeTransmittal
   const subject =
     subjectLine != null && subjectLine !== ''

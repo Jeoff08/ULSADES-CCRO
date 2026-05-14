@@ -2,6 +2,19 @@ import React, { useEffect, useState } from 'react'
 import { formatDateCert, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { buildLcr1aTableDisplay } from '../lib/lcr1aTable'
+import { resolveCourtDecreeLcrPrintCcr } from '../lib/courtDecreePrintCcr'
+import LcrRegistrationDateInputs from '../../../components/lcr/LcrRegistrationDateInputs'
+import {
+  LCR_REGISTRATION_DAY_UI,
+  LCR_REGISTRATION_MONTH_UI,
+  LCR_REGISTRATION_YEAR_UI,
+  LCR_1A_DOB_DAY_UI,
+  LCR_1A_DOB_MONTH_UI,
+  LCR_1A_DOB_YEAR_UI,
+  LCR_1A_DOM_DAY_UI,
+  LCR_1A_DOM_MONTH_UI,
+  LCR_1A_DOM_YEAR_UI,
+} from '../../../lib/lcrRegistrationUiKeys'
 
 function cellEditText(displayed) {
   const s = String(displayed ?? '').trim()
@@ -27,7 +40,11 @@ const LCR_1A_EDITABLE_ROWS = [
 
 /** LCR Form No. 1A (Birth-Available). Uses Court Decree Form 1A fields as primary source.
  *  When editableTable + onDataChange (e.g. Supplemental print), table cells are manual inputs on screen. */
-export default function LcrForm1ABirthAvailable({ data, editableTable = false, onDataChange }) {
+export default function LcrForm1ABirthAvailable({
+  data,
+  editableTable = false,
+  onDataChange,
+}) {
   const table = buildLcr1aTableDisplay(data)
   const [editableRemarks, setEditableRemarks] = useState(data?.remarks || '')
 
@@ -50,7 +67,9 @@ export default function LcrForm1ABirthAvailable({ data, editableTable = false, o
   })()
   const regOfficerName = data.certificateSignatoryName || 'SHIRLY L. DEMECILLO'
   const regOfficerTitle = data.certificateSignatoryTitle || 'LCRO - Staff'
-  const ccrName = data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL'
+  const { row: ccrRow } = resolveCourtDecreeLcrPrintCcr(data, 'lcr-form-1a')
+  const ccrName = ccrRow.name
+  const ccrTitle = ccrRow.title
 
   return (
     <div className="ausf-doc print-doc print-doc-lcr-1a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col">
@@ -103,20 +122,144 @@ export default function LcrForm1ABirthAvailable({ data, editableTable = false, o
             <table className="w-full border-collapse text-sm mt-4 mb-0 border border-black court-decree-lcr-table">
               <tbody>
                 {editableTable && onDataChange
-                  ? LCR_1A_EDITABLE_ROWS.map((row) => (
-                    <tr key={row.k}>
-                      <td className="py-1 px-2 border border-black font-medium align-top w-48">{row.label}</td>
-                      <td className="py-1 px-2 border border-black font-bold text-center align-top">
-                        <input
-                          type="text"
-                          className="no-print w-full min-w-0 text-center font-bold border-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none focus:border-[var(--primary-blue)] px-1"
-                          value={cellEditText(table[row.k])}
-                          onChange={(e) => patchData(row.patch(e.target.value))}
-                        />
-                        <span className="hidden print:inline">{table[row.k]}</span>
-                      </td>
-                    </tr>
-                  ))
+                  ? LCR_1A_EDITABLE_ROWS.flatMap((row) => {
+                    if (row.k === 'dateReg') {
+                      return [
+                        <tr key="dateReg">
+                          <td className="py-1 px-2 border border-black font-medium align-top w-48">{row.label}</td>
+                          <td className="py-1 px-2 border border-black font-bold text-center align-top">
+                            <LcrRegistrationDateInputs
+                              valueRaw={data.lcr1aDateRegistration || data.colbRegDate}
+                              savedDayUi={data.lcrRegistrationDayUi}
+                              savedMonthUi={data.lcrRegistrationMonthUi}
+                              savedYearUi={data.lcrRegistrationYearUi}
+                              onPersist={(payload) => {
+                                const d = payload[LCR_REGISTRATION_DAY_UI]
+                                const m = payload[LCR_REGISTRATION_MONTH_UI]
+                                const y = payload[LCR_REGISTRATION_YEAR_UI]
+                                const iso = payload.iso
+                                const patch = {
+                                  [LCR_REGISTRATION_DAY_UI]: d,
+                                  [LCR_REGISTRATION_MONTH_UI]: m,
+                                  [LCR_REGISTRATION_YEAR_UI]: y,
+                                }
+                                if (iso) {
+                                  patch.lcr1aDateRegistration = iso
+                                  patch.colbRegDate = iso
+                                  patch[LCR_REGISTRATION_DAY_UI] = ''
+                                  patch[LCR_REGISTRATION_MONTH_UI] = ''
+                                  patch[LCR_REGISTRATION_YEAR_UI] = ''
+                                } else if (!d && !m && !y) {
+                                  patch.lcr1aDateRegistration = ''
+                                  patch.colbRegDate = ''
+                                }
+                                patchData(patch)
+                              }}
+                              printDisplay={table.dateReg}
+                            />
+                          </td>
+                        </tr>,
+                      ]
+                    }
+                    if (row.k === 'dob') {
+                      return [
+                        <tr key="dob">
+                          <td className="py-1 px-2 border border-black font-medium align-top w-48">{row.label}</td>
+                          <td className="py-1 px-2 border border-black font-bold text-center align-top">
+                            <LcrRegistrationDateInputs
+                              valueRaw={data.lcr1aDateOfBirth || data.dateOfBirth}
+                              savedDayUi={data.lcr1aDobDayUi}
+                              savedMonthUi={data.lcr1aDobMonthUi}
+                              savedYearUi={data.lcr1aDobYearUi}
+                              dayUiKey={LCR_1A_DOB_DAY_UI}
+                              monthUiKey={LCR_1A_DOB_MONTH_UI}
+                              yearUiKey={LCR_1A_DOB_YEAR_UI}
+                              ariaLabelPrefix="Date of birth"
+                              onPersist={(payload) => {
+                                const d = payload[LCR_1A_DOB_DAY_UI]
+                                const m = payload[LCR_1A_DOB_MONTH_UI]
+                                const y = payload[LCR_1A_DOB_YEAR_UI]
+                                const iso = payload.iso
+                                const patch = {
+                                  [LCR_1A_DOB_DAY_UI]: d,
+                                  [LCR_1A_DOB_MONTH_UI]: m,
+                                  [LCR_1A_DOB_YEAR_UI]: y,
+                                }
+                                if (iso) {
+                                  patch.lcr1aDateOfBirth = iso
+                                  patch.dateOfBirth = iso
+                                  patch[LCR_1A_DOB_DAY_UI] = ''
+                                  patch[LCR_1A_DOB_MONTH_UI] = ''
+                                  patch[LCR_1A_DOB_YEAR_UI] = ''
+                                } else if (!d && !m && !y) {
+                                  patch.lcr1aDateOfBirth = ''
+                                  patch.dateOfBirth = ''
+                                }
+                                patchData(patch)
+                              }}
+                              printDisplay={table.dob}
+                            />
+                          </td>
+                        </tr>,
+                      ]
+                    }
+                    if (row.k === 'dom') {
+                      return [
+                        <tr key="dom">
+                          <td className="py-1 px-2 border border-black font-medium align-top w-48">{row.label}</td>
+                          <td className="py-1 px-2 border border-black font-bold text-center align-top">
+                            <LcrRegistrationDateInputs
+                              valueRaw={data.lcr1aDateMarriageParents || data.dateOfMarriage}
+                              savedDayUi={data.lcr1aDomDayUi}
+                              savedMonthUi={data.lcr1aDomMonthUi}
+                              savedYearUi={data.lcr1aDomYearUi}
+                              dayUiKey={LCR_1A_DOM_DAY_UI}
+                              monthUiKey={LCR_1A_DOM_MONTH_UI}
+                              yearUiKey={LCR_1A_DOM_YEAR_UI}
+                              ariaLabelPrefix="Parents marriage"
+                              onPersist={(payload) => {
+                                const d = payload[LCR_1A_DOM_DAY_UI]
+                                const m = payload[LCR_1A_DOM_MONTH_UI]
+                                const y = payload[LCR_1A_DOM_YEAR_UI]
+                                const iso = payload.iso
+                                const patch = {
+                                  [LCR_1A_DOM_DAY_UI]: d,
+                                  [LCR_1A_DOM_MONTH_UI]: m,
+                                  [LCR_1A_DOM_YEAR_UI]: y,
+                                }
+                                if (iso) {
+                                  patch.lcr1aDateMarriageParents = iso
+                                  patch.dateOfMarriage = iso
+                                  patch[LCR_1A_DOM_DAY_UI] = ''
+                                  patch[LCR_1A_DOM_MONTH_UI] = ''
+                                  patch[LCR_1A_DOM_YEAR_UI] = ''
+                                } else if (!d && !m && !y) {
+                                  patch.lcr1aDateMarriageParents = ''
+                                  patch.dateOfMarriage = ''
+                                }
+                                patchData(patch)
+                              }}
+                              printDisplay={table.dom}
+                            />
+                          </td>
+                        </tr>,
+                      ]
+                    }
+                    return [
+                      <tr key={row.k}>
+                        <td className="py-1 px-2 border border-black font-medium align-top w-48">{row.label}</td>
+                        <td className="py-1 px-2 border border-black font-bold text-center align-top">
+                          <input
+                            type="text"
+                            className="no-print w-full min-w-0 text-center font-bold border-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none focus:border-[var(--primary-blue)] px-1"
+                            value={cellEditText(table[row.k])}
+                            onChange={(e) => patchData(row.patch(e.target.value))}
+                          />
+                          <span className="hidden print:inline">{table[row.k]}</span>
+                        </td>
+                      </tr>,
+                    ]
+                  })
                   : (
                     <>
                       <tr><td className="py-1 px-2 border border-black font-medium align-top w-48">LCR Registry Number</td><td className="py-1 px-2 border border-black font-bold text-center">{table.registry}</td></tr>
@@ -136,17 +279,17 @@ export default function LcrForm1ABirthAvailable({ data, editableTable = false, o
               </tbody>
             </table>
             <p className="mb-2 text-sm court-decree-lcr-body court-decree-lcr-cert-after-table">
-            {editableTable
-              ? (
-                <span className="pl-8 inline-block">
-                  This certification is issued to <span className="font-bold underline">CCR-FILE</span> for any legal purpose.
-                </span>
-              )
-              : (
-                <>
-                  This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.
-                </>
-              )}
+              {editableTable
+                ? (
+                  <span className="pl-8 inline-block">
+                    This certification is issued to <span className="font-bold underline">CCR-FILE</span> for any legal purpose.
+                  </span>
+                )
+                : (
+                  <>
+                    This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.
+                  </>
+                )}
             </p>
             <div className="mb-2 court-decree-lcr-body court-decree-lcr-1a-remarks-block">
               <p className="font-bold text-sm mb-0.5">REMARKS:</p>
@@ -180,7 +323,7 @@ export default function LcrForm1ABirthAvailable({ data, editableTable = false, o
             </div>
             <div className="court-decree-lcr-1a-ccr-right flex flex-col items-center text-center">
               <p className="font-bold text-sm border-b border-black inline-block">{ccrName}</p>
-              <p className="text-xs mt-0">City Civil Registrar</p>
+              <p className="text-xs mt-0">{ccrTitle}</p>
             </div>
           </div>
           <p className="lcr1a-note-line font-bold text-sm mb-1">Note: This certification is not valid if it has mark, erasure or alteration of any entry.</p>

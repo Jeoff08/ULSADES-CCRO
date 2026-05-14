@@ -5021,17 +5021,15 @@ html[data-paper-size="short"] .print-doc-footer p {
   .ausf-form-page__section,
   .court-decree-form-page__section,
   .legitimation-form-page__section {
-    opacity: 0;
+    /* Keep opacity: 1 so content is never invisible if animation fails to run */
     animation: ausfSectionIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 }
 @keyframes ausfSectionIn {
   from {
-    opacity: 0;
     transform: translateY(10px);
   }
   to {
-    opacity: 1;
     transform: translateY(0);
   }
 }

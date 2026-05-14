@@ -2,6 +2,16 @@ import React, { useEffect, useState } from 'react'
 import { formatDateCert, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { buildLcr2aTableDisplay } from '../lib/lcr2aTable'
+import { resolveCourtDecreeLcrPrintCcr } from '../lib/courtDecreePrintCcr'
+import LcrRegistrationDateInputs from '../../../components/lcr/LcrRegistrationDateInputs'
+import {
+  LCR_REGISTRATION_DAY_UI,
+  LCR_REGISTRATION_MONTH_UI,
+  LCR_REGISTRATION_YEAR_UI,
+  LCR_2A_DEATH_DAY_UI,
+  LCR_2A_DEATH_MONTH_UI,
+  LCR_2A_DEATH_YEAR_UI,
+} from '../../../lib/lcrRegistrationUiKeys'
 
 function cellEditText(displayed) {
   const s = String(displayed ?? '').trim()
@@ -43,7 +53,10 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
     return formatDateCert(raw) || formatDateCert(new Date())
   })()
   const regOfficer = data.certificateSignatoryName || 'SHIRLY L. DEMECILLO'
-  const ccrName = data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL'
+  const regOfficerTitle = data.certificateSignatoryTitle || 'LCRO - Staff'
+  const { row: ccrRow } = resolveCourtDecreeLcrPrintCcr(data, 'lcr-form-2a')
+  const ccrName = ccrRow.name
+  const ccrTitle = ccrRow.title
   const blankIfDash = (v) => (String(v || '').trim() === '—' ? '' : v)
   const causeText = blankIfDash(t.causeOfDeath)
   const labelCell = 'py-0.5 px-2 border border-black align-top leading-tight'
@@ -52,10 +65,10 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
   return (
     <div className="ausf-doc print-doc print-doc-lcr-2a print-doc-lcr-3a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col">
       <div className="court-decree-lcr-header shrink-0">
-      <header className="print-doc-header">
-            <PrintHeaderRow />
-            <hr className="border-black my-3" />
-      </header>
+        <header className="print-doc-header">
+          <PrintHeaderRow />
+          <hr className="border-black my-3" />
+        </header>
         <div className="flex justify-between items-start mb-1">
           <div>
             <p className="font-bold text-base">LCR Form No. 2A</p>
@@ -79,7 +92,90 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
             </colgroup>
             <tbody>
               {editableTable && onDataChange
-                ? LCR_2A_EDITABLE_ROWS.map((row) => (
+                ? LCR_2A_EDITABLE_ROWS.flatMap((row) => {
+                  if (row.k === 'dateRegistration') {
+                    return [
+                      <tr key="dateRegistration">
+                        <td className={`${labelCell} w-48`}>{row.label}</td>
+                        <td className={valueCell}>
+                          <LcrRegistrationDateInputs
+                            valueRaw={
+                              data.lcr2aDateRegistration || data.colbRegDate || data.colbDateOfRegistration
+                            }
+                            savedDayUi={data.lcrRegistrationDayUi}
+                            savedMonthUi={data.lcrRegistrationMonthUi}
+                            savedYearUi={data.lcrRegistrationYearUi}
+                            onPersist={(payload) => {
+                              const d = payload[LCR_REGISTRATION_DAY_UI]
+                              const m = payload[LCR_REGISTRATION_MONTH_UI]
+                              const y = payload[LCR_REGISTRATION_YEAR_UI]
+                              const iso = payload.iso
+                              const patch = {
+                                [LCR_REGISTRATION_DAY_UI]: d,
+                                [LCR_REGISTRATION_MONTH_UI]: m,
+                                [LCR_REGISTRATION_YEAR_UI]: y,
+                              }
+                              if (iso) {
+                                patch.lcr2aDateRegistration = iso
+                                patch.colbRegDate = iso
+                                patch[LCR_REGISTRATION_DAY_UI] = ''
+                                patch[LCR_REGISTRATION_MONTH_UI] = ''
+                                patch[LCR_REGISTRATION_YEAR_UI] = ''
+                              } else if (!d && !m && !y) {
+                                patch.lcr2aDateRegistration = ''
+                                patch.colbRegDate = ''
+                              }
+                              patchData(patch)
+                            }}
+                            printDisplay={t.dateRegistration}
+                          />
+                        </td>
+                      </tr>,
+                    ]
+                  }
+                  if (row.k === 'dateDeath') {
+                    return [
+                      <tr key="dateDeath">
+                        <td className={`${labelCell} w-48`}>{row.label}</td>
+                        <td className={valueCell}>
+                          <LcrRegistrationDateInputs
+                            valueRaw={data.lcr2aDateDeath || data.dateOfDeath}
+                            savedDayUi={data.lcr2aDeathDayUi}
+                            savedMonthUi={data.lcr2aDeathMonthUi}
+                            savedYearUi={data.lcr2aDeathYearUi}
+                            dayUiKey={LCR_2A_DEATH_DAY_UI}
+                            monthUiKey={LCR_2A_DEATH_MONTH_UI}
+                            yearUiKey={LCR_2A_DEATH_YEAR_UI}
+                            ariaLabelPrefix="Date of death"
+                            onPersist={(payload) => {
+                              const d = payload[LCR_2A_DEATH_DAY_UI]
+                              const m = payload[LCR_2A_DEATH_MONTH_UI]
+                              const y = payload[LCR_2A_DEATH_YEAR_UI]
+                              const iso = payload.iso
+                              const patch = {
+                                [LCR_2A_DEATH_DAY_UI]: d,
+                                [LCR_2A_DEATH_MONTH_UI]: m,
+                                [LCR_2A_DEATH_YEAR_UI]: y,
+                              }
+                              if (iso) {
+                                patch.lcr2aDateDeath = iso
+                                patch.dateOfDeath = iso
+                                patch[LCR_2A_DEATH_DAY_UI] = ''
+                                patch[LCR_2A_DEATH_MONTH_UI] = ''
+                                patch[LCR_2A_DEATH_YEAR_UI] = ''
+                              } else if (!d && !m && !y) {
+                                patch.lcr2aDateDeath = ''
+                                patch.dateOfDeath = ''
+                              }
+                              patchData(patch)
+                            }}
+                            printDisplay={t.dateDeath}
+                          />
+                        </td>
+                      </tr>,
+                    ]
+                  }
+                  return [
                     <tr key={row.k}>
                       <td className={`${labelCell} w-48`}>{row.label}</td>
                       <td className={`${valueCell} uppercase`}>
@@ -91,8 +187,9 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
                         />
                         <span className="hidden print:inline">{t[row.k]}</span>
                       </td>
-                    </tr>
-                  ))
+                    </tr>,
+                  ]
+                })
                 : (
                   <>
                     <tr>
@@ -183,11 +280,11 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
             <div className="court-decree-lcr-2a-verified-left flex flex-col items-center text-center">
               <p className="text-sm mb-0.5 self-start">Verified by:</p>
               <p className="font-bold text-sm border-b border-black inline-block uppercase">{regOfficer}</p>
-              <p className="text-xs mt-0">LCRO - Staff</p>
+              <p className="text-xs mt-0">{regOfficerTitle}</p>
             </div>
             <div className="court-decree-lcr-2a-ccr-right flex flex-col items-center text-center">
               <p className="font-bold text-sm border-b border-black inline-block uppercase">{ccrName}</p>
-              <p className="text-xs mt-0 italic">City Civil Registrar</p>
+              <p className="text-xs mt-0 italic">{ccrTitle}</p>
             </div>
           </div>
           <p className="font-bold text-sm mb-1">

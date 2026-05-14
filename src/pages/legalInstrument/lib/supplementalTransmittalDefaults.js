@@ -52,6 +52,8 @@ export function getDefaultSupplementalTransmittalFields() {
     transmittalDocType: '',
     transmittalEndorsementIds: [],
     transmittalAttachmentIds: [],
+    /** Index into RECEIVED_BY_OPTIONS for transmittal sign-off block. */
+    transmittalSignatoryOptionIndex: 1,
   }
 }
 
@@ -127,3 +129,27 @@ export const SUPPLEMENTAL_TRANSMITTAL_SALUTATION_PRESETS = [
   'Madam and Sir:',
   'To whom it may concern:',
 ]
+
+/** Signatory block after “Respectfully yours,” on supplemental transmittal (CCR letter). */
+export const RECEIVED_BY_OPTIONS = [
+  { name: 'ATTY. YUSSIF DON JUSTIN F. MARTIL', title: 'CITY CIVIL REGISTRAR' },
+  { name: 'LORELIE L. CANTO', title: 'REGISTRATION OFFICER IV' },
+  { name: 'PHOEBE L. BENIGA', title: 'REGISTRATION OFFICER II' },
+  { name: 'JAN FLAURENCE A. OBLENDA', title: 'REGISTRATION OFFICER II' },
+]
+
+export function clampTransmittalSignatoryIndex(raw) {
+  const n = Number(raw)
+  const max = RECEIVED_BY_OPTIONS.length - 1
+  if (!Number.isFinite(n)) return 1
+  return Math.min(Math.max(0, Math.floor(n)), max)
+}
+
+/** Index into RECEIVED_BY_OPTIONS when name+title match a preset; otherwise -1. */
+export function matchReceivedByPresetIndex(name, title) {
+  const n = String(name ?? '').trim().toUpperCase()
+  const t = String(title ?? '').trim().toUpperCase()
+  return RECEIVED_BY_OPTIONS.findIndex(
+    (p) => p.name.trim().toUpperCase() === n && p.title.trim().toUpperCase() === t
+  )
+}

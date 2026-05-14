@@ -19,6 +19,7 @@ import {
   OutOfTownTransmittal,
   Annotation,
 } from './print'
+import { RECEIVED_BY_OPTIONS, legitimationAffidavitCcrPersistPatch, legitimationAffidavitCcrSelectValue } from './print/legitimationAffidavitCcr'
 
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-legitimation'
 const LEGITIMATION_TRANSMITTAL_TYPES = new Set(['transmittal', 'out-of-town-transmittal'])
@@ -79,11 +80,24 @@ export default function LegitimationPrint() {
     return true
   })
   const allowedTypeIds = allowedTypes.map((t) => t.id)
+  const showAffidavitCcrInSidebar =
+    allowedTypeIds.includes('joint-affidavit') || allowedTypeIds.includes('sole-affidavit')
   const effectiveType = allowedTypeIds.includes(validType)
     ? validType
     : (allowedTypeIds[0] || 'joint-affidavit')
   const pageSizeForPrint = effectiveType === 'annotation' ? 'long' : paperSize
 
+  const [affidavitCcrSidebarTarget, setAffidavitCcrSidebarTarget] = useState(() =>
+    allowedTypeIds.includes('joint-affidavit') ? 'joint' : 'sole'
+  )
+
+  useEffect(() => {
+    if (effectiveType === 'joint-affidavit') setAffidavitCcrSidebarTarget('joint')
+    else if (effectiveType === 'sole-affidavit') setAffidavitCcrSidebarTarget('sole')
+  }, [effectiveType])
+
+  const affidavitCcrVariant =
+    effectiveType === 'sole-affidavit' ? 'sole' : effectiveType === 'joint-affidavit' ? 'joint' : affidavitCcrSidebarTarget
   const handleSavePdf = async () => {
     try {
       const result = await saveCurrentViewAsPdf(`Legitimation-${effectiveType}`)
@@ -342,6 +356,56 @@ export default function LegitimationPrint() {
               )
             })}
           </div>
+          {showAffidavitCcrInSidebar ? (
+            <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+              <label htmlFor="legitimation-print-affidavit-ccr" className="block text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1.5">
+                Affidavit — Received by (CCR)
+              </label>
+              {allowedTypeIds.includes('joint-affidavit') &&
+              allowedTypeIds.includes('sole-affidavit') &&
+              effectiveType !== 'joint-affidavit' &&
+              effectiveType !== 'sole-affidavit' ? (
+                <div className="mb-2">
+                  <label htmlFor="legitimation-print-affidavit-ccr-target" className="block text-[10px] font-semibold text-gray-600 mb-1">
+                    Which affidavit?
+                  </label>
+                  <select
+                    id="legitimation-print-affidavit-ccr-target"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs text-gray-800 mb-2"
+                    value={affidavitCcrSidebarTarget}
+                    onChange={(e) => setAffidavitCcrSidebarTarget(e.target.value === 'sole' ? 'sole' : 'joint')}
+                  >
+                    <option value="joint">Joint affidavit</option>
+                    <option value="sole">Sole affidavit</option>
+                  </select>
+                </div>
+              ) : null}
+              <select
+                id="legitimation-print-affidavit-ccr"
+                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-2 py-2 text-xs text-gray-800 leading-snug"
+                value={legitimationAffidavitCcrSelectValue(data, affidavitCcrVariant)}
+                onChange={(e) => {
+                  const v = e.target.value
+                  if (v === 'custom') return
+                  const opt = RECEIVED_BY_OPTIONS[Number(v)]
+                  if (!opt) return
+                  persistTransmittalDraft(legitimationAffidavitCcrPersistPatch(affidavitCcrVariant, opt))
+                }}
+              >
+                {RECEIVED_BY_OPTIONS.map((opt, i) => (
+                  <option key={`${opt.name}-${i}`} value={String(i)}>
+                    {opt.name} — {opt.title}
+                  </option>
+                ))}
+                {legitimationAffidavitCcrSelectValue(data, affidavitCcrVariant) === 'custom' ? (
+                  <option value="custom">Custom (from draft — pick a row)</option>
+                ) : null}
+              </select>
+              <p className="text-[10px] text-gray-500 mt-1.5 leading-snug">
+                Only the Joint or Sole affidavit signature line is updated. LCR, registration, annotation, and transmittal still use the shared City Civil Registrar fields from the main form.
+              </p>
+            </div>
+          ) : null}
         </aside>
         <div className="flex-1 min-w-0">
           {content}
