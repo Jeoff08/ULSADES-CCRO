@@ -1,31 +1,119 @@
-/** Format for affidavit body: "January 05, 2022" */
-export function formatDateLong(str) {
-  if (!str) return ''
-  const d = new Date(str)
-  if (isNaN(d.getTime())) return str
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-  const day = d.getDate()
-  const year = d.getFullYear()
-  return `${months[d.getMonth()]} ${String(day).padStart(2, '0')}, ${year}`
+const GREGORIAN_MONTHS_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+/** Month token (Jan, May, september, etc.) → 0–11, or null */
+function monthTokenToIndex0(token) {
+  const raw = String(token || '').trim().toLowerCase().replace(/\./g, '')
+  if (!raw) return null
+  const abbr3 = raw.slice(0, 3)
+  const byAbbr = {
+    jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+    jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+  }
+  if (byAbbr[abbr3] !== undefined) return byAbbr[abbr3]
+  const full = {
+    january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+    july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+  }
+  if (full[raw] !== undefined) return full[raw]
+  return null
 }
 
-/** Parse dd/mm/yyyy to Date (local), or null */
+function toValidDateOrNull(input) {
+  if (input instanceof Date && !isNaN(input.getTime())) return input
+  const parsed = parseBirthToDate(String(input ?? '').trim())
+  if (parsed && !isNaN(parsed.getTime())) return parsed
+  const fb = new Date(input)
+  return isNaN(fb.getTime()) ? null : fb
+}
+
+function formatGregorianDayMonthYear(str, { commaAfterYear = false } = {}) {
+  if (!str) return ''
+  const raw = String(str).trim()
+  const d = toValidDateOrNull(raw)
+  if (!d) {
+    if (/\/(undefined|null)\b/i.test(raw)) return '—'
+    return String(str)
+  }
+  const core = `${d.getDate()} ${GREGORIAN_MONTHS_LONG[d.getMonth()]} ${d.getFullYear()}`
+  return commaAfterYear ? `${core},` : core
+}
+
+/** Month-day-year order: "May 16 2026" or with trailing comma before the next word. */
+function formatGregorianMonthDayYear(str, { commaAfterYear = false } = {}) {
+  if (!str) return ''
+  const raw = String(str).trim()
+  const d = toValidDateOrNull(raw)
+  if (!d) {
+    if (/\/(undefined|null)\b/i.test(raw)) return commaAfterYear ? '—,' : '—'
+    return String(str).trim()
+  }
+  const core = `${GREGORIAN_MONTHS_LONG[d.getMonth()]} ${d.getDate()} ${d.getFullYear()}`
+  return commaAfterYear ? `${core},` : core
+}
+
+/**
+ * Court decree certificates / prose: "May 16 2026," immediately before the next word (e.g. "… at Iligan").
+ */
+export function formatDateMonthDayYearComma(str) {
+  return formatGregorianMonthDayYear(str, { commaAfterYear: true })
+}
+
+/**
+ * Prose / flow text before another word: "15 May 2026," (comma after year).
+ */
+export function formatDateLong(str) {
+  return formatGregorianDayMonthYear(str, { commaAfterYear: true })
+}
+
+/**
+ * Header corner, table-only values, or end of clause before "." — "15 May 2026" (no comma).
+ */
+export function formatDateCert(str) {
+  return formatGregorianDayMonthYear(str, { commaAfterYear: false })
+}
+
+/** Transmittal letter date line by itself (no trailing comma). */
+export function formatTransmittalDateLong(str) {
+  return formatGregorianDayMonthYear(str, { commaAfterYear: false })
+}
+
+/** Parse dd/mm/yyyy or dd/Mmm/yyyy (e.g. from legitimation form output) to Date (local), or null */
 export function parseDdMmYyyyToDate(str) {
   if (!str || typeof str !== 'string') return null
   const p = str.trim().split('/')
   if (p.length !== 3) return null
   const dd = parseInt(p[0], 10)
-  const mm = parseInt(p[1], 10)
   const yyyy = parseInt(p[2], 10)
-  if (dd < 1 || dd > 31 || mm < 1 || mm > 12 || yyyy < 1000) return null
-  const d = new Date(yyyy, mm - 1, dd)
-  return isNaN(d.getTime()) ? null : d
+  if (!Number.isFinite(dd) || !Number.isFinite(yyyy) || dd < 1 || dd > 31 || yyyy < 1000) return null
+
+  const mid = String(p[1]).trim()
+  const mmNum = parseInt(mid, 10)
+  let month0 = null
+  if (!Number.isNaN(mmNum) && mmNum >= 1 && mmNum <= 12) {
+    month0 = mmNum - 1
+  } else {
+    const fromName = monthTokenToIndex0(mid)
+    if (fromName === null) return null
+    month0 = fromName
+  }
+  const d = new Date(yyyy, month0, dd)
+  if (isNaN(d.getTime())) return null
+  if (d.getFullYear() !== yyyy || d.getMonth() !== month0 || d.getDate() !== dd) return null
+  return d
 }
 
 /** Full dd/mm/yyyy, mm/yyyy (1st of month), or ISO yyyy-mm-dd */
 export function parseBirthToDate(str) {
-  const t = String(str || '').trim()
+  let t = String(str || '').trim()
   if (!t) return null
+  /** Legacy bad saves: "14/undefined/2025" (string from `… + undefined + …`) or "14//2025". Recover as day/month 01/year for display. */
+  const corrupt =
+    t.match(/^(\d{1,2})\/(?:undefined|null)\/(\d{4})$/i) || t.match(/^(\d{1,2})\/\s*\/(\d{4})$/)
+  if (corrupt) {
+    const dd = corrupt[1].padStart(2, '0')
+    const yyyy = corrupt[2]
+    t = `${dd}/01/${yyyy}`
+  }
   const full = parseDdMmYyyyToDate(t)
   if (full) return full
   const mmY = t.match(/^(\d{1,2})\/(\d{4})$/)
@@ -38,6 +126,139 @@ export function parseBirthToDate(str) {
     const d = new Date(t.slice(0, 10) + 'T12:00:00')
     return isNaN(d.getTime()) ? null : d
   }
+  return null
+}
+
+/** dd/mm/yyyy from a valid Date (local calendar). */
+export function formatDateToDdMmYyyy(d) {
+  if (!d || !(d instanceof Date) || isNaN(d.getTime())) return ''
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`
+}
+
+/** yyyy-mm-dd slice → dd/mm/yyyy */
+export function isoYyyyMmDdToDdMmYyyy(iso) {
+  if (!iso || typeof iso !== 'string') return ''
+  const t = iso.trim().slice(0, 10)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(t)) return ''
+  const [y, m, d] = t.split('-')
+  return `${d}/${m}/${y}`
+}
+
+/**
+ * Display string for a full-date form field: normalize ISO or dd/mm/yyyy to dd/mm/yyyy; otherwise return raw.
+ */
+export function formStoredFullDateToDdMmDisplay(str) {
+  const t = String(str ?? '').trim()
+  if (!t) return ''
+  if (/^\d{4}-\d{2}-\d{2}/.test(t)) {
+    const d = new Date(t.slice(0, 10) + 'T12:00:00')
+    if (!isNaN(d.getTime())) return formatDateToDdMmYyyy(d)
+  }
+  const d = parseBirthToDate(t)
+  if (d && !isNaN(d.getTime())) return formatDateToDdMmYyyy(d)
+  return t
+}
+
+/**
+ * Parse flexible full calendar date to dd/mm/yyyy. Does not accept mm/yyyy-only.
+ * Returns '' for empty, null if non-empty and unparsable, else dd/mm/yyyy.
+ */
+export function parseFlexibleFullDateToDdMmYyyy(str) {
+  const t = String(str ?? '').trim()
+  if (!t) return ''
+  const ddm = parseDdMmYyyyToDate(t)
+  if (ddm) return formatDateToDdMmYyyy(ddm)
+  if (/^\d{4}-\d{2}-\d{2}/.test(t)) {
+    const d = new Date(t.slice(0, 10) + 'T12:00:00')
+    if (!isNaN(d.getTime())) return formatDateToDdMmYyyy(d)
+  }
+  const monthFirst = t.match(/^([A-Za-zÀ-ÿ]+)\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})$/i)
+  if (monthFirst) {
+    const m0 = monthTokenToIndex0(monthFirst[1])
+    const day = parseInt(monthFirst[2], 10)
+    const y = parseInt(monthFirst[3], 10)
+    if (m0 != null && day >= 1 && day <= 31 && y >= 1000 && y <= 9999) {
+      const d = new Date(y, m0, day)
+      if (
+        !isNaN(d.getTime()) &&
+        d.getFullYear() === y &&
+        d.getMonth() === m0 &&
+        d.getDate() === day
+      ) {
+        return formatDateToDdMmYyyy(d)
+      }
+    }
+  }
+  const dayFirst = t.match(/^(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-zÀ-ÿ]+)\s+(\d{4})$/i)
+  if (dayFirst) {
+    const day = parseInt(dayFirst[1], 10)
+    const m0 = monthTokenToIndex0(dayFirst[2])
+    const y = parseInt(dayFirst[3], 10)
+    if (m0 != null && day >= 1 && day <= 31 && y >= 1000 && y <= 9999) {
+      const d = new Date(y, m0, day)
+      if (
+        !isNaN(d.getTime()) &&
+        d.getFullYear() === y &&
+        d.getMonth() === m0 &&
+        d.getDate() === day
+      ) {
+        return formatDateToDdMmYyyy(d)
+      }
+    }
+  }
+  const dayFirstSep = t.match(/^(\d{1,2})(?:st|nd|rd|th)?\s*[-/.]\s*([A-Za-zÀ-ÿ]+)\s*[-/.]\s*(\d{4})$/i)
+  if (dayFirstSep) {
+    const day = parseInt(dayFirstSep[1], 10)
+    const m0 = monthTokenToIndex0(dayFirstSep[2])
+    const y = parseInt(dayFirstSep[3], 10)
+    if (m0 != null && day >= 1 && day <= 31 && y >= 1000 && y <= 9999) {
+      const d = new Date(y, m0, day)
+      if (
+        !isNaN(d.getTime()) &&
+        d.getFullYear() === y &&
+        d.getMonth() === m0 &&
+        d.getDate() === day
+      ) {
+        return formatDateToDdMmYyyy(d)
+      }
+    }
+  }
+  return null
+}
+
+/**
+ * Birth-style field: full date → dd/mm/yyyy; month name or numeric + year → mm/yyyy; '' empty; null invalid.
+ */
+export function parseFlexibleBirthDateToStored(str) {
+  const t = String(str ?? '').trim()
+  if (!t) return ''
+  const full = parseFlexibleFullDateToDdMmYyyy(t)
+  if (full) return full
+  const mmY = t.match(/^(\d{1,2})\/(\d{4})$/)
+  if (mmY) {
+    const mo = parseInt(mmY[1], 10)
+    const y = parseInt(mmY[2], 10)
+    if (mo >= 1 && mo <= 12 && y >= 1000 && y <= 9999) return `${String(mo).padStart(2, '0')}/${y}`
+  }
+  const my = t.match(/^([A-Za-zÀ-ÿ]+)\s+(\d{4})$/i)
+  if (my) {
+    const m0 = monthTokenToIndex0(my[1])
+    const y = parseInt(my[2], 10)
+    if (m0 != null && y >= 1000 && y <= 9999) return `${String(m0 + 1).padStart(2, '0')}/${y}`
+  }
+  return null
+}
+
+/**
+ * Month field (1–12 or English / abbreviated month name) → '1'…'12'; '' if empty; null if invalid.
+ */
+export function parseFormMonthInputToNumber1to12(input) {
+  const t = String(input ?? '').trim()
+  if (!t) return ''
+  const n = parseInt(t, 10)
+  if (!Number.isNaN(n) && n >= 1 && n <= 12) return String(n)
+  const ix = monthTokenToIndex0(t)
+  if (ix != null) return String(ix + 1)
   return null
 }
 
@@ -77,7 +298,13 @@ export function formatLcrRegistrationWordMonth(str) {
  */
 export function tryIsoFromDmyStrings(dayStr, monthStr, yearStr) {
   const d = parseInt(String(dayStr || '').replace(/\D/g, ''), 10)
-  const m = parseInt(String(monthStr || '').replace(/\D/g, ''), 10)
+  const mRaw = String(monthStr || '').trim()
+  let m = parseInt(mRaw.replace(/\D/g, ''), 10)
+  if (!Number.isFinite(m) || m < 1 || m > 12) {
+    const fromName = parseFormMonthInputToNumber1to12(mRaw)
+    if (fromName === null || fromName === '') m = NaN
+    else m = parseInt(fromName, 10)
+  }
   const y = parseInt(String(yearStr || '').replace(/\D/g, ''), 10)
   if (!Number.isFinite(d) || !Number.isFinite(m) || !Number.isFinite(y)) return null
   if (m < 1 || m > 12 || y < 1000 || y > 9999 || d < 1) return null
@@ -98,40 +325,6 @@ export function computeAgeFullYears(isoOrAnyDateStr, asOf = new Date()) {
   const birthMd = d.getMonth() * 100 + d.getDate()
   if (refMd < birthMd) age -= 1
   return Math.max(0, age)
-}
-
-/** Format for certificate: "04 March, 2026" */
-export function formatDateCert(str) {
-  if (!str) return ''
-  const parsed = parseDdMmYyyyToDate(str)
-  const d = parsed || new Date(str)
-  if (isNaN(d.getTime())) return str
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-  const day = String(d.getDate()).padStart(2, '0')
-  const year = d.getFullYear()
-  return `${day} ${months[d.getMonth()]}, ${year}`
-}
-
-/** Transmittal letter date line: "13 April 2026" (no leading zero on day, no comma). */
-export function formatTransmittalDateLong(str) {
-  if (!str) return ''
-  const d = parseBirthToDate(str)
-  if (!d || isNaN(d.getTime())) return String(str)
-  const months = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ]
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
 }
 
 /** COLB-style DOB line for transmittal body: "16 MAY 1971". */
@@ -171,8 +364,8 @@ export function joinCommaParts(...parts) {
 /** Format for LCR Date of Registration: "APR 03 2023" */
 export function formatDateReg(str) {
   if (!str) return ''
-  const d = new Date(str)
-  if (isNaN(d.getTime())) return str
+  const d = toValidDateOrNull(str)
+  if (!d) return String(str)
   const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
   const day = String(d.getDate()).padStart(2, '0')
   const year = d.getFullYear()
@@ -182,27 +375,42 @@ export function formatDateReg(str) {
 /** Format for LCR Date of Birth (short): "09-Mar-23" */
 export function formatDateDobShort(str) {
   if (!str) return ''
-  const d = new Date(str)
-  if (isNaN(d.getTime())) return str
+  const d = toValidDateOrNull(str)
+  if (!d) return String(str)
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   const day = String(d.getDate()).padStart(2, '0')
   const year = String(d.getFullYear()).slice(-2)
   return `${day}-${months[d.getMonth()]}-${year}`
 }
 
-/** LCR Form 1A table style: "18-Mar-02" from dd/mm/yyyy, ISO, or Date */
+/** LCR Form 1A table style: "18-Mar-02" from dd/mm/yyyy, dd/Mmm/yyyy, ISO, or Date */
 export function formatLcrFormShortDate(str) {
-  if (!str || typeof str !== 'string') return ''
+  if (!str) return ''
+  if (typeof str !== 'string') {
+    const d = toValidDateOrNull(str)
+    if (!d) return ''
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${day}-${months[d.getMonth()]}-${String(d.getFullYear()).slice(-2)}`
+  }
   const t = str.trim()
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   const parts = t.split('/')
   if (parts.length === 3) {
     const dd = parts[0].padStart(2, '0')
-    const mm = parseInt(parts[1], 10)
+    const mid = String(parts[1]).trim()
+    const mmNum = parseInt(mid, 10)
     const yyyy = String(parts[2]).trim()
-    if (mm >= 1 && mm <= 12) {
+    let mi1to12 = null
+    if (!Number.isNaN(mmNum) && mmNum >= 1 && mmNum <= 12) {
+      mi1to12 = mmNum
+    } else {
+      const idx0 = monthTokenToIndex0(mid)
+      if (idx0 !== null) mi1to12 = idx0 + 1
+    }
+    if (mi1to12 != null) {
       const y = yyyy.length >= 4 ? yyyy.slice(-2) : yyyy.padStart(2, '0')
-      return `${dd}-${months[mm - 1]}-${y}`
+      return `${dd}-${months[mi1to12 - 1]}-${y}`
     }
   }
   const iso = t.match(/^(\d{4})-(\d{2})-(\d{2})/)
@@ -213,8 +421,8 @@ export function formatLcrFormShortDate(str) {
       return `${day}-${months[mi - 1]}-${y.slice(-2)}`
     }
   }
-  const d = new Date(t)
-  if (!isNaN(d.getTime())) {
+  const d = toValidDateOrNull(t)
+  if (d) {
     const day = String(d.getDate()).padStart(2, '0')
     return `${day}-${months[d.getMonth()]}-${String(d.getFullYear()).slice(-2)}`
   }
@@ -224,8 +432,8 @@ export function formatLcrFormShortDate(str) {
 /** Format for annotation acknowledgment: "MAY 7, 2025" */
 export function formatDateAnnotation(str) {
   if (!str) return ''
-  const d = new Date(str)
-  if (isNaN(d.getTime())) return str
+  const d = toValidDateOrNull(str)
+  if (!d) return String(str)
   const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
   const day = d.getDate()
   const year = d.getFullYear()
@@ -254,8 +462,8 @@ export function buildDefaultAnnotationText(data) {
 /** Format for COLB: "29", "APRIL", "2017" or full "29 APRIL 2017" */
 export function formatDateCOLB(str) {
   if (!str) return { day: '', month: '', year: '', full: '' }
-  const d = new Date(str)
-  if (isNaN(d.getTime())) return { day: '', month: '', year: '', full: '' }
+  const d = toValidDateOrNull(str)
+  if (!d) return { day: '', month: '', year: '', full: '' }
   const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
   const day = String(d.getDate()).padStart(2, '0')
   const month = months[d.getMonth()]

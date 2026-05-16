@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatDateCert, fullName } from '../../../lib/printUtils'
+import { formatDateCert, formatDateLong, fullName } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter } from '../../../components/print'
 
 /** REGISTRATION OF LEGITIMATION – legitimation form print (layout matches Certificate of Authenticity). */
@@ -9,9 +9,10 @@ export default function RegistrationOfLegitimation({ data }) {
   const fatherFull = fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
   const issuedDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
   const signatory = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
+  const legitRegistryTrim = String(data.affidavitLegitRegistryNo || '').trim()
 
   return (
-    <div className="ausf-doc print-doc print-doc-cert-auth legitimation-registrar-footer-print bg-white text-black text-base max-w-[210mm] mx-auto px-6 py-4 leading-relaxed flex flex-col min-h-[297mm]">
+    <div className="ausf-doc print-doc print-doc-cert-auth legitimation-registrar-footer-print legitimation-cert-auth-no-indent bg-white text-black text-base max-w-[210mm] mx-auto px-0 py-4 leading-relaxed flex flex-col min-h-[297mm]">
       <DocumentHeader registryNo={data.affidavitLegitRegistryNo} />
 
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
@@ -22,8 +23,16 @@ export default function RegistrationOfLegitimation({ data }) {
         <div className="cert-auth-body text-justify text-[18px] leading-[1.8] space-y-2">
           <p>
             THIS IS TO CERTIFY that the Affidavit of Legitimation in favor of <span className="font-bold underline">{childFull || '—'}</span> had been
-            registered in this office on <span className="font-bold underline">{formatDateCert(data.affidavitLegitDate) || '—'}</span> under Registry Number{' '}
-            <span className="font-bold underline">{data.affidavitLegitRegistryNo || '—'}</span>.
+            registered in this office on{' '}
+            <span className="font-bold underline">
+              {(legitRegistryTrim ? formatDateLong(data.affidavitLegitDate) : formatDateCert(data.affidavitLegitDate)) || '—'}
+            </span>
+            {legitRegistryTrim ? (
+              <>
+                {' '}under Registry Number <span className="font-bold underline">{legitRegistryTrim}</span>
+              </>
+            ) : null}
+            .
           </p>
           <p>
             This certification is issued for whatever legal purposes it may serve.
@@ -38,7 +47,7 @@ export default function RegistrationOfLegitimation({ data }) {
 
       <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-end flex-shrink-0">
         <div className="flex flex-col items-end mb-8">
-          <div className="legitimation-registrar-signatory-block mr-10 inline-flex flex-col items-center leading-none text-center">
+          <div className="legitimation-registrar-signatory-block mr-0 inline-flex flex-col items-center leading-none text-center">
             <div className="font-bold uppercase text-[15px]">{signatory}</div>
             <div className="text-[13px] italic">City Civil Registrar</div>
           </div>

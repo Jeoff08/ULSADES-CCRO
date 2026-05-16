@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react'
 import {
   formatDateCert,
   fullName,
-  formatLcrFormShortDate
+  formatLcrFormShortDate,
+  parseBirthToDate,
 } from '../../../lib/printUtils'
+import { lcrCertificationRequestParty } from '../../../lib/lcrCertificationRequest'
+import { lcrRemarksBodyStyle } from '../../../lib/lcrRemarksFontSize'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 
 function cellEditText(displayed) {
@@ -52,17 +55,20 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
         data.placeOfMarriageCity,
         data.placeOfMarriageProvince,
         data.placeOfMarriageCountry,
-      ].filter(Boolean).join(', ').trim() || '—'
+      ].filter(Boolean).join(', ').trim()
+      const atPlaceRemark = placeOfMarriage ? ` at ${placeOfMarriage}` : ''
 
       const dateOfMarriageUppercase = (() => {
         if (!data.dateOfMarriage) return ''
-        const d = new Date(data.dateOfMarriage)
-        if (isNaN(d.getTime())) return ''
+        const d = parseBirthToDate(String(data.dateOfMarriage).trim())
+        if (!d || isNaN(d.getTime())) return ''
         const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
         return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
       })()
 
-      const defaultRemark = `Legitimated by the subsequent marriage of parents ${fatherFull || '—'} and ${motherFull || '—'} on ${dateOfMarriageUppercase || '—'} at ${placeOfMarriage} under Registry No. ${data.marriageRegistryNo || '—'}`
+      const marriageReg = String(data.marriageRegistryNo || '').trim()
+      const remarkBase = `Legitimated by the subsequent marriage of parents ${fatherFull || '—'} and ${motherFull || '—'} on ${dateOfMarriageUppercase || '—'}${atPlaceRemark}`
+      const defaultRemark = marriageReg ? `${remarkBase} under Registry No. ${marriageReg}` : remarkBase
       setEditableRemarks(defaultRemark)
     }
   }, [data, fatherFull, motherFull])
@@ -88,6 +94,7 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
 
   const colbPage = data.colbPageNo ?? data.colbPageNumber ?? '0'
   const colbBook = data.colbBookNo ?? data.colbBookNumber ?? '0'
+  const certReqPartyPrint = lcrCertificationRequestParty(data, '1a')
 
   return (
     <div className="legitimation-lcr1a-doc ausf-doc print-doc print-doc-lcr-1a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col">
@@ -147,10 +154,10 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
                   ? LCR_1A_EDITABLE_ROWS.map((row) => (
                     <tr key={row.k}>
                       <td className="py-1 px-2 border border-black font-medium align-top w-48">{row.label}</td>
-                      <td className="py-1 px-2 border border-black font-bold text-center align-top">
+                      <td className="py-1 px-2 border border-black font-bold text-left align-top">
                         <input
                           type="text"
-                          className="no-print w-full min-w-0 text-center font-bold border-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none focus:border-[var(--primary-blue)] px-1"
+                          className="no-print w-full min-w-0 text-left font-bold border-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none focus:border-[var(--primary-blue)] px-1"
                           value={cellEditText(table[row.k])}
                           onChange={(e) => patchData(row.patch(e.target.value))}
                         />
@@ -171,17 +178,39 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
                     'Citizenship of Father': table.fatherCit,
                     'Date of Marriage of Parents': table.dom,
                     'Place of Marriage of Parents': table.pom,
-                  }).map(([label, val]) => (
-                    <tr key={label}>
-                      <td className="py-1 px-2 border border-black font-medium align-top w-48">{label}</td>
-                      <td className="py-1 px-2 border border-black font-bold text-center">{val}</td>
-                    </tr>
-                  ))}
+                  })
+                    .filter(([label, val]) => {
+                      if (label !== 'LCR Registry Number') return true
+                      const s = String(val ?? '').trim()
+                      return s !== '' && s !== '—'
+                    })
+                    .map(([label, val]) => (
+                      <tr key={label}>
+                        <td className="py-1 px-2 border border-black font-medium align-top w-48">{label}</td>
+                        <td className="py-1 px-2 border border-black font-bold text-left align-top">{val}</td>
+                      </tr>
+                    ))}
               </tbody>
             </table>
 
             <p className="mb-2 text-sm court-decree-lcr-body">
-              This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.
+              This certification is issued upon the request of{' '}
+              {onDataChange ? (
+                <>
+                  <input
+                    type="text"
+                    className="no-print inline-block min-w-[10rem] max-w-[32rem] border-0 border-b border-dashed border-gray-500 bg-transparent font-bold text-left px-0.5 align-baseline"
+                    value={String(data.lcrCertificationRequestParty ?? '')}
+                    onChange={(e) => patchData({ lcrCertificationRequestParty: e.target.value })}
+                    placeholder={lcrCertificationRequestParty({}, '1a')}
+                    aria-label="Party requesting certification"
+                  />
+                  <span className="hidden print:inline font-bold">{certReqPartyPrint}</span>
+                </>
+              ) : (
+                <span className="font-bold">{certReqPartyPrint}</span>
+              )}{' '}
+              for any legal purposes.
             </p>
 
             <div className="mt-10 mb-2 court-decree-lcr-body legitimation-lcr1a-remarks-block">
@@ -195,11 +224,15 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
                     onDataChange?.({ ...data, remarks: v })
                   }}
                   rows={3}
-                  className="w-full border border-gray-300 rounded px-2 py-1 text-[14px]"
+                  className="w-full border border-gray-300 rounded px-2 py-1"
+                  style={lcrRemarksBodyStyle(data)}
                   placeholder="Type or edit remarks here..."
                 />
               </div>
-              <p className="text-[14px] leading-[1.35] text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] font-bold italic">
+              <p
+                className="text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] font-bold italic"
+                style={lcrRemarksBodyStyle(data)}
+              >
                 &quot;{editableRemarks}&quot;
               </p>
             </div>

@@ -4,7 +4,6 @@ import UnsavedNavigationBlocker from './UnsavedNavigationBlocker'
 import { useAuth } from '../context/AuthContext'
 import { clearSupplementalActive, clearSupplementalDraft } from '../pages/legalInstrument/lib/supplementalSavedStorage'
 import { clearMc2010Active, clearMc2010Draft } from '../pages/legalInstrument/lib/mc2010SavedStorage'
-import { clearWronglyRegisterActive, clearWronglyRegisterDraft } from '../pages/legalInstrument/lib/wronglyRegisterSavedStorage'
 
 const LOGOUT_EXIT_MS = 450
 
@@ -61,7 +60,7 @@ function legalSubLinkClass(isActive) {
     }`
 }
 
-const FILES_SAVED_PATHS = ['/ausf/saved', '/legitimation/saved', '/court-decree/saved', '/legal-instrument/supplemental/saved', '/legal-instrument/mc2010-04/saved', '/legal-instrument/wrongly-register/saved']
+const FILES_SAVED_PATHS = ['/ausf/saved', '/legitimation/saved', '/court-decree/saved', '/legal-instrument/supplemental/saved', '/legal-instrument/mc2010-04/saved']
 
 /** CCRO seal used in sidebar (public filename contains spaces). */
 const CCRO_APP_BRAND_SRC = encodeURI('/ChatGPT Image Feb 11, 2026, 03_26_31 PM.png')
@@ -207,17 +206,6 @@ export default function Layout() {
                 >
                   <IconLegalSub />
                   <span>MC2010-04</span>
-                </NavLink>
-                <NavLink
-                  to="/legal-instrument/wrongly-register"
-                  onClick={() => {
-                    clearWronglyRegisterActive()
-                    clearWronglyRegisterDraft()
-                  }}
-                  className={({ isActive }) => legalSubLinkClass(isActive)}
-                >
-                  <IconLegalSub />
-                  <span>Wrongly register</span>
                 </NavLink>
                 <NavLink
                   to="/ausf"

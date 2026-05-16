@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { afterUnsavedAcknowledge, useWarnIfUnsaved } from '../../hooks/useWarnIfUnsaved'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import FormSection from '../../components/FormSection'
-import { FormInput, FormSelect, FormRadioGroup } from '../../components/FormField'
-import { defaultAUSF, syncAusfTransmittalFlagWithFormType } from './lib/ausfDefaults'
+import { FormInput, FormSelect, FormRadioGroup, FormFlexibleDateInput } from '../../components/FormField'
+import { defaultAUSF, mergeAUSFDraftData } from './lib/ausfDefaults'
 import {
   saveAUSFDraft,
   getAUSFDraft,
@@ -22,6 +22,12 @@ import {
   applyDerivedJuratFormTypeIfApplicable,
   AUSF_JURAT_PRINT_TYPES,
 } from './lib/ausfJuratRouting'
+import ToastHost from '../../components/toast/ToastHost'
+import { useToasts } from '../../components/toast/useToasts'
+import { useDebouncedSuccessToast } from '../../hooks/useDebouncedSuccessToast'
+import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
+import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
+import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShortcuts'
 
 const RELATIONSHIP_OPTIONS = [
   { value: '', label: '—' },
@@ -114,6 +120,8 @@ export default function AUSFForm() {
   const [searchParams] = useSearchParams()
   const typeFromUrl = searchParams.get('type') || 'ausf'
   const navigate = useNavigate()
+  const { toasts, show, dismiss } = useToasts()
+  const notifyLcrCertSaved = useDebouncedSuccessToast(show)
 
   const [form, setForm] = useState(() => {
     const base = { ...defaultAUSF }
@@ -141,7 +149,7 @@ export default function AUSFForm() {
     if (isEdit && editId) {
       const draft = getAUSFDraft()
       if (draft) {
-        const merged = syncAusfTransmittalFlagWithFormType({ ...defaultAUSF, ...draft })
+        const merged = mergeAUSFDraftData(draft)
         setForm(applyDerivedJuratFormTypeIfApplicable(merged))
       }
     } else {
@@ -178,9 +186,7 @@ export default function AUSFForm() {
         const isEdit = searchParams.get('edit') === '1'
         if (isEdit) {
           setForm((prev) =>
-            applyDerivedJuratFormTypeIfApplicable(
-              syncAusfTransmittalFlagWithFormType({ ...defaultAUSF, ...prev, ...draft })
-            )
+            applyDerivedJuratFormTypeIfApplicable(mergeAUSFDraftData({ ...prev, ...draft }))
           )
         }
       })
@@ -289,7 +295,7 @@ export default function AUSFForm() {
           <p>Unified Legal Status Automated Data Entry System — Iligan City</p>
         </header>
 
-        <div className="ausf-form-page__body">
+        <FormBodyFieldShortcuts className="ausf-form-page__body" onKeyDown={handleEnterFocusNextField}>
           <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
             <FormSection number={1} title="DETAILS OF APPLICANT/CLIENT">
               <div className="grid gap-4 sm:grid-cols-2">
@@ -310,8 +316,8 @@ export default function AUSFForm() {
               <FormSection noNumber title="CERTIFICATE OF REGISTRATION DETAILS">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   <FormInput label="AUSF REGISTRY NO." id="ausfRegistryNo" value={form.ausfRegistryNo} onChange={(v) => update('ausfRegistryNo', v)} />
-                  <FormInput label="AUSF DATE OF REGISTRATION" id="ausfDateOfRegistration" type="date" value={form.ausfDateOfRegistration} onChange={(v) => update('ausfDateOfRegistration', v)} />
-                  <FormInput label="CERTIFICATE ISSUANCE DATE" id="certificateIssuanceDate" type="date" value={form.certificateIssuanceDate} onChange={(v) => update('certificateIssuanceDate', v)} />
+                  <FormFlexibleDateInput label="AUSF DATE OF REGISTRATION" id="ausfDateOfRegistration" value={form.ausfDateOfRegistration} onChange={(v) => update('ausfDateOfRegistration', v)} />
+                  <FormFlexibleDateInput label="CERTIFICATE ISSUANCE DATE" id="certificateIssuanceDate" value={form.certificateIssuanceDate} onChange={(v) => update('certificateIssuanceDate', v)} />
                 </div>
               </FormSection>
             </div>
@@ -321,7 +327,7 @@ export default function AUSFForm() {
             <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
               <FormSection noNumber title="TRANSMITTAL DETAILS">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <FormInput label="TRANSMITTAL DATE" id="transmittalDate" type="date" value={form.transmittalDate} onChange={(v) => update('transmittalDate', v)} />
+                  <FormFlexibleDateInput label="TRANSMITTAL DATE" id="transmittalDate" value={form.transmittalDate} onChange={(v) => update('transmittalDate', v)} />
                   <FormInput label="RECIPIENT NAME" id="recipientName" value={form.recipientName} onChange={(v) => update('recipientName', v)} />
                   <FormInput label="RECIPIENT TITLE" id="recipientTitle" value={form.recipientTitle} onChange={(v) => update('recipientTitle', v)} />
                   <FormInput label="RECIPIENT OFFICE / LOCATION" id="recipientOffice" value={form.recipientOffice} onChange={(v) => update('recipientOffice', v)} />
@@ -445,10 +451,9 @@ export default function AUSFForm() {
                       </div>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                      <FormInput
+                      <FormFlexibleDateInput
                         label="DATE OF BIRTH"
                         id="dob"
-                        type="date"
                         value={form.dateOfBirth}
                         onChange={(v) => {
                           const nextDob = String(v || '')
@@ -494,11 +499,32 @@ export default function AUSFForm() {
                   <div className="ausf-form-page__colb-grid">
                     <div className="ausf-form-page__colb-row grid gap-4 sm:grid-cols-2">
                       <FormInput label="REGISTRY NO." id="colbRegistry" value={form.colbRegistryNo} onChange={(v) => update('colbRegistryNo', v)} placeholder="e.g. 2023-2.146" />
-                      <FormInput label="DATE OF REGISTRATION" id="colbDate" type="date" value={form.colbDateOfRegistration} onChange={(v) => update('colbDateOfRegistration', v)} />
+                      <FormFlexibleDateInput label="DATE OF REGISTRATION" id="colbDate" value={form.colbDateOfRegistration} onChange={(v) => update('colbDateOfRegistration', v)} />
                     </div>
                     <div className="ausf-form-page__colb-row ausf-form-page__colb-row--second grid gap-4 sm:grid-cols-2">
                       <FormInput label="PAGE NUMBER" id="colbPage" value={form.colbPageNumber} onChange={(v) => update('colbPageNumber', v)} />
                       <FormInput label="BOOK NUMBER" id="colbBook" value={form.colbBookNumber} onChange={(v) => update('colbBookNumber', v)} />
+                    </div>
+                    <div className="ausf-form-page__colb-row">
+                      <FormInput
+                        label="LCR FORM — PARTY REQUESTING CERTIFICATION (printed in bold)"
+                        id="lcrCertificationRequestParty"
+                        value={form.lcrCertificationRequestParty}
+                        onChange={(v) => {
+                          update('lcrCertificationRequestParty', v)
+                          notifyLcrCertSaved()
+                        }}
+                        placeholder="OCRG/OWNER/PARENTS/GUARDIAN"
+                      />
+                      <p className="text-xs text-gray-500 mt-1.5">Shown after “This certification is issued upon the request of …” on LCR Form 1A / A1.</p>
+                    </div>
+                    <div className="ausf-form-page__colb-row sm:col-span-2">
+                      <LcrRemarksFontSizeSelect
+                        id="ausf-lcr-remarks-font"
+                        value={form.lcrRemarksFontSizePt}
+                        onChange={(v) => update('lcrRemarksFontSizePt', v)}
+                        helpText="Controls how large the REMARKS paragraph prints on LCR 1A, A1, and COLB annotation outputs."
+                      />
                     </div>
                   </div>
                 </FormSection>
@@ -508,7 +534,7 @@ export default function AUSFForm() {
                 <FormSection number={6} title="DETAILS OF AFFIDAVIT TO USE THE SURNAME OF FATHER">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <FormInput label="REGISTRY NO." id="ausfRegistry" value={form.ausfRegistryNo} onChange={(v) => update('ausfRegistryNo', v)} />
-                    <FormInput label="DATE OF REGISTRATION" id="ausfDate" type="date" value={form.ausfDateOfRegistration} onChange={(v) => update('ausfDateOfRegistration', v)} />
+                    <FormFlexibleDateInput label="DATE OF REGISTRATION" id="ausfDate" value={form.ausfDateOfRegistration} onChange={(v) => update('ausfDateOfRegistration', v)} />
                   </div>
                 </FormSection>
               </div>
@@ -522,7 +548,7 @@ export default function AUSFForm() {
                   ) : (
                     <div className="grid gap-4 sm:grid-cols-2">
                       <FormInput label="REGISTRY NO." id="ackRegistry" value={form.ackRegistryNo} onChange={(v) => update('ackRegistryNo', v)} />
-                      <FormInput label="DATE OF REGISTRATION" id="ackDate" type="date" value={form.ackDateOfRegistration} onChange={(v) => update('ackDateOfRegistration', v)} />
+                      <FormFlexibleDateInput label="DATE OF REGISTRATION" id="ackDate" value={form.ackDateOfRegistration} onChange={(v) => update('ackDateOfRegistration', v)} />
                     </div>
                   )}
                 </FormSection>
@@ -673,8 +699,9 @@ export default function AUSFForm() {
           )}
 
           <p className="ausf-form-page__footer-note no-print">created by: ATTY. YUSSIF DON JUSTINE F. MARTIL</p>
-        </div>
+        </FormBodyFieldShortcuts>
       </div>
+      <ToastHost toasts={toasts} onDismiss={dismiss} />
     </div>
   )
 }

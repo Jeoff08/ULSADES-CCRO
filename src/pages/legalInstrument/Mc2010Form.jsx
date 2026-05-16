@@ -22,6 +22,8 @@ import {
   saveOrUpdateMc2010,
 } from './lib/mc2010SavedStorage'
 import { deriveAffectedDocumentsForPrint } from '../courtDecree/lib/courtDecreeAffectedDocuments'
+import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
+import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShortcuts'
 
 function hasValue(v) {
   return String(v ?? '').trim().length > 0
@@ -253,7 +255,7 @@ export default function Mc2010Form() {
           <h1>MC2010-04 Automated Data Entry Form</h1>
           <p>Unified Legal Status Automated Data Entry System — Iligan City</p>
         </header>
-        <div className="legitimation-form-page__body mc2010-form-page-content">
+        <FormBodyFieldShortcuts className="legitimation-form-page__body mc2010-form-page-content" onKeyDown={handleEnterFocusNextField}>
           <p className="text-sm text-gray-600 mb-5">
             Use <span className="font-semibold">Form Sections</span> on the left to switch between the transmittal letter and the LCR form (manual entry or module prefill). The layout matches the supplemental transmittal editor for consistency.
           </p>
@@ -581,7 +583,7 @@ export default function Mc2010Form() {
             </div>
           ) : null}
 
-        </div>
+        </FormBodyFieldShortcuts>
       </div>
     </div>
   )

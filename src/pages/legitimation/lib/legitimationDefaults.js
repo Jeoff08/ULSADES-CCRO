@@ -68,17 +68,33 @@ export const defaultLegitimation = {
   recipientTitle: '',
   recipientOffice: '',
   recipientAgency: '',
-  /** Local transmittal “To PSA” block (4 lines); empty = use print defaults */
+  /** Local transmittal “To PSA” block (6 lines for legitimation); empty = use print defaults */
   transmittalToPsaLine1: '',
   transmittalToPsaLine2: '',
   transmittalToPsaLine3: '',
   transmittalToPsaLine4: '',
+  transmittalToPsaLine5: '',
+  transmittalToPsaLine6: '',
+  /** Out-of-town transmittal addressee lines 4–6 (lines 1–3 use recipientName / Title / Office) */
+  transmittalOotLine4: '',
+  transmittalOotLine5: '',
+  transmittalOotLine6: '',
+  /** Legitimation transmittal ATTN label (e.g. ATTN:); empty = print default */
+  transmittalAttnPrefix: '',
+  /** Legitimation transmittal ATTN lines: name, title, office (prefix is separate); empty = print defaults */
+  transmittalAttnLine1: '',
+  transmittalAttnLine2: '',
+  transmittalAttnLine3: '',
   transmittalDate: '',
   transmittalSalutation: '',
   transmittalSignatoryName: '',
   transmittalSignatoryTitle: '',
   /** Item 12 annotation choice: A (without acknowledgement) or B (with acknowledgement). */
   legitimationAnnotationOption: 'A',
+  /** Bold phrase in LCR 1A line “issued upon the request of …”. */
+  lcrCertificationRequestParty: 'OCRG/OWNER/PARENTS/GUARDIAN',
+  /** Printed font size (pt) for LCR Form 1A remarks body. */
+  lcrRemarksFontSizePt: '12',
   contactPhone: '',
   contactEmail: '',
 }

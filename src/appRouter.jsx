@@ -13,8 +13,6 @@ import SupplementalPrint from './pages/legalInstrument/SupplementalPrint'
 import SupplementalSaved from './pages/legalInstrument/SupplementalSaved'
 import Mc2010Print from './pages/legalInstrument/Mc2010Print'
 import Mc2010Saved from './pages/legalInstrument/Mc2010Saved'
-import WronglyRegisterPrint from './pages/legalInstrument/WronglyRegisterPrint'
-import WronglyRegisterSaved from './pages/legalInstrument/WronglyRegisterSaved'
 import CourtDecreeWorkflowPage from './pages/CourtDecreeWorkflowPage'
 import UploadedFileViewer from './pages/UploadedFileViewer'
 import Log from './pages/Log'
@@ -65,8 +63,6 @@ export const appRouter = createBrowserRouter([
       { path: 'legal-instrument/supplemental/saved', element: <SupplementalSaved /> },
       { path: 'legal-instrument/mc2010-04/print', element: <Mc2010Print /> },
       { path: 'legal-instrument/mc2010-04/saved', element: <Mc2010Saved /> },
-      { path: 'legal-instrument/wrongly-register/print', element: <WronglyRegisterPrint /> },
-      { path: 'legal-instrument/wrongly-register/saved', element: <WronglyRegisterSaved /> },
       { path: 'uploaded/:scope', element: <UploadedFileViewer /> },
       { path: 'logs', element: <Log /> },
       { path: 'annotation-field', element: <AnnotationFieldPage /> },

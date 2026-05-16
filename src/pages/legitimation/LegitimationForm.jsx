@@ -1,10 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { afterUnsavedAcknowledge, useWarnIfUnsaved } from '../../hooks/useWarnIfUnsaved'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { defaultLegitimation, syncLegitimationTransmittalFlagWithFormType } from './lib/legitimationDefaults'
 import { addSavedLegitimation, getLegitimationDraft, updateSavedLegitimation } from './lib/legitimationStorage'
 import { DATE_MONTHS, LEGITIMATION_TYPES } from './constants'
 import { commitFirstLetterUpperFromInput } from '../../lib/sentenceCase'
+import ToastHost from '../../components/toast/ToastHost'
+import { useToasts } from '../../components/toast/useToasts'
+import { useDebouncedSuccessToast } from '../../hooks/useDebouncedSuccessToast'
+import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
+import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
+import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShortcuts'
+import FlexibleFormDateInput from '../../components/forms/FlexibleFormDateInput'
+import { parseBirthToDate } from '../../lib/printUtils'
 
 const inputClass = 'legitimation-form-page__input w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-gray-50 transition-colors duration-150'
 
@@ -25,18 +33,10 @@ function getRequiredFields(form) {
     { key: 'motherLast', label: "Mother's surname" },
     { key: 'fatherFirst', label: "Father's first name" },
     { key: 'fatherLast', label: "Father's surname" },
-    { key: 'affidavitLegitRegistryNo', label: 'Affidavit of legitimation registry number' },
     { key: 'affidavitLegitDate', label: 'Affidavit of legitimation registration date' },
-    { key: 'marriageRegistryNo', label: 'Marriage registry number' },
-    { key: 'dateOfMarriage', label: 'Date of marriage' },
-    { key: 'placeOfMarriageCity', label: 'Place of marriage (city)' },
-    { key: 'placeOfMarriageProvince', label: 'Place of marriage (province)' },
-    { key: 'placeOfMarriageCountry', label: 'Place of marriage (country)' },
-    { key: 'solemnizingOfficer', label: 'Solemnizing officer' },
   ]
   if (form.birthRegisteredIligan !== 'NO') {
     base.push(
-      { key: 'colbRegistryNo', label: 'COLB registry number' },
       { key: 'colbRegDate', label: 'COLB registration date' },
       { key: 'colbPageNo', label: 'COLB page number' },
       { key: 'colbBookNo', label: 'COLB book number' }
@@ -44,7 +44,6 @@ function getRequiredFields(form) {
   }
   if (form.acknowledgedByFatherInColb === 'NO') {
     base.push(
-      { key: 'affidavitAckRegistryNo', label: 'Affidavit of acknowledgement registry number' },
       { key: 'affidavitAckDate', label: 'Affidavit of acknowledgement registration date' }
     )
   }
@@ -64,86 +63,18 @@ function getMissingFields(form) {
   return getRequiredFields(form).filter(({ key }) => isEmpty(form[key]))
 }
 
-function formatDigitsToDdMmYyyy(digits) {
-  const d = (digits || '').replace(/\D/g, '').slice(0, 8)
-  if (d.length <= 2) {
-    if (d.length < 2) return d
-    return String(Math.min(31, Math.max(1, Number.parseInt(d, 10) || 0))).padStart(2, '0')
-  }
-  if (d.length <= 4) {
-    const ddRaw = d.slice(0, 2)
-    const mmRaw = d.slice(2)
-    const dd = ddRaw.length === 2 ? String(Math.min(31, Math.max(1, Number.parseInt(ddRaw, 10) || 0))).padStart(2, '0') : ddRaw
-    const mm = mmRaw.length === 2 ? String(Math.min(12, Math.max(1, Number.parseInt(mmRaw, 10) || 0))).padStart(2, '0') : mmRaw
-    return `${dd}/${mm}`
-  }
-  const dd = String(Math.min(31, Math.max(1, Number.parseInt(d.slice(0, 2), 10) || 0))).padStart(2, '0')
-  const mm = String(Math.min(12, Math.max(1, Number.parseInt(d.slice(2, 4), 10) || 0))).padStart(2, '0')
-  return `${dd}/${mm}/${d.slice(4)}`
-}
-
-function isoToDdMmYyyy(iso) {
-  if (!iso || typeof iso !== 'string') return ''
-  const [y, m, d] = iso.split('-')
-  if (!y || !m || !d) return ''
-  return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`
-}
-
 function dateToOutputFormat(str) {
   if (!str || typeof str !== 'string') return str
-  const parts = str.trim().split('/')
-  if (parts.length !== 3) return str
-  const [dd, mm, yyyy] = parts
-  const dayNum = parseInt(dd, 10)
-  if (dayNum < 1 || dayNum > 31) return str
-  const monthNum = parseInt(mm, 10)
-  if (monthNum < 1 || monthNum > 12) return str
-  return `${String(dayNum).padStart(2, '0')}/${DATE_MONTHS[monthNum]}/${yyyy}`
+  const d = parseBirthToDate(str.trim())
+  if (!d || isNaN(d.getTime())) return str
+  const idx = d.getMonth() + 1
+  const mon = DATE_MONTHS[idx]
+  if (!mon) return str
+  return `${String(d.getDate()).padStart(2, '0')}/${mon}/${d.getFullYear()}`
 }
 
 const LEGITIMATION_DATE_KEYS = ['dateOfBirth', 'dateOfDeath', 'affidavitAckDate', 'affidavitLegitDate', 'dateOfMarriage', 'colbRegDate']
 const LEGITIMATION_TRANSMITTAL_TYPES = new Set(['transmittal', 'out-of-town-transmittal'])
-
-function DateInput({ value, onChange, placeholder = 'dd/mm/yyyy', disabled }) {
-  const pickerRef = useRef(null)
-  const handleInputChange = (e) => {
-    const formatted = formatDigitsToDdMmYyyy(e.target.value)
-    onChange(formatted)
-  }
-  const isDigitsAndSlashes = /^[\d/]*$/.test((value || '').trim())
-  const displayValue = isDigitsAndSlashes ? formatDigitsToDdMmYyyy(value) : (value || '')
-  return (
-    <div className="relative flex items-center gap-1">
-      <input
-        type="text"
-        inputMode="numeric"
-        value={displayValue}
-        onChange={handleInputChange}
-        placeholder={placeholder}
-        maxLength={10}
-        disabled={disabled}
-        className={`${inputClass} pr-9 ${disabled ? 'opacity-50 cursor-not-allowed bg-gray-200' : ''}`}
-      />
-      <button
-        type="button"
-        onClick={() => !disabled && (pickerRef.current?.showPicker?.() || pickerRef.current?.click())}
-        disabled={disabled}
-        className={`legitimation-form-page__date-picker-btn absolute right-1.5 p-1 rounded text-gray-500 ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
-        title={disabled ? 'Disabled' : 'Pick date'}
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-      </button>
-      <input
-        ref={pickerRef}
-        type="date"
-        className="sr-only"
-        aria-hidden="true"
-        tabIndex={-1}
-        onChange={(e) => onChange(isoToDdMmYyyy(e.target.value))}
-      />
-    </div>
-  )
-}
 
 function LegitimationSection({ number, title, children, instruction }) {
   return (
@@ -201,6 +132,9 @@ export default function LegitimationForm() {
 
   const acknowledgeSaved = useWarnIfUnsaved(form, [searchParams.toString(), dirtyBaselineTick])
 
+  const { toasts, show, dismiss } = useToasts()
+  const notifyLcrCertSaved = useDebouncedSuccessToast(show)
+
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
   const disableItem8 = form.acknowledgedByFatherInColb === 'YES'
   const disableItem11 = form.birthRegisteredIligan === 'NO'
@@ -210,6 +144,10 @@ export default function LegitimationForm() {
       return
     }
     commitFirstLetterUpperFromInput(e, (v) => update(key, v))
+  }
+  const onLcrCertPartyChange = (e) => {
+    scInput('lcrCertificationRequestParty')(e)
+    notifyLcrCertSaved()
   }
 
   useEffect(() => {
@@ -270,7 +208,7 @@ export default function LegitimationForm() {
           <p>Unified Legal Status Automated Data Entry System — Iligan City</p>
         </header>
 
-        <div className="legitimation-form-page__body">
+        <FormBodyFieldShortcuts className="legitimation-form-page__body" onKeyDown={handleEnterFocusNextField}>
           <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
             <LegitimationSection
               number="1"
@@ -373,7 +311,7 @@ export default function LegitimationForm() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Date of birth</label>
-                    <DateInput value={form.dateOfBirth} onChange={(v) => update('dateOfBirth', v)} placeholder="dd/mm/yyyy" />
+                    <FlexibleFormDateInput value={form.dateOfBirth} onChange={(v) => update('dateOfBirth', v)} placeholder="May 15 2026 or dd/mm/yyyy" inputClassName={inputClass} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Sex</label>
@@ -465,7 +403,7 @@ export default function LegitimationForm() {
                     <input type="text" value={form.deceasedParentLast} onChange={scInput('deceasedParentLast')} className={`${inputClass} ${form.bothParentsAlive === 'YES' ? 'bg-gray-200 cursor-not-allowed' : ''}`} placeholder='Surname' disabled={form.bothParentsAlive === 'YES'} />
                   </div>
                   <div className="mt-2">
-                    <DateInput value={form.dateOfDeath} onChange={(v) => update('dateOfDeath', v)} placeholder="Date of death (dd/mm/yyyy)" disabled={form.bothParentsAlive === 'YES'} />
+                    <FlexibleFormDateInput value={form.dateOfDeath} onChange={(v) => update('dateOfDeath', v)} placeholder="May 15 2026 or dd/mm/yyyy" disabled={form.bothParentsAlive === 'YES'} inputClassName={`${inputClass} ${form.bothParentsAlive === 'YES' ? 'opacity-50 cursor-not-allowed bg-gray-200' : ''}`} />
                   </div>
                 </div>
               </div>
@@ -485,7 +423,7 @@ export default function LegitimationForm() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Registration date</label>
-                  <DateInput value={form.affidavitAckDate} onChange={(v) => update('affidavitAckDate', v)} placeholder="dd/mm/yyyy" disabled={disableItem8} />
+                  <FlexibleFormDateInput value={form.affidavitAckDate} onChange={(v) => update('affidavitAckDate', v)} placeholder="May 15 2026 or dd/mm/yyyy" disabled={disableItem8} inputClassName={`${inputClass} ${disableItem8 ? 'opacity-50 cursor-not-allowed bg-gray-200' : ''}`} />
                 </div>
               </div>
             </LegitimationSection>
@@ -500,27 +438,27 @@ export default function LegitimationForm() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Registration date</label>
-                  <DateInput value={form.affidavitLegitDate} onChange={(v) => update('affidavitLegitDate', v)} placeholder="dd/mm/yyyy" />
+                  <FlexibleFormDateInput value={form.affidavitLegitDate} onChange={(v) => update('affidavitLegitDate', v)} placeholder="May 15 2026 or dd/mm/yyyy" inputClassName={inputClass} />
                 </div>
               </div>
             </LegitimationSection>
           </div>
 
           <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
-            <LegitimationSection number="10" title="Details of marriage of parents">
+            <LegitimationSection number="10" title="Details of marriage of parents" instruction="This section is optional — fill in when applicable.">
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Registry number</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Registry number <span className="font-normal text-gray-500">(optional)</span></label>
                     <input type="text" value={form.marriageRegistryNo} onChange={scInput('marriageRegistryNo')} placeholder="e.g. 2024-13" className={inputClass} />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Date of marriage</label>
-                    <DateInput value={form.dateOfMarriage} onChange={(v) => update('dateOfMarriage', v)} placeholder="dd/mm/yyyy" />
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date of marriage <span className="font-normal text-gray-500">(optional)</span></label>
+                    <FlexibleFormDateInput value={form.dateOfMarriage} onChange={(v) => update('dateOfMarriage', v)} placeholder="May 15 2026 or dd/mm/yyyy" inputClassName={inputClass} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Place of marriage</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Place of marriage <span className="font-normal text-gray-500">(optional)</span></label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <input type="text" value={form.placeOfMarriageCity} onChange={scInput('placeOfMarriageCity')} placeholder="City/Municipality" className={inputClass} />
                     <input type="text" value={form.placeOfMarriageProvince} onChange={scInput('placeOfMarriageProvince')} placeholder="Province" className={inputClass} />
@@ -528,7 +466,7 @@ export default function LegitimationForm() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Solemnizing officer</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Solemnizing officer <span className="font-normal text-gray-500">(optional)</span></label>
                   <input type="text" value={form.solemnizingOfficer} onChange={scInput('solemnizingOfficer')} placeholder="e.g. RICHIE GAY T. MENDOZA" className={inputClass} />
                 </div>
               </div>
@@ -548,7 +486,7 @@ export default function LegitimationForm() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Registration date</label>
-                  <DateInput value={form.colbRegDate} onChange={(v) => update('colbRegDate', v)} placeholder="dd/mm/yyyy" disabled={disableItem11} />
+                  <FlexibleFormDateInput value={form.colbRegDate} onChange={(v) => update('colbRegDate', v)} placeholder="May 15 2026 or dd/mm/yyyy" disabled={disableItem11} inputClassName={`${inputClass} ${disableItem11 ? 'opacity-50 cursor-not-allowed bg-gray-200' : ''}`} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Page number</label>
@@ -557,6 +495,26 @@ export default function LegitimationForm() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Book number</label>
                   <input type="text" value={form.colbBookNo} onChange={scInput('colbBookNo')} className={`${inputClass} ${disableItem11 ? 'bg-gray-200 cursor-not-allowed' : ''}`} placeholder='e.g. 2' disabled={disableItem11} />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">LCR Form 1A — party requesting certification (printed in bold)</label>
+                  <input
+                    type="text"
+                    value={form.lcrCertificationRequestParty}
+                    onChange={onLcrCertPartyChange}
+                    placeholder="OCRG/OWNER/PARENTS/GUARDIAN"
+                    className={`${inputClass} ${disableItem11 ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+                    disabled={disableItem11}
+                  />
+                </div>
+                <div className={`sm:col-span-2 ${disableItem11 ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <LcrRemarksFontSizeSelect
+                    id="legitimation-lcr-remarks-font"
+                    disabled={disableItem11}
+                    value={form.lcrRemarksFontSizePt}
+                    onChange={(v) => update('lcrRemarksFontSizePt', v)}
+                    helpText="Controls how large the REMARKS paragraph prints on LCR Form 1A."
+                  />
                 </div>
               </div>
             </LegitimationSection>
@@ -693,8 +651,9 @@ export default function LegitimationForm() {
           )}
 
           <p className="legitimation-form-page__footer-note no-print">created by: ATTY. YUSSIF DON JUSTINE F. MARTIL</p>
-        </div>
+        </FormBodyFieldShortcuts>
       </div>
+      <ToastHost toasts={toasts} onDismiss={dismiss} />
     </div>
   )
 }

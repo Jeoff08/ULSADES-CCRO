@@ -1,12 +1,12 @@
 import React from 'react'
-import { formatDateLong, formatDateCert, fullName } from '../../../lib/printUtils'
+import { formatDateLong, fullName } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 
 export default function RegistrationOfAusf({ data }) {
   const affiantName = data.applicantName || fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
   const regDate = formatDateLong(data.ausfDateOfRegistration)
   const registryNo = data.ausfRegistryNo
-  const issuedDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
+  const issuedDate = formatDateLong(data.certificateIssuanceDate) || formatDateLong(new Date())
   const affidavitLabel = 'Affidavit to Use Surname of the Father'
   const signatoryName = data.regAusfSignatoryName || data.certificateSignatoryName || 'LORELIE L. CANTO'
   const signatoryTitle = data.regAusfSignatoryTitle || data.certificateSignatoryTitle || 'Registration Officer IV'

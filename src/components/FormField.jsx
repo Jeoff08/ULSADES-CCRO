@@ -1,5 +1,6 @@
 import React from 'react'
 import { commitFirstLetterUpperFromInput } from '../lib/sentenceCase'
+import FlexibleFormDateInput from './forms/FlexibleFormDateInput'
 
 const inputClass =
   'form-field__input w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-gray-50 transition-colors duration-150'
@@ -66,6 +67,33 @@ export function FormSelect({ label, id, value, onChange, options, className = ''
           <option key={opt.value} value={opt.value}>{opt.label}</option>
         ))}
       </select>
+      {label && labelBelow && (
+        <label htmlFor={id} className="block text-xs font-medium text-gray-500 mt-0.5">
+          {label}
+        </label>
+      )}
+    </div>
+  )
+}
+
+/** Full calendar date: type month name + day + year, or dd/mm/yyyy; stored as dd/mm/yyyy. */
+export function FormFlexibleDateInput({
+  label,
+  id,
+  value,
+  onChange,
+  placeholder,
+  className = '',
+  labelBelow,
+}) {
+  return (
+    <div className={className}>
+      {label && !labelBelow && (
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+          {label}
+        </label>
+      )}
+      <FlexibleFormDateInput id={id} value={value} onChange={onChange} placeholder={placeholder} inputClassName={inputClass} />
       {label && labelBelow && (
         <label htmlFor={id} className="block text-xs font-medium text-gray-500 mt-0.5">
           {label}

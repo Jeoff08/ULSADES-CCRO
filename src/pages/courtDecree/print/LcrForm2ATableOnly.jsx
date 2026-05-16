@@ -5,7 +5,7 @@ import { buildLcr2aTableDisplay } from '../lib/lcr2aTable'
 export default function LcrForm2ATableOnly({ data }) {
   const t = buildLcr2aTableDisplay(data)
   const label = 'py-2 px-3 border border-black font-medium align-top w-[42%]'
-  const cell = 'py-2 px-3 border border-black text-center font-bold text-sm'
+  const cell = 'py-2 px-3 border border-black text-left font-bold text-sm align-top'
   const valCause = 'py-2 px-3 border border-black text-left font-bold text-sm whitespace-pre-wrap align-top'
   const causeLines = 8
 
@@ -32,7 +32,7 @@ export default function LcrForm2ATableOnly({ data }) {
             </tr>
           ))}
           <tr>
-            <td className={`${label} text-center`} rowSpan={causeLines}>Cause of Death</td>
+            <td className={`${label} text-left`} rowSpan={causeLines}>Cause of Death</td>
             <td className={valCause}>{t.causeOfDeath}</td>
           </tr>
           {Array.from({ length: causeLines - 1 }).map((_, idx) => (

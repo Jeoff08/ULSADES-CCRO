@@ -182,7 +182,20 @@ export default function SupplementalPrint() {
     return hasDocType || hasEndorsements || hasAttachments
   }, [data])
   const showTransmittalOutput = hasTransmittalData
-  const supType = String(data.supplementType || '').toLowerCase()
+  const supType = String(data.supplementType || '').trim().toLowerCase()
+  /** Child's middle name: Iligan header affidavit — long bond only (see paper-size effect). */
+  const isMiddleNameAffidavit =
+    supType === 'middlename' ||
+    supType === 'middle_name' ||
+    supType === 'middle name' ||
+    supType === 'middle-name'
+  /** Child sex: same compact print path as middle name (`data-supplement-mn`). */
+  const isSexSupplementAffidavit = supType === 'sex'
+  /** Geographical: same compact print path as child sex. */
+  const isGeographicalSupplementAffidavit = supType === 'geographical'
+  /** Shared compact COLB supplemental PDF styling (`data-supplement-mn` rules). */
+  const isColbCompactPrintAffidavit =
+    isMiddleNameAffidavit || isSexSupplementAffidavit || isGeographicalSupplementAffidavit
   /** Opt-in button sets includeForm1a; sex-only backward compat when field was never saved. */
   const showForm1a =
     data.includeForm1a === true || (supType === 'sex' && data.includeForm1a === undefined)
@@ -238,6 +251,21 @@ export default function SupplementalPrint() {
   /** Same @page sizing as Court Decree / Legitimation / AUSF — honor paper picker for Save PDF + Preview (Electron uses preferCSSPageSize). */
   const paperSpec = useMemo(() => getPaperPageSpec(paperSize), [paperSize])
   usePrintPageSize(paperSize)
+
+  /** Short bond (sex/geo) or long bond (child's middle name): inset content width for compact COLB layout. */
+  const colbCompactAffidavitWidthMm = useMemo(() => {
+    const insetMm = 25.4
+    const narrow = Math.max(158, paperSpec.widthMm - insetMm)
+    if (isMiddleNameAffidavit && paperSize === 'long') return narrow
+    if (isColbCompactPrintAffidavit && paperSize === 'short') return narrow
+    return null
+  }, [isMiddleNameAffidavit, isColbCompactPrintAffidavit, paperSize, paperSpec.widthMm])
+
+  useEffect(() => {
+    if (isMiddleNameAffidavit && showAffidavitOutput) {
+      setPaperSize('long')
+    }
+  }, [isMiddleNameAffidavit, showAffidavitOutput, location.key])
 
   useEffect(() => {
     if (!showAffidavitOutput) {
@@ -385,6 +413,50 @@ export default function SupplementalPrint() {
 
   return (
     <div className="p-4 print:p-0 supplemental-print-anim-page">
+      <style>
+        {`
+/* Supplemental bundle + transmittal: 16px on screen, 12pt in print/PDF (short, A4, long) */
+#supplemental-print-page #supplemental-print-bundle,
+#supplemental-print-page #supplemental-print-bundle * {
+  font-size: 16px;
+}
+@media print {
+  #supplemental-print-page #supplemental-print-bundle,
+  #supplemental-print-page #supplemental-print-bundle * {
+    font-size: 12pt !important;
+  }
+}
+body.pdf-capture #supplemental-print-page #supplemental-print-bundle,
+body.pdf-capture #supplemental-print-page #supplemental-print-bundle * {
+  font-size: 12pt !important;
+}
+/* Child's middle name (long) / child sex / geographical: compact bond + shared print tweaks */
+#supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-report-doc {
+  padding: 0.4rem 0.45rem !important;
+  line-height: 1.2 !important;
+  box-sizing: border-box !important;
+}
+#supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-report-doc .mb-4 {
+  margin-bottom: 0.3rem !important;
+}
+#supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-report-doc .grid {
+  gap: 0.3rem !important;
+}
+#supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-report-doc .grid img {
+  width: 100px !important;
+  height: 100px !important;
+  max-width: 100px !important;
+  max-height: 100px !important;
+}
+@media print {
+  html[data-paper-size="short"] #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-report-doc,
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-report-doc {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+        `}
+      </style>
       <div className="no-print mb-3 max-w-6xl mx-auto flex items-center justify-between gap-2">
         <Link
           to="/legal-instrument/supplemental/saved"
@@ -396,8 +468,13 @@ export default function SupplementalPrint() {
           <select
             value={paperSize}
             onChange={(e) => setPaperSize(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
-            title="Paper size"
+            disabled={isMiddleNameAffidavit && showAffidavitOutput}
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white disabled:opacity-70 disabled:cursor-not-allowed"
+            title={
+              isMiddleNameAffidavit && showAffidavitOutput
+                ? "Child's middle name affidavit is printed on long bond only"
+                : 'Paper size'
+            }
           >
             {PAPER_SIZES.map((p) => (
               <option key={p.id} value={p.id}>{p.label}</option>
@@ -547,7 +624,7 @@ export default function SupplementalPrint() {
                 }
               />
             </div>
-            {showTransmittalOutput ? (
+            {showTransmittalOutput || (showAffidavitOutput && isMiddleNameAffidavit) ? (
               <div className="no-print relative z-10 rounded-lg border border-slate-200 bg-slate-50/95 p-2.5 space-y-1.5 ring-1 ring-slate-100">
                 <label htmlFor="supplemental-print-prepared-signed" className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide">
                   Prepared / signed by
@@ -557,7 +634,13 @@ export default function SupplementalPrint() {
                   className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs text-gray-900 bg-white"
                   value={clampTransmittalSignatoryIndex(data.transmittalSignatoryOptionIndex)}
                   onChange={(e) => handleTransmittalSignatoryIndexChange(Number(e.target.value))}
-                  title="Signatory after “Respectfully yours,” on the supplemental transmittal"
+                  title={
+                    showTransmittalOutput && showAffidavitOutput && isMiddleNameAffidavit
+                      ? "Signatory on transmittal and on the child's middle name affidavit footer"
+                      : showTransmittalOutput
+                        ? 'Signatory after "Respectfully yours," on the supplemental transmittal'
+                        : "Signatory on the child's middle name affidavit footer"
+                  }
                 >
                   {RECEIVED_BY_OPTIONS.map((row, i) => (
                     <option key={row.name} value={i}>
@@ -575,17 +658,20 @@ export default function SupplementalPrint() {
             <div id="supplemental-print-bundle">
               <div
                 id="supplemental-print-affidavit"
+                {...(isColbCompactPrintAffidavit ? { 'data-supplement-mn': '1' } : {})}
                 className={
-                  activePanel === 'affidavit'
-                    ? 'block'
-                    : 'hidden print:block print:[page-break-before:avoid]'
+                  `${activePanel === 'affidavit' ? 'block' : 'hidden print:block print:[page-break-before:avoid]'} ${(isMiddleNameAffidavit && paperSize === 'long') ||
+                    (!isMiddleNameAffidavit && isColbCompactPrintAffidavit && paperSize === 'short')
+                    ? 'mx-auto'
+                    : ''
+                    }`.trim()
                 }
               >
                 <SupplementalReportAffidavit
                   data={data}
                   onItem3CustomChange={setItem3Custom}
                   onItem5CustomChange={setItem5Custom}
-                  paperWidth={`${paperSpec.widthMm}mm`}
+                  paperWidth={`${colbCompactAffidavitWidthMm ?? paperSpec.widthMm}mm`}
                   paperHeight={`${paperSpec.heightMm}mm`}
                 />
               </div>

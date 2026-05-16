@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { formatDateCert, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
+import { lcrRemarksBodyStyle } from '../../../lib/lcrRemarksFontSize'
+import LcrCertificationRequestPartyInline from '../../../components/lcr/LcrCertificationRequestPartyInline'
 import { buildLcr1aTableDisplay } from '../lib/lcr1aTable'
 import { resolveCourtDecreeLcrPrintCcr } from '../lib/courtDecreePrintCcr'
 import LcrRegistrationDateInputs from '../../../components/lcr/LcrRegistrationDateInputs'
@@ -127,8 +129,9 @@ export default function LcrForm1ABirthAvailable({
                       return [
                         <tr key="dateReg">
                           <td className="py-1 px-2 border border-black font-medium align-top w-48">{row.label}</td>
-                          <td className="py-1 px-2 border border-black font-bold text-center align-top">
+                          <td className="py-1 px-2 border border-black font-bold text-left align-top">
                             <LcrRegistrationDateInputs
+                              dateInputsJustify="start"
                               valueRaw={data.lcr1aDateRegistration || data.colbRegDate}
                               savedDayUi={data.lcrRegistrationDayUi}
                               savedMonthUi={data.lcrRegistrationMonthUi}
@@ -165,8 +168,9 @@ export default function LcrForm1ABirthAvailable({
                       return [
                         <tr key="dob">
                           <td className="py-1 px-2 border border-black font-medium align-top w-48">{row.label}</td>
-                          <td className="py-1 px-2 border border-black font-bold text-center align-top">
+                          <td className="py-1 px-2 border border-black font-bold text-left align-top">
                             <LcrRegistrationDateInputs
+                              dateInputsJustify="start"
                               valueRaw={data.lcr1aDateOfBirth || data.dateOfBirth}
                               savedDayUi={data.lcr1aDobDayUi}
                               savedMonthUi={data.lcr1aDobMonthUi}
@@ -207,8 +211,9 @@ export default function LcrForm1ABirthAvailable({
                       return [
                         <tr key="dom">
                           <td className="py-1 px-2 border border-black font-medium align-top w-48">{row.label}</td>
-                          <td className="py-1 px-2 border border-black font-bold text-center align-top">
+                          <td className="py-1 px-2 border border-black font-bold text-left align-top">
                             <LcrRegistrationDateInputs
+                              dateInputsJustify="start"
                               valueRaw={data.lcr1aDateMarriageParents || data.dateOfMarriage}
                               savedDayUi={data.lcr1aDomDayUi}
                               savedMonthUi={data.lcr1aDomMonthUi}
@@ -248,10 +253,10 @@ export default function LcrForm1ABirthAvailable({
                     return [
                       <tr key={row.k}>
                         <td className="py-1 px-2 border border-black font-medium align-top w-48">{row.label}</td>
-                        <td className="py-1 px-2 border border-black font-bold text-center align-top">
+                        <td className="py-1 px-2 border border-black font-bold text-left align-top">
                           <input
                             type="text"
-                            className="no-print w-full min-w-0 text-center font-bold border-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none focus:border-[var(--primary-blue)] px-1"
+                            className="no-print w-full min-w-0 text-left font-bold border-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none focus:border-[var(--primary-blue)] px-1"
                             value={cellEditText(table[row.k])}
                             onChange={(e) => patchData(row.patch(e.target.value))}
                           />
@@ -262,18 +267,18 @@ export default function LcrForm1ABirthAvailable({
                   })
                   : (
                     <>
-                      <tr><td className="py-1 px-2 border border-black font-medium align-top w-48">LCR Registry Number</td><td className="py-1 px-2 border border-black font-bold text-center">{table.registry}</td></tr>
-                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Registration</td><td className="py-1 px-2 border border-black font-bold text-center">{table.dateReg}</td></tr>
-                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Name of Child</td><td className="py-1 px-2 border border-black font-bold text-center">{table.nameChild}</td></tr>
-                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Sex</td><td className="py-1 px-2 border border-black font-bold text-center">{table.sex}</td></tr>
-                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Birth</td><td className="py-1 px-2 border border-black font-bold text-center">{table.dob}</td></tr>
-                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Place of Birth</td><td className="py-1 px-2 border border-black font-bold text-center">{table.pob}</td></tr>
-                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Name of Mother</td><td className="py-1 px-2 border border-black font-bold text-center">{table.mother}</td></tr>
-                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Citizenship of Mother</td><td className="py-1 px-2 border border-black font-bold text-center">{table.motherCit}</td></tr>
-                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Name of Father</td><td className="py-1 px-2 border border-black font-bold text-center">{table.father}</td></tr>
-                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Citizenship of Father</td><td className="py-1 px-2 border border-black font-bold text-center">{table.fatherCit}</td></tr>
-                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Marriage of Parents</td><td className="py-1 px-2 border border-black font-bold text-center">{table.dom}</td></tr>
-                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Place of Marriage of Parents</td><td className="py-1 px-2 border border-black font-bold text-center">{table.pom}</td></tr>
+                      <tr><td className="py-1 px-2 border border-black font-medium align-top w-48">LCR Registry Number</td><td className="py-1 px-2 border border-black font-bold text-left align-top">{table.registry}</td></tr>
+                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Registration</td><td className="py-1 px-2 border border-black font-bold text-left align-top">{table.dateReg}</td></tr>
+                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Name of Child</td><td className="py-1 px-2 border border-black font-bold text-left align-top">{table.nameChild}</td></tr>
+                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Sex</td><td className="py-1 px-2 border border-black font-bold text-left align-top">{table.sex}</td></tr>
+                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Birth</td><td className="py-1 px-2 border border-black font-bold text-left align-top">{table.dob}</td></tr>
+                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Place of Birth</td><td className="py-1 px-2 border border-black font-bold text-left align-top">{table.pob}</td></tr>
+                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Name of Mother</td><td className="py-1 px-2 border border-black font-bold text-left align-top">{table.mother}</td></tr>
+                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Citizenship of Mother</td><td className="py-1 px-2 border border-black font-bold text-left align-top">{table.motherCit}</td></tr>
+                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Name of Father</td><td className="py-1 px-2 border border-black font-bold text-left align-top">{table.father}</td></tr>
+                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Citizenship of Father</td><td className="py-1 px-2 border border-black font-bold text-left align-top">{table.fatherCit}</td></tr>
+                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Date of Marriage of Parents</td><td className="py-1 px-2 border border-black font-bold text-left align-top">{table.dom}</td></tr>
+                      <tr><td className="py-1 px-2 border border-black font-medium align-top">Place of Marriage of Parents</td><td className="py-1 px-2 border border-black font-bold text-left align-top">{table.pom}</td></tr>
                     </>
                   )}
               </tbody>
@@ -287,7 +292,13 @@ export default function LcrForm1ABirthAvailable({
                 )
                 : (
                   <>
-                    This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.
+                    This certification is issued upon the request of{' '}
+                    <LcrCertificationRequestPartyInline
+                      data={data}
+                      variant="1a"
+                      onPartyChange={onDataChange && !editableTable ? patchData : undefined}
+                    />{' '}
+                    for any legal purposes.
                   </>
                 )}
             </p>
@@ -302,11 +313,15 @@ export default function LcrForm1ABirthAvailable({
                     onDataChange?.({ ...data, remarks: v })
                   }}
                   rows={3}
-                  className="w-full border border-gray-300 rounded px-2 py-1 text-[14px]"
+                  className="w-full border border-gray-300 rounded px-2 py-1"
+                  style={lcrRemarksBodyStyle(data)}
                   placeholder="Type or edit remarks here..."
                 />
               </div>
-              <p className="text-[14px] leading-[1.35] text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+              <p
+                className="text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+                style={lcrRemarksBodyStyle(data)}
+              >
                 {editableRemarks}
               </p>
             </div>

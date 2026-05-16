@@ -5,6 +5,7 @@ import { exportColbAsPdf } from '../../../lib/colbExportPdf'
 import { useCourtDecreeColbRemarksDetection } from '../../../hooks/useCourtDecreeColbRemarksDetection'
 import { FORM_102_REMARKS_OVERLAY, FORM_102_OVERLAY_MAX_BOTTOM } from '../../../lib/courtDecreeColbRemarksDetection'
 import { FIELD_POSITIONS } from '../../../lib/colbCertificateLayout'
+import { lcrRemarksBodyStyle } from '../../../lib/lcrRemarksFontSize'
 
 const MAX_FILE_SIZE_MB = 25
 
@@ -257,7 +258,8 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
                   ref={remarksInputRef}
                   value={annotationDisplayText}
                   onChange={(e) => onRemarksChange?.(e.target.value)}
-                  className="w-full min-h-[5rem] resize-none overflow-hidden bg-transparent text-sm leading-relaxed text-justify outline-none"
+                  className="w-full min-h-[5rem] resize-none overflow-hidden bg-transparent leading-relaxed text-justify outline-none"
+                  style={lcrRemarksBodyStyle(data)}
                   rows={4}
                 />
               </div>
@@ -265,7 +267,7 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
 
             <div className="hidden print:block flex-1 relative">
               <p
-                className="absolute text-[11.5px] leading-[0.9] font-bold text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+                className="absolute font-bold text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
                 style={{
                   left: `${printExpandedLeft * 100}%`,
                   top: `${(printFieldRect.top ?? 0) * 100}%`,
@@ -273,6 +275,7 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
                   minHeight: `${(printFieldRect.height ?? 0.1) * 100}%`,
                   margin: 0,
                   fontFamily: 'Arial, sans-serif',
+                  ...lcrRemarksBodyStyle(data),
                 }}
               >
                   {annotationDisplayText}
@@ -322,7 +325,7 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
                 <div className="colb-annotation-remarks-body">
                   <p
                     className="colb-annotation-form1a-text colb-annotation-remarks-text text-justify font-bold"
-                    style={{ fontFamily: 'Arial, sans-serif' }}
+                    style={{ fontFamily: 'Arial, sans-serif', ...lcrRemarksBodyStyle(data) }}
                   >
                     {renderAnnotationContent()}
                   </p>

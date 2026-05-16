@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatDateCert } from '../../../lib/printUtils'
+import { formatDateMonthDayYearComma } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter } from '../../../components/print'
 import {
   formatAffectedDocumentLabel,
@@ -46,14 +46,15 @@ export default function CertAuthenticityCourtDecree({ data }) {
   const affectedCode = resolveSingleAffectedDocumentForCertificate(data)
   const affectedDoc = formatAffectedDocumentLabel(affectedCode)
   const documentOwner = documentOwnerForCertificate(data, affectedCode)
-  const issuedDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
+  const issuedDate =
+    formatDateMonthDayYearComma(data.certificateIssuanceDate) || formatDateMonthDayYearComma(new Date())
   const { row: ccrRow } = resolveCourtDecreePrintCcr(data)
   const signatory = ccrRow.name.toUpperCase()
   const signatoryTitle = ccrRow.title
 
   return (
-    <div className="ausf-doc print-doc print-doc-cert-auth bg-white text-black text-base max-w-[210mm] mx-auto px-6 py-4 leading-relaxed flex flex-col min-h-[297mm]">
-      <DocumentHeader registryNo={data.registryNumber} />
+    <div className="ausf-doc print-doc print-doc-cert-auth court-decree-certificate-print bg-white text-black text-base max-w-[210mm] mx-auto px-0 py-4 leading-relaxed flex flex-col min-h-[297mm]">
+      <DocumentHeader />
 
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
         <h2 className="text-center font-bold text-[30px] uppercase mb-6 tracking-tight">CERTIFICATE OF AUTHENTICITY</h2>
@@ -76,7 +77,7 @@ export default function CertAuthenticityCourtDecree({ data }) {
       </div>
 
       <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-start flex-shrink-0">
-        <div className="court-decree-cert-signatory-block ml-8 inline-flex flex-col items-center gap-0 leading-none mb-8">
+        <div className="court-decree-cert-signatory-block ml-0 inline-flex flex-col items-center gap-0 leading-none mb-8">
           <p className="court-decree-cert-signatory-name m-0 font-bold uppercase text-[15px]">{signatory}</p>
           <p className="court-decree-cert-signatory-title m-0 text-[13px] italic">{signatoryTitle}</p>
         </div>

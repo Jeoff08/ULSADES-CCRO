@@ -8,6 +8,7 @@ import { getUploadedFile, restoreUploadedFileFromTrash } from '../../lib/uploade
 import UploadFileModal from '../../components/upload/UploadFileModal'
 import ToastHost from '../../components/toast/ToastHost'
 import { useToasts } from '../../components/toast/useToasts'
+import { useDebouncedSuccessToast } from '../../hooks/useDebouncedSuccessToast'
 import { saveCurrentViewAsPdf, openSavedPdfInBrowser } from '../../lib/savePdf'
 import {
   SoleAffidavitLegitimation,
@@ -20,6 +21,7 @@ import {
   Annotation,
 } from './print'
 import { RECEIVED_BY_OPTIONS, legitimationAffidavitCcrPersistPatch, legitimationAffidavitCcrSelectValue } from './print/legitimationAffidavitCcr'
+import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
 
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-legitimation'
 const LEGITIMATION_TRANSMITTAL_TYPES = new Set(['transmittal', 'out-of-town-transmittal'])
@@ -67,6 +69,7 @@ export default function LegitimationPrint() {
   const [previewModalOpen, setPreviewModalOpen] = useState(false)
   const [previewPdfUrl, setPreviewPdfUrl] = useState('')
   const { toasts, show, dismiss } = useToasts()
+  const notifyLcrCertSaved = useDebouncedSuccessToast(show)
   const allowedTypes = LEGITIMATION_TYPES.filter((t) => {
     if (data.bothParentsAlive === 'NO' && t.id === 'joint-affidavit') return false
     if (data.bothParentsAlive === 'YES' && t.id === 'sole-affidavit') return false
@@ -229,6 +232,14 @@ export default function LegitimationPrint() {
     })
   }, [])
 
+  const persistLcrRemarksFontPt = useCallback((pt) => {
+    setData((prev) => {
+      const next = { ...prev, lcrRemarksFontSizePt: pt }
+      saveLegitimationDraft(next)
+      return next
+    })
+  }, [])
+
   let content
   switch (effectiveType) {
     case 'sole-affidavit':
@@ -244,7 +255,21 @@ export default function LegitimationPrint() {
       content = <RegistrationOfAcknowledgement data={data} />
       break
     case 'lcr-form-1a':
-      content = <LcrForm1A data={data} />
+      content = (
+        <LcrForm1A
+          data={data}
+          onDataChange={(patch) => {
+            setData((prev) => {
+              const next = { ...prev, ...patch }
+              const prevParty = String(prev.lcrCertificationRequestParty ?? '')
+              const nextParty = String(next.lcrCertificationRequestParty ?? '')
+              if (prevParty !== nextParty) notifyLcrCertSaved()
+              saveLegitimationDraft(next)
+              return next
+            })
+          }}
+        />
+      )
       break
     case 'transmittal':
       content = <Transmittal data={data} subjectLine={subjectLine} onPersistDraft={persistTransmittalDraft} />
@@ -405,6 +430,14 @@ export default function LegitimationPrint() {
                 Only the Joint or Sole affidavit signature line is updated. LCR, registration, annotation, and transmittal still use the shared City Civil Registrar fields from the main form.
               </p>
             </div>
+          ) : null}
+          {effectiveType === 'lcr-form-1a' ? (
+            <LcrRemarksFontSizeSelect
+              id="legitimation-print-lcr-remarks-font"
+              value={data.lcrRemarksFontSizePt}
+              onChange={persistLcrRemarksFontPt}
+              helpText="Applies to the REMARKS block on LCR Form 1A for this record."
+            />
           ) : null}
         </aside>
         <div className="flex-1 min-w-0">

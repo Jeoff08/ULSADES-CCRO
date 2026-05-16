@@ -1,4 +1,7 @@
-import { RECEIVED_BY_OPTIONS } from '../../legalInstrument/lib/supplementalTransmittalDefaults'
+import {
+  RECEIVED_BY_OPTIONS,
+  DEFAULT_TRANSMITTAL_SIGNATORY,
+} from '../../legalInstrument/lib/supplementalTransmittalDefaults'
 
 export { RECEIVED_BY_OPTIONS }
 
@@ -47,15 +50,15 @@ export function getResolvedPreparedByForPrintType(data, printType) {
       const rawName = String(d.transmittalLocalSignatoryName || d.transmittalSignatoryName || '').trim()
       const rawTitle = String(d.transmittalLocalSignatoryTitle || d.transmittalSignatoryTitle || '').trim()
       // Align with TransmittalDoc defaults so the roster index matches what prints when fields are blank.
-      const name = rawName || 'LORELIE L. CANTO'
-      const title = rawTitle || 'Registration Officer IV'
+      const name = rawName || DEFAULT_TRANSMITTAL_SIGNATORY.name
+      const title = rawTitle || DEFAULT_TRANSMITTAL_SIGNATORY.title
       return { name, title }
     }
     case 'out-of-town': {
       const rawName = String(d.transmittalOotSignatoryName || d.transmittalSignatoryName || '').trim()
       const rawTitle = String(d.transmittalOotSignatoryTitle || d.transmittalSignatoryTitle || '').trim()
-      const name = rawName || 'LORELIE L. CANTO'
-      const title = rawTitle || 'Registration Officer IV'
+      const name = rawName || DEFAULT_TRANSMITTAL_SIGNATORY.name
+      const title = rawTitle || DEFAULT_TRANSMITTAL_SIGNATORY.title
       return { name, title }
     }
     case 'child-ack-lcr': {

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { formatDateCert, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
+import { lcrRemarksBodyStyle } from '../../../lib/lcrRemarksFontSize'
+import LcrCertificationRequestPartyInline from '../../../components/lcr/LcrCertificationRequestPartyInline'
 import { buildLcr2aTableDisplay } from '../lib/lcr2aTable'
 import { resolveCourtDecreeLcrPrintCcr } from '../lib/courtDecreePrintCcr'
 import LcrRegistrationDateInputs from '../../../components/lcr/LcrRegistrationDateInputs'
@@ -60,7 +62,7 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
   const blankIfDash = (v) => (String(v || '').trim() === '—' ? '' : v)
   const causeText = blankIfDash(t.causeOfDeath)
   const labelCell = 'py-0.5 px-2 border border-black align-top leading-tight'
-  const valueCell = 'py-0.5 px-2 border border-black text-center font-bold leading-tight'
+  const valueCell = 'py-0.5 px-2 border border-black text-left font-bold leading-tight align-top'
 
   return (
     <div className="ausf-doc print-doc print-doc-lcr-2a print-doc-lcr-3a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col">
@@ -99,6 +101,7 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
                         <td className={`${labelCell} w-48`}>{row.label}</td>
                         <td className={valueCell}>
                           <LcrRegistrationDateInputs
+                            dateInputsJustify="start"
                             valueRaw={
                               data.lcr2aDateRegistration || data.colbRegDate || data.colbDateOfRegistration
                             }
@@ -139,6 +142,7 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
                         <td className={`${labelCell} w-48`}>{row.label}</td>
                         <td className={valueCell}>
                           <LcrRegistrationDateInputs
+                            dateInputsJustify="start"
                             valueRaw={data.lcr2aDateDeath || data.dateOfDeath}
                             savedDayUi={data.lcr2aDeathDayUi}
                             savedMonthUi={data.lcr2aDeathMonthUi}
@@ -181,7 +185,7 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
                       <td className={`${valueCell} uppercase`}>
                         <input
                           type="text"
-                          className="no-print w-full min-w-0 text-center font-bold border-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none focus:border-[var(--primary-blue)] px-1"
+                          className="no-print w-full min-w-0 text-left font-bold border-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none focus:border-[var(--primary-blue)] px-1"
                           value={cellEditText(t[row.k])}
                           onChange={(e) => patchData(row.patch(e.target.value))}
                         />
@@ -229,10 +233,10 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
                       <td className={`${valueCell} uppercase whitespace-pre-wrap min-h-[2.2rem]`}>{blankIfDash(t.placeDeath)}</td>
                     </tr>
                     <tr>
-                      <td className="py-0.5 px-2 border border-black align-top text-center leading-tight">
+                      <td className="py-0.5 px-2 border border-black align-top text-left leading-tight">
                         Cause of Death
                       </td>
-                      <td className="py-0.5 px-2 border border-black text-center font-bold align-top whitespace-pre-wrap leading-tight">
+                      <td className="py-0.5 px-2 border border-black text-left font-bold align-top whitespace-pre-wrap leading-tight">
                         {causeText}
                       </td>
                     </tr>
@@ -249,7 +253,13 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
               )
               : (
                 <>
-                  This certification is issued upon the request of <span className="font-bold">OCRG/DOCUMENT OWNER</span> for any legal purposes.
+                  This certification is issued upon the request of{' '}
+                  <LcrCertificationRequestPartyInline
+                    data={data}
+                    variant="2a3a"
+                    onPartyChange={onDataChange && !editableTable ? patchData : undefined}
+                  />{' '}
+                  for any legal purposes.
                 </>
               )}
           </p>
@@ -264,11 +274,15 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
                   onDataChange?.({ ...data, remarks: v })
                 }}
                 rows={3}
-                className="w-full border border-gray-300 rounded px-2 py-1 text-[14px]"
+                className="w-full border border-gray-300 rounded px-2 py-1"
+                style={lcrRemarksBodyStyle(data)}
                 placeholder="Type or edit remarks here..."
               />
             </div>
-            <p className="text-[14px] leading-[1.35] text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] min-h-[1.5rem]">
+            <p
+              className="text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] min-h-[1.5rem]"
+              style={lcrRemarksBodyStyle(data)}
+            >
               {editableRemarks}
             </p>
           </div>

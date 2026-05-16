@@ -12,8 +12,6 @@ import SupplementalPrint from './pages/legalInstrument/SupplementalPrint'
 import SupplementalSaved from './pages/legalInstrument/SupplementalSaved'
 import Mc2010Print from './pages/legalInstrument/Mc2010Print'
 import Mc2010Saved from './pages/legalInstrument/Mc2010Saved'
-import WronglyRegisterPrint from './pages/legalInstrument/WronglyRegisterPrint'
-import WronglyRegisterSaved from './pages/legalInstrument/WronglyRegisterSaved'
 import CourtDecreeWorkflowPage from './pages/CourtDecreeWorkflowPage'
 import UploadedFileViewer from './pages/UploadedFileViewer'
 import Log from './pages/Log'
@@ -60,8 +58,6 @@ export default function App() {
         <Route path="legal-instrument/supplemental/saved" element={<SupplementalSaved />} />
         <Route path="legal-instrument/mc2010-04/print" element={<Mc2010Print />} />
         <Route path="legal-instrument/mc2010-04/saved" element={<Mc2010Saved />} />
-        <Route path="legal-instrument/wrongly-register/print" element={<WronglyRegisterPrint />} />
-        <Route path="legal-instrument/wrongly-register/saved" element={<WronglyRegisterSaved />} />
         <Route path="uploaded/:scope" element={<UploadedFileViewer />} />
         <Route path="logs" element={<Log />} />
         <Route path="annotation-field" element={<AnnotationFieldPage />} />

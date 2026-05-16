@@ -71,10 +71,10 @@ export default function AusfOnly({ data }) {
           <div className="text-xs mt-0">Affiant</div>
         </div>
         <p className="ausf-subscribed-sworn mb-1 leading-normal text-justify"><span className="font-bold">SUBSCRIBED AND SWORN</span> to before me this <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
-        <div className="registrar-signature-zone flex-1 flex min-h-[3rem] flex-col justify-center items-end">
-          <div className="text-right city-registrar-signature">
-            <p className="font-bold text-right">{data.cityCivilRegistrarName}</p>
-            <p className="text-sm text-right">City Civil Registrar</p>
+        <div className="registrar-signature-zone mt-auto flex w-full min-h-[3rem] flex-col items-end justify-end">
+          <div className="ccr-signatory-block city-registrar-signature inline-flex flex-col items-center text-center leading-snug">
+            <p className="ccr-signatory-block__name m-0 p-0 font-bold">{data.cityCivilRegistrarName}</p>
+            <p className="ccr-signatory-block__title m-0 p-0 text-sm">City Civil Registrar</p>
           </div>
         </div>
       </div>

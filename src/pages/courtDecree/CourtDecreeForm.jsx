@@ -7,7 +7,15 @@ import { addSavedCourtDecree, getCourtDecreeDraft, updateSavedCourtDecree, saveC
 import { COURT_DECREE_TYPES, AFFECTED_DOCUMENT_OPTIONS, DATE_MONTHS } from './constants'
 import { isLcr1aTableComplete, isLcr2aTableComplete, isLcr3aTableComplete } from './lib/courtDecreeLcrCompletion'
 import { commitFirstLetterUpperFromInput } from '../../lib/sentenceCase'
-import { parseDdMmYyyyToDate, parseBirthToDate } from '../../lib/printUtils'
+import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
+import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShortcuts'
+import { parseDdMmYyyyToDate, parseBirthToDate, isoYyyyMmDdToDdMmYyyy, parseFlexibleBirthDateToStored } from '../../lib/printUtils'
+import ToastHost from '../../components/toast/ToastHost'
+import { useToasts } from '../../components/toast/useToasts'
+import { useDebouncedSuccessToast } from '../../hooks/useDebouncedSuccessToast'
+import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
+import FlexibleFormDateInput from '../../components/forms/FlexibleFormDateInput'
+
 const LCR_FORM_TYPES = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a']
 const PREFERRED_LCRO_STAFF_KEY = 'ulsades_preferred_lcr_staff'
 const LCRO_STAFF_LIST_KEY = 'ulsades_lcro_staff_list'
@@ -214,34 +222,6 @@ function getMissingFields(form) {
   return REQUIRED_FIELDS.filter(({ key }) => isEmpty(form[key]))
 }
 
-function formatDigitsToDdMmYyyy(digits) {
-  const d = (digits || '').replace(/\D/g, '').slice(0, 8)
-  if (d.length <= 2) {
-    if (d.length < 2) return d
-    return String(Math.min(31, Math.max(1, Number.parseInt(d, 10) || 0))).padStart(2, '0')
-  }
-  if (d.length <= 4) {
-    const ddRaw = d.slice(0, 2)
-    const mmRaw = d.slice(2)
-    const dd = ddRaw.length === 2 ? String(Math.min(31, Math.max(1, Number.parseInt(ddRaw, 10) || 0))).padStart(2, '0') : ddRaw
-    const mm = mmRaw.length === 2 ? String(Math.min(12, Math.max(1, Number.parseInt(mmRaw, 10) || 0))).padStart(2, '0') : mmRaw
-    return `${dd}/${mm}`
-  }
-  const ddRaw = d.slice(0, 2)
-  const mmRaw = d.slice(2, 4)
-  const yyyy = d.slice(4)
-  const dd = String(Math.min(31, Math.max(1, Number.parseInt(ddRaw, 10) || 0))).padStart(2, '0')
-  const mm = String(Math.min(12, Math.max(1, Number.parseInt(mmRaw, 10) || 0))).padStart(2, '0')
-  return `${dd}/${mm}/${yyyy}`
-}
-
-function isoToDdMmYyyy(iso) {
-  if (!iso || typeof iso !== 'string') return ''
-  const [y, m, d] = iso.split('-')
-  if (!y || !m || !d) return ''
-  return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`
-}
-
 function refDateForAge(marriageDdMmYyyy) {
   const m = parseDdMmYyyyToDate(String(marriageDdMmYyyy || '').trim())
   if (m) return m
@@ -256,107 +236,63 @@ function computeAgeYears(birth, ref) {
   return Math.max(0, age)
 }
 
-function formatFlexibleBirthDigits(digits) {
-  const d = digits.replace(/\D/g, '').slice(0, 8)
-  if (d.length === 0) return ''
-  if (d.length <= 2) {
-    if (d.length < 2) return d
-    return String(Math.min(31, Math.max(1, Number.parseInt(d, 10) || 0))).padStart(2, '0')
-  }
-  if (d.length <= 4) {
-    const ddRaw = d.slice(0, 2)
-    const mmRaw = d.slice(2)
-    const dd = ddRaw.length === 2 ? String(Math.min(31, Math.max(1, Number.parseInt(ddRaw, 10) || 0))).padStart(2, '0') : ddRaw
-    const mm = mmRaw.length === 2 ? String(Math.min(12, Math.max(1, Number.parseInt(mmRaw, 10) || 0))).padStart(2, '0') : mmRaw
-    return `${dd}/${mm}`
-  }
-  if (d.length <= 6) {
-    const mmRaw = d.slice(0, 2)
-    const mm = mmRaw.length === 2 ? String(Math.min(12, Math.max(1, Number.parseInt(mmRaw, 10) || 0))).padStart(2, '0') : mmRaw
-    return `${mm}/${d.slice(2, 6)}`
-  }
-  const dd = String(Math.min(31, Math.max(1, Number.parseInt(d.slice(0, 2), 10) || 0))).padStart(2, '0')
-  const mm = String(Math.min(12, Math.max(1, Number.parseInt(d.slice(2, 4), 10) || 0))).padStart(2, '0')
-  return `${dd}/${mm}/${d.slice(4, 8)}`
-}
-
-function storedBirthToDisplay(stored) {
-  const raw = String(stored || '').trim()
-  if (!raw) return ''
-  if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return isoToDdMmYyyy(raw.slice(0, 10))
-  return raw
-}
-
 function dateToOutputFormat(str) {
   if (!str || typeof str !== 'string') return str
-  const parts = str.trim().split('/')
-  if (parts.length !== 3) return str
-  const [dd, mm, yyyy] = parts
-  const dayNum = parseInt(dd, 10)
-  if (dayNum < 1 || dayNum > 31) return str
-  const monthNum = parseInt(mm, 10)
-  if (monthNum < 1 || monthNum > 12) return str
-  return `${String(dayNum).padStart(2, '0')}/${DATE_MONTHS[monthNum]}/${yyyy}`
+  const d = parseBirthToDate(str.trim())
+  if (!d || isNaN(d.getTime())) return str
+  const idx = d.getMonth() + 1
+  const mon = DATE_MONTHS[idx]
+  if (!mon) return str
+  return `${String(d.getDate()).padStart(2, '0')}/${mon}/${d.getFullYear()}`
 }
 
 const COURT_DECREE_DATE_KEYS = ['dateIssued', 'dateRegistered']
 
-function DateInput({ value, onChange, placeholder = 'dd/mm/yyyy' }) {
-  const pickerRef = useRef(null)
-  const handleInputChange = (e) => {
-    const formatted = formatDigitsToDdMmYyyy(e.target.value)
-    onChange(formatted)
-  }
-  const isDigitsAndSlashes = /^[\d/]*$/.test((value || '').trim())
-  const displayValue = isDigitsAndSlashes ? formatDigitsToDdMmYyyy(value) : (value || '')
-  return (
-    <div className="relative flex items-center gap-1">
-      <input
-        type="text"
-        inputMode="numeric"
-        value={displayValue}
-        onChange={handleInputChange}
-        placeholder={placeholder}
-        maxLength={10}
-        className={`${inputClass} pr-9`}
-      />
-      <button
-        type="button"
-        onClick={() => pickerRef.current?.showPicker?.() || pickerRef.current?.click()}
-        className="court-decree-form-page__date-picker-btn absolute right-1.5 p-1 rounded text-gray-500"
-        title="Pick date"
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-      </button>
-      <input
-        ref={pickerRef}
-        type="date"
-        className="sr-only"
-        aria-hidden="true"
-        tabIndex={-1}
-        onChange={(e) => onChange(isoToDdMmYyyy(e.target.value))}
-      />
-    </div>
-  )
-}
-
-/** Type dd/mm/yyyy (8 digits) or mm/yyyy (6 digits), or use calendar. */
+/** Type dd/mm/yyyy, mm/yyyy, month name + day + year, or “May 2026”; calendar sets a full date. */
 function FlexibleBirthDateInput({ value, onChange }) {
   const pickerRef = useRef(null)
-  const displayStored = storedBirthToDisplay(value)
-  const digitsOnly = displayStored.replace(/\D/g, '')
-  const displayValue = formatFlexibleBirthDigits(digitsOnly)
+  const displayFromStored = (stored) => storedBirthToDisplay(stored)
+  const [text, setText] = useState(() => displayFromStored(value))
+
+  useEffect(() => {
+    setText(displayFromStored(value))
+  }, [value])
+
+  const commit = () => {
+    const trimmed = text.trim()
+    if (!trimmed) {
+      onChange('')
+      setText('')
+      return
+    }
+    const normalized = parseFlexibleBirthDateToStored(trimmed)
+    if (normalized !== null) {
+      onChange(normalized)
+      setText(displayFromStored(normalized))
+    } else {
+      setText(displayFromStored(value))
+    }
+  }
+
+  const pickIso = (iso) => {
+    const ddmm = isoYyyyMmDdToDdMmYyyy(iso)
+    if (ddmm) {
+      onChange(ddmm)
+      setText(ddmm)
+    }
+  }
 
   return (
     <div className="relative flex flex-wrap items-center gap-2">
       <div className="relative flex-1 min-w-[180px]">
         <input
           type="text"
-          inputMode="numeric"
-          value={displayValue}
-          onChange={(e) => onChange(formatFlexibleBirthDigits(e.target.value))}
-          placeholder="dd/mm/yyyy or mm/yyyy"
-          maxLength={10}
+          inputMode="text"
+          autoComplete="off"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onBlur={commit}
+          placeholder="May 15 2026, mm/yyyy, or dd/mm/yyyy"
           className={`${inputClass} pr-9 w-full`}
         />
         <button
@@ -364,6 +300,7 @@ function FlexibleBirthDateInput({ value, onChange }) {
           onClick={() => pickerRef.current?.showPicker?.() || pickerRef.current?.click()}
           className="court-decree-form-page__date-picker-btn absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded text-gray-500"
           title="Pick full date"
+          tabIndex={-1}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
         </button>
@@ -373,10 +310,10 @@ function FlexibleBirthDateInput({ value, onChange }) {
           className="sr-only"
           aria-hidden="true"
           tabIndex={-1}
-          onChange={(e) => onChange(isoToDdMmYyyy(e.target.value))}
+          onChange={(e) => pickIso(e.target.value)}
         />
       </div>
-      {displayValue ? (
+      {text ? (
         <button type="button" className="text-sm text-[var(--primary-blue)] underline shrink-0" onClick={() => onChange('')}>
           Clear
         </button>
@@ -486,6 +423,9 @@ export default function CourtDecreeForm() {
 
   const acknowledgeSaved = useWarnIfUnsaved(form, [searchParams.toString(), dirtyBaselineTick])
 
+  const { toasts, show, dismiss } = useToasts()
+  const notifyLcrCertSaved = useDebouncedSuccessToast(show)
+
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
   const updateAndPersistDraft = (key, value) =>
     setForm((prev) => {
@@ -556,6 +496,10 @@ export default function CourtDecreeForm() {
       return
     }
     commitFirstLetterUpperFromInput(e, (v) => update(key, v))
+  }
+  const onLcrCertPartyChange = (e) => {
+    scInput('lcrCertificationRequestParty')(e)
+    notifyLcrCertSaved()
   }
   const filteredLcroStaff = React.useMemo(() => {
     const query = String(form.certificateSignatoryName || '').trim().toUpperCase()
@@ -887,7 +831,7 @@ export default function CourtDecreeForm() {
           </p>
         </header>
 
-        <div className="court-decree-form-page__body">
+        <FormBodyFieldShortcuts className="court-decree-form-page__body" onKeyDown={handleEnterFocusNextField}>
           {form.formType === 'lcr-form-1a' ? (
             <div className="court-decree-form-page__section" style={sectionDelay(0)}>
               <LcrFormNavLinks form={form} activeType="lcr-form-1a" />
@@ -899,7 +843,7 @@ export default function CourtDecreeForm() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Date of Registration</label>
-                    <DateInput value={form.lcr1aDateRegistration} onChange={(v) => update('lcr1aDateRegistration', v)} />
+                    <FlexibleFormDateInput value={form.lcr1aDateRegistration} onChange={(v) => update('lcr1aDateRegistration', v)} inputClassName={inputClass} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Name of Child</label>
@@ -915,7 +859,7 @@ export default function CourtDecreeForm() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                    <DateInput value={form.lcr1aDateOfBirth} onChange={(v) => update('lcr1aDateOfBirth', v)} />
+                    <FlexibleFormDateInput value={form.lcr1aDateOfBirth} onChange={(v) => update('lcr1aDateOfBirth', v)} inputClassName={inputClass} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Place of Birth</label>
@@ -939,7 +883,7 @@ export default function CourtDecreeForm() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Date of Marriage of Parents</label>
-                    <DateInput value={form.lcr1aDateMarriageParents} onChange={(v) => update('lcr1aDateMarriageParents', v)} />
+                    <FlexibleFormDateInput value={form.lcr1aDateMarriageParents} onChange={(v) => update('lcr1aDateMarriageParents', v)} inputClassName={inputClass} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Place of Marriage of Parents</label>
@@ -964,7 +908,7 @@ export default function CourtDecreeForm() {
               <CourtDecreeSection number="1" title="Table fields">
                 <div className="space-y-4 max-w-8xl">
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">LCR Registry Number</label><input type="text" value={form.lcr2aRegistryNumber} onChange={scInput('lcr2aRegistryNumber')} className={inputClass} /></div>
-                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Registration</label><DateInput value={form.lcr2aDateRegistration} onChange={(v) => update('lcr2aDateRegistration', v)} /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Registration</label><FlexibleFormDateInput value={form.lcr2aDateRegistration} onChange={(v) => update('lcr2aDateRegistration', v)} inputClassName={inputClass} /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Name of Deceased</label><input type="text" value={form.lcr2aNameDeceased} onChange={scInput('lcr2aNameDeceased')} className={inputClass} /></div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Sex</label>
@@ -976,7 +920,7 @@ export default function CourtDecreeForm() {
                   </div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Civil Status</label><input type="text" value={form.lcr2aCivilStatus} onChange={scInput('lcr2aCivilStatus')} placeholder="e.g. SINGLE" className={inputClass} /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label><input type="text" value={form.lcr2aCitizenship} onChange={scInput('lcr2aCitizenship')} className={inputClass} /></div>
-                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Death</label><DateInput value={form.lcr2aDateDeath} onChange={(v) => update('lcr2aDateDeath', v)} /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Death</label><FlexibleFormDateInput value={form.lcr2aDateDeath} onChange={(v) => update('lcr2aDateDeath', v)} inputClassName={inputClass} /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Citizenship of Father</label><input type="text" value={form.lcr2aCitizenshipFather} onChange={scInput('lcr2aCitizenshipFather')} className={inputClass} /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Place of Death</label><input type="text" value={form.lcr2aPlaceDeath} onChange={scInput('lcr2aPlaceDeath')} className={inputClass} /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Cause of Death</label><textarea value={form.lcr2aCauseDeath} onChange={scInput('lcr2aCauseDeath')} rows={4} className={inputClass} placeholder="As stated on the record" /></div>
@@ -1098,10 +1042,11 @@ export default function CourtDecreeForm() {
                     <p className="font-semibold text-gray-800 border-b border-gray-200 pb-1 mb-3">Marriage</p>
                     <div className="space-y-3">
                       <div><label className="block text-sm font-medium text-gray-700 mb-1">Registry Number</label><input type="text" value={form.lcr3aRegistryNumber} onChange={scInput('lcr3aRegistryNumber')} placeholder="e.g. 2009-813" className={inputClass} /></div>
-                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Registration</label><DateInput value={form.lcr3aDateRegistration} onChange={(v) => update('lcr3aDateRegistration', v)} /></div>
+                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Registration</label><FlexibleFormDateInput value={form.lcr3aDateRegistration} onChange={(v) => update('lcr3aDateRegistration', v)} inputClassName={inputClass} /></div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Date of Marriage</label>
-                        <DateInput
+                        <FlexibleFormDateInput
+                          inputClassName={inputClass}
                           value={form.lcr3aDateMarriage}
                           onChange={(v) =>
                             setForm((prev) => {
@@ -1206,7 +1151,7 @@ export default function CourtDecreeForm() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Date Issued</label>
-                      <DateInput value={form.dateIssued} onChange={(v) => update('dateIssued', v)} placeholder="dd/mm/yyyy" />
+                      <FlexibleFormDateInput value={form.dateIssued} onChange={(v) => update('dateIssued', v)} placeholder="May 15 2026 or dd/mm/yyyy" inputClassName={inputClass} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Court that issued the court decree</label>
@@ -1238,6 +1183,7 @@ export default function CourtDecreeForm() {
                             }
                             if (e.key === 'Enter' && courtIssuedSuggestionIndex >= 0) {
                               e.preventDefault()
+                              e.stopPropagation()
                               chooseCourtIssued(filteredCourtIssued[courtIssuedSuggestionIndex])
                               return
                             }
@@ -1314,6 +1260,7 @@ export default function CourtDecreeForm() {
                               }
                               if (e.key === 'Enter' && issuedByNameSuggestionIndex >= 0) {
                                 e.preventDefault()
+                                e.stopPropagation()
                                 chooseIssuedByName(filteredIssuedByNames[issuedByNameSuggestionIndex])
                                 return
                               }
@@ -1406,6 +1353,7 @@ export default function CourtDecreeForm() {
                             }
                             if (e.key === 'Enter' && authenticatedBySuggestionIndex >= 0) {
                               e.preventDefault()
+                              e.stopPropagation()
                               chooseAuthenticatedBy(filteredAuthenticatedByNames[authenticatedBySuggestionIndex])
                               return
                             }
@@ -1456,7 +1404,7 @@ export default function CourtDecreeForm() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Date Registered</label>
-                        <DateInput value={form.dateRegistered} onChange={(v) => update('dateRegistered', v)} placeholder="dd/mm/yyyy" />
+                        <FlexibleFormDateInput value={form.dateRegistered} onChange={(v) => update('dateRegistered', v)} placeholder="May 15 2026 or dd/mm/yyyy" inputClassName={inputClass} />
                       </div>
                     </div>
                     <div>
@@ -1524,6 +1472,24 @@ export default function CourtDecreeForm() {
                 <CourtDecreeSection number="6" title="Signatory">
                   <div className="space-y-4">
                     <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">LCR forms — party requesting certification (bold in print)</label>
+                      <input
+                        type="text"
+                        value={form.lcrCertificationRequestParty}
+                        onChange={onLcrCertPartyChange}
+                        placeholder="Leave blank for defaults: 1A uses OCRG/OWNER/…; 2A and 3A use OCRG/DOCUMENT OWNER"
+                        className={inputClass}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">If you type here, this exact text is used on every LCR certification line. Leave blank to keep each form’s usual wording.</p>
+                    </div>
+                    <LcrRemarksFontSizeSelect
+                      id="court-decree-lcr-remarks-font"
+                      className="mt-2"
+                      value={form.lcrRemarksFontSizePt}
+                      onChange={(v) => updateAndPersistDraft('lcrRemarksFontSizePt', v)}
+                      helpText="Controls how large the REMARKS text prints on LCR 1A / 2A / 3A and matching annotation pages."
+                    />
+                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">LCRO - Staff (Verified by)</label>
                       <div className="relative">
                         <input
@@ -1553,6 +1519,7 @@ export default function CourtDecreeForm() {
                             }
                             if (e.key === 'Enter' && staffSuggestionIndex >= 0) {
                               e.preventDefault()
+                              e.stopPropagation()
                               chooseLcroStaff(filteredLcroStaff[staffSuggestionIndex])
                               return
                             }
@@ -1781,8 +1748,9 @@ export default function CourtDecreeForm() {
           )}
 
           <p className="court-decree-form-page__footer-note no-print">created by: ATTY. YUSSIF DON JUSTINE F. MARTIL</p>
-        </div>
+        </FormBodyFieldShortcuts>
       </div>
+      <ToastHost toasts={toasts} onDismiss={dismiss} />
     </div>
   )
 }

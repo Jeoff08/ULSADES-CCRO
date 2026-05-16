@@ -26,13 +26,22 @@ export const defaultCourtDecree = {
   recipientName: '',
   recipientTitle: '',
   recipientOffice: '',
+  transmittalOotLine4: '',
+  transmittalOotLine5: '',
+  transmittalOotLine6: '',
   /** When true, print offers Out-of-Town Transmittal only; when false, local Transmittal only. */
   courtDecreeTransmittalIsOutOfTown: false,
-  /** Local transmittal “To PSA” block (4 lines); empty = use print defaults */
+  /** Local transmittal “To PSA” block (6 lines); empty = use print defaults */
   transmittalToPsaLine1: '',
   transmittalToPsaLine2: '',
   transmittalToPsaLine3: '',
   transmittalToPsaLine4: '',
+  transmittalToPsaLine5: '',
+  transmittalToPsaLine6: '',
+  transmittalAttnPrefix: '',
+  transmittalAttnLine1: '',
+  transmittalAttnLine2: '',
+  transmittalAttnLine3: '',
   // LCR Form 1A table-only (court decree) — one field per printed row
   lcr1aRegistryNumber: '',
   lcr1aDateRegistration: '',
@@ -121,6 +130,10 @@ export const defaultCourtDecree = {
   ccrScopeLcr2aTitle: '',
   ccrScopeLcr3aName: '',
   ccrScopeLcr3aTitle: '',
+  /** Bold phrase in LCR “issued upon the request of …”. Empty = 1A default OCRG/OWNER/…; 2A/3A default OCRG/DOCUMENT OWNER unless set. */
+  lcrCertificationRequestParty: '',
+  /** Printed font size (pt) for LCR / annotation remarks body text. */
+  lcrRemarksFontSizePt: '12',
   contactPhone: '228-1311',
   contactEmail: 'civilregistrar.iligan@gmail.com',
 }

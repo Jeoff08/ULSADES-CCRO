@@ -22,6 +22,8 @@ import SupplementalLcrFooterSignatoryPickers from './SupplementalLcrFooterSignat
 import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailable'
 import LcrForm2ADeathAvailable from '../courtDecree/print/LcrForm2ADeathAvailable'
 import LcrForm3AMarriageAvailable from '../courtDecree/print/LcrForm3AMarriageAvailable'
+import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
+import { parseFormMonthInputToNumber1to12 } from '../../lib/printUtils'
 
 const SUPPLEMENT_TYPE_LIST_KEY = 'ulsades_supplemental_type_list'
 
@@ -391,7 +393,7 @@ export default function SupplementalForm() {
           <h1>Supplemental Report Automated Data Entry Form</h1>
           <p>Unified Legal Status Automated Data Entry System — Iligan City</p>
         </header>
-        <div className="legitimation-form-page__body supplemental-form-page-content">
+        <FormBodyFieldShortcuts className="legitimation-form-page__body supplemental-form-page-content" onKeyDown={handleEnterFocusNextField}>
           <p className="text-sm text-gray-600 mb-5">
             Fill out this form to generate the Affidavit for Supplemental Report output.
           </p>
@@ -554,6 +556,7 @@ export default function SupplementalForm() {
                             }
                             if (e.key === 'Enter' && supplementTypeSuggestionIndex >= 0) {
                               e.preventDefault()
+                              e.stopPropagation()
                               chooseSupplementType(filteredSupplementTypeRows[supplementTypeSuggestionIndex].value)
                               return
                             }
@@ -667,13 +670,22 @@ export default function SupplementalForm() {
                       <label className="block text-sm font-medium mb-1">Date of registration (item 1)</label>
                       <div className="grid grid-cols-3 gap-2">
                         <input
-                          type="number"
-                          min="1"
-                          max="12"
+                          type="text"
+                          inputMode="text"
+                          autoComplete="off"
                           className={inputClass}
                           value={form.regMonth || ''}
                           onChange={(e) => update('regMonth', e.target.value)}
-                          placeholder="Month (1-12)"
+                          onBlur={() => {
+                            const raw = String(form.regMonth || '').trim()
+                            if (!raw) {
+                              update('regMonth', '')
+                              return
+                            }
+                            const n = parseFormMonthInputToNumber1to12(raw)
+                            if (n) update('regMonth', n)
+                          }}
+                          placeholder="Month (1–12 or e.g. May)"
                         />
                         <input
                           type="number"
@@ -969,7 +981,7 @@ export default function SupplementalForm() {
             </div>
           )}
 
-        </div>
+        </FormBodyFieldShortcuts>
       </div>
     </div>
   )

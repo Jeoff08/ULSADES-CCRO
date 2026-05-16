@@ -1,10 +1,12 @@
+import { parseBirthToDate } from '../../../lib/printUtils'
+
 /** Jurat affidavit print types (mutually exclusive by business rules). */
 export const AUSF_JURAT_PRINT_TYPES = new Set(['ausf-only', 'ausf-0-6', 'ausf-07-17'])
 
 export function computeAgeFromIsoDate(isoDate) {
   if (!isoDate || typeof isoDate !== 'string') return ''
-  const birth = new Date(isoDate)
-  if (Number.isNaN(birth.getTime())) return ''
+  const birth = parseBirthToDate(isoDate.trim())
+  if (!birth || Number.isNaN(birth.getTime())) return ''
   const today = new Date()
   let age = today.getFullYear() - birth.getFullYear()
   const monthDiff = today.getMonth() - birth.getMonth()

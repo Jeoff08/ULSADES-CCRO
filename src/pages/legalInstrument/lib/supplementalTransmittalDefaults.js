@@ -14,7 +14,6 @@ export const SUPPLEMENTAL_TRANSMITTAL_ENDORSEMENT_OPTIONS = [
   { id: 'blurred-crd', label: 'Blurred CRD copy' },
   { id: 'mc2010', label: 'MC 2010-04' },
   { id: 'supplemental-report', label: 'Supplemental Report' },
-  { id: 'wrongly-registration', label: 'Wrongly Registration' },
   { id: 'ack9255', label: 'Acknowledgement 9255' },
 ]
 
@@ -53,7 +52,7 @@ export function getDefaultSupplementalTransmittalFields() {
     transmittalEndorsementIds: [],
     transmittalAttachmentIds: [],
     /** Index into RECEIVED_BY_OPTIONS for transmittal sign-off block. */
-    transmittalSignatoryOptionIndex: 1,
+    transmittalSignatoryOptionIndex: DEFAULT_TRANSMITTAL_SIGNATORY_INDEX,
   }
 }
 
@@ -130,18 +129,35 @@ export const SUPPLEMENTAL_TRANSMITTAL_SALUTATION_PRESETS = [
   'To whom it may concern:',
 ]
 
+/** Default signatory on all transmittal letters (AUSF, Court Decree, Legitimation, Supplemental, MC2010). */
+export const DEFAULT_TRANSMITTAL_SIGNATORY = {
+  name: 'LORELIE L. CANTO',
+  title: 'REGISTRATION OFFICER IV',
+}
+
 /** Signatory block after “Respectfully yours,” on supplemental transmittal (CCR letter). */
 export const RECEIVED_BY_OPTIONS = [
   { name: 'ATTY. YUSSIF DON JUSTIN F. MARTIL', title: 'CITY CIVIL REGISTRAR' },
-  { name: 'LORELIE L. CANTO', title: 'REGISTRATION OFFICER IV' },
+  { name: DEFAULT_TRANSMITTAL_SIGNATORY.name, title: DEFAULT_TRANSMITTAL_SIGNATORY.title },
   { name: 'PHOEBE L. BENIGA', title: 'REGISTRATION OFFICER II' },
   { name: 'JAN FLAURENCE A. OBLENDA', title: 'REGISTRATION OFFICER II' },
 ]
 
+export const DEFAULT_TRANSMITTAL_SIGNATORY_INDEX = RECEIVED_BY_OPTIONS.findIndex(
+  (row) =>
+    row.name.trim().toUpperCase() === DEFAULT_TRANSMITTAL_SIGNATORY.name &&
+    row.title.trim().toUpperCase() === DEFAULT_TRANSMITTAL_SIGNATORY.title,
+)
+
+export function resolveTransmittalSignatory(data) {
+  const idx = clampTransmittalSignatoryIndex(data?.transmittalSignatoryOptionIndex)
+  return RECEIVED_BY_OPTIONS[idx] || DEFAULT_TRANSMITTAL_SIGNATORY
+}
+
 export function clampTransmittalSignatoryIndex(raw) {
   const n = Number(raw)
   const max = RECEIVED_BY_OPTIONS.length - 1
-  if (!Number.isFinite(n)) return 1
+  if (!Number.isFinite(n)) return DEFAULT_TRANSMITTAL_SIGNATORY_INDEX
   return Math.min(Math.max(0, Math.floor(n)), max)
 }
 

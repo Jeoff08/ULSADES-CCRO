@@ -5,8 +5,7 @@ import {
   SUPPLEMENTAL_TRANSMITTAL_ATTACHMENT_OPTIONS,
   SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS,
   SUPPLEMENTAL_TRANSMITTAL_ENDORSEMENT_OPTIONS,
-  RECEIVED_BY_OPTIONS,
-  clampTransmittalSignatoryIndex,
+  resolveTransmittalSignatory,
   transmittalRecipientOfficeLinesForPrint,
   transmittalRecipientPositionLines,
   transmittalThruPositionLinesForPrint,
@@ -48,8 +47,7 @@ export default function SupplementalTransmittal({
   const endorsementIds = Array.isArray(data.transmittalEndorsementIds) ? data.transmittalEndorsementIds : []
   const attachmentIds = Array.isArray(data.transmittalAttachmentIds) ? data.transmittalAttachmentIds : []
 
-  const signatoryIndex = clampTransmittalSignatoryIndex(data.transmittalSignatoryOptionIndex)
-  const signatory = RECEIVED_BY_OPTIONS[signatoryIndex] || RECEIVED_BY_OPTIONS[0]
+  const signatory = resolveTransmittalSignatory(data)
 
   const docTypeRowsPrint = useMemo(
     () => SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS.filter((row) => docType === row.id),

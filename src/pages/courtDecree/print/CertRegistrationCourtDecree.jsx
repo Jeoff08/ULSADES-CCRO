@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatDateCert } from '../../../lib/printUtils'
+import { formatDateMonthDayYearComma } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter } from '../../../components/print'
 import { resolveCourtDecreePrintCcr } from '../lib/courtDecreePrintCcr'
 
@@ -10,20 +10,23 @@ import { resolveCourtDecreePrintCcr } from '../lib/courtDecreePrintCcr'
  */
 export default function CertRegistrationCourtDecree({ data }) {
   const caseNo = data.caseNo || '—'
-  const dateIssued = data.dateIssued || '—'
+  const dateIssuedRaw = data.dateIssued || '—'
+  const dateIssued = formatDateMonthDayYearComma(dateIssuedRaw) || dateIssuedRaw
   const judgeName = data.issuedByName || '—'
   const court = data.courtThatIssued || '—'
   const caseTitle = (data.caseTitle || '—').toUpperCase()
-  const dateReceived = data.dateRegistered || '—'
+  const dateReceivedRaw = data.dateRegistered || '—'
+  const dateReceived = formatDateMonthDayYearComma(dateReceivedRaw) || dateReceivedRaw
   const registryNo = data.registryNumber != null && data.registryNumber !== '' ? data.registryNumber : '—'
-  const issuedDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
+  const issuedDate =
+    formatDateMonthDayYearComma(data.certificateIssuanceDate) || formatDateMonthDayYearComma(new Date())
   const { row: ccrRow } = resolveCourtDecreePrintCcr(data)
   const signatory = ccrRow.name.toUpperCase()
   const signatoryTitle = ccrRow.title
 
   return (
-    <div className="ausf-doc print-doc print-doc-cert-registration bg-white text-black text-base max-w-[210mm] mx-auto px-6 py-4 leading-relaxed flex flex-col min-h-[297mm]">
-      <DocumentHeader registryNo={data.registryNumber} />
+    <div className="ausf-doc print-doc print-doc-cert-registration bg-white text-black text-base max-w-[210mm] mx-auto px-0 py-4 leading-relaxed flex flex-col min-h-[297mm]">
+      <DocumentHeader />
 
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
         <h2 className="text-center font-bold text-[30px] uppercase mb-6 tracking-tight">CERTIFICATE OF REGISTRATION</h2>
@@ -46,7 +49,7 @@ export default function CertRegistrationCourtDecree({ data }) {
       </div>
 
       <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-start flex-shrink-0">
-        <div className="court-decree-cert-signatory-block ml-8 inline-flex flex-col items-center gap-0 leading-none mb-8">
+        <div className="court-decree-cert-signatory-block ml-0 inline-flex flex-col items-center gap-0 leading-none mb-8">
           <p className="court-decree-cert-signatory-name m-0 font-bold uppercase text-[15px]">{signatory}</p>
           <p className="court-decree-cert-signatory-title m-0 text-[13px] italic">{signatoryTitle}</p>
         </div>

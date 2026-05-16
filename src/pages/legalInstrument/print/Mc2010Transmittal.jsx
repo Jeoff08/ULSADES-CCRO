@@ -8,8 +8,7 @@ import {
   transmittalRecipientOfficeLinesForPrint,
   transmittalRecipientPositionLines,
   transmittalThruPositionLinesForPrint,
-  RECEIVED_BY_OPTIONS,
-  clampTransmittalSignatoryIndex,
+  resolveTransmittalSignatory,
 } from '../lib/supplementalTransmittalDefaults'
 
 const tableCls = 'w-full border-collapse border border-black text-[16px] print:text-[12pt] leading-tight'
@@ -57,8 +56,7 @@ export default function Mc2010Transmittal({
   const thruTitleLines = transmittalThruPositionLinesForPrint(data)
   const trimmedThru = (data.transmittalThru || '').trim()
   const recipientName = ((data.transmittalRecipient || '').trim() || '\u00a0')
-  const signatoryIndex = clampTransmittalSignatoryIndex(data.transmittalSignatoryOptionIndex)
-  const signatory = RECEIVED_BY_OPTIONS[signatoryIndex] || RECEIVED_BY_OPTIONS[0]
+  const signatory = resolveTransmittalSignatory(data)
 
   const emph = (v) => {
     const t = (v || '').trim().toUpperCase()

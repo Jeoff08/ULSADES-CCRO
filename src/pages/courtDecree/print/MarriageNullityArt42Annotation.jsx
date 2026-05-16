@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { formatDateCert, parseDdMmYyyyToDate } from '../../../lib/printUtils'
+import { formatDateLong, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { ensureImageDataUrl } from '../../../lib/colbUtils'
 import { DocumentHeader, DocumentFooter } from '../../../components/print'
 import {
@@ -47,7 +47,7 @@ export default function MarriageNullityArt42Annotation({
   const wife = (data?.lcr3aWifeName || '').trim() || '_______________'
   const dateRaw = data?.lcr3aDateMarriage
   const p = parseDdMmYyyyToDate(dateRaw)
-  const marriageDate = p ? formatDateCert(p.toISOString().slice(0, 10)) : formatDateCert(dateRaw) || '_______________'
+  const marriageDate = p ? formatDateLong(p.toISOString().slice(0, 10)) : formatDateLong(dateRaw) || '_______________'
   const place = (data?.lcr3aPlaceMarriage || '').trim() || '_______________'
   const registry =
     String(data?.lcr3aRegistryNumber || '').trim() ||
@@ -56,7 +56,7 @@ export default function MarriageNullityArt42Annotation({
 
   const art42Text = `The marriage entered into by ${husband} and ${wife} celebrated on ${marriageDate} in ${place} is hereby terminated pursuant to Article 42 of the Family Code of the Philippines.`
 
-  const issuedDate = formatDateCert(data?.certificateIssuanceDate) || formatDateCert(new Date())
+  const issuedDate = formatDateLong(data?.certificateIssuanceDate) || formatDateLong(new Date())
   const signatory = (data?.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
 
   const [showUploadModal, setShowUploadModal] = useState(false)

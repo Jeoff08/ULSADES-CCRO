@@ -6,11 +6,16 @@ import {
   joinCommaParts
 } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
+import { lcrRemarksBodyStyle } from '../../../lib/lcrRemarksFontSize'
+import LcrCertificationRequestPartyInline from '../../../components/lcr/LcrCertificationRequestPartyInline'
 
 /** LCR Form No. 1A (Birth-Available) for AUSF module (A1 version).
  *  Updated signatory block to match the specific layout requested from the image.
  */
-export default function LcrFormA1({ data }) {
+export default function LcrFormA1({ data, onDataChange }) {
+  const patchData = (partial) => {
+    onDataChange?.({ ...data, ...partial })
+  }
   const childFull = fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.childFirst, data.childMiddle, data.childLast)
   const motherFull = fullName(data.motherFirst, data.motherMiddle, data.motherLast)
   const fatherFull = fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
@@ -24,7 +29,6 @@ export default function LcrFormA1({ data }) {
 
   // Specific remarks for A1 form
   const ackDate = formatDateLong(data.colbDateOfRegistration)?.toUpperCase() || '—'
-  const remarksText = `Acknowledged by ${fatherFull || '—'} on ${ackDate} under Registry Number ${registryNo}. "The child shall be known as ${childFull?.toUpperCase() || '—'} pursuant to R.A. 9255"`
 
 
   const tableData = [
@@ -62,8 +66,8 @@ export default function LcrFormA1({ data }) {
       </div>
 
       <div className="court-decree-lcr-body-wrap flex-1 min-h-0 flex flex-col">
-        <div className="court-decree-lcr-body-scaled flex flex-col h-full">
-          <div className="flex-1">
+        <div className="court-decree-lcr-body-scaled flex flex-col min-h-0">
+          <div>
             <p className="font-bold mb-1 pl-8">TO WHOM IT MAY CONCERN:</p>
             <p className="mb-2 text-left court-decree-lcr-body">
               <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of birth appear in our Register of Births on Page{' '}
@@ -86,34 +90,39 @@ export default function LcrFormA1({ data }) {
 
             <div className="lcr-form-bottom-content">
               <p className="mb-2 text-[11.7pt] court-decree-lcr-body ausf-lcr-cert-line">
-                This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.
+                This certification is issued upon the request of{' '}
+                <LcrCertificationRequestPartyInline
+                  data={data}
+                  variant="1a"
+                  onPartyChange={onDataChange ? patchData : undefined}
+                />{' '}
+                for any legal purposes.
               </p>
 
-              <div className="mt-10 mb-2 court-decree-lcr-body ausf-lcr-remarks-block">
-                <p className="font-bold text-sm mb-0.5 uppercase">REMARKS:</p>
-                <p className="leading-[1.35] text-justify break-words [overflow-wrap:anywhere] text-sm">
+              <div className="mt-10 mb-4 court-decree-lcr-body ausf-lcr-remarks-block">
+                <p className="font-bold text-sm mb-1 uppercase">REMARKS:</p>
+                <p
+                  className="text-justify break-words [overflow-wrap:anywhere]"
+                  style={lcrRemarksBodyStyle(data)}
+                >
                   Acknowledged by <span className="font-bold underline">{fatherFull || '—'}</span> on <span className="font-bold underline">{ackDate}</span> under Registry Number <span className="font-bold underline">{registryNo}</span>. The child shall be known as <span className="font-bold underline">{childFull?.toUpperCase() || '—'}</span>
                 </p>
               </div>
-            </div>
-          </div>
 
-          {/* Signature Block & Note pushed to bottom */}
-          <div className="mt-auto lcr-form-bottom-content pb-0 mb-0">
-            <div className="mt-1 mb-4 court-decree-lcr-body ausf-lcr-verified-block">
-              <div className="flex justify-between items-end">
-                <div className="text-center flex flex-col items-center">
-                  <p className="text-sm mb-1 -mt-2 print:-mt-3 text-left self-start">{verifiedByLabel}</p>
-                  <div className="font-bold uppercase text-sm leading-none m-0 p-0">{regOfficerName}</div>
-                  <div className="text-sm leading-none m-0 p-0">{regOfficerTitle}</div>
-                </div>
-                <div className="text-center flex flex-col items-center">
-                  <div className="font-bold uppercase text-sm leading-none m-0 p-0">{ccrName}</div>
-                  <div className="italic text-xs leading-none m-0 p-0">City Civil Registrar</div>
+              <div className="mt-10 mb-4 court-decree-lcr-body ausf-lcr-verified-block">
+                <div className="flex justify-between items-end gap-4">
+                  <div className="text-center flex flex-col items-center">
+                    <p className="text-sm mb-1 text-left self-start">{verifiedByLabel}</p>
+                    <div className="font-bold uppercase text-sm leading-snug m-0 p-0">{regOfficerName}</div>
+                    <div className="text-sm leading-snug m-0 p-0">{regOfficerTitle}</div>
+                  </div>
+                  <div className="text-center flex flex-col items-center">
+                    <div className="font-bold uppercase text-sm leading-snug m-0 p-0">{ccrName}</div>
+                    <div className="italic text-xs leading-snug m-0 p-0">City Civil Registrar</div>
+                  </div>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </div>

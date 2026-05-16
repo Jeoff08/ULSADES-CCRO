@@ -11,6 +11,7 @@ import { getUploadedFile, restoreUploadedFileFromTrash } from '../../lib/uploade
 import UploadFileModal from '../../components/upload/UploadFileModal'
 import ToastHost from '../../components/toast/ToastHost'
 import { useToasts } from '../../components/toast/useToasts'
+import { useDebouncedSuccessToast } from '../../hooks/useDebouncedSuccessToast'
 import { saveCurrentViewAsPdf, openSavedPdfInBrowser } from '../../lib/savePdf'
 import { isLcr1aTableComplete, isLcr2aTableComplete, isLcr3aTableComplete } from './lib/courtDecreeLcrCompletion'
 import { formTypeToAffectedCode } from './lib/courtDecreeAffectedDocuments'
@@ -34,6 +35,7 @@ import {
   MarriageNullityArt42Annotation,
   MarriageAnnotationModeSidebar,
 } from './print'
+import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
 
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-court'
 
@@ -82,6 +84,8 @@ const RESTRICTED_PRINT_IDS = [
   'annotation-form-2a',
   'annotation-form-3a',
 ]
+
+const COURT_DECREE_LCR_REMARKS_FONT_SIDEBAR_TYPES = new Set(RESTRICTED_PRINT_IDS)
 
 function normalizeAffectedList(data) {
   const arr = Array.isArray(data?.affectedDocuments) ? data.affectedDocuments : []
@@ -160,6 +164,7 @@ export default function CourtDecreePrint() {
   const [previewModalOpen, setPreviewModalOpen] = useState(false)
   const [previewPdfUrl, setPreviewPdfUrl] = useState('')
   const { toasts, show, dismiss } = useToasts()
+  const notifyLcrCertSaved = useDebouncedSuccessToast(show)
   const handleSavePdf = async () => {
     try {
       const outputType = validType
@@ -375,6 +380,9 @@ export default function CourtDecreePrint() {
     const hasManualContent = String(manualRaw ?? '').trim() !== ''
     const isRemarksTouched = data?.lcrForm1aRemarksTouched === true
     out.remarks = (hasManualContent || isRemarksTouched) ? String(manualRaw ?? '') : buildLcrRemarks(data, out, 'BIRTH')
+    if (data.lcrCertificationRequestParty !== undefined) {
+      out.lcrCertificationRequestParty = data.lcrCertificationRequestParty
+    }
     return out
   }, [validType, data])
 
@@ -433,6 +441,9 @@ export default function CourtDecreePrint() {
     const hasManualContent = String(manualRaw ?? '').trim() !== ''
     const isRemarksTouched = data?.lcrForm2aRemarksTouched === true
     out.remarks = (hasManualContent || isRemarksTouched) ? String(manualRaw ?? '') : buildLcrRemarks(data, out, 'DEATH')
+    if (data.lcrCertificationRequestParty !== undefined) {
+      out.lcrCertificationRequestParty = data.lcrCertificationRequestParty
+    }
     return out
   }, [validType, data])
 
@@ -499,6 +510,9 @@ export default function CourtDecreePrint() {
     if (reg) out.marriageRegistryNo = reg
     const manualRaw = data?.lcrForm3aRemarks
     out.remarks = String(manualRaw ?? '')
+    if (data.lcrCertificationRequestParty !== undefined) {
+      out.lcrCertificationRequestParty = data.lcrCertificationRequestParty
+    }
     return out
   }, [validType, data])
 
@@ -558,6 +572,25 @@ export default function CourtDecreePrint() {
     })
   }, [])
 
+  const persistLcrRemarksFontPt = useCallback((pt) => {
+    setData((prev) => {
+      const next = { ...prev, lcrRemarksFontSizePt: pt }
+      saveCourtDecreeDraft(next)
+      return next
+    })
+  }, [])
+
+  const persistLcrPrintPatch = useCallback((patch) => {
+    setData((prev) => {
+      const next = { ...prev, ...patch }
+      const prevParty = String(prev.lcrCertificationRequestParty ?? '')
+      const nextParty = String(next.lcrCertificationRequestParty ?? '')
+      if (prevParty !== nextParty) notifyLcrCertSaved()
+      saveCourtDecreeDraft(next)
+      return next
+    })
+  }, [notifyLcrCertSaved])
+
   let content
   switch (validType) {
     case 'cert-authenticity':
@@ -577,21 +610,21 @@ export default function CourtDecreePrint() {
         effectiveAffectedDocs.length <= 1
           ? (
             <div className="court-decree-lcr-form-outer">
-              <LcrForm1ABirthAvailable data={dataForLcr1A} />
+              <LcrForm1ABirthAvailable data={dataForLcr1A} onDataChange={persistLcrPrintPatch} />
             </div>
           )
           : (
             <div className="court-decree-lcr-form-outer space-y-6">
-              {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
-              {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
-              {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
+              {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} onDataChange={persistLcrPrintPatch} /> : null}
+              {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} onDataChange={persistLcrPrintPatch} /> : null}
+              {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} onDataChange={persistLcrPrintPatch} /> : null}
             </div>
           )
       break
     case 'lcr-form-2a':
       content = (
         <div className="court-decree-lcr-form-outer">
-          <LcrForm2ADeathAvailable data={dataForLcr2A} />
+          <LcrForm2ADeathAvailable data={dataForLcr2A} onDataChange={persistLcrPrintPatch} />
         </div>
       )
       break
@@ -600,14 +633,14 @@ export default function CourtDecreePrint() {
         effectiveAffectedDocs.length <= 1
           ? (
             <div className="court-decree-lcr-form-outer">
-              <LcrForm3AMarriageAvailable data={dataForLcr3A} />
+              <LcrForm3AMarriageAvailable data={dataForLcr3A} onDataChange={persistLcrPrintPatch} />
             </div>
           )
           : (
             <div className="court-decree-lcr-form-outer space-y-6">
-              {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} /> : null}
-              {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} /> : null}
-              {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} /> : null}
+              {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} onDataChange={persistLcrPrintPatch} /> : null}
+              {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} onDataChange={persistLcrPrintPatch} /> : null}
+              {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} onDataChange={persistLcrPrintPatch} /> : null}
             </div>
           )
       break
@@ -874,6 +907,14 @@ export default function CourtDecreePrint() {
                 ) : null}
               </select>
             </div>
+          ) : null}
+          {COURT_DECREE_LCR_REMARKS_FONT_SIDEBAR_TYPES.has(validType) ? (
+            <LcrRemarksFontSizeSelect
+              id="court-decree-print-lcr-remarks-font"
+              value={data.lcrRemarksFontSizePt}
+              onChange={persistLcrRemarksFontPt}
+              helpText="Applies to the REMARKS block on LCR 1A / 2A / 3A and matching annotation printouts."
+            />
           ) : null}
         </aside>
         <div className="flex-1 min-w-0">

@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatDateCert, fullName } from '../../../lib/printUtils'
+import { formatDateCert, formatDateLong, fullName } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter } from '../../../components/print'
 
 /** ANNOTATION – legitimation form print. */
@@ -7,17 +7,19 @@ export default function Annotation({ data }) {
   const childFull = fullName(data.childFirst, data.childMiddle, data.childLast)
   const motherFull = fullName(data.motherFirst, data.motherMiddle, data.motherLast)
   const fatherFull = fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
-  const dateMarriage = formatDateCert(data.dateOfMarriage) || '—'
-  const place = [data.placeOfMarriageCity, data.placeOfMarriageProvince].filter(Boolean).join(', ') || '—'
-  const regNo = data.affidavitLegitRegistryNo || '—'
+  const dateMarriage = formatDateLong(data.dateOfMarriage) || '—'
+  const place = [data.placeOfMarriageCity, data.placeOfMarriageProvince, data.placeOfMarriageCountry].filter(Boolean).join(', ').trim()
+  const atPlace = place ? ` at ${place.toUpperCase()}` : ''
+  const regNoTrim = String(data.affidavitLegitRegistryNo || '').trim()
+  const regClause = regNoTrim ? ` under registry number ${regNoTrim}` : ''
   const selected = String(data.legitimationAnnotationOption || '').trim().toUpperCase()
   const withAck = selected === 'B' ? true : selected === 'A' ? false : data.acknowledgedByFatherInColb === 'YES'
 
-  const annotationWithAck = `Legitimated by the subsequent marriage of parents ${(fatherFull || '').toUpperCase()} and ${(motherFull || '').toUpperCase()} on ${dateMarriage.toUpperCase()} at ${place.toUpperCase()} under registry number ${regNo}. The child shall be known as ${(childFull || '').toUpperCase()}.`
-  const annotationWithoutAck = `Legitimated by the subsequent marriage of parents ${(fatherFull || '').toUpperCase()} and ${(motherFull || '').toUpperCase()} on ${dateMarriage.toUpperCase()} at ${place.toUpperCase()} under registry number ${regNo}.`
+  const annotationWithAck = `Legitimated by the subsequent marriage of parents ${(fatherFull || '').toUpperCase()} and ${(motherFull || '').toUpperCase()} on ${dateMarriage.toUpperCase()}${atPlace}${regClause}. The child shall be known as ${(childFull || '').toUpperCase()}.`
+  const annotationWithoutAck = `Legitimated by the subsequent marriage of parents ${(fatherFull || '').toUpperCase()} and ${(motherFull || '').toUpperCase()} on ${dateMarriage.toUpperCase()}${atPlace}${regClause}.`
 
   const annotationText = withAck ? annotationWithAck : annotationWithoutAck
-  const issuedDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
+  const issuedDate = formatDateLong(data.certificateIssuanceDate) || formatDateLong(new Date())
   const signatory = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
 
   return (

@@ -1,4 +1,5 @@
 import React from 'react'
+import FlexibleFormDateInput from '../../components/forms/FlexibleFormDateInput'
 import {
   SUPPLEMENTAL_TRANSMITTAL_ATTACHMENT_OPTIONS,
   SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS,
@@ -55,11 +56,12 @@ export default function SupplementalTransmittalFieldsEditor({
           <legend className="text-xs font-semibold uppercase tracking-wide text-gray-700 px-1">Letter</legend>
           <label className="block">
             <span className="text-xs font-medium text-gray-700">Letter date</span>
-            <input
-              type="date"
-              className={`mt-0.5 ${fieldClass} max-w-xs`}
+            <FlexibleFormDateInput
+              className="max-w-xs mt-0.5"
+              inputClassName={fieldClass}
               value={data.transmittalDate || ''}
-              onChange={(e) => onPatch({ transmittalDate: e.target.value })}
+              onChange={(v) => onPatch({ transmittalDate: v })}
+              placeholder="May 15 2026 or dd/mm/yyyy"
             />
           </label>
           <div className="space-y-2">
@@ -226,11 +228,12 @@ export default function SupplementalTransmittalFieldsEditor({
             </label>
             <label className="block">
               <span className="text-xs font-medium text-gray-700">Date of birth</span>
-              <input
-                type="date"
-                className={`mt-0.5 ${fieldClass}`}
+              <FlexibleFormDateInput
+                className="mt-0.5"
+                inputClassName={fieldClass}
                 value={data.transmittalDob || ''}
-                onChange={(e) => onPatch({ transmittalDob: e.target.value })}
+                onChange={(v) => onPatch({ transmittalDob: v })}
+                placeholder="May 15 2026 or dd/mm/yyyy"
               />
             </label>
             <label className="block sm:col-span-2">

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { formatDateCert, parseDdMmYyyyToDate, computeAgeFullYears } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
+import { lcrRemarksBodyStyle } from '../../../lib/lcrRemarksFontSize'
+import LcrCertificationRequestPartyInline from '../../../components/lcr/LcrCertificationRequestPartyInline'
 import { buildLcr3aTableDisplay } from '../lib/lcr3aTable'
 import { resolveCourtDecreeLcrPrintCcr } from '../lib/courtDecreePrintCcr'
 import LcrRegistrationDateInputs from '../../../components/lcr/LcrRegistrationDateInputs'
@@ -393,7 +395,13 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
               )
               : (
                 <>
-                  This certification is issued upon the request of <span className="font-bold">OCRG/DOCUMENT OWNER</span> for any legal purposes.
+                  This certification is issued upon the request of{' '}
+                  <LcrCertificationRequestPartyInline
+                    data={data}
+                    variant="2a3a"
+                    onPartyChange={onDataChange && !editableTable ? patchData : undefined}
+                  />{' '}
+                  for any legal purposes.
                 </>
               )}
           </p>
@@ -408,11 +416,15 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
                   onDataChange?.({ ...data, remarks: v })
                 }}
                 rows={3}
-                className="w-full border border-gray-300 rounded px-2 py-1 text-[14px]"
+                className="w-full border border-gray-300 rounded px-2 py-1"
+                style={lcrRemarksBodyStyle(data)}
                 placeholder="Type or edit remarks here..."
               />
             </div>
-            <p className="text-[14px] leading-[1.35] text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] min-h-[1.5rem]">
+            <p
+              className="text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] min-h-[1.5rem]"
+              style={lcrRemarksBodyStyle(data)}
+            >
               {editableRemarks}
             </p>
           </div>

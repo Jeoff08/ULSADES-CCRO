@@ -43,6 +43,7 @@ export default function Ausf0717({ data }) {
           </div>
         }
       />
+      <div className="ausf-07-17-doc-body flex flex-col flex-1 min-h-0">
       <h2 className="text-center font-bold text-[14px] uppercase mb-2 mt-0">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
       <p className="mb-0 leading-snug text-justify">
         I, <span className={`${FILL} affiant-name-blank affiant-name-bold-underline uppercase mx-0.5`}><span className="affiant-name-inner">{affiantWithSurname}</span></span>, of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
@@ -76,11 +77,12 @@ export default function Ausf0717({ data }) {
         <div className="text-xs mt-0">Affiant</div>
       </div>
       <p className="ausf-subscribed-sworn mt-0.5 mb-0.5 text-justify leading-snug"><span className="font-bold">SUBSCRIBED AND SWORN</span> to before me this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
-      <div className="registrar-signature-zone flex-1 flex min-h-[2rem] flex-col justify-center items-end">
-        <div className="text-right city-registrar-signature">
-          <p className="font-bold text-sm text-right">{data.cityCivilRegistrarName}</p>
-          <p className="text-xs text-right">City Civil Registrar</p>
+      <div className="registrar-signature-zone mt-auto flex w-full min-h-[2rem] flex-col items-end justify-end">
+        <div className="ccr-signatory-block city-registrar-signature inline-flex flex-col items-center text-center leading-snug">
+          <p className="ccr-signatory-block__name m-0 p-0 font-bold text-sm">{data.cityCivilRegistrarName}</p>
+          <p className="ccr-signatory-block__title m-0 p-0 text-xs italic">City Civil Registrar</p>
         </div>
+      </div>
       </div>
       <div className="mt-auto shrink-0">
         <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />

@@ -6,7 +6,7 @@ import {
   loadAUSFDraftFromApi,
   saveAUSFDraftToApi,
 } from "./lib/ausfStorage";
-import { defaultAUSF, syncAusfTransmittalFlagWithFormType } from "./lib/ausfDefaults";
+import { mergeAUSFDraftData } from "./lib/ausfDefaults";
 import {
   deriveAusfJuratAffidavitFormType,
   AUSF_JURAT_PRINT_TYPES,
@@ -24,6 +24,7 @@ import {
 import UploadFileModal from "../../components/upload/UploadFileModal";
 import ToastHost from "../../components/toast/ToastHost";
 import { useToasts } from "../../components/toast/useToasts";
+import { useDebouncedSuccessToast } from "../../hooks/useDebouncedSuccessToast";
 import { saveCurrentViewAsPdf, openSavedPdfInBrowser } from "../../lib/savePdf";
 import {
   buildAnnotationFieldPreviewPdfBase64,
@@ -51,6 +52,7 @@ import {
   clearPreparedByOverrideForPrintType,
   mergeAusfTransmittalSignatoryIntoData,
 } from "./lib/ausfPrintPreparedBy";
+import LcrRemarksFontSizeSelect from "../../components/lcr/LcrRemarksFontSizeSelect";
 
 const VIEW_PRINT_OPTIONS = [
   { label: "AUSF only", type: "ausf-only" },
@@ -89,6 +91,13 @@ const AUSF_TRANSMITTAL_FORM_TYPES = new Set([
   "child-not-ack-transmittal",
   "out-of-town",
 ]);
+/** LCR / annotation outputs that show editable or generated remarks text */
+const AUSF_LCR_REMARKS_FONT_TYPES = new Set([
+  "child-ack-lcr",
+  "child-not-ack-lcr",
+  "child-ack-annotation",
+  "child-not-ack-annotation",
+]);
 /** Jurat affidavit forms — only used when child is not yet acknowledged; hide when YES */
 const AUSF_JURAT_CHILD_NOT_ACK_TYPES = new Set(["ausf-0-6", "ausf-07-17"]);
 
@@ -123,6 +132,7 @@ export default function AUSFPrint() {
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [previewPdfUrl, setPreviewPdfUrl] = useState("");
   const { toasts, show, dismiss } = useToasts();
+  const notifyLcrCertSaved = useDebouncedSuccessToast(show);
 
   const activePrintType = displayType ?? data?.formType;
   const pageSizeForPrint =
@@ -277,10 +287,7 @@ export default function AUSFPrint() {
   useEffect(() => {
     const draft = getAUSFDraft();
     if (draft) {
-      const loaded = syncAusfTransmittalFlagWithFormType({
-        ...defaultAUSF,
-        ...draft,
-      });
+      const loaded = mergeAUSFDraftData(draft);
       setData(loaded);
       setDisplayType((prev) => prev ?? loaded.formType);
     } else {
@@ -289,10 +296,7 @@ export default function AUSFPrint() {
     loadAUSFDraftFromApi()
       .then((apiDraft) => {
         if (!apiDraft) return;
-        const loaded = syncAusfTransmittalFlagWithFormType({
-          ...defaultAUSF,
-          ...apiDraft,
-        });
+        const loaded = mergeAUSFDraftData(apiDraft);
         setData(loaded);
         setDisplayType((prev) => prev ?? loaded.formType);
       })
@@ -530,6 +534,22 @@ export default function AUSFPrint() {
     [previewPdfUrl]
   );
 
+  const persistAusfLcrPrintPatch = useCallback(
+    (patch) => {
+      setData((prev) => {
+        if (!prev) return prev;
+        const next = { ...prev, ...patch };
+        const prevParty = String(prev.lcrCertificationRequestParty ?? "");
+        const nextParty = String(next.lcrCertificationRequestParty ?? "");
+        if (prevParty !== nextParty) notifyLcrCertSaved();
+        saveAUSFDraft(next);
+        saveAUSFDraftToApi(next).catch(() => { });
+        return next;
+      });
+    },
+    [notifyLcrCertSaved],
+  );
+
   if (data === null) {
     return (
       <div className="max-w-4xl mx-auto text-center py-12">
@@ -572,6 +592,13 @@ export default function AUSFPrint() {
     saveAUSFDraftToApi(next).catch(() => { });
   };
 
+  const handleAusfRemarksFontChange = (pt) => {
+    const next = { ...data, lcrRemarksFontSizePt: pt };
+    setData(next);
+    saveAUSFDraft(next);
+    saveAUSFDraftToApi(next).catch(() => { });
+  };
+
   let content;
   if (type === "ausf-only") content = <AusfOnly data={data} />;
   else if (type === "ausf-0-6") content = <Ausf06 data={data} />;
@@ -580,7 +607,9 @@ export default function AUSFPrint() {
   else if (type === "reg-ack")
     content = <RegistrationOfAcknowledgement data={data} />;
   else if (type === "child-ack-lcr")
-    content = <LcrForm1ABirthAvailable data={data} />;
+    content = (
+      <LcrForm1ABirthAvailable data={data} onDataChange={persistAusfLcrPrintPatch} />
+    );
   else if (type === "child-ack-annotation")
     content = (
       <AnnotationChildAck
@@ -599,7 +628,7 @@ export default function AUSFPrint() {
         }}
       />
     );
-  else if (type === "child-not-ack-lcr") content = <LcrFormA1 data={data} />;
+  else if (type === "child-not-ack-lcr") content = <LcrFormA1 data={data} onDataChange={persistAusfLcrPrintPatch} />;
   else if (type === "child-not-ack-annotation")
     content = (
       <AnnotationChildNotAck
@@ -907,6 +936,14 @@ export default function AUSFPrint() {
                   </p>
                 ) : null}
               </div>
+            ) : null}
+            {AUSF_LCR_REMARKS_FONT_TYPES.has(type) ? (
+              <LcrRemarksFontSizeSelect
+                id="ausf-print-lcr-remarks-font"
+                value={data.lcrRemarksFontSizePt}
+                onChange={handleAusfRemarksFontChange}
+                helpText="Applies to the REMARKS block on LCR 1A, A1, and COLB annotation outputs for this record."
+              />
             ) : null}
           </div>
           <div className="mt-2 pt-2 border-t border-gray-200 flex flex-col gap-2">

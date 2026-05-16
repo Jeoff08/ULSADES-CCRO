@@ -35,6 +35,8 @@ export default function LcrRegistrationDateInputs({
   monthUiKey = LCR_REGISTRATION_MONTH_UI,
   yearUiKey = LCR_REGISTRATION_YEAR_UI,
   ariaLabelPrefix = 'Registration',
+  /** `start` left-aligns the DD/MM/YYYY row in the table cell (LCR 1A/2A value column). */
+  dateInputsJustify = 'center',
 }) {
   const [day, setDay] = useState('')
   const [month, setMonth] = useState('')
@@ -154,9 +156,11 @@ export default function LcrRegistrationDateInputs({
     persist(dAdj, month, out)
   }
 
+  const inputsRowJustify = dateInputsJustify === 'start' ? 'justify-start' : 'justify-center'
+
   return (
     <div className={className}>
-      <div className="no-print flex flex-wrap items-center justify-center gap-x-1 gap-y-1 font-bold">
+      <div className={`no-print flex flex-wrap items-center ${inputsRowJustify} gap-x-1 gap-y-1 font-bold`}>
         <input
           type="text"
           inputMode="numeric"
