@@ -1329,6 +1329,14 @@ html[data-paper-size="legal"] .supplemental-report-size ol,
 html[data-paper-size="legal"] .supplemental-report-doc li {
   font-size: 17px !important;
 }
+/* Supplemental affidavit — "CHILD'S MIDDLE NAME:" label (screen / preview) */
+.supplemental-report-doc .supplemental-child-middle-name-label,
+html[data-paper-size="a4"] .supplemental-report-doc .supplemental-child-middle-name-label,
+html[data-paper-size="short"] .supplemental-report-doc .supplemental-child-middle-name-label,
+html[data-paper-size="long"] .supplemental-report-doc .supplemental-child-middle-name-label,
+html[data-paper-size="legal"] .supplemental-report-doc .supplemental-child-middle-name-label {
+  font-size: 16px !important;
+}
 
 /* AUSF 0-6: preview min-height matches selected paper so layout auto-adjusts on screen */
 html[data-paper-size="short"] .ausf-0-6-doc.print-doc {
@@ -2346,6 +2354,45 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="legal"] .supplemental-report-doc div {
     font-size: 15px !important;
   }
+  /* Supplemental affidavit — "CHILD'S MIDDLE NAME:" label (print PDF) */
+  .supplemental-report-doc .supplemental-child-middle-name-label,
+  html[data-paper-size="a4"] .supplemental-report-doc .supplemental-child-middle-name-label,
+  html[data-paper-size="short"] .supplemental-report-doc .supplemental-child-middle-name-label,
+  html[data-paper-size="long"] .supplemental-report-doc .supplemental-child-middle-name-label,
+  html[data-paper-size="legal"] .supplemental-report-doc .supplemental-child-middle-name-label {
+    font-size: 12pt !important;
+  }
+  /* Supplemental affidavit: top margin on header only (print PDF; all paper sizes) */
+  html[data-paper-size="a4"] .supplemental-report-doc.print-doc .supplemental-report-top-header,
+  html[data-paper-size="short"] .supplemental-report-doc.print-doc .supplemental-report-top-header,
+  html[data-paper-size="long"] .supplemental-report-doc.print-doc .supplemental-report-top-header,
+  html[data-paper-size="legal"] .supplemental-report-doc.print-doc .supplemental-report-top-header,
+  #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-report-doc.print-doc .supplemental-report-top-header {
+    margin-top: 0.3in !important;
+  }
+  html[data-paper-size="a4"] .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory,
+  html[data-paper-size="short"] .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory,
+  html[data-paper-size="long"] .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory,
+  html[data-paper-size="legal"] .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory,
+  #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory {
+    margin-top: 7rem !important;
+    padding-right: 0.1in !important;
+  }
+  /* Child's middle name affidavit: title only — nudge up; body below title unchanged */
+  #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-affidavit-middle-body > h2,
+  html[data-paper-size="a4"] .supplemental-report-doc.print-doc .supplemental-affidavit-middle-body > h2,
+  html[data-paper-size="short"] .supplemental-report-doc.print-doc .supplemental-affidavit-middle-body > h2,
+  html[data-paper-size="long"] .supplemental-report-doc.print-doc .supplemental-affidavit-middle-body > h2,
+  html[data-paper-size="legal"] .supplemental-report-doc.print-doc .supplemental-affidavit-middle-body > h2 {
+    margin-top: 0.25in !important;
+  }
+  #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-affidavit-middle-body > .supplemental-report-content,
+  html[data-paper-size="a4"] .supplemental-report-doc.print-doc .supplemental-affidavit-middle-body > .supplemental-report-content,
+  html[data-paper-size="short"] .supplemental-report-doc.print-doc .supplemental-affidavit-middle-body > .supplemental-report-content,
+  html[data-paper-size="long"] .supplemental-report-doc.print-doc .supplemental-affidavit-middle-body > .supplemental-report-content,
+  html[data-paper-size="legal"] .supplemental-report-doc.print-doc .supplemental-affidavit-middle-body > .supplemental-report-content {
+    margin-top: 0.25in !important;
+  }
   /* Supplemental middle-name header sizing in saved PDF */
   html[data-paper-size="a4"] .supplemental-report-doc .supplemental-header-main p,
   html[data-paper-size="short"] .supplemental-report-doc .supplemental-header-main p,
@@ -2373,7 +2420,36 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="short"] .supplemental-report-doc .supplemental-numbered-items li,
   html[data-paper-size="long"] .supplemental-report-doc .supplemental-numbered-items li,
   html[data-paper-size="legal"] .supplemental-report-doc .supplemental-numbered-items li {
-    line-height: 2 !important;
+    line-height: 1.15 !important;
+  }
+  /* Supplemental affidavit body: 1.15 paragraph spacing (print PDF) */
+  .supplemental-report-doc.print-doc .supplemental-report-content,
+  .supplemental-report-doc.print-doc .supplemental-report-content p,
+  .supplemental-report-doc.print-doc .supplemental-report-content li,
+  .supplemental-report-doc.print-doc .supplemental-report-content span,
+  .supplemental-report-doc.print-doc .supplemental-report-content div,
+  html[data-paper-size="a4"] .supplemental-report-doc .supplemental-report-content,
+  html[data-paper-size="short"] .supplemental-report-doc .supplemental-report-content,
+  html[data-paper-size="long"] .supplemental-report-doc .supplemental-report-content,
+  html[data-paper-size="legal"] .supplemental-report-doc .supplemental-report-content,
+  html[data-paper-size="a4"] .supplemental-report-doc .supplemental-report-content p,
+  html[data-paper-size="short"] .supplemental-report-doc .supplemental-report-content p,
+  html[data-paper-size="long"] .supplemental-report-doc .supplemental-report-content p,
+  html[data-paper-size="legal"] .supplemental-report-doc .supplemental-report-content p,
+  html[data-paper-size="a4"] .supplemental-report-doc .supplemental-report-content li,
+  html[data-paper-size="short"] .supplemental-report-doc .supplemental-report-content li,
+  html[data-paper-size="long"] .supplemental-report-doc .supplemental-report-content li,
+  html[data-paper-size="legal"] .supplemental-report-doc .supplemental-report-content li {
+    line-height: 1.15 !important;
+  }
+  /* Intro "I, … THAT:" to numbered item 1 — one space only (print PDF; all paper sizes) */
+  html[data-paper-size="a4"] .supplemental-report-doc.print-doc .supplemental-report-content > p:first-of-type + .supplemental-numbered-items,
+  html[data-paper-size="short"] .supplemental-report-doc.print-doc .supplemental-report-content > p:first-of-type + .supplemental-numbered-items,
+  html[data-paper-size="long"] .supplemental-report-doc.print-doc .supplemental-report-content > p:first-of-type + .supplemental-numbered-items,
+  html[data-paper-size="legal"] .supplemental-report-doc.print-doc .supplemental-report-content > p:first-of-type + .supplemental-numbered-items,
+  #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-report-content > p:first-of-type + .supplemental-numbered-items {
+    margin-top: 0.25em !important;
+    padding-top: 0 !important;
   }
   /* Print PDF only: header and footer fixed; only body content is flexible */
   .print-doc-header {
@@ -2438,8 +2514,8 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     align-items: flex-end !important;
     justify-content: flex-end !important;
     min-height: 5rem !important;
-    margin-top: 0.2in !important;
-    transform: translateY(-2em) !important;
+    margin-top: 0.1in !important;
+    transform: translateY(-3.5em) !important;
     width: 100% !important;
   }
   .ausf-0-6-doc.print-doc .registrar-signature-zone .city-registrar-signature {
@@ -2876,13 +2952,13 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-top: auto !important;
     flex-shrink: 0;
   }
-  /* AUSF Only: City Civil Registrar block at bottom-right corner in print/PDF */
+  /* AUSF Only: City Civil Registrar block at bottom-right in print (screen preview unchanged) */
   .ausf-only-doc .registrar-signature-zone {
     align-items: flex-end !important;
     justify-content: flex-end !important;
     width: 100% !important;
-    margin-top: 0.05in !important;
-    transform: translateY(-2em) !important;
+    margin-top: 0.14in !important;
+    transform: translateY(0.15em) !important;
   }
   .ausf-only-doc .registrar-signature-zone .city-registrar-signature {
     margin-right: 0 !important;
@@ -3778,14 +3854,28 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     align-items: flex-end !important;
     width: 100% !important;
   }
-  /* AUSF 0-6 / 07-17 / Only: CCR block at bottom-right in print/PDF */
-  .ausf-only-doc.ausf-doc .registrar-signature-zone,
-  .ausf-07-17-doc.ausf-doc .registrar-signature-zone,
+  /* AUSF 0-6: CCR block at bottom-right in print/PDF */
   .ausf-0-6-doc.print-doc .registrar-signature-zone {
     justify-content: flex-end !important;
     align-items: flex-end !important;
     width: 100% !important;
-    transform: translateY(-2em) !important;
+    transform: translateY(-3.5em) !important;
+  }
+  /* AUSF Only: CCR a bit lower in print/PDF only */
+  .ausf-only-doc.ausf-doc .registrar-signature-zone {
+    justify-content: flex-end !important;
+    align-items: flex-end !important;
+    width: 100% !important;
+    margin-top: 0.14in !important;
+    transform: translateY(0.15em) !important;
+  }
+  /* AUSF 07-17: CCR slightly lower than 0-6 / Only */
+  .ausf-07-17-doc.ausf-doc .registrar-signature-zone,
+  .ausf-07-17-doc .registrar-signature-zone {
+    justify-content: flex-end !important;
+    align-items: flex-end !important;
+    width: 100% !important;
+    transform: translateY(-1.25em) !important;
   }
   /* AUSF 07-17 print/PDF only: gap between SUBSCRIBED AND SWORN and City Civil Registrar block */
   .ausf-07-17-doc .ausf-subscribed-sworn {
@@ -4827,8 +4917,8 @@ html[data-paper-size="short"] .print-doc-footer p {
   html[data-paper-size="a4"] .ausf-only-doc .registrar-signature-zone,
   html[data-paper-size="short"] .ausf-only-doc .registrar-signature-zone,
   html[data-paper-size="long"] .ausf-only-doc .registrar-signature-zone , html[data-paper-size="legal"] .ausf-only-doc .registrar-signature-zone {
-    margin-top: 0.2in !important;
-    transform: translateY(-2em) !important;
+    margin-top: 0.22in !important;
+    transform: translateY(0.15em) !important;
     justify-content: flex-end !important;
   }
 
@@ -6127,6 +6217,34 @@ body.pdf-capture .supplemental-report-doc h2 {
   .supplemental-report-doc.print-doc .supplemental-report-content li {
     text-align: justify !important;
     text-justify: inter-word;
+    line-height: 1.15 !important;
+  }
+  /* Supplemental affidavit: top margin on header only (print PDF) */
+  .supplemental-report-doc.print-doc .supplemental-report-top-header,
+  #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-report-top-header {
+    margin-top: 0.3in !important;
+  }
+  /* Child's middle name affidavit: registrar signatory (LORELIE L. CANTO) — nudge down */
+  .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory,
+  #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory {
+    margin-top: 5rem !important;
+    padding-right: 0.1in !important;
+  }
+  #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-affidavit-middle-body > h2,
+  .supplemental-report-doc.print-doc .supplemental-affidavit-middle-body > h2 {
+    margin-top: 0.25in !important;
+  }
+  #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-affidavit-middle-body > .supplemental-report-content,
+  .supplemental-report-doc.print-doc .supplemental-affidavit-middle-body > .supplemental-report-content {
+    margin-top: 0.25in !important;
+  }
+  /* Intro "I, … THAT:" to numbered item 1 — one space only (print PDF) */
+  .supplemental-report-doc.print-doc .supplemental-report-content > p:first-of-type {
+    margin-bottom: 0 !important;
+  }
+  .supplemental-report-doc.print-doc .supplemental-report-content > p:first-of-type + .supplemental-numbered-items {
+    margin-top: 0.25em !important;
+    padding-top: 0 !important;
   }
 }
 
@@ -6137,11 +6255,56 @@ body.pdf-capture .supplemental-report-doc.print-doc {
   padding-bottom: 0 !important;
   box-sizing: border-box !important;
 }
+body.pdf-capture .supplemental-report-doc.print-doc .supplemental-report-top-header,
+body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-report-top-header {
+  margin-top: 0.3in !important;
+}
+body.pdf-capture .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory,
+body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory {
+  margin-top: 5rem !important;
+  padding-right: 0.1in !important;
+}
+body.pdf-capture #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-affidavit-middle-body > h2,
+body.pdf-capture .supplemental-report-doc.print-doc .supplemental-affidavit-middle-body > h2 {
+  margin-top: 0.25in !important;
+}
+body.pdf-capture #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-affidavit-middle-body > .supplemental-report-content,
+body.pdf-capture .supplemental-report-doc.print-doc .supplemental-affidavit-middle-body > .supplemental-report-content {
+  margin-top: 0.25in !important;
+}
+body.pdf-capture .supplemental-report-doc.print-doc .supplemental-report-content > p:first-of-type {
+  margin-bottom: 0 !important;
+}
+body.pdf-capture .supplemental-report-doc.print-doc .supplemental-report-content > p:first-of-type + .supplemental-numbered-items {
+  margin-top: 0.25em !important;
+  padding-top: 0 !important;
+}
 body.pdf-capture .supplemental-report-doc.print-doc .supplemental-report-content,
 body.pdf-capture .supplemental-report-doc.print-doc .supplemental-report-content p,
 body.pdf-capture .supplemental-report-doc.print-doc .supplemental-report-content li {
   text-align: justify !important;
   text-justify: inter-word;
+  line-height: 1.15 !important;
+}
+body.pdf-capture .supplemental-report-doc.print-doc .supplemental-report-content span,
+body.pdf-capture .supplemental-report-doc.print-doc .supplemental-report-content div,
+body.pdf-capture html[data-paper-size="a4"] .supplemental-report-doc .supplemental-report-content,
+body.pdf-capture html[data-paper-size="short"] .supplemental-report-doc .supplemental-report-content,
+body.pdf-capture html[data-paper-size="long"] .supplemental-report-doc .supplemental-report-content,
+body.pdf-capture html[data-paper-size="legal"] .supplemental-report-doc .supplemental-report-content,
+body.pdf-capture html[data-paper-size="a4"] .supplemental-report-doc .supplemental-numbered-items li,
+body.pdf-capture html[data-paper-size="short"] .supplemental-report-doc .supplemental-numbered-items li,
+body.pdf-capture html[data-paper-size="long"] .supplemental-report-doc .supplemental-numbered-items li,
+body.pdf-capture html[data-paper-size="legal"] .supplemental-report-doc .supplemental-numbered-items li {
+  line-height: 1.15 !important;
+}
+/* Supplemental affidavit — "CHILD'S MIDDLE NAME:" label (saved PDF) */
+body.pdf-capture .supplemental-report-doc .supplemental-child-middle-name-label,
+body.pdf-capture html[data-paper-size="a4"] .supplemental-report-doc .supplemental-child-middle-name-label,
+body.pdf-capture html[data-paper-size="short"] .supplemental-report-doc .supplemental-child-middle-name-label,
+body.pdf-capture html[data-paper-size="long"] .supplemental-report-doc .supplemental-child-middle-name-label,
+body.pdf-capture html[data-paper-size="legal"] .supplemental-report-doc .supplemental-child-middle-name-label {
+  font-size: 12pt !important;
 }
 
 /* Legitimation affidavit (sole/joint): align with standard AUSF print/PDF shell */
@@ -6581,29 +6744,30 @@ html[data-paper-size="legal"] .ausf-only-doc .registrar-signature-zone {
   margin-top: 0.80in !important;
 }
 
-/* AUSF Only (long bond) PDF capture: nudge CCR signatory ~2 lines up */
+/* AUSF Only PDF capture: CCR signatory lower (screen preview uses rules above without pdf-capture) */
 html[data-paper-size="a4"] body.pdf-capture .ausf-only-doc .registrar-signature-zone,
 html[data-paper-size="short"] body.pdf-capture .ausf-only-doc .registrar-signature-zone,
 html[data-paper-size="long"] body.pdf-capture .ausf-only-doc .registrar-signature-zone,
 html[data-paper-size="legal"] body.pdf-capture .ausf-only-doc .registrar-signature-zone {
   flex: 0 0 auto !important;
   min-height: 0 !important;
-  justify-content: flex-start !important;
-  margin-top: 0.62in !important;
-  transform: translateY(-2em) !important;
+  justify-content: flex-end !important;
+  margin-top: 0.58in !important;
+  transform: translateY(0.15em) !important;
 }
 
-/* AUSF Only (short bond) PDF capture: nudge CCR signatory up */
 html[data-paper-size="short"] body.pdf-capture .ausf-only-doc .registrar-signature-zone {
-  margin-top: 0.5in !important;
-  transform: translateY(-2em) !important;
+  margin-top: 0.46in !important;
+  transform: translateY(0.15em) !important;
 }
 
-/* AUSF 0-6 / 07-17 PDF capture: nudge CCR signatory ~2 lines up (screen preview unchanged) */
-body.pdf-capture .ausf-0-6-doc.print-doc .registrar-signature-zone,
+/* AUSF 0-6 PDF capture: nudge CCR signatory up (screen preview unchanged) */
+body.pdf-capture .ausf-0-6-doc.print-doc .registrar-signature-zone {
+  transform: translateY(-3.5em) !important;
+}
 body.pdf-capture .ausf-07-17-doc .registrar-signature-zone,
 body.pdf-capture .ausf-07-17-doc.ausf-doc .registrar-signature-zone {
-  transform: translateY(-2em) !important;
+  transform: translateY(-1.25em) !important;
 }
 
 /* AUSF 07-17 short bond: keep footer visible in print/PDF */
@@ -6682,8 +6846,8 @@ body.pdf-capture .print-doc .print-doc-footer * {
     margin-bottom: 0 !important;
   }
   html[data-paper-size="short"] .ausf-07-17-doc.print-doc .registrar-signature-zone {
-    margin-top: 0.08in !important;
-    transform: translateY(-2em) !important;
+    margin-top: 0.16in !important;
+    transform: translateY(-1.25em) !important;
     min-height: 0 !important;
   }
 }
@@ -6704,8 +6868,8 @@ html[data-paper-size="short"] body.pdf-capture .ausf-07-17-doc.print-doc .ausf-s
   margin-bottom: 0 !important;
 }
 html[data-paper-size="short"] body.pdf-capture .ausf-07-17-doc.print-doc .registrar-signature-zone {
-  margin-top: 0.08in !important;
-  transform: translateY(-2em) !important;
+  margin-top: 0.16in !important;
+  transform: translateY(-1.25em) !important;
   min-height: 0 !important;
 }
 
@@ -6713,7 +6877,83 @@ html[data-paper-size="short"] body.pdf-capture .ausf-07-17-doc.print-doc .regist
 html[data-paper-size="short"] .ausf-07-17-doc.print-doc .city-registrar-signature,
 html[data-paper-size="short"] body.pdf-capture .ausf-07-17-doc.print-doc .city-registrar-signature {
   position: relative !important;
-  top: 0.12in !important;
+  top: 0.1in !important;
+}
+
+/* AUSF 07-17 only: CCR signatory a bit lower than 0-6 / Only (screen + print + PDF) */
+.ausf-07-17-doc-body .registrar-signature-zone {
+  transform: translateY(1em);
+}
+@media print {
+  .ausf-07-17-doc .registrar-signature-zone,
+  .ausf-07-17-doc.ausf-doc .registrar-signature-zone,
+  .ausf-07-17-doc.print-doc .registrar-signature-zone {
+    transform: translateY(-1.25em) !important;
+  }
+  html[data-paper-size="short"] .ausf-07-17-doc.print-doc .registrar-signature-zone {
+    margin-top: 0.16in !important;
+    transform: translateY(-1.25em) !important;
+  }
+}
+body.pdf-capture .ausf-07-17-doc .registrar-signature-zone,
+body.pdf-capture .ausf-07-17-doc.ausf-doc .registrar-signature-zone,
+body.pdf-capture .ausf-07-17-doc.print-doc .registrar-signature-zone {
+  transform: translateY(-1.25em) !important;
+}
+html[data-paper-size="short"] body.pdf-capture .ausf-07-17-doc.print-doc .registrar-signature-zone {
+  margin-top: 0.16in !important;
+  transform: translateY(-1.25em) !important;
+}
+
+/* AUSF 07-17 short bond: CCR placement (A4 & long unchanged here) */
+html[data-paper-size="short"] .ausf-07-17-doc-body .registrar-signature-zone {
+  transform: translateY(1.1em);
+}
+@media print {
+  html[data-paper-size="short"] .ausf-07-17-doc .registrar-signature-zone,
+  html[data-paper-size="short"] .ausf-07-17-doc.print-doc .registrar-signature-zone {
+    margin-top: 0.2in !important;
+    transform: translateY(-0.4em) !important;
+  }
+}
+html[data-paper-size="short"] body.pdf-capture .ausf-07-17-doc .registrar-signature-zone,
+html[data-paper-size="short"] body.pdf-capture .ausf-07-17-doc.print-doc .registrar-signature-zone {
+  margin-top: 0.2in !important;
+  transform: translateY(-0.4em) !important;
+}
+html[data-paper-size="short"] .ausf-07-17-doc.print-doc .city-registrar-signature,
+html[data-paper-size="short"] body.pdf-capture .ausf-07-17-doc.print-doc .city-registrar-signature {
+  position: relative !important;
+  top: 0.1in !important;
+}
+
+/* AUSF 07-17 long/legal bond only: CCR a bit higher than short */
+html[data-paper-size="long"] .ausf-07-17-doc-body .registrar-signature-zone,
+html[data-paper-size="legal"] .ausf-07-17-doc-body .registrar-signature-zone {
+  transform: translateY(0.75em);
+}
+@media print {
+  html[data-paper-size="long"] .ausf-07-17-doc .registrar-signature-zone,
+  html[data-paper-size="legal"] .ausf-07-17-doc .registrar-signature-zone,
+  html[data-paper-size="long"] .ausf-07-17-doc.print-doc .registrar-signature-zone,
+  html[data-paper-size="legal"] .ausf-07-17-doc.print-doc .registrar-signature-zone {
+    margin-top: 0.14in !important;
+    transform: translateY(-0.85em) !important;
+  }
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-07-17-doc .registrar-signature-zone,
+html[data-paper-size="legal"] body.pdf-capture .ausf-07-17-doc .registrar-signature-zone,
+html[data-paper-size="long"] body.pdf-capture .ausf-07-17-doc.print-doc .registrar-signature-zone,
+html[data-paper-size="legal"] body.pdf-capture .ausf-07-17-doc.print-doc .registrar-signature-zone {
+  margin-top: 0.14in !important;
+  transform: translateY(-0.85em) !important;
+}
+html[data-paper-size="long"] .ausf-07-17-doc.print-doc .city-registrar-signature,
+html[data-paper-size="legal"] .ausf-07-17-doc.print-doc .city-registrar-signature,
+html[data-paper-size="long"] body.pdf-capture .ausf-07-17-doc.print-doc .city-registrar-signature,
+html[data-paper-size="legal"] body.pdf-capture .ausf-07-17-doc.print-doc .city-registrar-signature {
+  position: relative !important;
+  top: 0.02in !important;
 }
 
 html[data-paper-size="short"] .ausf-07-17-doc.print-doc .print-doc-footer,

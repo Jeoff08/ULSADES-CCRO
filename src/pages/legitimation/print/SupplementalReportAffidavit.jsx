@@ -148,7 +148,7 @@ export default function SupplementalReportAffidavit({
         </div>
       )}
 
-      <div className={supplementType === 'middleName' ? 'flex-1 flex flex-col min-h-0 w-full' : 'contents'}>
+      <div className={supplementType === 'middleName' ? 'flex-1 flex flex-col min-h-0 w-full supplemental-affidavit-middle-body' : 'contents'}>
         <h2 className="text-center font-bold text-[16px] uppercase mb-4 leading-tight">
           AFFIDAVIT FOR SUPPLEMENTAL REPORT
           <span className="block normal-case font-normal">(for COLB)</span>
@@ -222,7 +222,7 @@ export default function SupplementalReportAffidavit({
               <span className={possessive === 'his' ? 'font-bold' : undefined}>his</span>/
               <span className={possessive === 'her' ? 'font-bold' : undefined}>her</span> Certificate of Live Birth was secured from PSA/Local Civil Registry Office of{' '}
               <span className="font-bold underline decoration-black">ILIGAN CITY</span> it was discovered that there is no entry under the following items:
-              {supplementType !== 'sex' && supplementType !== 'geographical' ? (
+              {supplementType !== 'sex' && supplementType !== 'geographical' && supplementType !== 'middleName' ? (
                 <>
                   <br />
                   <br />
@@ -245,7 +245,8 @@ export default function SupplementalReportAffidavit({
                 </div>
               ) : supplementType === 'middleName' ? (
                 <>
-                  <span className="font-bold uppercase">CHILD&apos;S MIDDLE NAME:</span>{' '}
+                  <br />
+                  <span className="font-bold uppercase supplemental-child-middle-name-label">CHILD&apos;S MIDDLE NAME:</span>{' '}
                   <span
                     className="inline-block min-w-[14ch] outline-none print:outline-none underline decoration-black"
                     contentEditable
@@ -283,7 +284,7 @@ export default function SupplementalReportAffidavit({
             </li>
             <li className="text-justify">
               The entries to be indicated therein should be the following:
-              {supplementType !== 'sex' && supplementType !== 'geographical' ? (
+              {supplementType !== 'sex' && supplementType !== 'geographical' && supplementType !== 'middleName' ? (
                 <>
                   <br />
                   <br />
@@ -306,7 +307,8 @@ export default function SupplementalReportAffidavit({
                 </div>
               ) : supplementType === 'middleName' ? (
                 <>
-                  <span className="font-bold uppercase">CHILD&apos;S MIDDLE NAME:</span>{' '}
+                  <br />
+                  <span className="font-bold uppercase supplemental-child-middle-name-label">CHILD&apos;S MIDDLE NAME:</span>{' '}
                   <span
                     className="inline-block min-w-[14ch] outline-none print:outline-none underline decoration-black"
                     contentEditable
@@ -367,13 +369,13 @@ export default function SupplementalReportAffidavit({
           <p className="text-[15px] leading-none -mt-[3px]">Affiant</p>
         </div>
 
-        <p className="text-justify text-[16px] leading-[1.3] mt-0">
+        <p className="text-justify text-[16px] leading-[1.3] mt-0 supplemental-affidavit-subscribed">
           SUBSCRIBED AND SWORN TO BEFORE ME, this <span className={fillFieldClass(false, 'min-w-[8ch]', false)} /> day of{' '}
           <span className={fillFieldClass(false, 'min-w-[10ch]', false)} />, Philippines. I certify that I personally examined the affiant and that he/she voluntarily
           executed the foregoing affidavit and understood the contents thereof.
         </p>
         {supplementType === 'middleName' ? (
-          <div className="mt-14 mb-1 shrink-0 w-full flex justify-end pr-6">
+          <div className="supplemental-affidavit-registrar-signatory mt-14 mb-1 shrink-0 w-full flex justify-end pr-2">
             <div className="inline-block text-center">
               <p className="font-bold uppercase text-[13px] leading-tight m-0 tracking-tight">{affidavitSignatory.name}</p>
               <p className="uppercase text-[12px] leading-tight m-0 font-normal">{affidavitSignatory.title}</p>

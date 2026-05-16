@@ -35,7 +35,10 @@ import { getAnnotationChildNotAckText } from "./print/AnnotationChildNotAck";
 import { fullName } from "../../lib/printUtils";
 import AusfOnly from "./print/AusfOnly";
 import Ausf06 from "./print/Ausf06";
-import Ausf0717 from "./print/Ausf0717";
+import Ausf0717, {
+  AUSF_0717_EXCLUDED_PAPER_SIZE_IDS,
+  AUSF_0717_PRINT_TYPE,
+} from "./print/Ausf0717";
 import RegistrationOfAusf from "./print/RegistrationOfAusf";
 import RegistrationOfAcknowledgement from "./print/RegistrationOfAcknowledgement";
 import LcrForm1ABirthAvailable from "./print/LcrForm1ABirthAvailable";
@@ -135,11 +138,23 @@ export default function AUSFPrint() {
   const notifyLcrCertSaved = useDebouncedSuccessToast(show);
 
   const activePrintType = displayType ?? data?.formType;
+  const paperSizesForPrint = useMemo(() => {
+    if (activePrintType === AUSF_0717_PRINT_TYPE) {
+      return PAPER_SIZES.filter((p) => !AUSF_0717_EXCLUDED_PAPER_SIZE_IDS.has(p.id));
+    }
+    return PAPER_SIZES;
+  }, [activePrintType]);
   const pageSizeForPrint =
     activePrintType && AUSF_ANNOTATION_TYPES.has(activePrintType)
       ? "legal"
       : paperSize;
   usePrintPageSize(pageSizeForPrint);
+
+  useEffect(() => {
+    if (activePrintType !== AUSF_0717_PRINT_TYPE) return;
+    if (!AUSF_0717_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)) return;
+    setPaperSize("a4");
+  }, [activePrintType, paperSize]);
 
   const acknowledged = data?.childAlreadyAcknowledged;
   const derivedJurat = React.useMemo(
@@ -714,7 +729,7 @@ export default function AUSFPrint() {
                     onChange={(e) => setPaperSize(e.target.value)}
                     className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
                   >
-                    {PAPER_SIZES.map((p) => (
+                    {paperSizesForPrint.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.label}
                       </option>

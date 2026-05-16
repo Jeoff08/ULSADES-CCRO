@@ -2,6 +2,10 @@ import React from 'react'
 import { formatDateLong, fullName, joinCommaParts } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter, FILL } from '../../../components/print'
 
+/** AUSF 07-17 is not laid out for short bond (8.5" × 11"). */
+export const AUSF_0717_PRINT_TYPE = 'ausf-07-17'
+export const AUSF_0717_EXCLUDED_PAPER_SIZE_IDS = new Set(['short'])
+
 export default function Ausf0717({ data }) {
   const affiantName = data.applicantName || fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
   const surnameSought = data.fatherLast

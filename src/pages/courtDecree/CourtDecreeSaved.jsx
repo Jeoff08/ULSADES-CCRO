@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getSavedCourtDecreeList, loadSavedCourtDecreeToDraft, deleteSavedCourtDecree, restoreSavedCourtDecree } from './lib/courtDecreeStorage'
+import {
+  deriveAffectedDocumentsForPrint,
+  formTypeToAffectedCode,
+  primaryAffectedDocumentForSave,
+} from './lib/courtDecreeAffectedDocuments'
 import { hasAnyUploadsForRecord } from '../../lib/uploadedFileStore'
 import hasUploadedFilesIcon from '../../assets/has-uploaded-files-icon.svg'
 
@@ -30,14 +35,36 @@ function formatSavedAt(iso) {
 const TOAST_DURATION_MS = 8000
 const LCR_GROUP_FILTER_OPTIONS = ['ALL', '1A', '2A', '3A']
 
+const AFFECTED_TO_LCR_GROUP = {
+  BIRTH_CERTIFICATE: '1A',
+  DEATH_CERTIFICATE: '2A',
+  MARRIAGE_CERTIFICATE: '3A',
+}
+
+/** One LCR group per saved file (2A filter must not include 1A/3A, including after edit/re-save). */
+function lcrGroupForSavedItem(item) {
+  const data = item?.data && typeof item.data === 'object' ? item.data : {}
+  const formType = String(item?.formType || data.formType || '').trim()
+
+  const fromFormType = formTypeToAffectedCode(formType)
+  if (fromFormType && AFFECTED_TO_LCR_GROUP[fromFormType]) {
+    return AFFECTED_TO_LCR_GROUP[fromFormType]
+  }
+
+  const explicit = String(data.affectedDocument || '').trim()
+  if (explicit && AFFECTED_TO_LCR_GROUP[explicit]) {
+    return AFFECTED_TO_LCR_GROUP[explicit]
+  }
+
+  const derived = deriveAffectedDocumentsForPrint(data)
+  const primary = primaryAffectedDocumentForSave(data, derived)
+  return AFFECTED_TO_LCR_GROUP[primary] || null
+}
+
 function matchesLcrGroup(item, selectedGroup) {
   const group = String(selectedGroup || 'ALL').toUpperCase()
   if (group === 'ALL') return true
-  const formType = String(item?.formType || '').trim()
-  if (group === '1A') return formType === 'lcr-form-1a' || formType === 'annotation-form-1a'
-  if (group === '2A') return formType === 'lcr-form-2a' || formType === 'annotation-form-2a'
-  if (group === '3A') return formType === 'lcr-form-3a' || formType === 'annotation-form-3a'
-  return true
+  return lcrGroupForSavedItem(item) === group
 }
 
 function matchesSearch(item, query, formTypeLabels) {
