@@ -2,6 +2,11 @@ import React from 'react'
 import { DocumentFooter } from '../../../components/print'
 import { formatDateCert, tryIsoFromDmyStrings } from '../../../lib/printUtils'
 import { RECEIVED_BY_OPTIONS, clampTransmittalSignatoryIndex } from '../../legalInstrument/lib/supplementalTransmittalDefaults'
+import {
+  buildSupplementalAffidavitItemDefault,
+  resolveSupplementalAffidavitType,
+  supplementalCustomItemValue,
+} from '../../legalInstrument/lib/supplementalAffidavitType'
 
 export default function SupplementalReportAffidavit({
   data,
@@ -35,9 +40,8 @@ export default function SupplementalReportAffidavit({
   const correctedGeo = (data.correctedGeo || '').trim()
   const item3Custom = (data.item3Custom || '').trim()
   const item5Custom = (data.item5Custom || '').trim()
-  const supTypeRaw = String(data.supplementType || 'geographical').toLowerCase()
-  const supplementType =
-    supTypeRaw === 'sex' || supTypeRaw === 'middlename' || supTypeRaw === 'middle_name' ? (supTypeRaw === 'sex' ? 'sex' : 'middleName') : 'geographical'
+  const supplementTypeInfo = resolveSupplementalAffidavitType(data.supplementType || 'geographical')
+  const supplementType = supplementTypeInfo.kind
 
   const affidavitSignatoryIdx = clampTransmittalSignatoryIndex(data.transmittalSignatoryOptionIndex)
   const affidavitSignatory = RECEIVED_BY_OPTIONS[affidavitSignatoryIdx] ?? RECEIVED_BY_OPTIONS[0]
@@ -71,20 +75,17 @@ export default function SupplementalReportAffidavit({
   )
   const cityUpper = (cityLine || '').toUpperCase()
   const iliganIdx = cityUpper.indexOf('ILIGAN')
-  const defaultItem3Text =
-    supplementType === 'geographical'
-      ? `${missingGeo || ''}`.trimEnd()
-      : supplementType === 'sex'
-        ? `${missingGeo || 'NOT STATED'}`.trimEnd()
-        : `${missingGeo || ''}`.trimEnd()
-  const defaultItem5Text =
-    supplementType === 'geographical'
-      ? `${correctedGeo || ''}`.trimEnd()
-      : supplementType === 'sex'
-        ? `${correctedGeo || ''}`.trimEnd()
-        : `${correctedGeo || ''}`.trimEnd()
+  const fieldBundle = {
+    missingGeo,
+    correctedGeo,
+    displayLabel: supplementTypeInfo.displayLabel,
+  }
+  const defaultItem3Text = buildSupplementalAffidavitItemDefault(supplementType, 'missing', fieldBundle)
+  const defaultItem5Text = buildSupplementalAffidavitItemDefault(supplementType, 'corrected', fieldBundle)
   const item3Text = item3Custom || defaultItem3Text
   const item5Text = item5Custom || defaultItem5Text
+  const item3CustomValue = supplementalCustomItemValue(item3Text, supplementTypeInfo)
+  const item5CustomValue = supplementalCustomItemValue(item5Text, supplementTypeInfo)
   const item3GeoValue = item3Text.replace(/^GEOGRAPHICAL LOCATION:\s*PROVINCE:\s*/i, '').replace(/^PROVINCE:\s*/i, '')
   const item5GeoValue = item5Text.replace(/^GEOGRAPHICAL LOCATION:\s*PROVINCE:\s*/i, '').replace(/^PROVINCE:\s*/i, '')
   const item3MiddleNameValue = item3Text.replace(/^CHILD'?S MIDDLE NAME:\s*/i, '')
@@ -222,7 +223,7 @@ export default function SupplementalReportAffidavit({
               <span className={possessive === 'his' ? 'font-bold' : undefined}>his</span>/
               <span className={possessive === 'her' ? 'font-bold' : undefined}>her</span> Certificate of Live Birth was secured from PSA/Local Civil Registry Office of{' '}
               <span className="font-bold underline decoration-black">ILIGAN CITY</span> it was discovered that there is no entry under the following items:
-              {supplementType !== 'sex' && supplementType !== 'geographical' && supplementType !== 'middleName' ? (
+              {supplementType === 'custom' ? (
                 <>
                   <br />
                   <br />
@@ -268,23 +269,28 @@ export default function SupplementalReportAffidavit({
                     {item3SexValue}
                   </span>
                 </div>
-              ) : (
-                <div
-                  className="whitespace-pre-line outline-none print:outline-none underline decoration-black"
-                  contentEditable
-                  suppressContentEditableWarning
-                  onBlur={(e) => onItem3CustomChange?.(e.currentTarget.textContent || '')}
-                >
-                  {item3Text}
+              ) : supplementType === 'custom' ? (
+                <div className="my-1.5 leading-tight">
+                  <div className="font-bold uppercase">{supplementTypeInfo.displayLabel}:</div>
+                  <div>
+                    <span
+                      className="inline-block min-w-[14ch] outline-none print:outline-none underline decoration-black font-bold uppercase whitespace-pre-line"
+                      contentEditable
+                      suppressContentEditableWarning
+                      onBlur={(e) => onItem3CustomChange?.((e.currentTarget.textContent || '').trim())}
+                    >
+                      {item3CustomValue}
+                    </span>
+                  </div>
                 </div>
-              )}
+              ) : null}
             </li>
             <li className="text-justify">
               There was a failure to supply the said {supplementType === 'geographical' ? 'item/s' : 'items'} due to inadvertence or excusable negligence.
             </li>
             <li className="text-justify">
               The entries to be indicated therein should be the following:
-              {supplementType !== 'sex' && supplementType !== 'geographical' && supplementType !== 'middleName' ? (
+              {supplementType === 'custom' ? (
                 <>
                   <br />
                   <br />
@@ -330,16 +336,21 @@ export default function SupplementalReportAffidavit({
                     {item5SexValue}
                   </span>
                 </div>
-              ) : (
-                <div
-                  className="whitespace-pre-line outline-none print:outline-none underline decoration-black"
-                  contentEditable
-                  suppressContentEditableWarning
-                  onBlur={(e) => onItem5CustomChange?.(e.currentTarget.textContent || '')}
-                >
-                  {item5Text}
+              ) : supplementType === 'custom' ? (
+                <div className="my-1.5 leading-tight">
+                  <div className="font-bold uppercase">{supplementTypeInfo.displayLabel}:</div>
+                  <div>
+                    <span
+                      className="inline-block min-w-[14ch] outline-none print:outline-none underline decoration-black font-bold uppercase whitespace-pre-line"
+                      contentEditable
+                      suppressContentEditableWarning
+                      onBlur={(e) => onItem5CustomChange?.((e.currentTarget.textContent || '').trim())}
+                    >
+                      {item5CustomValue}
+                    </span>
+                  </div>
                 </div>
-              )}
+              ) : null}
             </li>
             <li className="text-justify">
               I am requesting the concerned authorities to supply the omitted information in

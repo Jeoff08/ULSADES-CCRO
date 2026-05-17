@@ -17,12 +17,14 @@ import { getSavedAUSFList, getAUSFDraft } from '../ausf/lib/ausfStorage'
 import { getSavedCourtDecreeList, getCourtDecreeDraft } from '../courtDecree/lib/courtDecreeStorage'
 import { getSavedLegitimationList, getLegitimationDraft } from '../legitimation/lib/legitimationStorage'
 import { mapSourceToSupplementalLcrData } from './lib/supplementalLcrPrefill'
+import { resolveSupplementalAffidavitType } from './lib/supplementalAffidavitType'
 import SupplementalTransmittalFieldsEditor from './SupplementalTransmittalFieldsEditor'
 import SupplementalLcrFooterSignatoryPickers from './SupplementalLcrFooterSignatoryPickers'
 import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailable'
 import LcrForm2ADeathAvailable from '../courtDecree/print/LcrForm2ADeathAvailable'
 import LcrForm3AMarriageAvailable from '../courtDecree/print/LcrForm3AMarriageAvailable'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
+import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShortcuts'
 import { mergeLcrRemarksFontSizePt } from '../../lib/lcrRemarksFontSize'
 import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
 import { parseFormMonthInputToNumber1to12 } from '../../lib/printUtils'
@@ -373,21 +375,27 @@ export default function SupplementalForm() {
   }, [])
 
   const inputClass = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white'
-  const supplementTypeNorm =
-    String(form.supplementType || '').trim().toLowerCase() || 'geographical'
-  const showItem1ChoiceBlock = supplementTypeNorm === 'sex'
+  const supplementAffidavitType = useMemo(
+    () => resolveSupplementalAffidavitType(form.supplementType),
+    [form.supplementType]
+  )
+  const showItem1ChoiceBlock = supplementAffidavitType.kind === 'sex'
   const missingLabel =
-    supplementTypeNorm === 'sex'
+    supplementAffidavitType.kind === 'sex'
       ? 'Missing on COLB (optional — leave blank for NOT STATED)'
-      : supplementTypeNorm === 'middlename'
+      : supplementAffidavitType.kind === 'middleName'
         ? 'Missing / blank on COLB (optional)'
-        : 'Missing province entry'
+        : supplementAffidavitType.kind === 'custom'
+          ? `Missing on COLB — ${supplementAffidavitType.displayLabel} (affidavit item 3)`
+          : 'Missing province entry'
   const correctedLabel =
-    supplementTypeNorm === 'sex'
+    supplementAffidavitType.kind === 'sex'
       ? "Correct child's sex (e.g. MALE, FEMALE)"
-      : supplementTypeNorm === 'middlename'
+      : supplementAffidavitType.kind === 'middleName'
         ? "Correct child's middle name"
-        : 'Correct province entry'
+        : supplementAffidavitType.kind === 'custom'
+          ? `Correct entry — ${supplementAffidavitType.displayLabel} (affidavit item 5)`
+          : 'Correct province entry'
 
   return (
     <div className="supplemental-form-page no-print">

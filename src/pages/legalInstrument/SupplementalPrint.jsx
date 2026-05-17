@@ -189,7 +189,6 @@ export default function SupplementalPrint() {
     const hasAttachments = Array.isArray(data.transmittalAttachmentIds) && data.transmittalAttachmentIds.length > 0
     return hasDocType || hasEndorsements || hasAttachments
   }, [data])
-  const showTransmittalOutput = hasTransmittalData
   const supType = String(data.supplementType || '').trim().toLowerCase()
   /** Child's middle name: Iligan header affidavit — long bond only (see paper-size effect). */
   const isMiddleNameAffidavit =
@@ -201,12 +200,15 @@ export default function SupplementalPrint() {
   const isSexSupplementAffidavit = supType === 'sex'
   /** Geographical: same compact print path as child sex. */
   const isGeographicalSupplementAffidavit = supType === 'geographical'
+  /** Geographical + Child's Sex: affidavit only in print/PDF (no transmittal, LCR, or CCRO footer block). */
+  const isAffidavitOnlySupplementOutput =
+    isSexSupplementAffidavit || isGeographicalSupplementAffidavit
+  const showTransmittalOutput = hasTransmittalData && !isAffidavitOnlySupplementOutput
   /** Shared compact COLB supplemental PDF styling (`data-supplement-mn` rules). */
   const isColbCompactPrintAffidavit =
     isMiddleNameAffidavit || isSexSupplementAffidavit || isGeographicalSupplementAffidavit
-  /** Opt-in button sets includeForm1a; sex-only backward compat when field was never saved. */
-  const showForm1a =
-    data.includeForm1a === true || (supType === 'sex' && data.includeForm1a === undefined)
+  /** Opt-in on form; never bundled for geographical or Child's Sex. */
+  const showForm1a = !isAffidavitOnlySupplementOutput && data.includeForm1a === true
 
   const [lcrData, setLcrData] = useState(() => ({ ...baseData.lcrData }))
 
@@ -477,6 +479,84 @@ body.pdf-capture #supplemental-print-page #supplemental-print-bundle * {
     break-inside: avoid;
   }
 }
+/* Geographical + Child's Sex: 1.5 line spacing; 0.5in top/left/right margins (print) */
+@media print {
+  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc.print-doc {
+    padding-top: 0.5in !important;
+    padding-left: 0.5in !important;
+    padding-right: 0.5in !important;
+    box-sizing: border-box !important;
+    line-height: 1.5 !important;
+  }
+  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc.print-doc .supplemental-report-top-header {
+    margin-top: 0 !important;
+  }
+  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-report-content,
+  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-report-content p,
+  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-report-content li,
+  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-report-content span,
+  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-report-content div,
+  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-numbered-items,
+  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-numbered-items li {
+    line-height: 1.5 !important;
+  }
+}
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc.print-doc {
+  padding-top: 0.5in !important;
+  padding-left: 0.5in !important;
+  padding-right: 0.5in !important;
+  box-sizing: border-box !important;
+  line-height: 1.5 !important;
+}
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc.print-doc .supplemental-report-top-header {
+  margin-top: 0 !important;
+}
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-report-content,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-report-content p,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-report-content li,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-report-content span,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-report-content div,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-numbered-items,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-numbered-items li {
+  line-height: 1.5 !important;
+}
+/* Geographical + Child's Sex: hide CCRO footer block (seals + office header) and extra outputs in print/PDF */
+@media print {
+  .supplemental-print-anim-page:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) #supplemental-print-transmittal,
+  .supplemental-print-anim-page:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) #supplemental-print-lcr,
+  #supplemental-print-bundle:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) + #supplemental-print-transmittal,
+  #supplemental-print-bundle:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) #supplemental-print-lcr,
+  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .ccr-header,
+  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .print-doc-header,
+  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-bottom-wrap,
+  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .print-doc-footer {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+}
+body.pdf-capture .supplemental-print-anim-page:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) #supplemental-print-transmittal,
+body.pdf-capture .supplemental-print-anim-page:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) #supplemental-print-lcr,
+body.pdf-capture #supplemental-print-bundle:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) + #supplemental-print-transmittal,
+body.pdf-capture #supplemental-print-bundle:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) #supplemental-print-lcr,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .ccr-header,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .print-doc-header,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-bottom-wrap,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .print-doc-footer {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
         `}
       </style>
       <div className="no-print mb-3 max-w-6xl mx-auto flex items-center justify-between gap-2">
@@ -689,6 +769,9 @@ body.pdf-capture #supplemental-print-page #supplemental-print-bundle * {
               <div
                 id="supplemental-print-affidavit"
                 {...(isColbCompactPrintAffidavit ? { 'data-supplement-mn': '1' } : {})}
+                {...(isSexSupplementAffidavit || isGeographicalSupplementAffidavit
+                  ? { 'data-supplement-geo-sex': '1' }
+                  : {})}
                 className={
                   `${activePanel === 'affidavit' ? 'block' : 'hidden print:block print:[page-break-before:avoid]'} ${(isMiddleNameAffidavit && paperSize === 'long') ||
                     (!isMiddleNameAffidavit && isColbCompactPrintAffidavit && paperSize === 'short')
