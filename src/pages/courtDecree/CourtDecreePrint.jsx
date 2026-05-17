@@ -36,6 +36,7 @@ import {
   MarriageAnnotationModeSidebar,
 } from './print'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
+import { mergeLcrRemarksFontSizePt } from '../../lib/lcrRemarksFontSize'
 
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-court'
 
@@ -131,6 +132,15 @@ const COURT_DECREE_ANNOTATION_TYPES = new Set([
   'marriage-nullity-art42',
 ])
 
+/** LCR Forms 1A, 2A, 3A — long bond only (not A4 or short 8.5" × 11"). */
+const COURT_DECREE_LCR_LONG_BOND_ONLY_TYPES = new Set([
+  'lcr-form-1a',
+  'lcr-form-2a',
+  'lcr-form-3a',
+])
+
+const COURT_DECREE_LCR_EXCLUDED_PAPER_SIZE_IDS = new Set(['a4', 'short'])
+
 /** Print types that share the sidebar CCR roster (certificates, transmittals, LCR 1A/2A/3A right column). */
 const COURT_DECREE_CCR_SIDEBAR_TYPES = new Set([
   'cert-authenticity',
@@ -155,7 +165,18 @@ export default function CourtDecreePrint() {
       : COURT_DECREE_TYPES.some((t) => t.id === type)
         ? type
         : 'cert-authenticity'
-  const pageSizeForPrint = COURT_DECREE_ANNOTATION_TYPES.has(validType) ? 'legal' : paperSize
+  const paperSizesForPrint = useMemo(() => {
+    if (COURT_DECREE_LCR_LONG_BOND_ONLY_TYPES.has(validType)) {
+      return PAPER_SIZES.filter((p) => !COURT_DECREE_LCR_EXCLUDED_PAPER_SIZE_IDS.has(p.id))
+    }
+    return PAPER_SIZES
+  }, [validType])
+  const pageSizeForPrint = COURT_DECREE_ANNOTATION_TYPES.has(validType)
+    ? 'legal'
+    : COURT_DECREE_LCR_LONG_BOND_ONLY_TYPES.has(validType) &&
+        COURT_DECREE_LCR_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)
+      ? 'long'
+      : paperSize
   const [data, setData] = useState(() => getStoredData() || defaultCourtDecree)
   const uploadInputRef = useRef(null)
   const uploadScopeRef = useRef('')
@@ -228,6 +249,12 @@ export default function CourtDecreePrint() {
     }
   }
   usePrintPageSize(pageSizeForPrint)
+
+  useEffect(() => {
+    if (!COURT_DECREE_LCR_LONG_BOND_ONLY_TYPES.has(validType)) return
+    if (!COURT_DECREE_LCR_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)) return
+    setPaperSize('long')
+  }, [validType, paperSize])
 
   useEffect(() => {
     const stored = getStoredData()
@@ -336,6 +363,7 @@ export default function CourtDecreePrint() {
     'motherFirst', 'motherMiddle', 'motherLast', 'motherCitizenship',
     'fatherFirst', 'fatherMiddle', 'fatherLast', 'fatherCitizenship',
     'colbRegistryNo', 'colbRegDate', 'colbPageNo', 'colbBookNo',
+    'lcr1aColbPageNo', 'lcr1aColbBookNo',
     'dateOfMarriage', 'placeOfMarriageCity', 'placeOfMarriageProvince', 'placeOfMarriageCountry',
     'placeOfMarriageOfParents',
     'certificateIssuanceDate', 'cityCivilRegistrarName', 'cityCivilRegistrarTitle', 'certificateSignatoryName',
@@ -383,13 +411,14 @@ export default function CourtDecreePrint() {
     if (data.lcrCertificationRequestParty !== undefined) {
       out.lcrCertificationRequestParty = data.lcrCertificationRequestParty
     }
-    return out
+    return mergeLcrRemarksFontSizePt(out, data)
   }, [validType, data])
 
   const LCR_2A_FORM_KEYS = [
     'lcr2aRegistryNumber', 'lcr2aDateRegistration', 'lcr2aNameDeceased', 'lcr2aSex', 'lcr2aCivilStatus',
     'lcr2aCitizenship', 'lcr2aDateDeath', 'lcr2aCitizenshipFather', 'lcr2aPlaceDeath', 'lcr2aCauseDeath',
-    'colbPageNo', 'colbBookNo', 'colbRegistryNo', 'colbRegDate', 'colbDateOfRegistration',
+    'colbPageNo', 'colbBookNo', 'lcr2aColbPageNo', 'lcr2aColbBookNo',
+    'colbRegistryNo', 'colbRegDate', 'colbDateOfRegistration',
     'deceasedParentFirst', 'deceasedParentMiddle', 'deceasedParentLast',
     'documentOwnerName', 'sex', 'civilStatus', 'citizenship', 'dateOfDeath',
     'citizenshipOfFather', 'placeOfDeath', 'causeOfDeath',
@@ -444,7 +473,7 @@ export default function CourtDecreePrint() {
     if (data.lcrCertificationRequestParty !== undefined) {
       out.lcrCertificationRequestParty = data.lcrCertificationRequestParty
     }
-    return out
+    return mergeLcrRemarksFontSizePt(out, data)
   }, [validType, data])
 
   const LCR_3A_FORM_KEYS = [
@@ -458,7 +487,7 @@ export default function CourtDecreePrint() {
     'husbandMotherName', 'wifeMotherName', 'husbandFatherName', 'wifeFatherName',
     'marriageRegistryNo', 'marriageDateOfRegistration', 'dateOfMarriage',
     'placeOfMarriageCity', 'placeOfMarriageProvince', 'placeOfMarriageCountry',
-    'colbPageNo', 'colbBookNo', 'documentOwnerName',
+    'colbPageNo', 'colbBookNo', 'lcr3aColbPageNo', 'lcr3aColbBookNo', 'documentOwnerName',
     'certificateIssuanceDate', 'cityCivilRegistrarName', 'cityCivilRegistrarTitle', 'certificateSignatoryName',
     'certificateSignatoryTitle',
     'ccrScopeLcr3aName', 'ccrScopeLcr3aTitle',
@@ -513,7 +542,7 @@ export default function CourtDecreePrint() {
     if (data.lcrCertificationRequestParty !== undefined) {
       out.lcrCertificationRequestParty = data.lcrCertificationRequestParty
     }
-    return out
+    return mergeLcrRemarksFontSizePt(out, data)
   }, [validType, data])
 
   /** Remarks for Annotation Form 2A only (legitimation + court merge). */
@@ -759,7 +788,7 @@ export default function CourtDecreePrint() {
                 onChange={(e) => setPaperSize(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
               >
-                {PAPER_SIZES.map((p) => (
+                {paperSizesForPrint.map((p) => (
                   <option key={p.id} value={p.id}>{p.label}</option>
                 ))}
               </select>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { defaultLegitimation, syncLegitimationTransmittalFlagWithFormType } from './lib/legitimationDefaults'
 import { saveLegitimationDraft } from './lib/legitimationStorage'
@@ -20,6 +20,7 @@ import {
   OutOfTownTransmittal,
   Annotation,
 } from './print'
+import { LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS } from './print/LcrForm1A'
 import { RECEIVED_BY_OPTIONS, legitimationAffidavitCcrPersistPatch, legitimationAffidavitCcrSelectValue } from './print/legitimationAffidavitCcr'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
 
@@ -88,7 +89,25 @@ export default function LegitimationPrint() {
   const effectiveType = allowedTypeIds.includes(validType)
     ? validType
     : (allowedTypeIds[0] || 'joint-affidavit')
-  const pageSizeForPrint = effectiveType === 'annotation' ? 'long' : paperSize
+  const paperSizesForPrint = useMemo(() => {
+    if (effectiveType === 'lcr-form-1a') {
+      return PAPER_SIZES.filter((p) => !LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS.has(p.id))
+    }
+    return PAPER_SIZES
+  }, [effectiveType])
+
+  const pageSizeForPrint =
+    effectiveType === 'annotation'
+      ? 'long'
+      : effectiveType === 'lcr-form-1a' && LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)
+        ? 'long'
+        : paperSize
+
+  useEffect(() => {
+    if (effectiveType !== 'lcr-form-1a') return
+    if (!LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)) return
+    setPaperSize('long')
+  }, [effectiveType, paperSize])
 
   const [affidavitCcrSidebarTarget, setAffidavitCcrSidebarTarget] = useState(() =>
     allowedTypeIds.includes('joint-affidavit') ? 'joint' : 'sole'
@@ -307,7 +326,7 @@ export default function LegitimationPrint() {
             }
             className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {PAPER_SIZES.map((p) => (
+            {paperSizesForPrint.map((p) => (
               <option key={p.id} value={p.id}>{p.label}</option>
             ))}
           </select>

@@ -22,6 +22,8 @@ import SupplementalLcrFooterSignatoryPickers from './SupplementalLcrFooterSignat
 import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailable'
 import LcrForm2ADeathAvailable from '../courtDecree/print/LcrForm2ADeathAvailable'
 import LcrForm3AMarriageAvailable from '../courtDecree/print/LcrForm3AMarriageAvailable'
+import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
+import { mergeLcrRemarksFontSizePt } from '../../lib/lcrRemarksFontSize'
 import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
 import { parseFormMonthInputToNumber1to12 } from '../../lib/printUtils'
 
@@ -96,6 +98,7 @@ const defaultSupplementalDraft = {
   correctedGeo: '',
   includeForm1a: false,
   lcrType: '1A', // '1A', '2A', or '3A'
+  lcrRemarksFontSizePt: '12',
   lcrData: { ...defaultLegitimation },
   /** manual = type LCR in LCR section; other modules = optional prefill from saved records. */
   lcrSource: 'manual', // 'manual' | 'ausf' | 'courtDecree' | 'legitimation'
@@ -159,8 +162,8 @@ export default function SupplementalForm() {
   const lcrInlineFormData = useMemo(() => {
     const base = form.lcrType === '1A' ? defaultLegitimation : defaultCourtDecree
     const slice = form.lcrData && typeof form.lcrData === 'object' ? form.lcrData : {}
-    return { ...base, ...slice }
-  }, [form.lcrType, form.lcrData])
+    return mergeLcrRemarksFontSizePt({ ...base, ...slice }, form)
+  }, [form.lcrType, form.lcrData, form.lcrRemarksFontSizePt])
 
   useEffect(() => {
     const loaded = getSupplementalDraft(defaultSupplementalDraft)
@@ -834,7 +837,13 @@ export default function SupplementalForm() {
                           Same layout as Continue to Print. Scroll if needed; use Save to keep entries.
                         </p>
                       </div>
-                      <div className="px-2 sm:px-3 pt-2 sm:pt-3">
+                      <div className="px-2 sm:px-3 pt-2 sm:pt-3 space-y-3">
+                        <LcrRemarksFontSizeSelect
+                          id="supplemental-form-lcr-remarks-font"
+                          value={form.lcrRemarksFontSizePt}
+                          onChange={(v) => update('lcrRemarksFontSizePt', v)}
+                          helpText="Applies to the REMARKS block on this LCR form in preview and print/PDF."
+                        />
                         <SupplementalLcrFooterSignatoryPickers
                           lcrData={lcrInlineFormData}
                           inputClass={inputClass}

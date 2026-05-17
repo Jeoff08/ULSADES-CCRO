@@ -23,6 +23,8 @@ import {
 } from './lib/supplementalTransmittalDefaults'
 import { defaultLegitimation } from '../legitimation/lib/legitimationDefaults'
 import { defaultCourtDecree } from '../courtDecree/lib/courtDecreeDefaults'
+import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
+import { mergeLcrRemarksFontSizePt, parseLcrRemarksFontPt } from '../../lib/lcrRemarksFontSize'
 
 /**
  * Transmittal sign-off roster (dropdown after “Respectfully yours,”): `RECEIVED_BY_OPTIONS` in
@@ -50,6 +52,7 @@ const defaultSupplementalDraft = {
   item5Custom: '',
   includeForm1a: false,
   lcrType: '1A',
+  lcrRemarksFontSizePt: '12',
   lcrData: { ...defaultLegitimation },
   lcrSource: 'manual',
   lcrSourceId: '',
@@ -112,10 +115,14 @@ export default function SupplementalPrint() {
   const [uploadTick, setUploadTick] = useState(0)
   const [uploadModal, setUploadModal] = useState({ open: false, key: '', title: '' })
   const [transmittalSignatoryIdxOverride, setTransmittalSignatoryIdxOverride] = useState(null)
+  const [lcrRemarksFontSizePt, setLcrRemarksFontSizePt] = useState(() =>
+    parseLcrRemarksFontPt(baseData.lcrRemarksFontSizePt),
+  )
 
   useEffect(() => {
     setTransmittalSignatoryIdxOverride(null)
-  }, [location.key])
+    setLcrRemarksFontSizePt(parseLcrRemarksFontPt(baseData.lcrRemarksFontSizePt))
+  }, [location.key, baseData.lcrRemarksFontSizePt])
 
   const { supplementalAffidavitKey, supplementalTransmittalKey, supplementalLcrKey } = useMemo(() => {
     const row = getActiveSavedSupplemental()
@@ -149,9 +156,10 @@ export default function SupplementalPrint() {
       ...baseData,
       item3Custom,
       item5Custom,
+      lcrRemarksFontSizePt,
       transmittalSignatoryOptionIndex: clampTransmittalSignatoryIndex(rawIdx),
     }
-  }, [baseData, item3Custom, item5Custom, transmittalSignatoryIdxOverride])
+  }, [baseData, item3Custom, item5Custom, transmittalSignatoryIdxOverride, lcrRemarksFontSizePt])
 
   const hasAffidavitData = useMemo(() => {
     const values = [
@@ -214,6 +222,20 @@ export default function SupplementalPrint() {
   const lcrDataRef = useRef(lcrData)
   dataRef.current = data
   lcrDataRef.current = lcrData
+
+  const lcrPrintData = useMemo(
+    () => mergeLcrRemarksFontSizePt(lcrData, data),
+    [lcrData, data.lcrRemarksFontSizePt],
+  )
+
+  const handleLcrRemarksFontChange = (pt) => {
+    const parsed = parseLcrRemarksFontPt(pt)
+    setLcrRemarksFontSizePt(parsed)
+    const updated = { ...dataRef.current, lcrRemarksFontSizePt: parsed }
+    dataRef.current = updated
+    saveSupplementalDraft(updated)
+    saveOrUpdateSupplemental(updated)
+  }
 
   const handleLcrDataChange = (next) => {
     setLcrData(next)
@@ -650,6 +672,14 @@ body.pdf-capture #supplemental-print-page #supplemental-print-bundle * {
                 </select>
               </div>
             ) : null}
+            {showForm1a ? (
+              <LcrRemarksFontSizeSelect
+                id="supplemental-print-lcr-remarks-font"
+                value={data.lcrRemarksFontSizePt}
+                onChange={handleLcrRemarksFontChange}
+                helpText="Applies to the REMARKS block on this LCR form in preview and print/PDF."
+              />
+            ) : null}
           </div>
         </aside>
 
@@ -710,21 +740,21 @@ body.pdf-capture #supplemental-print-page #supplemental-print-bundle * {
                   <div className="max-w-[210mm] mx-auto">
                     {data.lcrType === '1A' && (
                       <LcrForm1ABirthAvailable
-                        data={lcrData}
+                        data={lcrPrintData}
                         editableTable
                         onDataChange={handleLcrDataChange}
                       />
                     )}
                     {data.lcrType === '2A' && (
                       <LcrForm2ADeathAvailable
-                        data={lcrData}
+                        data={lcrPrintData}
                         editableTable
                         onDataChange={handleLcrDataChange}
                       />
                     )}
                     {data.lcrType === '3A' && (
                       <LcrForm3AMarriageAvailable
-                        data={lcrData}
+                        data={lcrPrintData}
                         editableTable
                         onDataChange={handleLcrDataChange}
                       />

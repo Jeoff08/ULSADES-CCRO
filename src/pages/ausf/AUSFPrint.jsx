@@ -41,8 +41,14 @@ import Ausf0717, {
 } from "./print/Ausf0717";
 import RegistrationOfAusf from "./print/RegistrationOfAusf";
 import RegistrationOfAcknowledgement from "./print/RegistrationOfAcknowledgement";
-import LcrForm1ABirthAvailable from "./print/LcrForm1ABirthAvailable";
-import LcrFormA1 from "./print/LcrFormA1";
+import LcrForm1ABirthAvailable, {
+  AUSF_LCR_1A_BIRTH_EXCLUDED_PAPER_SIZE_IDS,
+  AUSF_LCR_1A_BIRTH_PRINT_TYPE,
+} from "./print/LcrForm1ABirthAvailable";
+import LcrFormA1, {
+  AUSF_LCR_A1_EXCLUDED_PAPER_SIZE_IDS,
+  AUSF_LCR_A1_PRINT_TYPE,
+} from "./print/LcrFormA1";
 import AnnotationChildAck from "./print/AnnotationChildAck";
 import AnnotationChildNotAck from "./print/AnnotationChildNotAck";
 import TransmittalDoc from "./print/TransmittalDoc";
@@ -142,18 +148,49 @@ export default function AUSFPrint() {
     if (activePrintType === AUSF_0717_PRINT_TYPE) {
       return PAPER_SIZES.filter((p) => !AUSF_0717_EXCLUDED_PAPER_SIZE_IDS.has(p.id));
     }
+    if (
+      activePrintType === AUSF_LCR_1A_BIRTH_PRINT_TYPE ||
+      activePrintType === AUSF_LCR_A1_PRINT_TYPE
+    ) {
+      return PAPER_SIZES.filter(
+        (p) =>
+          !AUSF_LCR_1A_BIRTH_EXCLUDED_PAPER_SIZE_IDS.has(p.id) &&
+          !AUSF_LCR_A1_EXCLUDED_PAPER_SIZE_IDS.has(p.id)
+      );
+    }
     return PAPER_SIZES;
   }, [activePrintType]);
   const pageSizeForPrint =
     activePrintType && AUSF_ANNOTATION_TYPES.has(activePrintType)
       ? "legal"
-      : paperSize;
+      : (activePrintType === AUSF_LCR_1A_BIRTH_PRINT_TYPE &&
+            AUSF_LCR_1A_BIRTH_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)) ||
+          (activePrintType === AUSF_LCR_A1_PRINT_TYPE &&
+            AUSF_LCR_A1_EXCLUDED_PAPER_SIZE_IDS.has(paperSize))
+        ? "long"
+        : paperSize;
   usePrintPageSize(pageSizeForPrint);
 
   useEffect(() => {
     if (activePrintType !== AUSF_0717_PRINT_TYPE) return;
     if (!AUSF_0717_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)) return;
     setPaperSize("a4");
+  }, [activePrintType, paperSize]);
+
+  useEffect(() => {
+    if (
+      activePrintType !== AUSF_LCR_1A_BIRTH_PRINT_TYPE &&
+      activePrintType !== AUSF_LCR_A1_PRINT_TYPE
+    ) {
+      return;
+    }
+    if (
+      !AUSF_LCR_1A_BIRTH_EXCLUDED_PAPER_SIZE_IDS.has(paperSize) &&
+      !AUSF_LCR_A1_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)
+    ) {
+      return;
+    }
+    setPaperSize("long");
   }, [activePrintType, paperSize]);
 
   const acknowledged = data?.childAlreadyAcknowledged;

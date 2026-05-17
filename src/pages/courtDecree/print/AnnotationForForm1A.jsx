@@ -5,7 +5,7 @@ import { exportColbAsPdf } from '../../../lib/colbExportPdf'
 import { useCourtDecreeColbRemarksDetection } from '../../../hooks/useCourtDecreeColbRemarksDetection'
 import { FORM_102_REMARKS_OVERLAY, FORM_102_OVERLAY_MAX_BOTTOM } from '../../../lib/courtDecreeColbRemarksDetection'
 import { FIELD_POSITIONS } from '../../../lib/colbCertificateLayout'
-import { lcrRemarksBodyStyle } from '../../../lib/lcrRemarksFontSize'
+import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
 
 const MAX_FILE_SIZE_MB = 25
 
@@ -267,7 +267,7 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
 
             <div className="hidden print:block flex-1 relative">
               <p
-                className="absolute font-bold text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+                className={withLcrRemarksPrintClass('absolute font-bold text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere]')}
                 style={{
                   left: `${printExpandedLeft * 100}%`,
                   top: `${(printFieldRect.top ?? 0) * 100}%`,
@@ -324,7 +324,7 @@ export default function AnnotationForForm1A({ paperSize = 'a4', data, onAttachme
               >
                 <div className="colb-annotation-remarks-body">
                   <p
-                    className="colb-annotation-form1a-text colb-annotation-remarks-text text-justify font-bold"
+                    className={withLcrRemarksPrintClass('colb-annotation-form1a-text colb-annotation-remarks-text text-justify font-bold')}
                     style={{ fontFamily: 'Arial, sans-serif', ...lcrRemarksBodyStyle(data) }}
                   >
                     {renderAnnotationContent()}

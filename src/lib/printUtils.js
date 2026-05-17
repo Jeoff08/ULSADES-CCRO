@@ -227,6 +227,29 @@ export function parseFlexibleFullDateToDdMmYyyy(str) {
 }
 
 /**
+ * Display string for birth-style stored value (dd/mm/yyyy, mm/yyyy, or ISO).
+ */
+export function storedBirthToDisplay(str) {
+  const t = String(str ?? '').trim()
+  if (!t) return ''
+  const mmY = t.match(/^(\d{1,2})\/(\d{4})$/)
+  if (mmY) {
+    const mo = parseInt(mmY[1], 10)
+    const y = parseInt(mmY[2], 10)
+    if (mo >= 1 && mo <= 12 && y >= 1000 && y <= 9999) {
+      return `${String(mo).padStart(2, '0')}/${y}`
+    }
+  }
+  if (/^\d{4}-\d{2}-\d{2}/.test(t)) {
+    const ddmm = isoYyyyMmDdToDdMmYyyy(t.slice(0, 10))
+    if (ddmm) return ddmm
+  }
+  const full = parseDdMmYyyyToDate(t)
+  if (full) return formatDateToDdMmYyyy(full)
+  return t
+}
+
+/**
  * Birth-style field: full date → dd/mm/yyyy; month name or numeric + year → mm/yyyy; '' empty; null invalid.
  */
 export function parseFlexibleBirthDateToStored(str) {

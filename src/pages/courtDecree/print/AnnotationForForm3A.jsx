@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { FIELD_POSITIONS } from '../../../lib/colbCertificateLayout'
-import { lcrRemarksBodyStyle } from '../../../lib/lcrRemarksFontSize'
+import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
 
 /** ANNOTATION FOR FORM 3A – court decree (Certificate of Marriage). */
 export default function AnnotationForForm3A({ data, onRemarksChange }) {
@@ -42,7 +42,7 @@ export default function AnnotationForForm3A({ data, onRemarksChange }) {
               ref={remarksInputRef}
               value={remarks}
               onChange={(e) => onRemarksChange?.(e.target.value)}
-              className="w-full min-h-[5rem] resize-none overflow-hidden bg-transparent leading-relaxed text-justify outline-none"
+              className={withLcrRemarksPrintClass('w-full min-h-[5rem] resize-none overflow-hidden bg-transparent leading-relaxed text-justify outline-none')}
               style={lcrRemarksBodyStyle(data)}
               rows={4}
             />
@@ -51,7 +51,7 @@ export default function AnnotationForForm3A({ data, onRemarksChange }) {
 
         <div className="hidden print:block flex-1 relative">
           <p
-            className="absolute font-bold text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+            className={withLcrRemarksPrintClass('absolute font-bold text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere]')}
             style={{
               left: `${printExpandedLeft * 100}%`,
               top: `${(printFieldRect.top ?? 0) * 100}%`,

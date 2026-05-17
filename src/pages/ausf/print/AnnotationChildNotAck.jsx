@@ -9,7 +9,7 @@ import {
 import ColbCertificateFieldsOverlay from "../../../components/colb/ColbCertificateFieldsOverlay";
 import { DocumentFooter, AnnotationPrintLayout } from "../../../components/print";
 import { AnnotationRenderer } from "../../../components/annotations/AnnotationRenderer";
-import { lcrRemarksBodyStyle } from "../../../lib/lcrRemarksFontSize";
+import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from "../../../lib/lcrRemarksFontSize";
 
 export function getAnnotationChildNotAckText(data) {
   const defaultAnnotation = buildDefaultAnnotationText(data || {});
@@ -112,7 +112,7 @@ export default function AnnotationChildNotAck({ data, onAnnotationChange }) {
                 >
                   <div className="colb-annotation-remarks-body colb-annotation-remarks-body--scan">
                     <p
-                      className="colb-annotation-remarks-text"
+                      className={withLcrRemarksPrintClass('colb-annotation-remarks-text')}
                       style={{ margin: 0, ...lcrRemarksBodyStyle(data) }}
                     >
                       <AnnotationRenderer annotationText={annotationText} type="not-ack" />

@@ -5,9 +5,79 @@ import {
   formatLcrFormShortDate,
   parseBirthToDate,
 } from '../../../lib/printUtils'
-import { lcrCertificationRequestParty } from '../../../lib/lcrCertificationRequest'
-import { lcrRemarksBodyStyle } from '../../../lib/lcrRemarksFontSize'
+import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
+import { courtDecreeColbInputStyle } from '../../courtDecree/lib/courtDecreeColbPrintStyle'
+import LcrCertificationRequestPartyInline from '../../../components/lcr/LcrCertificationRequestPartyInline'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
+
+/** Long bond only — not laid out for A4 or short (8.5" × 11"). */
+export const LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS = new Set(['a4', 'short'])
+
+const LEGITIMATION_LCR_1A_PRINT_STYLES = `
+.legitimation-lcr1a-doc.court-decree-lcr-form p.legitimation-lcr1a-cert-request,
+.legitimation-lcr1a-doc.court-decree-lcr-form .legitimation-lcr1a-cert-request,
+.legitimation-lcr1a-doc.court-decree-lcr-form .legitimation-lcr1a-cert-request * {
+  font-size: 16px !important;
+  line-height: 1.3 !important;
+}
+.legitimation-lcr1a-doc .legitimation-lcr1a-cert-request input.no-print {
+  display: inline !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  vertical-align: baseline !important;
+}
+.legitimation-lcr1a-doc .legitimation-lcr1a-cert-request span:not(.hidden) {
+  display: inline !important;
+  vertical-align: baseline !important;
+}
+@media print {
+  .legitimation-lcr1a-doc.court-decree-lcr-form p.legitimation-lcr1a-cert-request,
+  .legitimation-lcr1a-doc.court-decree-lcr-form .legitimation-lcr1a-cert-request,
+  .legitimation-lcr1a-doc.court-decree-lcr-form .legitimation-lcr1a-cert-request * {
+    font-size: 10pt !important;
+    line-height: 1.3 !important;
+    text-align: left !important;
+    text-justify: none !important;
+    word-spacing: normal !important;
+    letter-spacing: normal !important;
+    hyphens: none !important;
+  }
+  .legitimation-lcr1a-doc .legitimation-lcr1a-cert-request input.no-print {
+    display: none !important;
+  }
+  .legitimation-lcr1a-doc .legitimation-lcr1a-cert-request span.hidden {
+    display: inline !important;
+  }
+  html[data-paper-size="long"] .legitimation-lcr1a-doc .legitimation-lcr1a-verified-left,
+  .legitimation-lcr1a-doc .legitimation-lcr1a-verified-left {
+    position: relative !important;
+    top: -0.28in !important;
+  }
+}
+body.pdf-capture .legitimation-lcr1a-doc.court-decree-lcr-form p.legitimation-lcr1a-cert-request,
+body.pdf-capture .legitimation-lcr1a-doc.court-decree-lcr-form .legitimation-lcr1a-cert-request,
+body.pdf-capture .legitimation-lcr1a-doc.court-decree-lcr-form .legitimation-lcr1a-cert-request * {
+  font-size: 10pt !important;
+  line-height: 1.3 !important;
+  text-align: left !important;
+  text-justify: none !important;
+  word-spacing: normal !important;
+  letter-spacing: normal !important;
+  hyphens: none !important;
+}
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-cert-request input.no-print {
+  display: none !important;
+}
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-cert-request span.hidden {
+  display: inline !important;
+}
+html[data-paper-size="long"] body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-verified-left,
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-verified-left {
+  position: relative !important;
+  top: -0.28in !important;
+}
+`
 
 function cellEditText(displayed) {
   const s = String(displayed ?? '').trim()
@@ -94,10 +164,27 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
 
   const colbPage = data.colbPageNo ?? data.colbPageNumber ?? '0'
   const colbBook = data.colbBookNo ?? data.colbBookNumber ?? '0'
-  const certReqPartyPrint = lcrCertificationRequestParty(data, '1a')
+  useEffect(() => {
+    const root = document.documentElement
+    const prev = root.dataset.paperSize
+    const applyLong = () => {
+      root.dataset.paperSize = 'long'
+    }
+    applyLong()
+    const obs = new MutationObserver(() => {
+      if (root.dataset.paperSize !== 'long') applyLong()
+    })
+    obs.observe(root, { attributes: true, attributeFilter: ['data-paper-size'] })
+    return () => {
+      obs.disconnect()
+      if (prev !== undefined) root.dataset.paperSize = prev
+      else delete root.dataset.paperSize
+    }
+  }, [])
 
   return (
-    <div className="legitimation-lcr1a-doc ausf-doc print-doc print-doc-lcr-1a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col">
+    <div className="legitimation-lcr1a-doc ausf-doc print-doc print-doc-lcr-1a court-decree-lcr-form bg-white text-black text-sm max-w-[8.5in] mx-auto px-6 py-2 flex flex-col">
+      <style>{LEGITIMATION_LCR_1A_PRINT_STYLES}</style>
       <div className="court-decree-lcr-header shrink-0">
         <header className="print-doc-header">
           <PrintHeaderRow />
@@ -115,35 +202,31 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
       <div className="court-decree-lcr-body-wrap flex-1 min-h-0 flex flex-col">
         <div className="court-decree-lcr-body-scaled flex flex-col h-full">
           <div>
-            <p className="font-bold mb-1 pl-8">TO WHOM IT MAY CONCERN:</p>
-            <p className="mb-2 text-left court-decree-lcr-body">
+            <p className="font-bold mb-1 pl-0">TO WHOM IT MAY CONCERN:</p>
+            <p className="mb-2 text-left court-decree-lcr-body [text-indent:0.5in]">
               <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of birth appear in our Register of Births on Page{' '}
               {editableTable && onDataChange ? (
-                <>
-                  <input
-                    type="text"
-                    className="no-print inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold max-w-[4rem] bg-white"
-                    value={String(colbPage ?? '')}
-                    onChange={(e) => patchData({ colbPageNo: e.target.value, colbPageNumber: e.target.value })}
-                  />
-                  <span className="hidden print:inline font-bold">{colbPage || ''}</span>
-                </>
+                <input
+                  type="text"
+                  className="court-decree-lcr-colb-input font-bold bg-white"
+                  style={courtDecreeColbInputStyle(colbPage)}
+                  value={String(colbPage ?? '')}
+                  onChange={(e) => patchData({ colbPageNo: e.target.value, colbPageNumber: e.target.value })}
+                />
               ) : (
-                <span className="inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold">{colbPage || ''}</span>
+                <span className="court-decree-lcr-colb-val font-bold">{colbPage || ''}</span>
               )}
               {' '}of Book number{' '}
               {editableTable && onDataChange ? (
-                <>
-                  <input
-                    type="text"
-                    className="no-print inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold max-w-[5rem] bg-white"
-                    value={String(colbBook ?? '')}
-                    onChange={(e) => patchData({ colbBookNo: e.target.value, colbBookNumber: e.target.value })}
-                  />
-                  <span className="hidden print:inline font-bold">{colbBook || ''}</span>
-                </>
+                <input
+                  type="text"
+                  className="court-decree-lcr-colb-input font-bold bg-white"
+                  style={courtDecreeColbInputStyle(colbBook)}
+                  value={String(colbBook ?? '')}
+                  onChange={(e) => patchData({ colbBookNo: e.target.value, colbBookNumber: e.target.value })}
+                />
               ) : (
-                <span className="inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold">{colbBook || ''}</span>
+                <span className="court-decree-lcr-colb-val font-bold">{colbBook || ''}</span>
               )}
               .
             </p>
@@ -193,23 +276,17 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
               </tbody>
             </table>
 
-            <p className="mb-2 text-sm court-decree-lcr-body">
+            <p
+              className="mb-2 text-left court-decree-lcr-body legitimation-lcr1a-cert-request court-decree-lcr-cert-after-table [text-indent:0.5in]"
+              style={{ fontSize: '16px', lineHeight: 1.3, textAlign: 'left' }}
+            >
               This certification is issued upon the request of{' '}
-              {onDataChange ? (
-                <>
-                  <input
-                    type="text"
-                    className="no-print inline-block min-w-[10rem] max-w-[32rem] border-0 border-b border-dashed border-gray-500 bg-transparent font-bold text-left px-0.5 align-baseline"
-                    value={String(data.lcrCertificationRequestParty ?? '')}
-                    onChange={(e) => patchData({ lcrCertificationRequestParty: e.target.value })}
-                    placeholder={lcrCertificationRequestParty({}, '1a')}
-                    aria-label="Party requesting certification"
-                  />
-                  <span className="hidden print:inline font-bold">{certReqPartyPrint}</span>
-                </>
-              ) : (
-                <span className="font-bold">{certReqPartyPrint}</span>
-              )}{' '}
+              <LcrCertificationRequestPartyInline
+                data={data}
+                variant="1a"
+                onPartyChange={onDataChange ? patchData : undefined}
+                inputClassName="no-print inline min-w-0 w-auto max-w-none border-0 border-b border-dashed border-gray-500 bg-transparent font-bold text-left px-0.5 align-baseline"
+              />{' '}
               for any legal purposes.
             </p>
 
@@ -224,13 +301,13 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
                     onDataChange?.({ ...data, remarks: v })
                   }}
                   rows={3}
-                  className="w-full border border-gray-300 rounded px-2 py-1"
+                  className={withLcrRemarksPrintClass('w-full border border-gray-300 rounded px-2 py-1')}
                   style={lcrRemarksBodyStyle(data)}
                   placeholder="Type or edit remarks here..."
                 />
               </div>
               <p
-                className="text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] font-bold italic"
+                className={withLcrRemarksPrintClass('text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] font-bold italic')}
                 style={lcrRemarksBodyStyle(data)}
               >
                 &quot;{editableRemarks}&quot;
@@ -242,13 +319,13 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
 
       <div className="court-decree-lcr-footer mt-auto shrink-0">
         <div className="court-decree-lcr-body mb-1">
-          <div className="mb-1 flex justify-between items-end gap-0">
-            <div className="legitimation-lcr1a-verified-left flex flex-col items-center text-center">
+          <div className="mb-1 flex flex-col-reverse items-stretch gap-1">
+            <div className="legitimation-lcr1a-verified-left flex flex-col items-center text-center self-start">
               <p className="font-bold text-sm mb-0.5 self-start">Verified by:</p>
               <p className="font-bold text-sm border-b border-black inline-block">{verifiedByName}</p>
               <p className="text-xs mt-0">{regOfficerTitle}</p>
             </div>
-            <div className="flex flex-col items-center text-center">
+            <div className="flex flex-col items-center text-center self-end">
               <p className="font-bold text-sm border-b border-black inline-block">{ccrName}</p>
               <p className="text-xs mt-0">City Civil Registrar</p>
             </div>

@@ -55,6 +55,9 @@ export const defaultCourtDecree = {
   lcr1aFatherCitizenship: 'FILIPINO',
   lcr1aDateMarriageParents: '',
   lcr1aPlaceMarriageParents: '',
+  /** LCR 1A print: COLB page/book (section 2 — overrides shared colbPageNo/colbBookNo on 1A only) */
+  lcr1aColbPageNo: '',
+  lcr1aColbBookNo: '',
   // LCR Form 3A table-only (marriage)
   lcr3aHusbandName: '',
   lcr3aHusbandDobAge: '',
@@ -72,6 +75,9 @@ export const defaultCourtDecree = {
   lcr3aDateRegistration: '',
   lcr3aDateMarriage: '',
   lcr3aPlaceMarriage: '',
+  /** LCR 3A print: COLB page/book */
+  lcr3aColbPageNo: '',
+  lcr3aColbBookNo: '',
   /** LCR 3A: husband/wife DOB (ISO yyyy-mm-dd) + optional age — used for print table */
   husbandDateOfBirth: '',
   wifeDateOfBirth: '',
@@ -91,7 +97,12 @@ export const defaultCourtDecree = {
   lcr2aCitizenshipFather: 'FILIPINO',
   lcr2aPlaceDeath: '',
   lcr2aCauseDeath: '',
+  /** LCR 2A print: COLB page/book */
+  lcr2aColbPageNo: '',
+  lcr2aColbBookNo: '',
   // Legacy keys (older drafts / legitimation merge)
+  colbPageNo: '',
+  colbBookNo: '',
   colbRegistryNo: '',
   colbRegDate: '',
   childFirst: '',

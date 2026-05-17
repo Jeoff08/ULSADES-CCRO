@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from 'electron'
 import { fileURLToPath, pathToFileURL } from 'url'
 import { dirname, join } from 'path'
 import { mkdirSync, existsSync } from 'fs'
@@ -461,6 +461,7 @@ app.whenReady().then(async () => {
     return
   }
 
+  Menu.setApplicationMenu(null)
   createWindow()
 })
 

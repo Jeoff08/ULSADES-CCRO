@@ -6,8 +6,157 @@ import {
   joinCommaParts
 } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
-import { lcrRemarksBodyStyle } from '../../../lib/lcrRemarksFontSize'
+import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
 import LcrCertificationRequestPartyInline from '../../../components/lcr/LcrCertificationRequestPartyInline'
+
+/** AUSF print type for LCR Form A1. */
+export const AUSF_LCR_A1_PRINT_TYPE = 'child-not-ack-lcr'
+
+/** Long bond only — not laid out for A4 or short (8.5" × 11"). */
+export const AUSF_LCR_A1_EXCLUDED_PAPER_SIZE_IDS = new Set(['a4', 'short'])
+
+/** Print + PDF: nudge verified-by down; keep CCR signatory fixed. */
+const AUSF_LCR_A1_VERIFIED_BY_PRINT_STYLES = `
+.ausf-lcr-a1-form .ausf-lcr-cert-line,
+.ausf-lcr-a1-form .ausf-lcr-cert-line * {
+  font-size: 16px !important;
+  line-height: 1.3 !important;
+}
+@media print {
+  .ausf-lcr-a1-form .ausf-lcr-cert-line,
+  .ausf-lcr-a1-form .ausf-lcr-cert-line * {
+    font-size: 10pt !important;
+    line-height: 1.3 !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-verified-by-region,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-verified-by-region {
+    position: relative !important;
+    top: 0.8in !important;
+    margin-top: 0 !important;
+    transform: none !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-ccr-signatory-region,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-ccr-signatory-region {
+    position: relative !important;
+    top: 0 !important;
+    margin-top: 0 !important;
+    transform: none !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block {
+    margin-top: auto !important;
+    width: 100% !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block .lcr1a-note-line,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block .lcr1a-note-line {
+    width: 100% !important;
+    text-align: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer > hr,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer > hr {
+    margin-top: 0 !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-a1-form .ausf-lcr-to-whom,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form .ausf-lcr-to-whom {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+    text-align: left !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-a1-form .ausf-lcr-cert-legal-indent,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form .ausf-lcr-cert-legal-indent {
+    text-indent: 0.5in !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-a1-form.court-decree-lcr-form .court-decree-lcr-colb-val,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form.court-decree-lcr-form .court-decree-lcr-colb-val {
+    display: inline !important;
+    position: static !important;
+    top: auto !important;
+    transform: none !important;
+    border: none !important;
+    width: auto !important;
+    min-width: 0 !important;
+    text-decoration: underline !important;
+    text-decoration-color: #000 !important;
+    text-underline-offset: 0.08em !important;
+    text-decoration-skip-ink: none !important;
+  }
+}
+body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-cert-line,
+body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-cert-line * {
+  font-size: 10pt !important;
+  line-height: 1.3 !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-to-whom,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-to-whom {
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+  text-align: left !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-cert-legal-indent,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-cert-legal-indent {
+  text-indent: 0.5in !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form .court-decree-lcr-colb-val,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form .court-decree-lcr-colb-val {
+  display: inline !important;
+  position: static !important;
+  top: auto !important;
+  transform: none !important;
+  border: none !important;
+  width: auto !important;
+  min-width: 0 !important;
+  text-decoration: underline !important;
+  text-decoration-color: #000 !important;
+  text-underline-offset: 0.08em !important;
+  text-decoration-skip-ink: none !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-verified-by-region,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-verified-by-region {
+  position: relative !important;
+  top: 0.8in !important;
+  margin-top: 0 !important;
+  transform: none !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-ccr-signatory-region,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-ccr-signatory-region {
+  position: relative !important;
+  top: 0 !important;
+  margin-top: 0 !important;
+  transform: none !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block {
+  margin-top: auto !important;
+  width: 100% !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block .lcr1a-note-line,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block .lcr1a-note-line {
+  width: 100% !important;
+  text-align: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer > hr,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer > hr {
+  margin-top: 0 !important;
+}
+`
 
 /** LCR Form No. 1A (Birth-Available) for AUSF module (A1 version).
  *  Updated signatory block to match the specific layout requested from the image.
@@ -50,7 +199,8 @@ export default function LcrFormA1({ data, onDataChange }) {
   const colbBook = data.colbBookNumber || '—'
 
   return (
-    <div className="ausf-doc print-doc print-doc-lcr-1a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 pt-2 pb-0 flex flex-col min-h-0 h-full">
+    <div className="ausf-doc print-doc print-doc-lcr-1a ausf-lcr-a1-form court-decree-lcr-form bg-white text-black text-sm max-w-[8.5in] mx-auto px-6 pt-2 pb-0 flex flex-col min-h-0 h-full">
+      <style dangerouslySetInnerHTML={{ __html: AUSF_LCR_A1_VERIFIED_BY_PRINT_STYLES }} />
       <div className="court-decree-lcr-header shrink-0">
         <header className="print-doc-header">
           <PrintHeaderRow />
@@ -68,12 +218,12 @@ export default function LcrFormA1({ data, onDataChange }) {
       <div className="court-decree-lcr-body-wrap flex-1 min-h-0 flex flex-col">
         <div className="court-decree-lcr-body-scaled flex flex-col min-h-0">
           <div>
-            <p className="font-bold mb-1 pl-8">TO WHOM IT MAY CONCERN:</p>
-            <p className="mb-2 text-left court-decree-lcr-body">
+            <p className="font-bold mb-1 pl-8 ausf-lcr-to-whom">TO WHOM IT MAY CONCERN:</p>
+            <p className="mb-2 text-left court-decree-lcr-body ausf-lcr-cert-legal-indent">
               <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of birth appear in our Register of Births on Page{' '}
-              <span className="inline-block border-b border-black px-1 min-w-[2rem] text-center font-bold">{colbPage}</span>
+              <span className="court-decree-lcr-colb-val font-bold">{colbPage}</span>
               {' '}of Book number{' '}
-              <span className="inline-block border-b border-black px-1 min-w-[3rem] text-center font-bold">{colbBook}</span>
+              <span className="court-decree-lcr-colb-val font-bold">{colbBook}</span>
               .
             </p>
 
@@ -89,7 +239,10 @@ export default function LcrFormA1({ data, onDataChange }) {
             </table>
 
             <div className="lcr-form-bottom-content">
-              <p className="mb-2 text-[11.7pt] court-decree-lcr-body ausf-lcr-cert-line">
+              <p
+                className="mb-2 court-decree-lcr-body ausf-lcr-cert-line ausf-lcr-cert-legal-indent"
+                style={{ fontSize: '16px', lineHeight: 1.3 }}
+              >
                 This certification is issued upon the request of{' '}
                 <LcrCertificationRequestPartyInline
                   data={data}
@@ -102,7 +255,7 @@ export default function LcrFormA1({ data, onDataChange }) {
               <div className="mt-10 mb-4 court-decree-lcr-body ausf-lcr-remarks-block">
                 <p className="font-bold text-sm mb-1 uppercase">REMARKS:</p>
                 <p
-                  className="text-justify break-words [overflow-wrap:anywhere]"
+                  className={withLcrRemarksPrintClass('text-justify break-words [overflow-wrap:anywhere]')}
                   style={lcrRemarksBodyStyle(data)}
                 >
                   Acknowledged by <span className="font-bold underline">{fatherFull || '—'}</span> on <span className="font-bold underline">{ackDate}</span> under Registry Number <span className="font-bold underline">{registryNo}</span>. The child shall be known as <span className="font-bold underline">{childFull?.toUpperCase() || '—'}</span>
@@ -111,12 +264,12 @@ export default function LcrFormA1({ data, onDataChange }) {
 
               <div className="mt-10 mb-4 court-decree-lcr-body ausf-lcr-verified-block">
                 <div className="flex justify-between items-end gap-4">
-                  <div className="text-center flex flex-col items-center">
-                    <p className="text-sm mb-1 text-left self-start">{verifiedByLabel}</p>
+                  <div className="ausf-lcr-verified-by-region shrink-0 flex flex-col items-start text-left">
+                    <p className="text-sm mb-1">{verifiedByLabel}</p>
                     <div className="font-bold uppercase text-sm leading-snug m-0 p-0">{regOfficerName}</div>
                     <div className="text-sm leading-snug m-0 p-0">{regOfficerTitle}</div>
                   </div>
-                  <div className="text-center flex flex-col items-center">
+                  <div className="ausf-lcr-ccr-signatory-region text-center flex flex-col items-center shrink-0">
                     <div className="font-bold uppercase text-sm leading-snug m-0 p-0">{ccrName}</div>
                     <div className="italic text-xs leading-snug m-0 p-0">City Civil Registrar</div>
                   </div>
@@ -127,13 +280,15 @@ export default function LcrFormA1({ data, onDataChange }) {
         </div>
       </div>
 
-      <footer className="print-doc-footer mt-auto shrink-0">
-        <p className="lcr1a-note-line font-bold text-sm mb-0">Note: This certification is not valid if it has mark, erasure or alteration of any entry.</p>
-        <DocumentFooter
-          contactPhone={data.contactPhone || '228-1311'}
-          contactEmail={data.contactEmail || 'civilregistrar.iligan@gmail.com'}
-          sloganBlue
-        />
+      <footer className="print-doc-footer mt-auto shrink-0 flex flex-col">
+        <div className="ausf-lcr-a1-note-hr-block mt-auto flex w-full flex-col">
+          <p className="lcr1a-note-line font-bold text-sm mb-0">Note: This certification is not valid if it has mark, erasure or alteration of any entry.</p>
+          <DocumentFooter
+            contactPhone={data.contactPhone || '228-1311'}
+            contactEmail={data.contactEmail || 'civilregistrar.iligan@gmail.com'}
+            sloganBlue
+          />
+        </div>
       </footer>
     </div>
   )

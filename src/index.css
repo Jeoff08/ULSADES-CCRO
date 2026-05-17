@@ -648,42 +648,109 @@ html[data-paper-size="short"] .court-decree-lcr-form .text-sm {
   font-size: 14.5px !important;
   line-height: 1.2 !important;
 }
-html[data-paper-size="short"] .print-doc-lcr-1a .ausf-lcr-remarks-block {
-  margin-top: 1rem !important;
-}
-html[data-paper-size="a4"] .print-doc-lcr-1a .ausf-lcr-verified-block,
-html[data-paper-size="long"] .print-doc-lcr-1a .ausf-lcr-verified-block,
-html[data-paper-size="legal"] .print-doc-lcr-1a .ausf-lcr-verified-block {
+html[data-paper-size="long"] .ausf-lcr-1a-birth-available .ausf-lcr-verified-block,
+html[data-paper-size="legal"] .ausf-lcr-1a-birth-available .ausf-lcr-verified-block,
+html[data-paper-size="long"] .ausf-lcr-a1-form .ausf-lcr-verified-block,
+html[data-paper-size="legal"] .ausf-lcr-a1-form .ausf-lcr-verified-block {
   position: static !important;
   top: auto !important;
 }
 /* Keep “Verified by” in normal flow below REMARKS (negative offset caused overlap in print/PDF). */
-html[data-paper-size="a4"] .print-doc-lcr-1a .ausf-lcr-verified-block > .flex > div:first-child,
-html[data-paper-size="short"] .print-doc-lcr-1a .ausf-lcr-verified-block > .flex > div:first-child,
-html[data-paper-size="long"] .print-doc-lcr-1a .ausf-lcr-verified-block > .flex > div:first-child,
-html[data-paper-size="legal"] .print-doc-lcr-1a .ausf-lcr-verified-block > .flex > div:first-child {
+html[data-paper-size="long"] .ausf-lcr-1a-birth-available .ausf-lcr-verified-block > .flex > div:first-child,
+html[data-paper-size="legal"] .ausf-lcr-1a-birth-available .ausf-lcr-verified-block > .flex > div:first-child {
   position: relative !important;
   top: 0 !important;
 }
-/* AUSF LCR certification line: 11px only */
-.print-doc-lcr-1a .ausf-lcr-cert-line {
+/* AUSF LCR Form A1: certification line — long bond only */
+.ausf-lcr-a1-form .ausf-lcr-cert-line {
   font-size: 11px !important;
 }
 @media print {
-  .print-doc-lcr-1a .ausf-lcr-cert-line {
+  .ausf-lcr-a1-form .ausf-lcr-cert-line {
     font-size: 11px !important;
     line-height: 1.2 !important;
   }
 }
-body.pdf-capture .print-doc-lcr-1a .ausf-lcr-cert-line {
+body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-cert-line {
   font-size: 11px !important;
   line-height: 1.2 !important;
 }
-html[data-paper-size="long"] .court-decree-lcr-form .court-decree-lcr-body, html[data-paper-size="legal"] .court-decree-lcr-form .court-decree-lcr-body,
-html[data-paper-size="long"] .court-decree-lcr-form .court-decree-lcr-table, html[data-paper-size="legal"] .court-decree-lcr-form .court-decree-lcr-table,
-html[data-paper-size="long"] .court-decree-lcr-form .court-decree-lcr-table td, html[data-paper-size="legal"] .court-decree-lcr-form .court-decree-lcr-table td,
-html[data-paper-size="long"] .court-decree-lcr-form p, html[data-paper-size="legal"] .court-decree-lcr-form p,
-html[data-paper-size="long"] .court-decree-lcr-form .text-sm, html[data-paper-size="legal"] .court-decree-lcr-form .text-sm {
+
+/* AUSF LCR 1A (Birth-Available): 16px on screen, 12pt print/PDF */
+.ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-header p,
+.ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body-wrap,
+.ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body-wrap p,
+.ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body-wrap td,
+.ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body-wrap div,
+.ausf-lcr-1a-birth-available.court-decree-lcr-form > footer p,
+.ausf-lcr-1a-birth-available.court-decree-lcr-form > footer div,
+.ausf-lcr-1a-birth-available .ausf-lcr-cert-line {
+  font-size: 16px !important;
+  line-height: 1.3 !important;
+}
+
+@media print {
+  .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-header p,
+  .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body-wrap,
+  .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body-wrap p:not(.ausf-lcr-cert-line),
+  .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body-wrap td,
+  .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body-wrap div,
+  .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer p,
+  .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer div {
+    font-size: 12pt !important;
+    line-height: 1.3 !important;
+  }
+  .ausf-lcr-1a-birth-available .ausf-lcr-cert-line,
+  .ausf-lcr-1a-birth-available .ausf-lcr-cert-line * {
+    font-size: 11pt !important;
+    line-height: 1.3 !important;
+  }
+  .ausf-lcr-1a-birth-available .ausf-lcr-verified-by-bottom,
+  .ausf-lcr-1a-birth-available .ausf-lcr-verified-by-bottom p,
+  .ausf-lcr-1a-birth-available .ausf-lcr-verified-by-bottom div {
+    font-size: 12pt !important;
+    line-height: 1.3 !important;
+  }
+  .ausf-lcr-1a-birth-available.court-decree-lcr-form .print-doc-footer p,
+  .ausf-lcr-1a-birth-available.court-decree-lcr-form .print-doc-footer .text-xs {
+    font-size: 10pt !important;
+  }
+}
+
+body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-header p,
+body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body-wrap,
+body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body-wrap p:not(.ausf-lcr-cert-line),
+body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body-wrap td,
+body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body-wrap div,
+body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer p,
+body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer div {
+  font-size: 12pt !important;
+  line-height: 1.3 !important;
+}
+
+body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-cert-line,
+body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-cert-line * {
+  font-size: 11pt !important;
+  line-height: 1.3 !important;
+}
+
+body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-verified-by-bottom,
+body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-verified-by-bottom p,
+body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-verified-by-bottom div {
+  font-size: 12pt !important;
+  line-height: 1.3 !important;
+}
+
+html[data-paper-size="long"] .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .court-decree-lcr-body,
+html[data-paper-size="legal"] .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .court-decree-lcr-body,
+html[data-paper-size="long"] .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .court-decree-lcr-table,
+html[data-paper-size="legal"] .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .court-decree-lcr-table,
+html[data-paper-size="long"] .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .court-decree-lcr-table td,
+html[data-paper-size="legal"] .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .court-decree-lcr-table td,
+html[data-paper-size="long"] .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) p,
+html[data-paper-size="legal"] .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) p,
+html[data-paper-size="long"] .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .text-sm,
+html[data-paper-size="legal"] .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .text-sm {
   font-size: 17px !important;
   line-height: 1.3 !important;
 }
@@ -3633,12 +3700,21 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .court-decree-lcr-form.print-doc-lcr-3a {
     background: #fff !important;
   }
-  .court-decree-lcr-form .court-decree-lcr-body,
-  .court-decree-lcr-form .court-decree-lcr-table,
-  .court-decree-lcr-form .court-decree-lcr-table td,
-  .court-decree-lcr-form p,
-  .court-decree-lcr-form .text-sm {
+  .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .court-decree-lcr-body,
+  .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .court-decree-lcr-table,
+  .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .court-decree-lcr-table td,
+  .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) p,
+  .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .text-sm {
     font-size: 15.2px !important;
+    line-height: 1.3 !important;
+  }
+  .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body,
+  .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-table,
+  .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-table td,
+  .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body-wrap p,
+  .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body-wrap td,
+  .ausf-lcr-1a-birth-available.court-decree-lcr-form .court-decree-lcr-body-wrap div {
+    font-size: 12pt !important;
     line-height: 1.3 !important;
   }
   .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-body,
@@ -7019,27 +7095,22 @@ html[data-paper-size="legal"] body.pdf-capture .ausf-registration-cert .cert-reg
   margin-top: 0 !important;
 }
 
-/* AUSF LCR cert sentence: force 11.7pt in print/PDF */
+/* AUSF LCR Form A1 cert sentence: 11.7pt — long bond only */
 @media print {
-  html[data-paper-size="a4"] .print-doc-lcr-1a.court-decree-lcr-form .ausf-lcr-cert-line,
-  html[data-paper-size="short"] .print-doc-lcr-1a.court-decree-lcr-form .ausf-lcr-cert-line,
-  html[data-paper-size="long"] .print-doc-lcr-1a.court-decree-lcr-form .ausf-lcr-cert-line,
-  html[data-paper-size="legal"] .print-doc-lcr-1a.court-decree-lcr-form .ausf-lcr-cert-line {
+  html[data-paper-size="long"] .ausf-lcr-a1-form.court-decree-lcr-form .ausf-lcr-cert-line,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form.court-decree-lcr-form .ausf-lcr-cert-line {
     font-size: 11.7pt !important;
     line-height: 1.2 !important;
   }
 }
 
-html[data-paper-size="a4"] body.pdf-capture .print-doc-lcr-1a.court-decree-lcr-form .ausf-lcr-cert-line,
-html[data-paper-size="short"] body.pdf-capture .print-doc-lcr-1a.court-decree-lcr-form .ausf-lcr-cert-line,
-html[data-paper-size="long"] body.pdf-capture .print-doc-lcr-1a.court-decree-lcr-form .ausf-lcr-cert-line,
-html[data-paper-size="legal"] body.pdf-capture .print-doc-lcr-1a.court-decree-lcr-form .ausf-lcr-cert-line {
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form .ausf-lcr-cert-line,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form .ausf-lcr-cert-line {
   font-size: 11.7pt !important;
   line-height: 1.2 !important;
 }
 
-/* Final PDF-capture fallback */
-body.pdf-capture .print-doc-lcr-1a .ausf-lcr-cert-line {
+body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-cert-line {
   font-size: 11.7pt !important;
   line-height: 1.2 !important;
 }
@@ -7384,69 +7455,461 @@ body.pdf-capture .ausf-doc.print-doc .border-b.border-black {
 
 /* LCR Form 1A: move footer slightly lower (A4/short/long print+PDF) */
 @media print {
-  html[data-paper-size="a4"] .print-doc-lcr-1a .print-doc-footer,
-  html[data-paper-size="short"] .print-doc-lcr-1a .print-doc-footer,
+  html[data-paper-size="a4"] .print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .print-doc-footer,
+  html[data-paper-size="short"] .print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .print-doc-footer,
   html[data-paper-size="long"] .print-doc-lcr-1a .print-doc-footer {
     position: relative !important;
     top: 0.10in !important;
   }
-  html[data-paper-size="short"] .print-doc-lcr-1a .print-doc-footer {
+  html[data-paper-size="short"] .print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .print-doc-footer {
     top: -0.01in !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer,
+  html[data-paper-size="legal"] .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer,
+  html[data-paper-size="long"] .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer {
+    position: relative !important;
+    top: 0.10in !important;
   }
 }
 
-html[data-paper-size="a4"] body.pdf-capture .print-doc-lcr-1a .print-doc-footer,
-html[data-paper-size="short"] body.pdf-capture .print-doc-lcr-1a .print-doc-footer,
+html[data-paper-size="a4"] body.pdf-capture .print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .print-doc-footer,
+html[data-paper-size="short"] body.pdf-capture .print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .print-doc-footer,
 html[data-paper-size="long"] body.pdf-capture .print-doc-lcr-1a .print-doc-footer {
   position: relative !important;
   top: 0.10in !important;
 }
 
-html[data-paper-size="short"] body.pdf-capture .print-doc-lcr-1a .print-doc-footer {
+html[data-paper-size="short"] body.pdf-capture .print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .print-doc-footer {
   top: -0.01in !important;
+}
+
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer,
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer {
+  position: relative !important;
+  top: 0.10in !important;
+}
+
+/* AUSF LCR 1A / A1: footer layout — long bond only */
+.ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer,
+.ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+}
+html[data-paper-size="long"] .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom,
+html[data-paper-size="legal"] .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom {
+  align-self: flex-start !important;
+  width: auto !important;
+}
+
+/* AUSF LCR 1A Birth-Available: verified-by in signatory row — match CCR size (print/PDF only) */
+@media print {
+  .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-region {
+    margin-top: 0 !important;
+    transform: none !important;
+    position: relative !important;
+    top: 1in !important;
+  }
+  .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-ccr-signatory-region {
+    margin-top: 0 !important;
+    transform: none !important;
+    position: relative !important;
+    top: 0 !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom p,
+  html[data-paper-size="legal"] .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom p,
+  html[data-paper-size="long"] .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom div,
+  html[data-paper-size="legal"] .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom div {
+    font-size: 12pt !important;
+    line-height: 1.3 !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom .font-bold.uppercase,
+  html[data-paper-size="legal"] .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom .font-bold.uppercase {
+    font-size: 12pt !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom div:not(.font-bold),
+  html[data-paper-size="legal"] .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom div:not(.font-bold) {
+    font-size: 12pt !important;
+    line-height: 1.3 !important;
+  }
+  /* AUSF LCR A1 (not-ack): verified-by down ~8 spaces; CCR fixed (print/PDF only) */
+  html[data-paper-size="long"] .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-verified-by-region,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-verified-by-region {
+    margin-top: 0 !important;
+    transform: none !important;
+    position: relative !important;
+    top: 0.8in !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-ccr-signatory-region,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-ccr-signatory-region {
+    margin-top: 0 !important;
+    transform: none !important;
+    position: relative !important;
+    top: 0 !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block {
+    margin-top: auto !important;
+    width: 100% !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block .lcr1a-note-line,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block .lcr1a-note-line {
+    width: 100% !important;
+    text-align: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    position: static !important;
+    top: 0 !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer > hr,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer > hr {
+    margin-top: 0 !important;
+  }
+}
+
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-verified-by-region,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-verified-by-region {
+  margin-top: 0 !important;
+  transform: none !important;
+  position: relative !important;
+  top: 0.8in !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-ccr-signatory-region,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-ccr-signatory-region {
+  margin-top: 0 !important;
+  transform: none !important;
+  position: relative !important;
+  top: 0 !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block {
+  margin-top: auto !important;
+  width: 100% !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block .lcr1a-note-line,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-a1-note-hr-block .lcr1a-note-line {
+  width: 100% !important;
+  text-align: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  position: static !important;
+  top: 0 !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer > hr,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-a1-note-hr-block > .print-doc-footer > hr {
+  margin-top: 0 !important;
+}
+
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom p,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom p,
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom div,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom div {
+  font-size: 12pt !important;
+  line-height: 1.3 !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom .font-bold.uppercase,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom .font-bold.uppercase {
+  font-size: 12pt !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom div:not(.font-bold),
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-bottom div:not(.font-bold) {
+  font-size: 12pt !important;
+  line-height: 1.3 !important;
+}
+.ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer .lcr1a-note-line {
+  width: 100% !important;
+  text-align: left !important;
 }
 
 /* LCR Form 1A: move note further downward (A4/short/long print+PDF) */
 @media print {
-  html[data-paper-size="a4"] .print-doc-lcr-1a .lcr1a-note-line,
-  html[data-paper-size="short"] .print-doc-lcr-1a .lcr1a-note-line,
+  html[data-paper-size="a4"] .print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .lcr1a-note-line,
+  html[data-paper-size="short"] .print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .lcr1a-note-line,
   html[data-paper-size="long"] .print-doc-lcr-1a .lcr1a-note-line {
     margin-top: 0 !important;
     margin-bottom: 0.04in !important;
     padding-left: 0 !important;
   }
-  html[data-paper-size="long"] .print-doc-lcr-1a .lcr1a-note-line,
-  html[data-paper-size="legal"] .print-doc-lcr-1a .lcr1a-note-line {
+  html[data-paper-size="long"] .print-doc-lcr-1a:not(.ausf-lcr-a1-form) .lcr1a-note-line,
+  html[data-paper-size="legal"] .print-doc-lcr-1a:not(.ausf-lcr-a1-form) .lcr1a-note-line {
     padding-left: 2ch !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-1a-birth-available .lcr1a-note-line,
+  html[data-paper-size="legal"] .ausf-lcr-1a-birth-available .lcr1a-note-line,
+  html[data-paper-size="long"] .ausf-lcr-a1-form .lcr1a-note-line,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form .lcr1a-note-line {
+    margin-top: 0 !important;
+    margin-bottom: 0.04in !important;
+    padding-left: 0 !important;
   }
 
   /* LCR 1A note font size */
-  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-1a .lcr1a-note-line,
-  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-1a .lcr1a-note-line,
+  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .lcr1a-note-line,
+  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .lcr1a-note-line,
   html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-1a .lcr1a-note-line,
   html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-1a .lcr1a-note-line {
     font-size: 12pt !important;
   }
+  html[data-paper-size="long"] .ausf-lcr-1a-birth-available.court-decree-lcr-form .lcr1a-note-line,
+  html[data-paper-size="legal"] .ausf-lcr-1a-birth-available.court-decree-lcr-form .lcr1a-note-line,
+  html[data-paper-size="long"] .ausf-lcr-a1-form.court-decree-lcr-form .lcr1a-note-line,
+  html[data-paper-size="legal"] .ausf-lcr-a1-form.court-decree-lcr-form .lcr1a-note-line {
+    font-size: 12pt !important;
+  }
 }
 
-html[data-paper-size="a4"] body.pdf-capture .print-doc-lcr-1a .lcr1a-note-line,
-html[data-paper-size="short"] body.pdf-capture .print-doc-lcr-1a .lcr1a-note-line,
+html[data-paper-size="a4"] body.pdf-capture .print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .lcr1a-note-line,
+html[data-paper-size="short"] body.pdf-capture .print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .lcr1a-note-line,
 html[data-paper-size="long"] body.pdf-capture .print-doc-lcr-1a .lcr1a-note-line {
   margin-top: 0 !important;
   margin-bottom: 0.04in !important;
   padding-left: 0 !important;
 }
 
-html[data-paper-size="long"] body.pdf-capture .print-doc-lcr-1a .lcr1a-note-line,
-html[data-paper-size="legal"] body.pdf-capture .print-doc-lcr-1a .lcr1a-note-line {
+html[data-paper-size="long"] body.pdf-capture .print-doc-lcr-1a:not(.ausf-lcr-a1-form) .lcr1a-note-line,
+html[data-paper-size="legal"] body.pdf-capture .print-doc-lcr-1a:not(.ausf-lcr-a1-form) .lcr1a-note-line {
   padding-left: 2ch !important;
 }
 
-html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a .lcr1a-note-line,
-html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a .lcr1a-note-line,
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-1a-birth-available .lcr1a-note-line,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-1a-birth-available .lcr1a-note-line,
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form .lcr1a-note-line,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form .lcr1a-note-line {
+  margin-top: 0 !important;
+  margin-bottom: 0.04in !important;
+  padding-left: 0 !important;
+}
+
+html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .lcr1a-note-line,
+html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .lcr1a-note-line,
 html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a .lcr1a-note-line,
 html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a .lcr1a-note-line {
   font-size: 12pt !important;
+}
+
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form .lcr1a-note-line,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form .lcr1a-note-line,
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form .lcr1a-note-line,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form .lcr1a-note-line {
+  font-size: 12pt !important;
+}
+
+/* AUSF LCR 1A Birth-Available: note tight above footer horizontal rule (print/PDF) */
+@media print {
+  html[data-paper-size="long"] .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-note-hr-block,
+  html[data-paper-size="legal"] .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-note-hr-block {
+    margin-top: auto !important;
+    width: 100% !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-validity-note-region,
+  html[data-paper-size="legal"] .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-validity-note-region {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-validity-note-region .lcr1a-note-line,
+  html[data-paper-size="legal"] .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-validity-note-region .lcr1a-note-line {
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: center !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-1a-birth-available .ausf-lcr-note-hr-block > .print-doc-footer,
+  html[data-paper-size="legal"] .ausf-lcr-1a-birth-available .ausf-lcr-note-hr-block > .print-doc-footer {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    top: 0 !important;
+    position: static !important;
+  }
+  html[data-paper-size="long"] .ausf-lcr-1a-birth-available .ausf-lcr-note-hr-block > .print-doc-footer > hr,
+  html[data-paper-size="legal"] .ausf-lcr-1a-birth-available .ausf-lcr-note-hr-block > .print-doc-footer > hr {
+    margin-top: 0 !important;
+  }
+}
+
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-note-hr-block,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-note-hr-block {
+  margin-top: auto !important;
+  width: 100% !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-validity-note-region .lcr1a-note-line,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.print-doc-footer .ausf-lcr-validity-note-region .lcr1a-note-line {
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-note-hr-block > .print-doc-footer,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-note-hr-block > .print-doc-footer {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  top: 0 !important;
+  position: static !important;
+}
+html[data-paper-size="long"] body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-note-hr-block > .print-doc-footer > hr,
+html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-note-hr-block > .print-doc-footer > hr {
+  margin-top: 0 !important;
+}
+
+/* Court Decree LCR 1A/2A/3A: page/book — underline on the digits (print/PDF-safe) */
+.court-decree-lcr-form .court-decree-lcr-colb-val {
+  display: inline;
+  vertical-align: baseline;
+  border: none !important;
+  text-decoration: underline;
+  text-decoration-color: #000;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.08em;
+  text-decoration-skip-ink: none;
+  line-height: inherit;
+  padding: 0;
+  margin: 0;
+}
+.court-decree-lcr-form input.court-decree-lcr-colb-input {
+  display: inline-block;
+  vertical-align: baseline;
+  border: none;
+  border-bottom: 1px solid #000;
+  text-align: center;
+  box-sizing: content-box;
+  padding: 0;
+  margin: 0;
+  line-height: 1.2;
+}
+@media print {
+  .court-decree-lcr-form .court-decree-lcr-colb-val {
+    display: inline !important;
+    border: none !important;
+    text-decoration: underline !important;
+    text-decoration-color: #000 !important;
+    text-decoration-thickness: 1px !important;
+    text-underline-offset: 0.08em !important;
+  }
+  .court-decree-lcr-form input.court-decree-lcr-colb-input {
+    display: inline-block !important;
+    border-bottom: 1px solid #000 !important;
+    text-align: center !important;
+    box-sizing: content-box !important;
+  }
+}
+body.pdf-capture .court-decree-lcr-form .court-decree-lcr-colb-val {
+  display: inline !important;
+  border: none !important;
+  text-decoration: underline !important;
+  text-decoration-color: #000 !important;
+  text-decoration-thickness: 1px !important;
+  text-underline-offset: 0.08em !important;
+}
+body.pdf-capture .court-decree-lcr-form input.court-decree-lcr-colb-input {
+  display: inline-block !important;
+  border-bottom: 1px solid #000 !important;
+  text-align: center !important;
+  box-sizing: content-box !important;
+}
+
+/* Court Decree LCR 1A/2A/3A (Available): validity note centered, tight above contact HR (print/PDF) */
+@media print {
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block,
+  html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block,
+  html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block,
+  html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block {
+    margin-top: auto !important;
+    width: 100% !important;
+  }
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block .lcr1a-note-line,
+  html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block .lcr1a-note-line,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block .lcr1a-note-line,
+  html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block .lcr1a-note-line,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block .lcr1a-note-line,
+  html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block .lcr1a-note-line {
+    width: 100% !important;
+    text-align: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block > .print-doc-footer,
+  html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block > .print-doc-footer,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block > .print-doc-footer,
+  html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block > .print-doc-footer,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block > .print-doc-footer,
+  html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block > .print-doc-footer {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    position: static !important;
+    top: 0 !important;
+  }
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block > .print-doc-footer > hr,
+  html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block > .print-doc-footer > hr,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block > .print-doc-footer > hr,
+  html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block > .print-doc-footer > hr,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block > .print-doc-footer > hr,
+  html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block > .print-doc-footer > hr {
+    margin-top: 0 !important;
+  }
+}
+
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block {
+  margin-top: auto !important;
+  width: 100% !important;
+}
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block .lcr1a-note-line,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block .lcr1a-note-line,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block .lcr1a-note-line,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block .lcr1a-note-line,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block .lcr1a-note-line,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block .lcr1a-note-line {
+  width: 100% !important;
+  text-align: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block > .print-doc-footer,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block > .print-doc-footer,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block > .print-doc-footer,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block > .print-doc-footer,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block > .print-doc-footer,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block > .print-doc-footer {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  position: static !important;
+  top: 0 !important;
+}
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block > .print-doc-footer > hr,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a:not(.ausf-lcr-1a-birth-available):not(.ausf-lcr-a1-form) .court-decree-lcr-note-hr-block > .print-doc-footer > hr,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block > .print-doc-footer > hr,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-note-hr-block > .print-doc-footer > hr,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block > .print-doc-footer > hr,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-note-hr-block > .print-doc-footer > hr {
+  margin-top: 0 !important;
 }
 
 /* Modern Modal Design & Animations */
@@ -7458,6 +7921,22 @@ html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-
 @keyframes modal-content-in {
   0% { opacity: 0; transform: scale(0.9) translateY(20px); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* LCR remarks font size: honor --lcr-remarks-font-pt on screen, print, and PDF capture */
+.print-doc .lcr-remarks-print-body {
+  font-size: var(--lcr-remarks-font-pt, 12pt) !important;
+  line-height: 1.35 !important;
+}
+@media print {
+  html[data-paper-size] body .print-doc .lcr-remarks-print-body {
+    font-size: var(--lcr-remarks-font-pt, 12pt) !important;
+    line-height: 1.35 !important;
+  }
+}
+html[data-paper-size] body.pdf-capture .print-doc .lcr-remarks-print-body {
+  font-size: var(--lcr-remarks-font-pt, 12pt) !important;
+  line-height: 1.35 !important;
 }
 
 .modal-backdrop {

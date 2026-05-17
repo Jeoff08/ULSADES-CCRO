@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { fullName } from '../../../lib/printUtils'
 import { DocumentFooter } from '../../../components/print'
-import { lcrRemarksBodyStyle } from '../../../lib/lcrRemarksFontSize'
+import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
 
 const MAX_FILE_SIZE_MB = 25
 
@@ -188,7 +188,7 @@ export default function AnnotationChildAck({ data, onColbScanChange, onAnnotatio
                   }}
                 >
                   <p
-                    className="font-sans font-normal text-black whitespace-nowrap"
+                    className={withLcrRemarksPrintClass('font-sans font-normal text-black whitespace-nowrap')}
                     style={{
                       transform: 'rotate(90deg)',
                       transformOrigin: 'center center',
@@ -234,7 +234,7 @@ export default function AnnotationChildAck({ data, onColbScanChange, onAnnotatio
         <div className="print:hidden">
           <p className="font-medium text-sm mb-1">REMARKS/ANNOTATION (Child acknowledged)</p>
           <div className="border border-black min-h-[5rem] p-4 bg-white">
-            <p className="whitespace-pre-wrap" style={lcrRemarksBodyStyle(data)}>
+            <p className={withLcrRemarksPrintClass('whitespace-pre-wrap')} style={lcrRemarksBodyStyle(data)}>
               {renderAnnotationContent()}
             </p>
           </div>

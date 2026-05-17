@@ -13,6 +13,8 @@ import SupplementalLcrFooterSignatoryPickers from './SupplementalLcrFooterSignat
 import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailable'
 import LcrForm2ADeathAvailable from '../courtDecree/print/LcrForm2ADeathAvailable'
 import LcrForm3AMarriageAvailable from '../courtDecree/print/LcrForm3AMarriageAvailable'
+import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
+import { mergeLcrRemarksFontSizePt } from '../../lib/lcrRemarksFontSize'
 import { getDefaultSupplementalTransmittalFields, pickTransmittalStateFromDraft } from './lib/supplementalTransmittalDefaults'
 import {
   clearMc2010Active,
@@ -108,6 +110,7 @@ function buildMc2010LcrRows(lcrSource, lcrType) {
 const defaultMc2010Draft = {
   includeForm1a: true,
   lcrType: '1A',
+  lcrRemarksFontSizePt: '12',
   lcrData: { ...defaultLegitimation },
   lcrSource: 'manual',
   lcrSourceId: '',
@@ -148,8 +151,8 @@ export default function Mc2010Form() {
   const lcrInlineFormData = useMemo(() => {
     const base = form.lcrType === '1A' ? defaultLegitimation : defaultCourtDecree
     const slice = form.lcrData && typeof form.lcrData === 'object' ? form.lcrData : {}
-    return { ...base, ...slice }
-  }, [form.lcrType, form.lcrData])
+    return mergeLcrRemarksFontSizePt({ ...base, ...slice }, form)
+  }, [form.lcrType, form.lcrData, form.lcrRemarksFontSizePt])
 
   const inputClass = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white'
 
@@ -485,6 +488,13 @@ export default function Mc2010Form() {
                       )}
                       Table cells are editable below; bottom signatures use the block under this note; changes are saved with this MC2010 file.
                     </div>
+                    <LcrRemarksFontSizeSelect
+                      id="mc2010-form-lcr-remarks-font"
+                      value={form.lcrRemarksFontSizePt}
+                      onChange={(v) => update('lcrRemarksFontSizePt', v)}
+                      className="max-w-[210mm] mx-auto w-full mb-3"
+                      helpText="Applies to the REMARKS block on this LCR form in preview and print/PDF."
+                    />
                     <SupplementalLcrFooterSignatoryPickers
                       lcrData={lcrInlineFormData}
                       inputClass={inputClass}

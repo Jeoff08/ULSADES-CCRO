@@ -3,13 +3,20 @@ import { afterUnsavedAcknowledge, useWarnIfUnsaved } from '../../hooks/useWarnIf
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { defaultCourtDecree, syncCourtDecreeTransmittalFlagFromFormType } from './lib/courtDecreeDefaults'
 import { deriveAffectedDocumentsForPrint, primaryAffectedDocumentForSave } from './lib/courtDecreeAffectedDocuments'
+import CourtDecreeLcrColbFields from './components/CourtDecreeLcrColbFields'
 import { addSavedCourtDecree, getCourtDecreeDraft, updateSavedCourtDecree, saveCourtDecreeDraft } from './lib/courtDecreeStorage'
 import { COURT_DECREE_TYPES, AFFECTED_DOCUMENT_OPTIONS, DATE_MONTHS } from './constants'
 import { isLcr1aTableComplete, isLcr2aTableComplete, isLcr3aTableComplete } from './lib/courtDecreeLcrCompletion'
 import { commitFirstLetterUpperFromInput } from '../../lib/sentenceCase'
 import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
 import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShortcuts'
-import { parseDdMmYyyyToDate, parseBirthToDate, isoYyyyMmDdToDdMmYyyy, parseFlexibleBirthDateToStored } from '../../lib/printUtils'
+import {
+  parseDdMmYyyyToDate,
+  parseBirthToDate,
+  isoYyyyMmDdToDdMmYyyy,
+  parseFlexibleBirthDateToStored,
+  storedBirthToDisplay,
+} from '../../lib/printUtils'
 import ToastHost from '../../components/toast/ToastHost'
 import { useToasts } from '../../components/toast/useToasts'
 import { useDebouncedSuccessToast } from '../../hooks/useDebouncedSuccessToast'
@@ -889,6 +896,7 @@ export default function CourtDecreeForm() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Place of Marriage of Parents</label>
                     <input type="text" value={form.lcr1aPlaceMarriageParents} onChange={scInput('lcr1aPlaceMarriageParents')} placeholder="e.g. SAGUIARAN, LANAO DEL SUR" className={inputClass} />
                   </div>
+                  <CourtDecreeLcrColbFields lcrKind="1a" form={form} scInput={scInput} inputClass={inputClass} />
                   <div className="mt-6 pt-4 border-t border-gray-200">
                     <p className="text-sm text-gray-600 mb-3">When this table is fully filled, continue to the main court decree form for country, court decree details, and other print types.</p>
                     <button
@@ -924,6 +932,7 @@ export default function CourtDecreeForm() {
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Citizenship of Father</label><input type="text" value={form.lcr2aCitizenshipFather} onChange={scInput('lcr2aCitizenshipFather')} className={inputClass} /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Place of Death</label><input type="text" value={form.lcr2aPlaceDeath} onChange={scInput('lcr2aPlaceDeath')} className={inputClass} /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Cause of Death</label><textarea value={form.lcr2aCauseDeath} onChange={scInput('lcr2aCauseDeath')} rows={4} className={inputClass} placeholder="As stated on the record" /></div>
+                  <CourtDecreeLcrColbFields lcrKind="2a" form={form} scInput={scInput} inputClass={inputClass} />
                   <div className="mt-6 pt-4 border-t border-gray-200">
                     <p className="text-sm text-gray-600 mb-3">When this table is fully filled, continue to the main court decree form for country, court decree details, and other print types.</p>
                     <button
@@ -1065,6 +1074,7 @@ export default function CourtDecreeForm() {
                       <div><label className="block text-sm font-medium text-gray-700 mb-1">Place of Marriage</label><input type="text" value={form.lcr3aPlaceMarriage} onChange={scInput('lcr3aPlaceMarriage')} placeholder="Full venue as on certificate" className={inputClass} /></div>
                     </div>
                   </div>
+                  <CourtDecreeLcrColbFields lcrKind="3a" form={form} scInput={scInput} inputClass={inputClass} />
                   <div className="mt-6 pt-4 border-t border-gray-200">
                     <p className="text-sm text-gray-600 mb-3">When this table is fully filled, continue to the main court decree form for country, court decree details, and other print types.</p>
                     <button

@@ -23,10 +23,13 @@ import { mc2010OutputUploadScope } from './lib/legalInstrumentAttachmentScope'
 import { getUploadedFile, restoreUploadedFileFromTrash } from '../../lib/uploadedFileStore'
 import UploadFileModal from '../../components/upload/UploadFileModal'
 import PrintSidebarNavAttachIcons from '../../components/upload/PrintSidebarNavAttachIcons'
+import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
+import { mergeLcrRemarksFontSizePt, parseLcrRemarksFontPt } from '../../lib/lcrRemarksFontSize'
 
 const defaultMc2010Draft = {
   includeForm1a: true,
   lcrType: '1A',
+  lcrRemarksFontSizePt: '12',
   lcrData: { ...defaultLegitimation },
   lcrSource: 'courtDecree',
   lcrSourceId: '',
@@ -178,11 +181,22 @@ export default function Mc2010Print() {
   }
 
   const [lcrData, setLcrData] = useState(() => ({ ...baseData.lcrData }))
+  const [lcrRemarksFontSizePt, setLcrRemarksFontSizePt] = useState(() =>
+    parseLcrRemarksFontPt(baseData.lcrRemarksFontSizePt),
+  )
 
-  const data = baseData
-  const dataRef = useRef(baseData)
+  useEffect(() => {
+    setLcrRemarksFontSizePt(parseLcrRemarksFontPt(baseData.lcrRemarksFontSizePt))
+  }, [location.key, baseData.lcrRemarksFontSizePt])
+
+  const data = useMemo(
+    () => ({ ...baseData, lcrRemarksFontSizePt }),
+    [baseData, lcrRemarksFontSizePt],
+  )
+
+  const dataRef = useRef(data)
   const lcrDataRef = useRef(lcrData)
-  dataRef.current = baseData
+  dataRef.current = data
   lcrDataRef.current = lcrData
 
   const [transmittalSignatoryIdx, setTransmittalSignatoryIdx] = useState(() =>
@@ -197,7 +211,21 @@ export default function Mc2010Print() {
   const handleTransmittalSignatoryChange = (rawIdx) => {
     const clamped = clampTransmittalSignatoryIndex(rawIdx)
     setTransmittalSignatoryIdx(clamped)
-    const updated = { ...baseData, transmittalSignatoryOptionIndex: clamped }
+    const updated = { ...dataRef.current, transmittalSignatoryOptionIndex: clamped }
+    saveMc2010Draft(updated)
+    saveOrUpdateMc2010(updated)
+  }
+
+  const lcrPrintData = useMemo(
+    () => mergeLcrRemarksFontSizePt(lcrData, data),
+    [lcrData, data.lcrRemarksFontSizePt],
+  )
+
+  const handleLcrRemarksFontChange = (pt) => {
+    const parsed = parseLcrRemarksFontPt(pt)
+    setLcrRemarksFontSizePt(parsed)
+    const updated = { ...dataRef.current, lcrRemarksFontSizePt: parsed }
+    dataRef.current = updated
     saveMc2010Draft(updated)
     saveOrUpdateMc2010(updated)
   }
@@ -509,6 +537,14 @@ export default function Mc2010Print() {
                 </select>
               </div>
             ) : null}
+            {activePanel === 'form1a' && showLcr ? (
+              <LcrRemarksFontSizeSelect
+                id="mc2010-print-lcr-remarks-font"
+                value={data.lcrRemarksFontSizePt}
+                onChange={handleLcrRemarksFontChange}
+                helpText="Applies to the REMARKS block on this LCR form in preview and print/PDF."
+              />
+            ) : null}
           </div>
         </aside>
 
@@ -557,9 +593,9 @@ export default function Mc2010Print() {
                   onPatch={patchLcrFooter}
                 />
                 <div className="max-w-[210mm] mx-auto">
-                  {data.lcrType === '1A' ? <LcrForm1ABirthAvailable data={lcrData} editableTable onDataChange={handleLcrDataChange} /> : null}
-                  {data.lcrType === '2A' ? <LcrForm2ADeathAvailable data={lcrData} editableTable onDataChange={handleLcrDataChange} /> : null}
-                  {data.lcrType === '3A' ? <LcrForm3AMarriageAvailable data={lcrData} editableTable onDataChange={handleLcrDataChange} /> : null}
+                  {data.lcrType === '1A' ? <LcrForm1ABirthAvailable data={lcrPrintData} editableTable onDataChange={handleLcrDataChange} /> : null}
+                  {data.lcrType === '2A' ? <LcrForm2ADeathAvailable data={lcrPrintData} editableTable onDataChange={handleLcrDataChange} /> : null}
+                  {data.lcrType === '3A' ? <LcrForm3AMarriageAvailable data={lcrPrintData} editableTable onDataChange={handleLcrDataChange} /> : null}
                 </div>
               </div>
             </div>
