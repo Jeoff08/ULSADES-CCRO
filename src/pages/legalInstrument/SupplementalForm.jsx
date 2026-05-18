@@ -21,6 +21,13 @@ import {
   getSupplementalMissingCorrectedLabels,
   resolveSupplementalAffidavitType,
 } from './lib/supplementalAffidavitType'
+import {
+  SUPPLEMENTAL_LCR_FORM_TYPES,
+  emptyLcrDataForType,
+  getSupplementalLcrBundleFromDraft,
+  persistLcrBundleToDraftShape,
+  supplementalLcrSliceHasFilledFields,
+} from './lib/supplementalLcrFormsState'
 import SupplementalTransmittalFieldsEditor from './SupplementalTransmittalFieldsEditor'
 import SupplementalLcrFooterSignatoryPickers from './SupplementalLcrFooterSignatoryPickers'
 import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailable'
@@ -52,36 +59,7 @@ function hasValue(v) {
 }
 
 function recordHasLcrType(data, lcrType) {
-  if (!data || typeof data !== 'object') return false
-
-  if (lcrType === '1A') {
-    return (
-      hasValue(data.lcr1aNameOfChild) ||
-      hasValue(data.lcr1aRegistryNumber) ||
-      hasValue(data.colbRegistryNo) ||
-      hasValue(data.childFirst) ||
-      hasValue(data.childLast)
-    )
-  }
-
-  if (lcrType === '2A') {
-    return (
-      hasValue(data.lcr2aNameDeceased) ||
-      hasValue(data.lcr2aRegistryNumber) ||
-      hasValue(data.lcr2aDateDeath)
-    )
-  }
-
-  if (lcrType === '3A') {
-    return (
-      hasValue(data.lcr3aHusbandName) ||
-      hasValue(data.lcr3aWifeName) ||
-      hasValue(data.lcr3aRegistryNumber) ||
-      hasValue(data.marriageRegistryNo)
-    )
-  }
-
-  return true
+  return supplementalLcrSliceHasFilledFields(data, lcrType)
 }
 
 const defaultSupplementalDraft = {
@@ -102,13 +80,20 @@ const defaultSupplementalDraft = {
   missingGeo: '',
   correctedGeo: '',
   includeForm1a: false,
-  lcrType: '1A', // '1A', '2A', or '3A'
+  lcrType: '1A', // legacy + first form in bundle
   lcrRemarksFontSizePt: '12',
   lcrData: { ...defaultLegitimation },
+  /** Multiple LCR forms (1A / 2A / 3A) in one supplemental — order is 1A then 2A then 3A. */
+  lcrFormsIncluded: [],
+  lcrFormsData: {},
+  /** Which LCR form the LCR section is editing (must be in `lcrFormsIncluded` when non-empty). */
+  lcrActiveFormType: '1A',
   /** manual = type LCR in LCR section; other modules = optional prefill from saved records. */
   lcrSource: 'manual', // 'manual' | 'ausf' | 'courtDecree' | 'legitimation'
   lcrSourceId: '',
   lcrPrefillLabel: '',
+  /** When true, affidavit print/PDF shows the City Civil Registrar signatory block under the jurat. */
+  affidavitShowCcrSignatory: true,
   ...getDefaultSupplementalTransmittalFields(),
 }
 
@@ -137,6 +122,30 @@ export default function SupplementalForm() {
 
   const acknowledgeSaved = useWarnIfUnsaved(form, [location.key, activeSavedId, dirtyBaselineTick])
 
+  const lcrBundle = useMemo(() => getSupplementalLcrBundleFromDraft(form), [
+    form.lcrFormsIncluded,
+    form.lcrFormsData,
+    form.includeForm1a,
+    form.lcrType,
+    form.lcrData,
+  ])
+  const hasLcrForms = lcrBundle.included.length > 0
+  const activeLcrType = useMemo(() => {
+    const t = form.lcrActiveFormType || '1A'
+    if (lcrBundle.included.includes(t)) return t
+    return lcrBundle.included[0] || '1A'
+  }, [lcrBundle.included, form.lcrActiveFormType])
+
+  const setActiveLcrFormType = (t) => {
+    setForm((prev) => {
+      const b = getSupplementalLcrBundleFromDraft(prev)
+      if (!b.included.includes(t)) return prev
+      const next = { ...prev, lcrActiveFormType: t }
+      saveSupplementalDraft(next)
+      return next
+    })
+  }
+
   const lcrRecords = useMemo(() => {
     if (form.lcrSource === 'manual') return []
     const sources = {
@@ -147,16 +156,16 @@ export default function SupplementalForm() {
     const key = form.lcrSource === 'ausf' || form.lcrSource === 'legitimation' ? form.lcrSource : 'courtDecree'
     const { list, draft } = sources[key]
     const rows = []
-    if (draft && typeof draft === 'object' && recordHasLcrType(draft, form.lcrType)) {
+    if (draft && typeof draft === 'object' && recordHasLcrType(draft, activeLcrType)) {
       rows.push({ id: '__draft__', label: '[Current draft]', data: draft })
     }
     list.forEach((r) => {
-      if (r?.data && recordHasLcrType(r.data, form.lcrType)) {
+      if (r?.data && recordHasLcrType(r.data, activeLcrType)) {
         rows.push({ id: r.id, label: r.label || r.id, data: r.data })
       }
     })
     return rows
-  }, [form.lcrSource, form.lcrType])
+  }, [form.lcrSource, activeLcrType])
 
   const filteredLcrRecords = useMemo(() => {
     const q = lcrSearchQuery.trim().toLowerCase()
@@ -165,23 +174,49 @@ export default function SupplementalForm() {
   }, [lcrRecords, lcrSearchQuery])
 
   const lcrInlineFormData = useMemo(() => {
-    const base = form.lcrType === '1A' ? defaultLegitimation : defaultCourtDecree
-    const slice = form.lcrData && typeof form.lcrData === 'object' ? form.lcrData : {}
+    const bundle = getSupplementalLcrBundleFromDraft(form)
+    const t =
+      bundle.included.includes(form.lcrActiveFormType) ? form.lcrActiveFormType : bundle.included[0] || '1A'
+    const base = t === '1A' ? defaultLegitimation : defaultCourtDecree
+    const slice = bundle.formsData[t] && typeof bundle.formsData[t] === 'object' ? bundle.formsData[t] : {}
     return mergeLcrRemarksFontSizePt({ ...base, ...slice }, form)
-  }, [form.lcrType, form.lcrData, form.lcrRemarksFontSizePt])
+  }, [
+    form.lcrRemarksFontSizePt,
+    form.lcrFormsIncluded,
+    form.lcrFormsData,
+    form.lcrActiveFormType,
+    form.includeForm1a,
+    form.lcrType,
+    form.lcrData,
+  ])
 
   useEffect(() => {
     const loaded = getSupplementalDraft(defaultSupplementalDraft)
     const next = { ...loaded, ...pickTransmittalStateFromDraft(loaded) }
-    saveSupplementalDraft(next)
-    setForm(next)
+    const bundle = getSupplementalLcrBundleFromDraft(next)
+    const hasMulti = Array.isArray(next.lcrFormsIncluded) && next.lcrFormsIncluded.length > 0
+    const normalized =
+      bundle.included.length > 0 && !hasMulti
+        ? {
+            ...next,
+            ...persistLcrBundleToDraftShape(bundle.included, bundle.formsData),
+            lcrActiveFormType: next.lcrActiveFormType || bundle.included[0],
+          }
+        : {
+            ...next,
+            lcrActiveFormType:
+              bundle.included.includes(next.lcrActiveFormType) ? next.lcrActiveFormType : bundle.included[0] || next.lcrActiveFormType || '1A',
+          }
+    saveSupplementalDraft(normalized)
+    setForm(normalized)
   }, [location.key])
 
   useEffect(() => {
-    if (!form.includeForm1a && activeSection === 'lcr') {
+    const bundle = getSupplementalLcrBundleFromDraft(form)
+    if (bundle.included.length === 0 && activeSection === 'lcr') {
       setActiveSection('affidavit')
     }
-  }, [form.includeForm1a, activeSection])
+  }, [form, activeSection])
 
   const handleBackToSaved = () => {
     saveSupplementalDraft(form)
@@ -297,7 +332,13 @@ export default function SupplementalForm() {
 
   const handleEnableLcr = (type) => {
     setForm((prev) => {
-      let lcrData = type === '1A' ? { ...defaultLegitimation } : { ...defaultCourtDecree }
+      const bundle = getSupplementalLcrBundleFromDraft(prev)
+      if (bundle.included.includes(type)) {
+        const next = { ...prev, lcrActiveFormType: type }
+        saveSupplementalDraft(next)
+        return next
+      }
+      let newData = type === '1A' ? { ...defaultLegitimation } : { ...defaultCourtDecree }
       if (prev.lcrSourceId && prev.lcrSource && prev.lcrSource !== 'manual') {
         const sources = {
           ausf: { list: getSavedAUSFList(), draft: getAUSFDraft() },
@@ -312,13 +353,16 @@ export default function SupplementalForm() {
           if (r?.data) rows.push({ id: r.id, label: r.label || r.id, data: r.data })
         })
         const rec = rows.find((r) => r.id === prev.lcrSourceId)
-        if (rec) lcrData = mapSourceToSupplementalLcrData(prev.lcrSource, rec.data, type)
+        if (rec) newData = mapSourceToSupplementalLcrData(prev.lcrSource, rec.data, type)
       }
+      const nextIncluded = [...bundle.included, type].sort(
+        (a, b) => SUPPLEMENTAL_LCR_FORM_TYPES.indexOf(a) - SUPPLEMENTAL_LCR_FORM_TYPES.indexOf(b),
+      )
+      const nextForms = { ...bundle.formsData, [type]: newData }
       const next = {
         ...prev,
-        includeForm1a: true,
-        lcrType: type,
-        lcrData,
+        ...persistLcrBundleToDraftShape(nextIncluded, nextForms),
+        lcrActiveFormType: type,
         ...(prev.lcrSourceId ? {} : { lcrSourceId: '', lcrPrefillLabel: '' }),
       }
       saveSupplementalDraft(next)
@@ -329,12 +373,47 @@ export default function SupplementalForm() {
 
   const handleRemoveLcr = () => {
     setForm((prev) => {
-      const next = { ...prev, includeForm1a: false, lcrSourceId: '', lcrPrefillLabel: '' }
+      const next = {
+        ...prev,
+        lcrFormsIncluded: [],
+        lcrFormsData: {},
+        includeForm1a: false,
+        lcrType: '1A',
+        lcrData: { ...defaultLegitimation },
+        lcrActiveFormType: '1A',
+        lcrSourceId: '',
+        lcrPrefillLabel: '',
+      }
       saveSupplementalDraft(next)
       return next
     })
     setLcrSearchQuery('')
     setActiveSection('affidavit')
+  }
+
+  const handleRemoveOneLcr = (type) => {
+    setForm((prev) => {
+      const bundle = getSupplementalLcrBundleFromDraft(prev)
+      const nextIncluded = bundle.included.filter((x) => x !== type)
+      if (nextIncluded.length === 0) {
+        queueMicrotask(() => setLcrSearchQuery(''))
+      }
+      const nextForms = { ...bundle.formsData }
+      delete nextForms[type]
+      const nextActive =
+        prev.lcrActiveFormType === type
+          ? nextIncluded[0] || '1A'
+          : bundle.included.includes(prev.lcrActiveFormType)
+            ? prev.lcrActiveFormType
+            : nextIncluded[0] || '1A'
+      const next = {
+        ...prev,
+        ...persistLcrBundleToDraftShape(nextIncluded, nextForms),
+        lcrActiveFormType: nextActive,
+      }
+      saveSupplementalDraft(next)
+      return next
+    })
   }
 
   const handleLcrSourceChange = (src) => {
@@ -348,11 +427,15 @@ export default function SupplementalForm() {
 
   const handleSelectLcrRecord = (record) => {
     if (form.lcrSource === 'manual') return
-    const mapped = mapSourceToSupplementalLcrData(form.lcrSource, record.data, form.lcrType)
     setForm((prev) => {
+      const bundle = getSupplementalLcrBundleFromDraft(prev)
+      const t =
+        bundle.included.includes(prev.lcrActiveFormType) ? prev.lcrActiveFormType : bundle.included[0] || '1A'
+      const mapped = mapSourceToSupplementalLcrData(prev.lcrSource, record.data, t)
+      const nextForms = { ...bundle.formsData, [t]: mapped }
       const next = {
         ...prev,
-        lcrData: mapped,
+        ...persistLcrBundleToDraftShape(bundle.included, nextForms),
         lcrSourceId: record.id,
         lcrPrefillLabel: record.label || '',
       }
@@ -365,21 +448,28 @@ export default function SupplementalForm() {
 
   const handleLcrInlineDataChange = (next) => {
     setForm((prev) => {
-      const merged = {
-        ...prev,
-        lcrData: next && typeof next === 'object' ? next : prev.lcrData,
-      }
+      const bundle = getSupplementalLcrBundleFromDraft(prev)
+      const t =
+        bundle.included.includes(prev.lcrActiveFormType) ? prev.lcrActiveFormType : bundle.included[0] || '1A'
+      const prior = bundle.formsData[t] && typeof bundle.formsData[t] === 'object' ? bundle.formsData[t] : {}
+      const nextSlice = next && typeof next === 'object' ? next : prior
+      const nextForms = { ...bundle.formsData, [t]: nextSlice }
+      const merged = { ...prev, ...persistLcrBundleToDraftShape(bundle.included, nextForms) }
       saveSupplementalDraft(merged)
       return merged
     })
   }
 
-  /** Merge partial LCR fields using latest `prev.lcrData` so rapid typing does not drop characters. */
+  /** Merge partial LCR fields for the active form so rapid typing does not drop characters. */
   const patchLcrInlineData = useCallback((partial) => {
     if (!partial || typeof partial !== 'object') return
     setForm((prev) => {
-      const base = prev.lcrData && typeof prev.lcrData === 'object' ? prev.lcrData : {}
-      const merged = { ...prev, lcrData: { ...base, ...partial } }
+      const bundle = getSupplementalLcrBundleFromDraft(prev)
+      const t =
+        bundle.included.includes(prev.lcrActiveFormType) ? prev.lcrActiveFormType : bundle.included[0] || '1A'
+      const base = bundle.formsData[t] && typeof bundle.formsData[t] === 'object' ? bundle.formsData[t] : {}
+      const nextForms = { ...bundle.formsData, [t]: { ...base, ...partial } }
+      const merged = { ...prev, ...persistLcrBundleToDraftShape(bundle.included, nextForms) }
       saveSupplementalDraft(merged)
       return merged
     })
@@ -435,11 +525,11 @@ export default function SupplementalForm() {
                     Main affidavit form for the supplemental report
                   </span>
                 </button>
-                {!form.includeForm1a ? (
+                {!hasLcrForms ? (
                   <div className="flex flex-col gap-2 p-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 px-1">Add LCR Form</p>
                     <p className="text-[10px] text-slate-500 leading-snug px-1 mb-0.5">
-                      Pick a form, then use the <span className="font-semibold text-slate-600">LCR</span> section (same row as Transmittal) for manual entry or prefill.
+                      Pick a form, then use the <span className="font-semibold text-slate-600">LCR</span> section (same row as Transmittal) for manual entry or prefill. You can add more forms (1A, 2A, 3A) later from the sidebar.
                     </p>
                     <button
                       type="button"
@@ -465,7 +555,7 @@ export default function SupplementalForm() {
                   </div>
                 ) : null}
 
-                {form.includeForm1a ? (
+                {hasLcrForms ? (
                   <>
                     <button
                       type="button"
@@ -476,21 +566,24 @@ export default function SupplementalForm() {
                         }`}
                     >
                       <span className={`block text-sm font-bold ${activeSection === 'lcr' ? 'text-emerald-800' : 'text-gray-900'}`}>
-                        LCR Form {form.lcrType}
+                        LCR forms{lcrBundle.included.length > 1 ? '' : ` (${activeLcrType})`}
                       </span>
                       <span className="block text-xs text-gray-600 mt-1 leading-snug">
-                        {form.lcrSource === 'manual' ? 'Manual input and optional module prefill' : 'Prefill from module or edit fields manually'}
+                        {lcrBundle.included.join(' · ')}
+                        {lcrBundle.included.length > 1 ? ` — editing ${activeLcrType}` : ''}
+                        {' · '}
+                        {form.lcrSource === 'manual' ? 'Manual or prefill from a module' : 'Prefill from module or edit manually'}
                       </span>
                     </button>
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider px-0.5">Switch form type</span>
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider px-0.5">Switch form</span>
                       <div className="grid grid-cols-3 gap-1">
-                        {['1A', '2A', '3A'].map((t) => (
+                        {lcrBundle.included.map((t) => (
                           <button
                             key={t}
                             type="button"
-                            onClick={() => handleEnableLcr(t)}
-                            className={`py-1.5 text-[11px] font-bold rounded border transition-all ${form.lcrType === t
+                            onClick={() => setActiveLcrFormType(t)}
+                            className={`py-1.5 text-[11px] font-bold rounded border transition-all ${activeLcrType === t
                               ? 'bg-emerald-600 text-white border-emerald-600'
                               : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
                               }`}
@@ -499,12 +592,38 @@ export default function SupplementalForm() {
                           </button>
                         ))}
                       </div>
+                      {SUPPLEMENTAL_LCR_FORM_TYPES.some((t) => !lcrBundle.included.includes(t)) ? (
+                        <>
+                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider px-0.5 mt-1">Add another form</span>
+                          <div className="grid grid-cols-3 gap-1">
+                            {SUPPLEMENTAL_LCR_FORM_TYPES.filter((t) => !lcrBundle.included.includes(t)).map((t) => (
+                              <button
+                                key={`add-${t}`}
+                                type="button"
+                                onClick={() => handleEnableLcr(t)}
+                                className="py-1.5 text-[11px] font-bold rounded border border-dashed border-gray-300 bg-white text-gray-600 hover:border-emerald-400 hover:text-emerald-800 transition-all"
+                              >
+                                +{t}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      ) : null}
+                      {lcrBundle.included.length > 1 ? (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveOneLcr(activeLcrType)}
+                          className="w-full rounded-lg px-2 py-1.5 text-[11px] font-semibold text-red-700 border border-red-200 bg-white hover:bg-red-50 transition-colors"
+                        >
+                          Remove form {activeLcrType}
+                        </button>
+                      ) : null}
                       <button
                         type="button"
                         onClick={handleRemoveLcr}
                         className="w-full rounded-lg px-2 py-1.5 text-[11px] font-semibold text-red-700 border border-red-200 bg-white hover:bg-red-50 transition-colors"
                       >
-                        Remove LCR
+                        Remove all LCR forms
                       </button>
                     </div>
                   </>
@@ -618,6 +737,24 @@ export default function SupplementalForm() {
                       </p>
                     </div>
 
+                    <div className="md:col-span-2 rounded-lg border border-gray-200 bg-gray-50/90 px-3 py-2.5">
+                      <label className="inline-flex items-start gap-2.5 cursor-pointer text-sm text-gray-800">
+                        <input
+                          type="checkbox"
+                          className="mt-0.5 rounded border-gray-300 text-[var(--primary-blue)] focus:ring-[var(--primary-blue)]"
+                          checked={form.affidavitShowCcrSignatory !== false}
+                          onChange={(e) => update('affidavitShowCcrSignatory', e.target.checked)}
+                        />
+                        <span>
+                          <span className="font-medium">Show City Civil Registrar signatory on affidavit (print/PDF)</span>
+                          <span className="block text-xs text-gray-600 mt-0.5 leading-snug">
+                            Always ATTY. YUSSIF DON JUSTIN F. MARTIL, REB and CITY CIVIL REGISTRAR below the jurat when checked
+                            (separate from <span className="font-medium">Prepared / signed by</span> on the transmittal). Uncheck to omit; check again to restore.
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+
                     <div><label className="block text-sm font-medium mb-1">REG. NO.</label><input className={inputClass} value={form.regNo} onChange={(e) => update('regNo', e.target.value)} placeholder="e.g. 2380-67" /></div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Certificate belongs to</label>
@@ -721,19 +858,29 @@ export default function SupplementalForm() {
                     </div>
                     <div><label className="block text-sm font-medium mb-1">{missingLabel}</label><input className={inputClass} value={form.missingGeo} onChange={(e) => update('missingGeo', e.target.value)} /></div>
                     <div><label className="block text-sm font-medium mb-1">{correctedLabel}</label><input className={inputClass} value={form.correctedGeo} onChange={(e) => update('correctedGeo', e.target.value)} /></div>
-                    {form.includeForm1a ? (
+                    {hasLcrForms ? (
                       <div className="md:col-span-2 rounded-lg border border-emerald-200 bg-emerald-50/60 px-3 py-2.5 text-sm text-emerald-900">
-                        <span className="font-semibold">LCR Form {form.lcrType}</span> is included. Use the sidebar button{' '}
-                        <span className="font-bold">LCR Form {form.lcrType}</span> (above Transmittal) to enter or edit LCR fields manually or to prefill from a module.
+                        {lcrBundle.included.length > 1 ? (
+                          <>
+                            <span className="font-semibold">LCR forms {lcrBundle.included.join(', ')}</span> are included. Open{' '}
+                            <span className="font-bold">LCR forms</span> in the sidebar to switch which form you are editing; print/PDF will include every form you added.
+                          </>
+                        ) : (
+                          <>
+                            <span className="font-semibold">LCR Form {activeLcrType}</span> is included. Use the sidebar button{' '}
+                            <span className="font-bold">LCR forms ({activeLcrType})</span> (above Transmittal) to enter or edit LCR fields manually or to prefill from a module.
+                          </>
+                        )}
                       </div>
                     ) : null}
                   </div>
-                ) : activeSection === 'lcr' && form.includeForm1a ? (
+                ) : activeSection === 'lcr' && hasLcrForms ? (
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
                     <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/40 space-y-3">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <h2 className="text-base font-bold text-emerald-900">
-                          LCR Form {form.lcrType}
+                          LCR Form {activeLcrType}
+                          {lcrBundle.included.length > 1 ? ` (${lcrBundle.included.length} forms in this file)` : ''}
                           {form.lcrSource === 'manual' ? ' — manual entry' : ' — prefill from module'}
                         </h2>
                         {form.lcrSource !== 'manual' && form.lcrPrefillLabel ? (
@@ -826,9 +973,9 @@ export default function SupplementalForm() {
                         )}
                       </div>
                       {form.lcrSource === 'manual' ? null : (form.lcrSource === 'ausf' || form.lcrSource === 'legitimation') &&
-                      (form.lcrType === '2A' || form.lcrType === '3A') ? (
+                        (activeLcrType === '2A' || activeLcrType === '3A') ? (
                         <p className="text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5">
-                          Form {form.lcrType} is only fully prefilled from <strong className="font-semibold">Court Decree</strong>. With AUSF or Legitimation,
+                          Form {activeLcrType} is only fully prefilled from <strong className="font-semibold">Court Decree</strong>. With AUSF or Legitimation,
                           shared header fields are copied and the table may start mostly blank — edit every field below or on Print.
                         </p>
                       ) : (
@@ -840,7 +987,7 @@ export default function SupplementalForm() {
 
                     <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden ring-1 ring-slate-100">
                       <div className="px-3 py-2.5 border-b border-slate-100 bg-slate-50/95">
-                        <p className="text-xs font-bold text-slate-800">LCR Form {form.lcrType} — fill out here</p>
+                        <p className="text-xs font-bold text-slate-800">LCR Form {activeLcrType} — fill out here</p>
                         <p className="text-[11px] text-slate-600 mt-0.5 leading-snug">
                           Same layout as Continue to Print. Scroll if needed; use Save to keep entries.
                         </p>
@@ -859,21 +1006,21 @@ export default function SupplementalForm() {
                         />
                       </div>
                       <div className="max-h-[min(78vh,900px)] overflow-y-auto overflow-x-auto p-2 sm:p-3 bg-slate-50/40">
-                        {form.lcrType === '1A' ? (
+                        {activeLcrType === '1A' ? (
                           <LcrForm1ABirthAvailable
                             data={lcrInlineFormData}
                             editableTable
                             onDataChange={handleLcrInlineDataChange}
                           />
                         ) : null}
-                        {form.lcrType === '2A' ? (
+                        {activeLcrType === '2A' ? (
                           <LcrForm2ADeathAvailable
                             data={lcrInlineFormData}
                             editableTable
                             onDataChange={handleLcrInlineDataChange}
                           />
                         ) : null}
-                        {form.lcrType === '3A' ? (
+                        {activeLcrType === '3A' ? (
                           <LcrForm3AMarriageAvailable
                             data={lcrInlineFormData}
                             editableTable
@@ -902,7 +1049,7 @@ export default function SupplementalForm() {
                   </div>
                 ) : (
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                    <SupplementalTransmittalFieldsEditor                      data={form}
+                    <SupplementalTransmittalFieldsEditor data={form}
                       onPatch={updateTransmittalPatch}
                       inputClass={inputClass}
                     />
@@ -914,13 +1061,13 @@ export default function SupplementalForm() {
                       >
                         Return to Affidavit Form
                       </button>
-                      {form.includeForm1a ? (
+                      {hasLcrForms ? (
                         <button
                           type="button"
                           onClick={() => setActiveSection('lcr')}
                           className="text-emerald-800 font-bold hover:underline"
                         >
-                          Open LCR Form
+                          Open LCR forms
                         </button>
                       ) : null}
                     </div>
@@ -985,9 +1132,13 @@ export default function SupplementalForm() {
                     </button>
                     <button
                       type="button"
-                      onClick={() =>
-                        afterUnsavedAcknowledge(acknowledgeSaved, () => navigate('/legal-instrument/supplemental/print'))
-                      }
+                      onClick={() => {
+                        saveSupplementalDraft(form)
+                        saveOrUpdateSupplemental(form)
+                        afterUnsavedAcknowledge(acknowledgeSaved, () =>
+                          navigate('/legal-instrument/supplemental/print'),
+                        )
+                      }}
                       className="px-3 py-2 rounded-lg text-sm font-medium bg-[var(--primary-blue)] text-white hover:bg-[var(--primary-blue-light)]"
                     >
                       Continue to Print

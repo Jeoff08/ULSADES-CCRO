@@ -56,6 +56,33 @@ export function getDefaultSupplementalTransmittalFields() {
   }
 }
 
+/** True when the user entered transmittal letter / checklist fields (not only default salutation). */
+export function supplementalTransmittalHasFilledData(data) {
+  if (!data || typeof data !== 'object') return false
+  const t = (v) => String(v ?? '').trim()
+  if (t(data.transmittalDate)) return true
+  if (t(data.transmittalRecipient)) return true
+  if (t(data.transmittalToPosition1) || t(data.transmittalToPosition2)) return true
+  if (t(data.transmittalToOffice1) || t(data.transmittalToOffice2)) return true
+  if (
+    t(data.transmittalThru) ||
+    t(data.transmittalThruPosition1) ||
+    t(data.transmittalThruPosition2) ||
+    t(data.transmittalThruPosition3) ||
+    t(data.transmittalThruPosition4)
+  ) {
+    return true
+  }
+  if (t(data.transmittalColbName)) return true
+  if (t(data.transmittalRegistryNo)) return true
+  if (t(data.transmittalDob)) return true
+  if (t(data.transmittalFather) || t(data.transmittalMother)) return true
+  if (Array.isArray(data.transmittalEndorsementIds) && data.transmittalEndorsementIds.length > 0) return true
+  if (Array.isArray(data.transmittalAttachmentIds) && data.transmittalAttachmentIds.length > 0) return true
+  if (t(data.transmittalDocType)) return true
+  return false
+}
+
 /** Merge saved draft + defaults. Transmittal fields stay blank unless explicitly filled in editor. */
 export function pickTransmittalStateFromDraft(base) {
   const defaults = getDefaultSupplementalTransmittalFields()
@@ -135,9 +162,18 @@ export const DEFAULT_TRANSMITTAL_SIGNATORY = {
   title: 'REGISTRATION OFFICER IV',
 }
 
+/** Normalize roster name for preset matching (optional trailing ", REB"). */
+export function normReceivedByNameForMatch(raw) {
+  return String(raw ?? '')
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, ' ')
+    .replace(/,\s*REB\s*$/i, '')
+}
+
 /** Signatory block after “Respectfully yours,” on supplemental transmittal (CCR letter). */
 export const RECEIVED_BY_OPTIONS = [
-  { name: 'ATTY. YUSSIF DON JUSTIN F. MARTIL', title: 'CITY CIVIL REGISTRAR' },
+  { name: 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB', title: 'CITY CIVIL REGISTRAR' },
   { name: DEFAULT_TRANSMITTAL_SIGNATORY.name, title: DEFAULT_TRANSMITTAL_SIGNATORY.title },
   { name: 'PHOEBE L. BENIGA', title: 'REGISTRATION OFFICER II' },
   { name: 'JAN FLAURENCE A. OBLENDA', title: 'REGISTRATION OFFICER II' },
@@ -163,9 +199,9 @@ export function clampTransmittalSignatoryIndex(raw) {
 
 /** Index into RECEIVED_BY_OPTIONS when name+title match a preset; otherwise -1. */
 export function matchReceivedByPresetIndex(name, title) {
-  const n = String(name ?? '').trim().toUpperCase()
+  const n = normReceivedByNameForMatch(name)
   const t = String(title ?? '').trim().toUpperCase()
   return RECEIVED_BY_OPTIONS.findIndex(
-    (p) => p.name.trim().toUpperCase() === n && p.title.trim().toUpperCase() === t
+    (p) => normReceivedByNameForMatch(p.name) === n && p.title.trim().toUpperCase() === t
   )
 }

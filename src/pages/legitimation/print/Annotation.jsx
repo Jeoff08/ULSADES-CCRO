@@ -20,7 +20,7 @@ export default function Annotation({ data }) {
 
   const annotationText = withAck ? annotationWithAck : annotationWithoutAck
   const issuedDate = formatDateLong(data.certificateIssuanceDate) || formatDateLong(new Date())
-  const signatory = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
+  const signatory = (data.cityCivilRegistrarName || 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB').toUpperCase()
 
   return (
     <div className="ausf-doc print-doc legitimation-annotation-doc bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4 leading-normal flex flex-col min-h-[297mm]">

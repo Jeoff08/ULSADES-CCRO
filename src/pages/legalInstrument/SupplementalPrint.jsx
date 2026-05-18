@@ -10,7 +10,12 @@ import ToastHost from '../../components/toast/ToastHost'
 import { useToasts } from '../../components/toast/useToasts'
 import { saveCurrentViewAsPdf, openSavedPdfInBrowser } from '../../lib/savePdf'
 import { PAPER_SIZES, getPaperPageSpec } from '../../components/print'
-import { getActiveSavedSupplemental, getSupplementalDraft, saveSupplementalDraft, saveOrUpdateSupplemental } from './lib/supplementalSavedStorage'
+import {
+  getActiveSavedSupplemental,
+  getSupplementalMergedForOutput,
+  saveSupplementalDraft,
+  saveOrUpdateSupplemental,
+} from './lib/supplementalSavedStorage'
 import { supplementalOutputUploadScope } from './lib/legalInstrumentAttachmentScope'
 import { getUploadedFile, restoreUploadedFileFromTrash } from '../../lib/uploadedFileStore'
 import UploadFileModal from '../../components/upload/UploadFileModal'
@@ -20,15 +25,21 @@ import {
   pickTransmittalStateFromDraft,
   clampTransmittalSignatoryIndex,
   RECEIVED_BY_OPTIONS,
+  supplementalTransmittalHasFilledData,
 } from './lib/supplementalTransmittalDefaults'
 import { defaultLegitimation } from '../legitimation/lib/legitimationDefaults'
 import { defaultCourtDecree } from '../courtDecree/lib/courtDecreeDefaults'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
 import { mergeLcrRemarksFontSizePt, parseLcrRemarksFontPt } from '../../lib/lcrRemarksFontSize'
+import {
+  emptyLcrDataForType,
+  getSupplementalLcrBundleFromDraft,
+  persistLcrBundleToDraftShape,
+} from './lib/supplementalLcrFormsState'
 
 /**
  * Transmittal sign-off roster (dropdown after “Respectfully yours,”): `RECEIVED_BY_OPTIONS` in
- * `./lib/supplementalTransmittalDefaults.js` — ATTY. YUSSIF DON JUSTIN F. MARTIL; LORELIE L. CANTO;
+ * `./lib/supplementalTransmittalDefaults.js` — ATTY. YUSSIF DON JUSTIN F. MARTIL, REB; LORELIE L. CANTO;
  * PHOEBE L. BENIGA; JAN FLAURENCE A. OBLENDA.
  */
 const defaultSupplementalDraft = {
@@ -54,10 +65,27 @@ const defaultSupplementalDraft = {
   lcrType: '1A',
   lcrRemarksFontSizePt: '12',
   lcrData: { ...defaultLegitimation },
+  lcrFormsIncluded: [],
+  lcrFormsData: {},
+  lcrActiveFormType: '1A',
   lcrSource: 'manual',
   lcrSourceId: '',
   lcrPrefillLabel: '',
+  /** When true, affidavit print/PDF shows the City Civil Registrar signatory block under the jurat. */
+  affidavitShowCcrSignatory: true,
   ...getDefaultSupplementalTransmittalFields(),
+}
+
+function cloneLcrFormsStateFromDraft(draft) {
+  const b = getSupplementalLcrBundleFromDraft(draft)
+  const out = {}
+  b.included.forEach((t) => {
+    out[t] = {
+      ...emptyLcrDataForType(t),
+      ...(b.formsData[t] && typeof b.formsData[t] === 'object' ? b.formsData[t] : {}),
+    }
+  })
+  return out
 }
 
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-supplemental'
@@ -96,13 +124,10 @@ const LCR_SOURCE_LABEL = {
 export default function SupplementalPrint() {
   const location = useLocation()
   const baseData = useMemo(() => {
-    const active = getActiveSavedSupplemental()
-    const merged = active?.data
-      ? { ...defaultSupplementalDraft, ...active.data }
-      : getSupplementalDraft(defaultSupplementalDraft)
+    const merged = getSupplementalMergedForOutput(defaultSupplementalDraft)
     const transmittalSlice = pickTransmittalStateFromDraft(merged)
     return { ...merged, ...transmittalSlice }
-  }, [location.key])
+  }, [location.key, location.pathname])
   const [item3Custom, setItem3Custom] = useState(baseData.item3Custom || '')
   const [item5Custom, setItem5Custom] = useState(baseData.item5Custom || '')
   const [paperSize, setPaperSize] = useState('long')
@@ -115,12 +140,14 @@ export default function SupplementalPrint() {
   const [uploadTick, setUploadTick] = useState(0)
   const [uploadModal, setUploadModal] = useState({ open: false, key: '', title: '' })
   const [transmittalSignatoryIdxOverride, setTransmittalSignatoryIdxOverride] = useState(null)
+  const [affidavitShowCcrOverride, setAffidavitShowCcrOverride] = useState(null)
   const [lcrRemarksFontSizePt, setLcrRemarksFontSizePt] = useState(() =>
     parseLcrRemarksFontPt(baseData.lcrRemarksFontSizePt),
   )
 
   useEffect(() => {
     setTransmittalSignatoryIdxOverride(null)
+    setAffidavitShowCcrOverride(null)
     setLcrRemarksFontSizePt(parseLcrRemarksFontPt(baseData.lcrRemarksFontSizePt))
   }, [location.key, baseData.lcrRemarksFontSizePt])
 
@@ -152,14 +179,26 @@ export default function SupplementalPrint() {
       transmittalSignatoryIdxOverride !== null && transmittalSignatoryIdxOverride !== undefined
         ? transmittalSignatoryIdxOverride
         : baseData.transmittalSignatoryOptionIndex
+    const affidavitShowCcrSignatory =
+      affidavitShowCcrOverride !== null && affidavitShowCcrOverride !== undefined
+        ? affidavitShowCcrOverride
+        : baseData.affidavitShowCcrSignatory !== false
     return {
       ...baseData,
       item3Custom,
       item5Custom,
       lcrRemarksFontSizePt,
       transmittalSignatoryOptionIndex: clampTransmittalSignatoryIndex(rawIdx),
+      affidavitShowCcrSignatory,
     }
-  }, [baseData, item3Custom, item5Custom, transmittalSignatoryIdxOverride, lcrRemarksFontSizePt])
+  }, [
+    baseData,
+    item3Custom,
+    item5Custom,
+    transmittalSignatoryIdxOverride,
+    lcrRemarksFontSizePt,
+    affidavitShowCcrOverride,
+  ])
 
   const hasAffidavitData = useMemo(() => {
     const values = [
@@ -181,14 +220,7 @@ export default function SupplementalPrint() {
     return values.some((v) => String(v || '').trim() !== '')
   }, [data])
   const showAffidavitOutput = hasAffidavitData
-  const hasTransmittalData = useMemo(() => {
-    // Treat transmittal as "present" only when user selected checklist/doc items
-    // specific to the transmittal output section.
-    const hasDocType = String(data.transmittalDocType || '').trim() !== ''
-    const hasEndorsements = Array.isArray(data.transmittalEndorsementIds) && data.transmittalEndorsementIds.length > 0
-    const hasAttachments = Array.isArray(data.transmittalAttachmentIds) && data.transmittalAttachmentIds.length > 0
-    return hasDocType || hasEndorsements || hasAttachments
-  }, [data])
+  const hasTransmittalData = useMemo(() => supplementalTransmittalHasFilledData(data), [data])
   const supType = String(data.supplementType || '').trim().toLowerCase()
   /** Child's middle name: Iligan header affidavit — long bond only (see paper-size effect). */
   const isMiddleNameAffidavit =
@@ -200,75 +232,131 @@ export default function SupplementalPrint() {
   const isSexSupplementAffidavit = supType === 'sex'
   /** Geographical: same compact print path as child sex. */
   const isGeographicalSupplementAffidavit = supType === 'geographical'
-  /** Geographical + Child's Sex: affidavit only in print/PDF (no transmittal or LCR). */
-  const isAffidavitOnlySupplementOutput =
-    isSexSupplementAffidavit || isGeographicalSupplementAffidavit
-  const showTransmittalOutput = hasTransmittalData && !isAffidavitOnlySupplementOutput
   /** Shared compact COLB supplemental PDF styling (`data-supplement-mn` rules). */
   const isColbCompactPrintAffidavit =
     isMiddleNameAffidavit || isSexSupplementAffidavit || isGeographicalSupplementAffidavit
-  /** Opt-in on form; never bundled for geographical or Child's Sex. */
-  const showForm1a = !isAffidavitOnlySupplementOutput && data.includeForm1a === true
 
-  const [lcrData, setLcrData] = useState(() => ({ ...baseData.lcrData }))
+  const lcrBundleFromData = useMemo(() => getSupplementalLcrBundleFromDraft(data), [
+    data.includeForm1a,
+    data.lcrFormsIncluded,
+    data.lcrFormsData,
+    data.lcrType,
+    data.lcrData,
+  ])
+  const lcrIncludedList = lcrBundleFromData.included
+  const lcrFormsIncludedOnFile =
+    data.includeForm1a === true ||
+    (Array.isArray(data.lcrFormsIncluded) && data.lcrFormsIncluded.length > 0) ||
+    lcrIncludedList.length > 0
+
+  /**
+   * Geographical / Child's Sex default to affidavit-only layout until the user adds transmittal or LCR
+   * on the supplemental form (otherwise transmittal/LCR were always hidden for the default type).
+   */
+  const isAffidavitOnlySupplementOutput =
+    (isSexSupplementAffidavit || isGeographicalSupplementAffidavit) &&
+    !hasTransmittalData &&
+    !lcrFormsIncludedOnFile
+
+  const showTransmittalOutput = hasTransmittalData && !isAffidavitOnlySupplementOutput
+  const lcrExportSlug = lcrIncludedList.length > 0 ? lcrIncludedList.join('-') : data.lcrType || '1A'
+  const lcrExportTitle =
+    lcrIncludedList.length > 1
+      ? `LCR Forms ${lcrIncludedList.join(', ')}`
+      : `LCR Form ${data.lcrType || lcrIncludedList[0] || '1A'}`
+
+  const [lcrFormsDataState, setLcrFormsDataState] = useState(() => cloneLcrFormsStateFromDraft(baseData))
 
   useEffect(() => {
     setItem3Custom(baseData.item3Custom || '')
     setItem5Custom(baseData.item5Custom || '')
-    const raw = baseData.lcrData
-    const fallback = baseData.lcrType === '1A' ? { ...defaultLegitimation } : { ...defaultCourtDecree }
-    setLcrData(raw && typeof raw === 'object' ? { ...raw } : { ...fallback })
+    setLcrFormsDataState(cloneLcrFormsStateFromDraft(baseData))
   }, [location.key, baseData])
 
-  const dataRef = useRef(data)
-  const lcrDataRef = useRef(lcrData)
-  dataRef.current = data
-  lcrDataRef.current = lcrData
+  /** LCR output when user added form(s) on the data entry screen (data may still be edited on print). */
+  const showForm1a =
+    !isAffidavitOnlySupplementOutput && lcrFormsIncludedOnFile && lcrIncludedList.length > 0
 
-  const lcrPrintData = useMemo(
-    () => mergeLcrRemarksFontSizePt(lcrData, data),
-    [lcrData, data.lcrRemarksFontSizePt],
-  )
+  const dataRef = useRef(data)
+  const lcrFormsDataRef = useRef(lcrFormsDataState)
+  dataRef.current = data
+  lcrFormsDataRef.current = lcrFormsDataState
+
+  const lcrPrintDataForType = (type) =>
+    mergeLcrRemarksFontSizePt(
+      {
+        ...emptyLcrDataForType(type),
+        ...(lcrFormsDataState[type] && typeof lcrFormsDataState[type] === 'object' ? lcrFormsDataState[type] : {}),
+      },
+      data,
+    )
 
   const handleLcrRemarksFontChange = (pt) => {
     const parsed = parseLcrRemarksFontPt(pt)
     setLcrRemarksFontSizePt(parsed)
-    const updated = { ...dataRef.current, lcrRemarksFontSizePt: parsed }
+    const inc = getSupplementalLcrBundleFromDraft(dataRef.current).included
+    const updated = {
+      ...dataRef.current,
+      lcrRemarksFontSizePt: parsed,
+      ...persistLcrBundleToDraftShape(inc, lcrFormsDataRef.current),
+    }
     dataRef.current = updated
     saveSupplementalDraft(updated)
     saveOrUpdateSupplemental(updated)
   }
 
-  const handleLcrDataChange = (next) => {
-    setLcrData(next)
-    lcrDataRef.current = next
-    const updated = { ...dataRef.current, lcrData: next }
-    saveSupplementalDraft(updated)
-    saveOrUpdateSupplemental(updated)
-  }
-
-  /** Merge partial LCR edits into latest `lcrData` so footer typing always persists (no stale closure). */
-  const patchLcrData = (partial) => {
-    if (!partial || typeof partial !== 'object') return
-    setLcrData((prev) => {
-      const base = prev && typeof prev === 'object' ? prev : {}
-      const next = { ...base, ...partial }
-      lcrDataRef.current = next
-      const updated = { ...dataRef.current, lcrData: next }
+  const handleLcrDataChangeForType = (type, next) => {
+    setLcrFormsDataState((prev) => {
+      const nextMap = { ...prev, [type]: next }
+      lcrFormsDataRef.current = nextMap
+      const inc = getSupplementalLcrBundleFromDraft(dataRef.current).included
+      const updated = { ...dataRef.current, ...persistLcrBundleToDraftShape(inc, nextMap) }
+      dataRef.current = updated
       saveSupplementalDraft(updated)
       saveOrUpdateSupplemental(updated)
-      return next
+      return nextMap
+    })
+  }
+
+  /** Merge partial LCR edits for one form type (footer pickers). */
+  const patchLcrDataForType = (type, partial) => {
+    if (!partial || typeof partial !== 'object') return
+    setLcrFormsDataState((prev) => {
+      const base = prev[type] && typeof prev[type] === 'object' ? prev[type] : {}
+      const nextSlice = { ...base, ...partial }
+      const nextMap = { ...prev, [type]: nextSlice }
+      lcrFormsDataRef.current = nextMap
+      const inc = getSupplementalLcrBundleFromDraft(dataRef.current).included
+      const updated = { ...dataRef.current, ...persistLcrBundleToDraftShape(inc, nextMap) }
+      dataRef.current = updated
+      saveSupplementalDraft(updated)
+      saveOrUpdateSupplemental(updated)
+      return nextMap
     })
   }
 
   const handleTransmittalSignatoryIndexChange = (idx) => {
     const clamped = clampTransmittalSignatoryIndex(idx)
     setTransmittalSignatoryIdxOverride(clamped)
+    const inc = getSupplementalLcrBundleFromDraft(dataRef.current).included
     const updated = {
       ...dataRef.current,
-      lcrData: lcrDataRef.current,
+      ...persistLcrBundleToDraftShape(inc, lcrFormsDataRef.current),
       transmittalSignatoryOptionIndex: clamped,
     }
+    saveSupplementalDraft(updated)
+    saveOrUpdateSupplemental(updated)
+  }
+
+  const handleAffidavitShowCcrSignatoryChange = (checked) => {
+    setAffidavitShowCcrOverride(!!checked)
+    const inc = getSupplementalLcrBundleFromDraft(dataRef.current).included
+    const updated = {
+      ...dataRef.current,
+      ...persistLcrBundleToDraftShape(inc, lcrFormsDataRef.current),
+      affidavitShowCcrSignatory: !!checked,
+    }
+    dataRef.current = updated
     saveSupplementalDraft(updated)
     saveOrUpdateSupplemental(updated)
   }
@@ -502,7 +590,7 @@ body.pdf-capture #supplemental-print-page #supplemental-print-affidavit .supplem
     flex-shrink: 0 !important;
   }
   #supplemental-print-affidavit .supplemental-affidavit-body {
-    flex: 1 1 0% !important;
+    flex: 0 0 auto !important;
     display: flex !important;
     flex-direction: column !important;
     min-height: 0 !important;
@@ -514,6 +602,8 @@ body.pdf-capture #supplemental-print-page #supplemental-print-affidavit .supplem
     flex-shrink: 0 !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+    margin-top: 6em !important;
+    padding-right: 0.1in !important;
   }
   #supplemental-print-affidavit .supplemental-affidavit-registrar-signatory .supplemental-affidavit-ccr-name,
   #supplemental-print-affidavit .supplemental-affidavit-registrar-signatory .supplemental-affidavit-ccr-title {
@@ -545,7 +635,7 @@ body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-do
   flex-shrink: 0 !important;
 }
 body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-body {
-  flex: 1 1 0% !important;
+  flex: 0 0 auto !important;
   display: flex !important;
   flex-direction: column !important;
   min-height: 0 !important;
@@ -557,6 +647,8 @@ body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-do
   flex-shrink: 0 !important;
   page-break-inside: avoid !important;
   break-inside: avoid !important;
+  margin-top: 3em !important;
+  padding-right: 0.1in !important;
 }
 body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-registrar-signatory .supplemental-affidavit-ccr-name,
 body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-registrar-signatory .supplemental-affidavit-ccr-title {
@@ -637,14 +729,14 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .sup
 body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc .supplemental-bottom-wrap .print-doc-footer p {
   line-height: 1 !important;
 }
-/* Geographical + Child's Sex: hide transmittal/LCR and legacy wrapper headers in print/PDF */
+/* Geographical + Child's Sex (affidavit-only): hide transmittal/LCR when user did not add them on the form */
 @media print {
-  .supplemental-print-anim-page:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) #supplemental-print-transmittal,
-  .supplemental-print-anim-page:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) #supplemental-print-lcr,
-  #supplemental-print-bundle:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) + #supplemental-print-transmittal,
-  #supplemental-print-bundle:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) #supplemental-print-lcr,
-  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .ccr-header,
-  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .print-doc-header {
+  .supplemental-print-anim-page:has(#supplemental-print-affidavit[data-supplement-geo-sex-affidavit-only="1"]) #supplemental-print-transmittal,
+  .supplemental-print-anim-page:has(#supplemental-print-affidavit[data-supplement-geo-sex-affidavit-only="1"]) #supplemental-print-lcr,
+  #supplemental-print-bundle:has(#supplemental-print-affidavit[data-supplement-geo-sex-affidavit-only="1"]) + #supplemental-print-transmittal,
+  #supplemental-print-bundle:has(#supplemental-print-affidavit[data-supplement-geo-sex-affidavit-only="1"]) #supplemental-print-lcr,
+  #supplemental-print-affidavit[data-supplement-geo-sex-affidavit-only="1"] .ccr-header,
+  #supplemental-print-affidavit[data-supplement-geo-sex-affidavit-only="1"] .print-doc-header {
     display: none !important;
     visibility: hidden !important;
     height: 0 !important;
@@ -655,12 +747,12 @@ body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc .supplem
     border: none !important;
   }
 }
-body.pdf-capture .supplemental-print-anim-page:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) #supplemental-print-transmittal,
-body.pdf-capture .supplemental-print-anim-page:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) #supplemental-print-lcr,
-body.pdf-capture #supplemental-print-bundle:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) + #supplemental-print-transmittal,
-body.pdf-capture #supplemental-print-bundle:has(#supplemental-print-affidavit[data-supplement-geo-sex="1"]) #supplemental-print-lcr,
-body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .ccr-header,
-body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .print-doc-header {
+body.pdf-capture .supplemental-print-anim-page:has(#supplemental-print-affidavit[data-supplement-geo-sex-affidavit-only="1"]) #supplemental-print-transmittal,
+body.pdf-capture .supplemental-print-anim-page:has(#supplemental-print-affidavit[data-supplement-geo-sex-affidavit-only="1"]) #supplemental-print-lcr,
+body.pdf-capture #supplemental-print-bundle:has(#supplemental-print-affidavit[data-supplement-geo-sex-affidavit-only="1"]) + #supplemental-print-transmittal,
+body.pdf-capture #supplemental-print-bundle:has(#supplemental-print-affidavit[data-supplement-geo-sex-affidavit-only="1"]) #supplemental-print-lcr,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex-affidavit-only="1"] .ccr-header,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex-affidavit-only="1"] .print-doc-header {
   display: none !important;
   visibility: hidden !important;
   height: 0 !important;
@@ -698,14 +790,12 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .pri
           {activePanel === 'form1a' && showForm1a ? (
             <button
               type="button"
-              onClick={() =>
-                savePdfWithExportMode('lcr', `Supplemental-LCR-${data.lcrType || '1A'}`)
-              }
+              onClick={() => savePdfWithExportMode('lcr', `Supplemental-LCR-${lcrExportSlug}`)}
               disabled={savingPdf || !showForm1a}
               className="px-3 py-1.5 rounded-md bg-[#283750] text-white text-sm font-medium hover:bg-[#1e2d42] disabled:opacity-60"
-              title={`Save PDF for LCR Form ${data.lcrType || '1A'} only (same layout as Court Decree / AUSF / Legitimation)`}
+              title={`Save PDF for ${lcrExportTitle} only — every included LCR form is in this file (same layout as Court Decree / AUSF / Legitimation)`}
             >
-              {savingPdf ? 'Saving...' : `Save LCR Form ${data.lcrType || '1A'} PDF`}
+              {savingPdf ? 'Saving...' : lcrIncludedList.length > 1 ? `Save ${lcrExportTitle} PDF` : `Save LCR Form ${lcrExportSlug} PDF`}
             </button>
           ) : activePanel !== 'transmittal' ? (
             <button
@@ -715,7 +805,7 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .pri
               className="px-3 py-1.5 rounded-md bg-[var(--primary-blue)] text-white text-sm font-medium hover:bg-[var(--primary-blue-light)] disabled:opacity-60"
               title={
                 showAffidavitOutput
-                  ? `Affidavit${showForm1a ? ` + LCR Form ${data.lcrType || '1A'}` : ''} (no transmittal pages)`
+                  ? `Affidavit${showForm1a ? ` + ${lcrIncludedList.length > 1 ? `${lcrExportTitle}` : `LCR Form ${lcrExportSlug}`}` : ''} (no transmittal pages)`
                   : 'No supplemental affidavit data yet'
               }
             >
@@ -739,7 +829,7 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .pri
             className="px-3 py-1.5 rounded-md bg-gray-600 text-white text-sm font-medium hover:bg-gray-700"
             title={
               activePanel === 'form1a' && showForm1a
-                ? `Preview LCR Form ${data.lcrType || '1A'} PDF`
+                ? `Preview ${lcrExportTitle} PDF (all included LCR pages)`
                 : activePanel === 'transmittal'
                   ? 'Preview transmittal letter PDF'
                   : 'Preview affidavit PDF (and LCR pages if included)'
@@ -819,12 +909,14 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .pri
                 disabled={!showForm1a}
                 title={
                   showForm1a
-                    ? `LCR Form No. ${data.lcrType}`
-                    : 'Turn on “Include LCR Form” on the Supplemental form to enable this output.'
+                    ? lcrIncludedList.length > 1
+                      ? `${lcrExportTitle} — scroll to edit each form`
+                      : `LCR Form No. ${data.lcrType || lcrIncludedList[0] || '1A'}`
+                    : 'Add LCR Form(s) on the Supplemental data entry form to enable this output.'
                 }
                 className={`${sidebarBtnForm1a}${activePanel === 'form1a' ? sidebarBtnSelected : ''} ${!showForm1a ? 'opacity-45 cursor-not-allowed hover:bg-[#283750]' : ''} pr-[5.75rem]`}
               >
-                FORM {data.lcrType}
+                {lcrIncludedList.length > 1 ? `LCR ${lcrIncludedList.join('·')}` : `FORM ${data.lcrType || lcrIncludedList[0] || '1A'}`}
               </button>
               <PrintSidebarNavAttachIcons
                 scopeKey={supplementalLcrKey}
@@ -834,7 +926,7 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .pri
                   setUploadModal({
                     open: true,
                     key: supplementalLcrKey,
-                    title: `Supplemental Report — LCR Form ${data.lcrType || '1A'} scan`,
+                    title: `Supplemental Report — ${lcrExportTitle} scan`,
                   })
                 }
               />
@@ -850,11 +942,13 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .pri
                   value={clampTransmittalSignatoryIndex(data.transmittalSignatoryOptionIndex)}
                   onChange={(e) => handleTransmittalSignatoryIndexChange(Number(e.target.value))}
                   title={
-                    showTransmittalOutput && showAffidavitOutput && isMiddleNameAffidavit
-                      ? "Signatory on transmittal and on the child's middle name affidavit footer"
-                      : showTransmittalOutput
-                        ? 'Signatory after "Respectfully yours," on the supplemental transmittal'
-                        : "Signatory on the child's middle name affidavit footer"
+                    showTransmittalOutput && showAffidavitOutput && isMiddleNameAffidavit && data.affidavitShowCcrSignatory
+                      ? 'Closing signatory on transmittal; affidavit shows City Civil Registrar (Atty. Martil) when “Show CCR signatory on affidavit” is on'
+                      : showTransmittalOutput && showAffidavitOutput && isMiddleNameAffidavit
+                        ? 'Closing signatory on transmittal (affidavit CCR block is off — turn it on below)'
+                        : showTransmittalOutput
+                          ? 'Signatory after "Respectfully yours," on the supplemental transmittal'
+                          : 'Saved for transmittal when you add one; does not change the affidavit footer (affidavit uses Atty. Martil when enabled below)'
                   }
                 >
                   {RECEIVED_BY_OPTIONS.map((row, i) => (
@@ -865,12 +959,34 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .pri
                 </select>
               </div>
             ) : null}
+            {showAffidavitOutput ? (
+              <div className="no-print relative z-10 rounded-lg border border-slate-200 bg-white p-2.5 ring-1 ring-slate-100">
+                <label className="inline-flex items-start gap-2 cursor-pointer text-xs text-gray-800 leading-snug">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 rounded border-gray-300 text-[var(--primary-blue)] focus:ring-[var(--primary-blue)]"
+                    checked={data.affidavitShowCcrSignatory}
+                    onChange={(e) => handleAffidavitShowCcrSignatoryChange(e.target.checked)}
+                  />
+                  <span>
+                    <span className="font-semibold text-gray-900">Show CCR signatory on affidavit</span>
+                    <span className="block text-[10px] text-gray-600 mt-0.5">
+                      ATTY. YUSSIF DON JUSTIN F. MARTIL, REB / CITY CIVIL REGISTRAR under the jurat (not the Prepared / signed by choice). Saved with this file.
+                    </span>
+                  </span>
+                </label>
+              </div>
+            ) : null}
             {showForm1a ? (
               <LcrRemarksFontSizeSelect
                 id="supplemental-print-lcr-remarks-font"
                 value={data.lcrRemarksFontSizePt}
                 onChange={handleLcrRemarksFontChange}
-                helpText="Applies to the REMARKS block on this LCR form in preview and print/PDF."
+                helpText={
+                  lcrIncludedList.length > 1
+                    ? 'Applies to the REMARKS block on every LCR form in this supplemental (preview and print/PDF).'
+                    : 'Applies to the REMARKS block on this LCR form in preview and print/PDF.'
+                }
               />
             ) : null}
           </div>
@@ -883,7 +999,10 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .pri
                 id="supplemental-print-affidavit"
                 {...(isColbCompactPrintAffidavit ? { 'data-supplement-mn': '1' } : {})}
                 {...(isSexSupplementAffidavit || isGeographicalSupplementAffidavit
-                  ? { 'data-supplement-geo-sex': '1' }
+                  ? {
+                      'data-supplement-geo-sex': '1',
+                      ...(isAffidavitOnlySupplementOutput ? { 'data-supplement-geo-sex-affidavit-only': '1' } : {}),
+                    }
                   : {})}
                 className={
                   `${activePanel === 'affidavit' ? 'block' : 'hidden print:block print:[page-break-before:avoid]'} ${isMiddleNameAffidavit || isColbCompactPrintAffidavit ? 'mx-auto' : ''
@@ -892,6 +1011,7 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .pri
               >
                 <SupplementalReportAffidavit
                   data={data}
+                  showCcrSignatory={data.affidavitShowCcrSignatory}
                   onItem3CustomChange={setItem3Custom}
                   onItem5CustomChange={setItem5Custom}
                   paperWidth={`${colbCompactAffidavitWidthMm ?? affidavitPaperSpec.widthMm}mm`}
@@ -909,8 +1029,11 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .pri
                   }
                 >
                   <div className="no-print mb-3 max-w-[210mm] mx-auto rounded-lg border border-emerald-200 bg-emerald-50/90 px-3 py-2 text-[11px] text-emerald-900 leading-snug">
-                    <span className="font-semibold">LCR Form {data.lcrType}</span>
+                    <span className="font-semibold">{lcrExportTitle}</span>
                     {' — same court print layout for all sources. '}
+                    {lcrIncludedList.length > 1 ? (
+                      <>Each included form prints as its own section below. </>
+                    ) : null}
                     {data.lcrPrefillLabel ? (
                       <>
                         Prefilled from <span className="font-semibold">{LCR_SOURCE_LABEL[data.lcrSource] || data.lcrSource}</span>
@@ -919,40 +1042,47 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .pri
                         {'. '}
                       </>
                     ) : data.lcrSource === 'manual' ? (
-                      <>Manual entry on the supplemental form — edit the table below. </>
+                      <>Manual entry on the supplemental form — edit the tables below. </>
                     ) : (
-                      <>No record selected on the supplemental form — fill the table below or return to the form to prefill. </>
+                      <>No record selected on the supplemental form — fill the tables below or return to the form to prefill. </>
                     )}
                     Table cells are editable below; changes are saved with this supplemental file.
                   </div>
-                  <SupplementalLcrFooterSignatoryPickers
-                    lcrData={lcrData}
-                    inputClass="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white"
-                    onPatch={patchLcrData}
-                  />
-                  <div className="max-w-[210mm] mx-auto">
-                    {data.lcrType === '1A' && (
-                      <LcrForm1ABirthAvailable
-                        data={lcrPrintData}
-                        editableTable
-                        onDataChange={handleLcrDataChange}
+                  {lcrIncludedList.map((t, idx) => (
+                    <div key={t} className={idx > 0 ? 'mt-8 print:mt-0 print:[page-break-before:always]' : ''}>
+                      {lcrIncludedList.length > 1 ? (
+                        <p className="no-print text-xs font-bold text-slate-700 max-w-[210mm] mx-auto mb-2">LCR Form {t}</p>
+                      ) : null}
+                      <SupplementalLcrFooterSignatoryPickers
+                        lcrData={lcrPrintDataForType(t)}
+                        inputClass="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white"
+                        onPatch={(p) => patchLcrDataForType(t, p)}
                       />
-                    )}
-                    {data.lcrType === '2A' && (
-                      <LcrForm2ADeathAvailable
-                        data={lcrPrintData}
-                        editableTable
-                        onDataChange={handleLcrDataChange}
-                      />
-                    )}
-                    {data.lcrType === '3A' && (
-                      <LcrForm3AMarriageAvailable
-                        data={lcrPrintData}
-                        editableTable
-                        onDataChange={handleLcrDataChange}
-                      />
-                    )}
-                  </div>
+                      <div className="max-w-[210mm] mx-auto">
+                        {t === '1A' ? (
+                          <LcrForm1ABirthAvailable
+                            data={lcrPrintDataForType(t)}
+                            editableTable
+                            onDataChange={(n) => handleLcrDataChangeForType('1A', n)}
+                          />
+                        ) : null}
+                        {t === '2A' ? (
+                          <LcrForm2ADeathAvailable
+                            data={lcrPrintDataForType(t)}
+                            editableTable
+                            onDataChange={(n) => handleLcrDataChangeForType('2A', n)}
+                          />
+                        ) : null}
+                        {t === '3A' ? (
+                          <LcrForm3AMarriageAvailable
+                            data={lcrPrintDataForType(t)}
+                            editableTable
+                            onDataChange={(n) => handleLcrDataChangeForType('3A', n)}
+                          />
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : null}
             </div>

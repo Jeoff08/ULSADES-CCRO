@@ -6,7 +6,7 @@ import { PrintHeaderRow, DocumentFooter } from '../../components/print'
 export default function LcrForm3AMarriageAvailable({ data }) {
   const formDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
   const regOfficer = data.certificateSignatoryName || 'LORELIE L. CANTO'
-  const ccrName = data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL'
+  const ccrName = data.cityCivilRegistrarName || 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB'
 
   return (
     <div className="ausf-doc print-doc bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-4">

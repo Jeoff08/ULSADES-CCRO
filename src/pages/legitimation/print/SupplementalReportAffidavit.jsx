@@ -1,15 +1,15 @@
 import React from 'react'
 import { DocumentFooter } from '../../../components/print'
 import { formatDateCert, tryIsoFromDmyStrings } from '../../../lib/printUtils'
-import { RECEIVED_BY_OPTIONS } from '../../legalInstrument/lib/supplementalTransmittalDefaults'
 import {
   buildSupplementalAffidavitItemDefault,
   resolveSupplementalAffidavitType,
   supplementalCustomItemValue,
 } from '../../legalInstrument/lib/supplementalAffidavitType'
+import { RECEIVED_BY_OPTIONS } from '../../legalInstrument/lib/supplementalTransmittalDefaults'
 
-/** City Civil Registrar block on every supplemental affidavit output. */
-const SUPPLEMENTAL_AFFIDAVIT_CCR_SIGNATORY = RECEIVED_BY_OPTIONS[0]
+/** Affidavit footer always uses City Civil Registrar (first preset), not the transmittal “Prepared / signed by” choice. */
+const SUPPLEMENTAL_AFFIDAVIT_CCR_LINES = RECEIVED_BY_OPTIONS[0]
 
 function SupplementalGeographicalItemBlock({ provinceValue, onProvinceBlur }) {
   return (
@@ -32,6 +32,7 @@ function SupplementalGeographicalItemBlock({ provinceValue, onProvinceBlur }) {
 
 export default function SupplementalReportAffidavit({
   data,
+  showCcrSignatory = true,
   onItem3CustomChange,
   onItem5CustomChange,
   paperWidth = '210mm',
@@ -66,6 +67,7 @@ export default function SupplementalReportAffidavit({
   const item5Custom = (data.item5Custom || '').trim()
   const supplementTypeInfo = resolveSupplementalAffidavitType(data.supplementType || 'geographical')
   const supplementType = supplementTypeInfo.kind
+  const ccrSignatory = SUPPLEMENTAL_AFFIDAVIT_CCR_LINES
 
   /**
    * COLB border-bottom blanks: empty = wide centered box + min-height for writing;
@@ -365,16 +367,18 @@ export default function SupplementalReportAffidavit({
           executed the foregoing affidavit and understood the contents thereof.
         </p>
       </div>
-      <div className="supplemental-affidavit-registrar-signatory mt-14 mb-1 shrink-0 w-full flex justify-end pr-2">
-        <div className="inline-block text-center">
-          <p className="font-bold uppercase text-[13px] leading-tight m-0 tracking-tight supplemental-affidavit-ccr-name">
-            {SUPPLEMENTAL_AFFIDAVIT_CCR_SIGNATORY.name}
-          </p>
-          <p className="uppercase text-[12px] leading-tight m-0 font-normal supplemental-affidavit-ccr-title">
-            {SUPPLEMENTAL_AFFIDAVIT_CCR_SIGNATORY.title}
-          </p>
+      {showCcrSignatory ? (
+        <div className="supplemental-affidavit-registrar-signatory mt-14 mb-1 shrink-0 w-full flex justify-end pr-2">
+          <div className="inline-block text-center">
+            <p className="font-bold uppercase text-[13px] leading-tight m-0 tracking-tight supplemental-affidavit-ccr-name">
+              {ccrSignatory.name}
+            </p>
+            <p className="uppercase text-[12px] leading-tight m-0 font-normal supplemental-affidavit-ccr-title">
+              {ccrSignatory.title}
+            </p>
+          </div>
         </div>
-      </div>
+      ) : null}
       <div className="supplemental-bottom-wrap shrink-0 w-full mt-auto mb-[1em]">
         <DocumentFooter
           sloganBlue

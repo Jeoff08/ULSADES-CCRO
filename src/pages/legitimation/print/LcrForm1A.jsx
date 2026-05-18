@@ -112,7 +112,7 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
   const formDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
   const ccrVariant = data.bothParentsAlive === 'NO' ? 'sole' : 'joint'
   const ccrRow = legitimationAffidavitCcrDisplayRow(data, ccrVariant)
-  const ccrName = (ccrRow?.name || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
+  const ccrName = (ccrRow?.name || 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB').toUpperCase()
   const ccrTitle = ccrRow?.title || 'City Civil Registrar'
   const verifiedByName = (data.verifiedByName || data.lcrStaffName || 'SHIRLY L. DEMECILLO').toUpperCase()
   const regOfficerTitle = data.verifiedByTitle || data.lcrStaffTitle || 'Registration Officer II'

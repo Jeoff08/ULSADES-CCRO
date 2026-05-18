@@ -1,6 +1,7 @@
 import {
   RECEIVED_BY_OPTIONS,
   DEFAULT_TRANSMITTAL_SIGNATORY,
+  normReceivedByNameForMatch,
 } from '../../legalInstrument/lib/supplementalTransmittalDefaults'
 
 export { RECEIVED_BY_OPTIONS }
@@ -83,7 +84,7 @@ export function preparedByOptionIndexForPrintType(data, printType) {
   const ti = normTitle(title)
   if (!ni && !ti) return null
   const idx = RECEIVED_BY_OPTIONS.findIndex(
-    (o) => normName(o.name) === ni && normTitle(o.title) === ti,
+    (o) => normReceivedByNameForMatch(o.name) === normReceivedByNameForMatch(name) && normTitle(o.title) === ti,
   )
   return idx >= 0 ? idx : null
 }

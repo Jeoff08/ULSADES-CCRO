@@ -14,6 +14,17 @@ export function getSupplementalDraft(defaultValue) {
   }
 }
 
+/** Draft + active saved row merged for print (draft wins — matches live form edits). */
+export function getSupplementalMergedForOutput(defaultValue) {
+  const draft = getSupplementalDraft(defaultValue)
+  const active = getActiveSavedSupplemental()
+  return {
+    ...defaultValue,
+    ...(active?.data || {}),
+    ...draft,
+  }
+}
+
 export function saveSupplementalDraft(data) {
   try {
     localStorage.setItem(KEY_DRAFT, JSON.stringify(data))

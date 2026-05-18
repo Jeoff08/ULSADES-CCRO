@@ -8,7 +8,7 @@ export default function RegistrationOfAcknowledgement({ data }) {
   const [registeredDate, setRegisteredDate] = useState(() => formatDateLong(data.affidavitAckDate) || '')
   const [registryNo, setRegistryNo] = useState(() => data.affidavitAckRegistryNo || '')
   const issuedDate = formatDateLong(data.certificateIssuanceDate) || formatDateLong(new Date())
-  const signatory = (data.cityCivilRegistrarName || 'ATTY.YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
+  const signatory = (data.cityCivilRegistrarName || 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB').toUpperCase()
 
   return (
     <div className="registration-of-ack-doc ausf-doc print-doc print-doc-cert-auth legitimation-registrar-footer-print legitimation-cert-auth-no-indent bg-white text-black text-base max-w-[210mm] mx-auto px-0 py-4 leading-relaxed flex flex-col min-h-[297mm]">

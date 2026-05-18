@@ -17,8 +17,8 @@ export default function AusfOnly({ data }) {
       : `${affiantName.trim()} ${surnameSought.trim()}`.trim())
     : affiantName
   const dobFormatted = formatDateLong(data.dateOfBirth)
-  const colbReg = String(data.colbRegistryNo ?? '').trim() || ' '
-  const colbDate = formatDateLong(data.colbDateOfRegistration) || ' '
+  const colbReg = data.colbRegistryNo
+  const colbDate = formatDateLong(data.colbDateOfRegistration)
   const publicReg = data.publicDocRegistryNo
   const publicDate = formatDateLong(data.publicDocDate)
   const publicOffice = data.publicDocOffice
@@ -56,7 +56,7 @@ export default function AusfOnly({ data }) {
             I was born on <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{dobFormatted}</span> at <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{placeStreet}</span>{placeStreet && placeCityProvince ? ', ' : null}{placeCityProvince ? <span className={`${FILL_BOLD} px-0.5 align-baseline uppercase`}>{placeCityProvince}</span> : null}
           </li>
           <li>
-            My Birth was recorded under Registry Number <span className={`${FILL_BOLD} empty-blank px-0.5 align-baseline`}>{colbReg}</span> on <span className={`${FILL_BOLD} empty-blank px-0.5 align-baseline`}>{colbDate}</span>
+            My Birth was recorded under Registry Number <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{colbReg}</span> on <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{colbDate}</span>
           </li>
           <li className="text-justify">
             The Public Documents or the Private Handwritten Instrument was recorded under Registry Number <span className={`${FILL} empty-blank px-0.5 align-baseline`}>{publicReg || ' '}</span> on <span className={`${FILL} empty-blank px-0.5 align-baseline`}>{publicDate || ' '}</span> at the Local Civil Registry Office (LCRO)/Philippine Foreign Service Post (PFSP) of <span className={`${FILL} empty-blank px-0.5 align-baseline`}>{publicOffice || ' '}</span>

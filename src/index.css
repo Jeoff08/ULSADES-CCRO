@@ -2347,7 +2347,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     flex-shrink: 0 !important;
   }
   #supplemental-print-affidavit .supplemental-affidavit-body {
-    flex: 1 1 0% !important;
+    flex: 0 0 auto !important;
     display: flex !important;
     flex-direction: column !important;
     min-height: 0 !important;
@@ -2359,6 +2359,8 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     flex-shrink: 0 !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+    margin-top: 4em !important;
+    padding-right: 0.1in !important;
   }
   #supplemental-print-affidavit .supplemental-affidavit-registrar-signatory .supplemental-affidavit-ccr-name,
   #supplemental-print-affidavit .supplemental-affidavit-registrar-signatory .supplemental-affidavit-ccr-title {
@@ -2494,7 +2496,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="long"] .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory,
   html[data-paper-size="legal"] .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory,
   #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory {
-    margin-top: 4.5rem !important;
+    margin-top: 7em !important;
     padding-right: 0.1in !important;
   }
   /* Child's middle name affidavit: title only — nudge up; body below title unchanged */
@@ -6367,7 +6369,7 @@ body.pdf-capture .supplemental-report-doc h2 {
   /* Child's middle name affidavit: registrar signatory — print/PDF position */
   .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory,
   #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory {
-    margin-top: 2.5rem !important;
+    margin-top: 3em !important;
     padding-right: 0.1in !important;
   }
   #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-affidavit-middle-body > h2,
@@ -6405,7 +6407,7 @@ body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-do
   padding-bottom: 0 !important;
 }
 body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-body {
-  flex: 1 1 0% !important;
+  flex: 0 0 auto !important;
   display: flex !important;
   flex-direction: column !important;
   min-height: 0 !important;
@@ -6417,6 +6419,8 @@ body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-do
   flex-shrink: 0 !important;
   page-break-inside: avoid !important;
   break-inside: avoid !important;
+  margin-top: 3em !important;
+  padding-right: 0.1in !important;
 }
 body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-registrar-signatory .supplemental-affidavit-ccr-name,
 body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-registrar-signatory .supplemental-affidavit-ccr-title {
@@ -6440,7 +6444,7 @@ body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-do
 }
 body.pdf-capture .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory,
 body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory {
-  margin-top: 2.5rem !important;
+  margin-top: 3em !important;
   padding-right: 0.1in !important;
 }
 body.pdf-capture #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-affidavit-middle-body > h2,

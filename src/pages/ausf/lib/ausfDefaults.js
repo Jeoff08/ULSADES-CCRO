@@ -35,7 +35,7 @@ export const defaultAUSF = {
   publicDocOffice: '',
   filingLocation: 'ILIGAN CITY',
   affidavitExecutionDate: '',
-  cityCivilRegistrarName: 'Atty. Yussif Don Justin F. Martil',
+  cityCivilRegistrarName: 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB',
   certificateSignatoryName: 'LORELIE L. CANTO',
   certificateSignatoryTitle: '',
   regAusfSignatoryName: '',

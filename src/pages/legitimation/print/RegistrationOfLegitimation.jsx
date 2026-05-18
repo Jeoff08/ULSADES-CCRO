@@ -8,7 +8,7 @@ export default function RegistrationOfLegitimation({ data }) {
   const motherFull = fullName(data.motherFirst, data.motherMiddle, data.motherLast)
   const fatherFull = fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
   const issuedDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
-  const signatory = (data.cityCivilRegistrarName || 'ATTY.YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
+  const signatory = (data.cityCivilRegistrarName || 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB').toUpperCase()
   const legitRegistryTrim = String(data.affidavitLegitRegistryNo || '').trim()
 
   return (

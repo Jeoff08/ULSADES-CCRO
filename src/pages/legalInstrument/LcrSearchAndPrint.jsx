@@ -106,14 +106,14 @@ export default function LcrSearchAndPrint({ title, type }) {
     setAffiantName(client.childName || client.label || '')
     setSearchFocused(false)
     setIsOutputMode(true) // Auto-go to output
-    
+
     // Auto-fill some fields if data exists
     if (client.data) {
       setRegNo(client.data.lcr1aRegistryNumber || client.data.colbRegistryNo || '')
       setAddress(client.data.residenceAddress || '')
       setRegisteredIn(client.data.registeredAt || '')
       setCivilStatus(client.data.civilStatus?.toUpperCase() || 'SINGLE')
-      
+
       // Fill LCR specific fields
       setLcrPage(client.data.colbPageNumber || '')
       setLcrBook(client.data.colbBookNumber || '')
@@ -130,12 +130,12 @@ export default function LcrSearchAndPrint({ title, type }) {
   const renderLcrForm = () => {
     const formNum = lcrForm.toUpperCase() || '1A'
     const formTitle = formNum === '1A' ? '(Birth-Available)' : formNum === '2A' ? '(Death-Available)' : '(Marriage-Available)'
-    
+
     return (
       <div className="bg-white p-12 shadow-2xl max-w-[816px] mx-auto min-h-[1056px] text-gray-900 font-serif print:shadow-none print:p-0 ring-1 ring-gray-200 print:ring-0 mb-12">
         <PrintHeaderRow />
         <hr className="border-black my-4" />
-        
+
         <div className="flex justify-between items-start mb-6">
           <div>
             <p className="font-bold text-lg">LCR Form No. {formNum}</p>
@@ -148,9 +148,9 @@ export default function LcrSearchAndPrint({ title, type }) {
 
         <p className="font-bold mb-4">TO WHOM IT MAY CONCERN:</p>
         <p className="mb-6 leading-relaxed">
-          <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of birth appear in our Register of Births on Page 
+          <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of birth appear in our Register of Births on Page
           <input type="text" className="border-b border-gray-400 focus:outline-none focus:border-blue-500 font-bold px-1 w-12 mx-1 bg-transparent text-center" value={lcrPage} onChange={(e) => setLcrPage(e.target.value)} />
-          of Book number 
+          of Book number
           <input type="text" className="border-b border-gray-400 focus:outline-none focus:border-blue-500 font-bold px-1 w-16 mx-1 bg-transparent text-center" value={lcrBook} onChange={(e) => setLcrBook(e.target.value)} />.
         </p>
 
@@ -189,7 +189,7 @@ export default function LcrSearchAndPrint({ title, type }) {
             <p className="text-xs">Registration Officer IV</p>
           </div>
           <div className="text-center w-64">
-            <input type="text" className="border-b border-gray-400 focus:outline-none focus:border-blue-500 font-bold uppercase text-center w-full bg-transparent mb-1" defaultValue="YUSSIF DON JUSTIN F. MARTIL" />
+            <input type="text" className="border-b border-gray-400 focus:outline-none focus:border-blue-500 font-bold uppercase text-center w-full bg-transparent mb-1" defaultValue="ATTY. YUSSIF DON JUSTIN F. MARTIL, REB" />
             <p className="text-xs italic">City Civil Registrar</p>
           </div>
         </div>
@@ -241,8 +241,8 @@ export default function LcrSearchAndPrint({ title, type }) {
 
           <ol className="list-decimal pl-8 space-y-6">
             <li>
-              I am the applicant for the processing of the Supplemental Report of my Certificate of LIVE BIRTH registered in 
-              <input type="text" className="border-b border-gray-400 focus:outline-none focus:border-blue-500 font-bold uppercase px-1 w-64 mx-1 bg-transparent text-center" value={registeredIn} onChange={(e) => setRegisteredIn(e.target.value)} /> on 
+              I am the applicant for the processing of the Supplemental Report of my Certificate of LIVE BIRTH registered in
+              <input type="text" className="border-b border-gray-400 focus:outline-none focus:border-blue-500 font-bold uppercase px-1 w-64 mx-1 bg-transparent text-center" value={registeredIn} onChange={(e) => setRegisteredIn(e.target.value)} /> on
               <input type="text" className="border-b border-gray-400 focus:outline-none focus:border-blue-500 font-bold uppercase px-1 w-48 mx-1 bg-transparent text-center" value={registeredDate} onChange={(e) => setRegisteredDate(e.target.value)} />.
             </li>
             <li>

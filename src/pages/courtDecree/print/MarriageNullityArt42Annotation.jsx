@@ -57,7 +57,7 @@ export default function MarriageNullityArt42Annotation({
   const art42Text = `The marriage entered into by ${husband} and ${wife} celebrated on ${marriageDate} in ${place} is hereby terminated pursuant to Article 42 of the Family Code of the Philippines.`
 
   const issuedDate = formatDateLong(data?.certificateIssuanceDate) || formatDateLong(new Date())
-  const signatory = (data?.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
+  const signatory = (data?.cityCivilRegistrarName || 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB').toUpperCase()
 
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [uploadList, setUploadList] = useState([])
@@ -151,33 +151,30 @@ export default function MarriageNullityArt42Annotation({
               <button
                 type="button"
                 onClick={() => onModeChange?.(MODES.nullity)}
-                className={`px-4 py-2.5 rounded-lg text-sm font-semibold border-2 transition ${
-                  mode === MODES.nullity
+                className={`px-4 py-2.5 rounded-lg text-sm font-semibold border-2 transition ${mode === MODES.nullity
                     ? 'bg-[#1e3a5f] text-white border-[#1e3a5f] ring-2 ring-offset-2 ring-[#1e3a5f]/40'
                     : 'bg-white text-gray-800 border-gray-300 hover:border-[#1e3a5f] hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 Annulment / Nullity
               </button>
               <button
                 type="button"
                 onClick={() => onModeChange?.(MODES.divorce)}
-                className={`px-4 py-2.5 rounded-lg text-sm font-semibold border-2 transition ${
-                  mode === MODES.divorce
+                className={`px-4 py-2.5 rounded-lg text-sm font-semibold border-2 transition ${mode === MODES.divorce
                     ? 'bg-[#1e3a5f] text-white border-[#1e3a5f] ring-2 ring-offset-2 ring-[#1e3a5f]/40'
                     : 'bg-white text-gray-800 border-gray-300 hover:border-[#1e3a5f] hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 Divorce
               </button>
               <button
                 type="button"
                 onClick={() => onModeChange?.(MODES.art42)}
-                className={`px-4 py-2.5 rounded-lg text-sm font-semibold border-2 transition text-left max-w-[280px] ${
-                  mode === MODES.art42
+                className={`px-4 py-2.5 rounded-lg text-sm font-semibold border-2 transition text-left max-w-[280px] ${mode === MODES.art42
                     ? 'bg-[#1e3a5f] text-white border-[#1e3a5f] ring-2 ring-offset-2 ring-[#1e3a5f]/40'
                     : 'bg-white text-gray-800 border-gray-300 hover:border-[#1e3a5f] hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 Termination (subsequent marriage) — Art. 42
               </button>
@@ -185,23 +182,23 @@ export default function MarriageNullityArt42Annotation({
           </>
         ) : null}
         <div className="flex flex-wrap items-center gap-3 pt-1">
-        <input ref={fileInputRef} type="file" accept="image/*,.pdf" className="hidden" onChange={handleInputChange} />
-        <button
-          type="button"
-          onClick={() => setShowUploadModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] text-white text-sm font-medium"
-        >
-          Upload certificate / decree scan
-        </button>
-        {hasScan && (
+          <input ref={fileInputRef} type="file" accept="image/*,.pdf" className="hidden" onChange={handleInputChange} />
           <button
             type="button"
-            onClick={() => onAttachmentChange?.('')}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-red-600 text-red-700 bg-red-50 text-sm font-medium"
+            onClick={() => setShowUploadModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] text-white text-sm font-medium"
           >
-            Remove attachment
+            Upload certificate / decree scan
           </button>
-        )}
+          {hasScan && (
+            <button
+              type="button"
+              onClick={() => onAttachmentChange?.('')}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-red-600 text-red-700 bg-red-50 text-sm font-medium"
+            >
+              Remove attachment
+            </button>
+          )}
         </div>
       </div>
 

@@ -189,7 +189,7 @@ export default function LcrForm1ABirthAvailable({ data, onDataChange }) {
   const formDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
   const regOfficerName = (data.lcrAckSignatoryName || data.certificateSignatoryName || 'LORELIE L. CANTO').toUpperCase()
   const regOfficerTitle = data.lcrAckSignatoryTitle || 'Registration Officer IV'
-  const ccrName = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
+  const ccrName = (data.cityCivilRegistrarName || 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB').toUpperCase()
   const registryNo = data.colbRegistryNo || '—'
   const verifiedByLabel = 'Verified by:'
 

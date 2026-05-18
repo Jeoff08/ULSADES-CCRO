@@ -174,7 +174,7 @@ export default function LcrFormA1({ data, onDataChange }) {
   const formDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
   const regOfficerName = (data.lcrNotAckSignatoryName || data.certificateSignatoryName || 'LORELIE L. CANTO').toUpperCase()
   const regOfficerTitle = data.lcrNotAckSignatoryTitle || 'Registration Officer IV'
-  const ccrName = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
+  const ccrName = (data.cityCivilRegistrarName || 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB').toUpperCase()
   const registryNo = data.colbRegistryNo || '—'
   const verifiedByLabel = 'Verified by:'
 
