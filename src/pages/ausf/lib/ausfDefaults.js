@@ -1,8 +1,12 @@
+import { fullName } from '../../../lib/printUtils'
+
 export const defaultAUSF = {
   formType: 'ausf-0-6',
   applicantName: '',
   civilStatus: 'single',
   relationshipToChild: '',
+  /** AUSF 07-17 — name in “SWORN ATTESTATION” (I, _____ …); blank uses child’s name. */
+  ausf0717SwornAttestationName: '',
   birthRegisteredInIligan: 'YES',
   childAlreadyAcknowledged: 'NO',
   motherFirst: '',
@@ -155,6 +159,17 @@ export function applyAusfTransmittalAddresseeDefaults(data) {
     patch[k] = ''
   }
   return { ...data, ...patch }
+}
+
+/** Display name for AUSF 07-17 sworn attestation block (child/ward attesting). */
+export function resolveAusf0717SwornAttestationName(data) {
+  if (!data || typeof data !== 'object') return ''
+  const custom = String(data.ausf0717SwornAttestationName ?? '').trim()
+  if (custom) return custom
+  return (
+    fullName(data.childFirst, data.childMiddle, data.childLast) ||
+    String(data.applicantName ?? '').trim()
+  )
 }
 
 export function mergeAUSFDraftData(partial) {

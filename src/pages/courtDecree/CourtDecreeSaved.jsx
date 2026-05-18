@@ -8,6 +8,8 @@ import {
 } from './lib/courtDecreeAffectedDocuments'
 import { hasAnyUploadsForRecord } from '../../lib/uploadedFileStore'
 import hasUploadedFilesIcon from '../../assets/has-uploaded-files-icon.svg'
+import SavedFilesPagination from '../../components/SavedFilesPagination'
+import { useSavedFilesPagination } from '../../hooks/useSavedFilesPagination'
 
 const COURT_DECREE_TYPE_LABELS = {
   'cert-authenticity': 'Certificate of authenticity',
@@ -143,6 +145,16 @@ export default function CourtDecreeSaved() {
       matchesLcrGroup(item, lcrGroupFilter) &&
       matchesSearch(item, searchQuery, COURT_DECREE_TYPE_LABELS)
   )
+  const {
+    paginatedItems,
+    page,
+    setPage,
+    totalPages,
+    totalItems: filteredTotal,
+    rangeStart,
+    rangeEnd,
+    showPagination,
+  } = useSavedFilesPagination(filteredList, `${searchQuery}|${lcrGroupFilter}`)
 
   const courtDecreeTotal = getSavedCourtDecreeList().length
 
@@ -252,13 +264,14 @@ export default function CourtDecreeSaved() {
           No saved Court Decree files yet. Complete a Court Decree form and click Done to save it here.
         </div>
       ) : (
+        <>
         <ul className="space-y-3">
           {filteredList.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/50 p-6 text-sm text-gray-500 text-center">
               No matches for &quot;{searchQuery}&quot;. Try a different search term.
             </div>
           ) : (
-          filteredList.map((item, idx) => (
+          paginatedItems.map((item, idx) => (
             <li
               key={item.id}
               className="court-decree-saved-anim-item rounded-xl border border-gray-200 bg-white p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm opacity-0 transition-all duration-200 ease-out hover:shadow-md hover:border-gray-300 hover:-translate-y-0.5"
@@ -313,6 +326,17 @@ export default function CourtDecreeSaved() {
           ))
           )}
         </ul>
+        {showPagination ? (
+          <SavedFilesPagination
+            page={page}
+            totalPages={totalPages}
+            totalItems={filteredTotal}
+            rangeStart={rangeStart}
+            rangeEnd={rangeEnd}
+            onPageChange={setPage}
+          />
+        ) : null}
+        </>
       )}
 
       {confirmDeleteId != null && (

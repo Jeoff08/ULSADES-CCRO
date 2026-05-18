@@ -110,16 +110,11 @@ export default function Login() {
       {/* Left panel: branding */}
       <div className="login-brand flex flex-col px-8 py-10 text-white">
         <div className="login-brand__center flex-1 flex flex-col items-center justify-center">
-          <div className="login-brand__logos flex items-center justify-center gap-6 mb-6">
+          <div className="login-brand__logos flex items-center justify-center mb-6">
             <img
-              src="/iligan_seal_transparent.png"
-              alt="City of Iligan Official Seal"
-              className="w-32 h-32 md:w-40 md:h-40 object-contain shrink-0"
-            />
-            <img
-              src="/ChatGPT Image Feb 11, 2026, 03_26_31 PM.png"
+              src={encodeURI('/ChatGPT Image Feb 11, 2026, 03_26_31 PM.png')}
               alt="City Civil Registrar's Office"
-              className="w-32 h-32 md:w-40 md:h-40 object-contain shrink-0"
+              className="w-52 h-52 md:w-64 md:h-64 object-contain shrink-0"
             />
           </div>
           <p className="login-brand__acronym text-sm font-bold tracking-wide text-center">ULSADES - CCRO</p>

@@ -1,12 +1,50 @@
 import React from 'react'
 import { formatDateLong, fullName, joinCommaParts } from '../../../lib/printUtils'
+import { resolveAusf0717SwornAttestationName } from '../lib/ausfDefaults'
 import { DocumentHeader, DocumentFooter, FILL } from '../../../components/print'
 
 /** Long bond only — not laid out for A4 or short (8.5" × 11"). */
 export const AUSF_0717_PRINT_TYPE = 'ausf-07-17'
 export const AUSF_0717_EXCLUDED_PAPER_SIZE_IDS = new Set(['a4', 'short'])
 
-export default function Ausf0717({ data }) {
+function SwornAttestationNameBlank({ name, editable, onNameChange }) {
+  const display = name || '\u00a0'
+  if (!editable) {
+    return (
+      <span className="fill-blank inline-block min-w-[12rem] text-center mx-1 uppercase">
+        {display}
+      </span>
+    )
+  }
+  return (
+    <span
+      className="fill-blank inline-block min-w-[12rem] text-center mx-1 uppercase outline-none print:outline-none"
+      contentEditable
+      suppressContentEditableWarning
+      onBlur={(e) => onNameChange?.((e.currentTarget.textContent || '').trim())}
+    >
+      {display}
+    </span>
+  )
+}
+
+function SwornAttestationSignatureLine({ name, editable, onNameChange }) {
+  if (!editable) {
+    return <div className="fill-blank uppercase inline-block pb-0">{name}</div>
+  }
+  return (
+    <div
+      className="fill-blank uppercase inline-block pb-0 min-w-[12rem] outline-none print:outline-none"
+      contentEditable
+      suppressContentEditableWarning
+      onBlur={(e) => onNameChange?.((e.currentTarget.textContent || '').trim())}
+    >
+      {name || '\u00a0'}
+    </div>
+  )
+}
+
+export default function Ausf0717({ data, onPatch }) {
   const affiantName = data.applicantName || fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
   const surnameSought = data.fatherLast
   const relationship = String(data.relationshipToChild || '').trim().toUpperCase()
@@ -27,6 +65,9 @@ export default function Ausf0717({ data }) {
   const placeStreet = (data.placeOfBirthAddress || '').trim()
   const placeCityProvince = joinCommaParts(data.placeOfBirthCity, data.placeOfBirthProvince)
   const attestationName = fullName(data.childFirst, data.childMiddle, data.childLast) || data.applicantName
+  const swornAttestationName = resolveAusf0717SwornAttestationName(data)
+  const canEditSwornName = typeof onPatch === 'function'
+  const patchSwornName = (value) => onPatch?.({ ausf0717SwornAttestationName: value })
   const selectedRelationship = String(data.relationshipToChild || '').trim().toUpperCase()
   const attestationRelationship = selectedRelationship === 'MYSELF'
     ? 'SELF'
@@ -62,14 +103,21 @@ export default function Ausf0717({ data }) {
           <li className="text-justify">I hereby certify that the statements made herein are true and correct to the best of my knowledge and belief.</li>
         </ol>
         <p className="mb-0.5 text-justify"><span className="font-bold">IN WITNESS WHEREOF,</span> I have hereunto set my hand this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> at Iligan City, Philippines.</p>
-        <div className="text-center mt-2 mb-3 leading-none">
+        <div className="ausf-07-17-first-affiant-signatory text-center mt-2 mb-3 leading-none">
           <div className="fill-blank uppercase inline-block pb-0">{attestationName}</div>
           <div className="text-xs mt-0">Affiant</div>
         </div>
 
         <h2 className="text-center font-bold text-sm uppercase my-3">SWORN ATTESTATION</h2>
+        <div className="ausf-07-17-sworn-attestation-body">
         <p className="mb-0 text-justify">
-          I, <span className="fill-blank inline-block min-w-[12rem] text-center mx-1">{affiantName}</span>, of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
+          I,{' '}
+          <SwornAttestationNameBlank
+            name={swornAttestationName}
+            editable={canEditSwornName}
+            onNameChange={patchSwornName}
+          />
+          , of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
         </p>
         <ol className="list-decimal list-inside space-y-1 mb-0 ml-6 text-justify">
           <li className="text-justify">That I am the <span className="fill-blank inline-block px-1 min-w-[3rem]">{attestationRelationship}</span> of the affiant in the above affidavit;</li>
@@ -77,10 +125,15 @@ export default function Ausf0717({ data }) {
         </ol>
         <p className="mb-0.5 text-justify"><span className="font-bold">IN WITNESS WHEREOF,</span> I have hereunto set my hand this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> at Iligan City, Philippines.</p>
         <div className="text-center mt-2 mb-2 leading-none">
-          <div className="fill-blank uppercase inline-block pb-0">{affiantName}</div>
+          <SwornAttestationSignatureLine
+            name={swornAttestationName}
+            editable={canEditSwornName}
+            onNameChange={patchSwornName}
+          />
           <div className="text-xs mt-0">Affiant</div>
         </div>
         <p className="ausf-subscribed-sworn mt-0.5 mb-0.5 text-justify leading-snug"><span className="font-bold">SUBSCRIBED AND SWORN</span> to before me this <span className="fill-blank inline-block min-w-[8rem] text-center ml-1">{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
+        </div>
         <div className="registrar-signature-zone mt-auto flex w-full min-h-[2rem] flex-col items-end justify-end">
           <div className="ccr-signatory-block city-registrar-signature inline-flex flex-col items-center text-center leading-snug">
             <p className="ccr-signatory-block__name m-0 p-0 font-bold text-sm">{data.cityCivilRegistrarName}</p>

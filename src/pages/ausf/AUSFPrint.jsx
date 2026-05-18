@@ -513,7 +513,7 @@ export default function AUSFPrint() {
   let content;
   if (type === "ausf-only") content = <AusfOnly data={data} />;
   else if (type === "ausf-0-6") content = <Ausf06 data={data} />;
-  else if (type === "ausf-07-17") content = <Ausf0717 data={data} />;
+  else if (type === "ausf-07-17") content = <Ausf0717 data={data} onPatch={persistAusfLcrPrintPatch} />;
   else if (type === "reg-ausf") content = <RegistrationOfAusf data={data} />;
   else if (type === "reg-ack")
     content = <RegistrationOfAcknowledgement data={data} />;

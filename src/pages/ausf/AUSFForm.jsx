@@ -3,7 +3,7 @@ import { afterUnsavedAcknowledge, useWarnIfUnsaved } from '../../hooks/useWarnIf
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import FormSection from '../../components/FormSection'
 import { FormInput, FormSelect, FormRadioGroup, FormFlexibleDateInput } from '../../components/FormField'
-import { defaultAUSF, mergeAUSFDraftData } from './lib/ausfDefaults'
+import { defaultAUSF, mergeAUSFDraftData, resolveAusf0717SwornAttestationName } from './lib/ausfDefaults'
 import {
   saveAUSFDraft,
   getAUSFDraft,
@@ -524,6 +524,20 @@ export default function AUSFForm() {
                     <FormInput label="REGISTRY NO." id="ausfRegistry" value={form.ausfRegistryNo} onChange={(v) => update('ausfRegistryNo', v)} />
                     <FormFlexibleDateInput label="DATE OF REGISTRATION" id="ausfDate" value={form.ausfDateOfRegistration} onChange={(v) => update('ausfDateOfRegistration', v)} />
                   </div>
+                  {derivedJuratFormType === 'ausf-07-17' ? (
+                    <div className="mt-4 max-w-xl">
+                      <FormInput
+                        label="SWORN ATTESTATION — NAME (AUSF 07-17)"
+                        id="ausf0717SwornAttestationName"
+                        value={form.ausf0717SwornAttestationName}
+                        onChange={(v) => update('ausf0717SwornAttestationName', v)}
+                        placeholder={resolveAusf0717SwornAttestationName(form) || "Child's full name"}
+                      />
+                      <p className="text-xs text-gray-500 mt-1.5">
+                        Printed in the Sworn Attestation block. Leave blank to use the child&apos;s name from Item 4.
+                      </p>
+                    </div>
+                  ) : null}
                 </FormSection>
               </div>
 

@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { getSavedLegitimationList, loadSavedLegitimationToDraft, deleteSavedLegitimation, restoreSavedLegitimation } from './lib/legitimationStorage'
 import { hasAnyUploadsForRecord } from '../../lib/uploadedFileStore'
 import hasUploadedFilesIcon from '../../assets/has-uploaded-files-icon.svg'
+import SavedFilesPagination from '../../components/SavedFilesPagination'
+import { useSavedFilesPagination } from '../../hooks/useSavedFilesPagination'
 
 const LEGITIMATION_TYPE_LABELS = {
   'sole-affidavit': 'Affidavit Legitimation',
@@ -26,6 +28,25 @@ function formatSavedAt(iso) {
 }
 
 const TOAST_DURATION_MS = 8000
+const AFFIDAVIT_KIND_FILTER_OPTIONS = ['ALL', 'JOINT', 'SOLE']
+
+/** Same rules as Legitimation print: sole when both parents are not alive (Item 5 NO). */
+function affidavitKindForSavedItem(item) {
+  const data = item?.data && typeof item.data === 'object' ? item.data : {}
+  const formType = String(item?.formType || data.formType || '').trim().toLowerCase()
+  const bothParentsAlive = String(data.bothParentsAlive || '').trim().toUpperCase()
+
+  if (formType === 'sole-affidavit') return 'SOLE'
+  if (bothParentsAlive === 'NO') return 'SOLE'
+  if (formType === 'joint-affidavit' || bothParentsAlive === 'YES') return 'JOINT'
+  return null
+}
+
+function matchesAffidavitKind(item, selectedKind) {
+  const kind = String(selectedKind || 'ALL').toUpperCase()
+  if (kind === 'ALL') return true
+  return affidavitKindForSavedItem(item) === kind
+}
 
 function matchesSearch(item, query, formTypeLabels) {
   if (!query.trim()) return true
@@ -40,6 +61,7 @@ export default function LegitimationSaved() {
   const [list, setList] = useState(() => getSavedLegitimationList().sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)))
   const [uploadsRev, setUploadsRev] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
+  const [affidavitKindFilter, setAffidavitKindFilter] = useState('ALL')
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [toastVisible, setToastVisible] = useState(false)
   const [toastProgress, setToastProgress] = useState(100)
@@ -100,7 +122,21 @@ export default function LegitimationSaved() {
     }
   }
 
-  const filteredList = list.filter((item) => matchesSearch(item, searchQuery, LEGITIMATION_TYPE_LABELS))
+  const filteredList = list.filter(
+    (item) =>
+      matchesAffidavitKind(item, affidavitKindFilter) &&
+      matchesSearch(item, searchQuery, LEGITIMATION_TYPE_LABELS)
+  )
+  const {
+    paginatedItems,
+    page,
+    setPage,
+    totalPages,
+    totalItems: filteredTotal,
+    rangeStart,
+    rangeEnd,
+    showPagination,
+  } = useSavedFilesPagination(filteredList, `${searchQuery}|${affidavitKindFilter}`)
 
   const legitimationTotal = getSavedLegitimationList().length
 
@@ -165,6 +201,18 @@ export default function LegitimationSaved() {
         </div>
         {list.length > 0 && (
           <div className="flex flex-wrap items-center justify-end gap-2 ml-auto">
+            <select
+              value={affidavitKindFilter}
+              onChange={(e) => setAffidavitKindFilter(e.target.value)}
+              aria-label="Filter by affidavit type"
+              className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:border-[var(--primary-blue)] focus:ring-2 focus:ring-[var(--primary-blue)]/20 outline-none transition-all duration-200"
+            >
+              {AFFIDAVIT_KIND_FILTER_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt === 'ALL' ? 'All forms' : opt === 'JOINT' ? 'Joint only' : 'Sole only'}
+                </option>
+              ))}
+            </select>
             <div className="relative min-w-[200px] w-full sm:w-auto sm:max-w-sm">
               <input
                 type="search"
@@ -182,7 +230,10 @@ export default function LegitimationSaved() {
             </div>
             <button
               type="button"
-              onClick={() => setSearchQuery('')}
+              onClick={() => {
+                setSearchQuery('')
+                setAffidavitKindFilter('ALL')
+              }}
               className="px-3 py-2.5 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 ease-out active:scale-95"
             >
               Clear
@@ -195,13 +246,16 @@ export default function LegitimationSaved() {
           No saved Legitimation files yet. Complete a Legitimation form and click Done to save it here.
         </div>
       ) : (
+        <>
         <ul className="space-y-3">
           {filteredList.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/50 p-6 text-sm text-gray-500 text-center">
-              No matches for &quot;{searchQuery}&quot;. Try a different search term.
+              {searchQuery.trim() || affidavitKindFilter !== 'ALL'
+                ? 'No saved files match the current filter. Try a different search or affidavit type.'
+                : 'No matches found.'}
             </div>
           ) : (
-          filteredList.map((item, idx) => (
+          paginatedItems.map((item, idx) => (
             <li
               key={item.id}
               className="legitimation-saved-anim-item rounded-xl border border-gray-200 bg-white p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm opacity-0 transition-all duration-200 ease-out hover:shadow-md hover:border-gray-300 hover:-translate-y-0.5"
@@ -256,6 +310,17 @@ export default function LegitimationSaved() {
           ))
           )}
         </ul>
+        {showPagination ? (
+          <SavedFilesPagination
+            page={page}
+            totalPages={totalPages}
+            totalItems={filteredTotal}
+            rangeStart={rangeStart}
+            rangeEnd={rangeEnd}
+            onPageChange={setPage}
+          />
+        ) : null}
+        </>
       )}
 
       {confirmDeleteId != null && (

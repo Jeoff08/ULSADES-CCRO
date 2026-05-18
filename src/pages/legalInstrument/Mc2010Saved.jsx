@@ -9,6 +9,8 @@ import {
 } from './lib/mc2010SavedStorage'
 import { hasAnyUploadsForRecord } from '../../lib/uploadedFileStore'
 import hasUploadedFilesIcon from '../../assets/has-uploaded-files-icon.svg'
+import SavedFilesPagination from '../../components/SavedFilesPagination'
+import { useSavedFilesPagination } from '../../hooks/useSavedFilesPagination'
 
 function formatSavedAt(iso) {
   if (!iso) return ''
@@ -35,6 +37,16 @@ export default function Mc2010Saved() {
       return label.includes(q) || savedAt.includes(q)
     })
   }, [list, searchQuery])
+  const {
+    paginatedItems,
+    page,
+    setPage,
+    totalPages,
+    totalItems: filteredTotal,
+    rangeStart,
+    rangeEnd,
+    showPagination,
+  } = useSavedFilesPagination(filteredList, searchQuery)
 
   useEffect(() => {
     const onFocus = () => setUploadsRev((v) => v + 1)
@@ -139,8 +151,9 @@ export default function Mc2010Saved() {
           No matches for &quot;{searchQuery}&quot;. Try a different search term.
         </div>
       ) : (
+        <>
         <ul className="space-y-3">
-          {filteredList.map((item, idx) => (
+          {paginatedItems.map((item, idx) => (
             <li
               key={item.id}
               className="mc2010-saved-anim-item rounded-xl border border-gray-200 bg-white p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm opacity-0 transition-all duration-200 ease-out hover:shadow-md hover:border-gray-300 hover:-translate-y-0.5"
@@ -192,6 +205,17 @@ export default function Mc2010Saved() {
             </li>
           ))}
         </ul>
+        {showPagination ? (
+          <SavedFilesPagination
+            page={page}
+            totalPages={totalPages}
+            totalItems={filteredTotal}
+            rangeStart={rangeStart}
+            rangeEnd={rangeEnd}
+            onPageChange={setPage}
+          />
+        ) : null}
+        </>
       )}
     </div>
   )

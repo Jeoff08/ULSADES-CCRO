@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import UnsavedNavigationBlocker from './UnsavedNavigationBlocker'
+import UserManualModal, { UserManualSidebarButton } from './userManual/UserManualModal'
 import { useAuth } from '../context/AuthContext'
 import { clearSupplementalActive, clearSupplementalDraft } from '../pages/legalInstrument/lib/supplementalSavedStorage'
 import { clearMc2010Active, clearMc2010Draft } from '../pages/legalInstrument/lib/mc2010SavedStorage'
@@ -70,6 +71,7 @@ export default function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [isExiting, setIsExiting] = useState(false)
+  const [userManualOpen, setUserManualOpen] = useState(false)
 
   const isFilesSavedPage = FILES_SAVED_PATHS.includes(location.pathname)
 
@@ -120,22 +122,15 @@ export default function Layout() {
       )}
       <aside className="no-print w-64 shrink-0 flex flex-col bg-[var(--sidebar-bg)] overflow-hidden">
         <div className="p-3 shrink-0">
-          <div className="flex items-center gap-2 px-2 py-3 rounded-lg">
+          <div className="flex flex-col items-center gap-2 px-2 py-3 rounded-lg text-center">
             <img
-              src="/iligan_seal_transparent.png"
-              alt="City of Iligan Official Seal"
-              className="w-16 h-16 object-contain shrink-0 rounded-full"
+              src={CCRO_APP_BRAND_SRC}
+              alt="City Civil Registrar's Office"
+              className="w-44 h-44 object-contain shrink-0"
             />
-            <div className="flex-1 min-w-0 text-center">
+            <div className="min-w-0">
               <p className="font-bold text-white text-sm leading-tight">ULSADES</p>
               <p className="text-white/80 text-[10px] leading-tight mt-0.5">Unified Legal Status Automated Data Entry System</p>
-            </div>
-            <div className="shrink-0 w-16 h-16 rounded-lg p-0.5 flex items-center justify-center">
-              <img
-                src="/ChatGPT Image Feb 11, 2026, 03_26_31 PM.png"
-                alt="City Civil Registrar's Office"
-                className="w-full h-full object-contain"
-              />
             </div>
           </div>
         </div>
@@ -284,6 +279,8 @@ export default function Layout() {
             <span>Files Saved</span>
           </NavLink>
 
+          <UserManualSidebarButton onClick={() => setUserManualOpen(true)} />
+
           <NavLink
             to="/system-data"
             className={() =>
@@ -313,6 +310,7 @@ export default function Layout() {
       </aside>
       <main className="layout-main flex-1 min-h-0 overflow-auto bg-[var(--main-bg)]">
         <UnsavedNavigationBlocker />
+        <UserManualModal isOpen={userManualOpen} onClose={() => setUserManualOpen(false)} />
         <Outlet />
       </main>
     </div>

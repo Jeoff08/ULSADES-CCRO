@@ -4710,6 +4710,12 @@ html[data-paper-size="short"] .print-doc-footer p {
   html[data-paper-size="long"] .ausf-07-17-doc h2.my-3 , html[data-paper-size="legal"] .ausf-07-17-doc h2.my-3 {
     margin-top: 0.04in !important;
   }
+  /* AUSF 07-17 print: shift sworn attestation body upward (heading stays in place) */
+  .ausf-07-17-doc .ausf-07-17-sworn-attestation-body {
+    position: relative !important;
+    top: -0.20in !important;
+    margin-top: -0.04in !important;
+  }
   html[data-paper-size="long"] .ausf-07-17-doc h2.mb-2 , html[data-paper-size="legal"] .ausf-07-17-doc h2.mb-2 {
     margin-top: 0.02in !important;
   }
@@ -7146,6 +7152,13 @@ html[data-paper-size="long"] body.pdf-capture .ausf-07-17-doc.print-doc .registr
 html[data-paper-size="legal"] body.pdf-capture .ausf-07-17-doc.print-doc .registrar-signature-zone {
   margin-top: 0.14in !important;
   transform: translateY(-0.85em) !important;
+}
+
+/* AUSF 07-17 Save PDF: shift sworn attestation body upward (heading stays in place) */
+body.pdf-capture .ausf-07-17-doc .ausf-07-17-sworn-attestation-body {
+  position: relative !important;
+  top: -0.20in !important;
+  margin-top: -0.04in !important;
 }
 html[data-paper-size="long"] .ausf-07-17-doc.print-doc .city-registrar-signature,
 html[data-paper-size="legal"] .ausf-07-17-doc.print-doc .city-registrar-signature,
