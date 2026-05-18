@@ -17,7 +17,10 @@ import { getSavedAUSFList, getAUSFDraft } from '../ausf/lib/ausfStorage'
 import { getSavedCourtDecreeList, getCourtDecreeDraft } from '../courtDecree/lib/courtDecreeStorage'
 import { getSavedLegitimationList, getLegitimationDraft } from '../legitimation/lib/legitimationStorage'
 import { mapSourceToSupplementalLcrData } from './lib/supplementalLcrPrefill'
-import { resolveSupplementalAffidavitType } from './lib/supplementalAffidavitType'
+import {
+  getSupplementalMissingCorrectedLabels,
+  resolveSupplementalAffidavitType,
+} from './lib/supplementalAffidavitType'
 import SupplementalTransmittalFieldsEditor from './SupplementalTransmittalFieldsEditor'
 import SupplementalLcrFooterSignatoryPickers from './SupplementalLcrFooterSignatoryPickers'
 import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailable'
@@ -193,7 +196,7 @@ export default function SupplementalForm() {
     })
   }
 
-  const saveSupplementTypeToList = (raw) => {
+  const saveSupplementTypeToList = useCallback((raw) => {
     const current = String(raw || '').trim()
     if (!isLikelySupplementType(current)) return
     setSavedSupplementTypes((prev) => {
@@ -202,7 +205,7 @@ export default function SupplementalForm() {
       localStorage.setItem(SUPPLEMENT_TYPE_LIST_KEY, JSON.stringify(next))
       return next
     })
-  }
+  }, [])
 
   const mergedSupplementTypeRows = useMemo(() => {
     const seen = new Set()
@@ -259,6 +262,14 @@ export default function SupplementalForm() {
       setSavedSupplementTypes([])
     }
   }, [])
+
+  /** Remember custom supplement types while typing (draft already saves via `update`). */
+  useEffect(() => {
+    const v = String(form.supplementType || '').trim()
+    if (!isLikelySupplementType(v)) return undefined
+    const id = window.setTimeout(() => saveSupplementTypeToList(v), 400)
+    return () => window.clearTimeout(id)
+  }, [form.supplementType, saveSupplementTypeToList])
 
   const updateTransmittalPatch = (patch) => {
     setForm((prev) => {
@@ -379,23 +390,12 @@ export default function SupplementalForm() {
     () => resolveSupplementalAffidavitType(form.supplementType),
     [form.supplementType]
   )
-  const showItem1ChoiceBlock = supplementAffidavitType.kind === 'sex'
-  const missingLabel =
-    supplementAffidavitType.kind === 'sex'
-      ? 'Missing on COLB (optional — leave blank for NOT STATED)'
-      : supplementAffidavitType.kind === 'middleName'
-        ? 'Missing / blank on COLB (optional)'
-        : supplementAffidavitType.kind === 'custom'
-          ? `Missing on COLB — ${supplementAffidavitType.displayLabel} (affidavit item 3)`
-          : 'Missing province entry'
-  const correctedLabel =
-    supplementAffidavitType.kind === 'sex'
-      ? "Correct child's sex (e.g. MALE, FEMALE)"
-      : supplementAffidavitType.kind === 'middleName'
-        ? "Correct child's middle name"
-        : supplementAffidavitType.kind === 'custom'
-          ? `Correct entry — ${supplementAffidavitType.displayLabel} (affidavit item 5)`
-          : 'Correct province entry'
+  const showItem1ChoiceBlock =
+    supplementAffidavitType.kind === 'sex' || supplementAffidavitType.kind === 'custom'
+  const { missing: missingLabel, corrected: correctedLabel } = useMemo(
+    () => getSupplementalMissingCorrectedLabels(form.supplementType),
+    [form.supplementType],
+  )
 
   return (
     <div className="supplemental-form-page no-print">
@@ -613,8 +613,8 @@ export default function SupplementalForm() {
                         )}
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
-                        Built-in types control affidavit wording when they match exactly: <span className="font-mono">geographical</span>,{' '}
-                        <span className="font-mono">sex</span>, <span className="font-mono">middleName</span>. Other text is saved on this device and suggested when it matches (3–120 characters with a letter or number).
+                        Built-in types (<span className="font-mono">geographical</span>, <span className="font-mono">sex</span>,{' '}
+                        <span className="font-mono">middleName</span>) keep fixed affidavit wording. Any other description updates the missing / corrected field labels below and items 3 &amp; 5 on the affidavit output. Types are saved automatically as you type.
                       </p>
                     </div>
 

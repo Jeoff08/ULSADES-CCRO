@@ -1,12 +1,34 @@
 import React from 'react'
 import { DocumentFooter } from '../../../components/print'
 import { formatDateCert, tryIsoFromDmyStrings } from '../../../lib/printUtils'
-import { RECEIVED_BY_OPTIONS, clampTransmittalSignatoryIndex } from '../../legalInstrument/lib/supplementalTransmittalDefaults'
+import { RECEIVED_BY_OPTIONS } from '../../legalInstrument/lib/supplementalTransmittalDefaults'
 import {
   buildSupplementalAffidavitItemDefault,
   resolveSupplementalAffidavitType,
   supplementalCustomItemValue,
 } from '../../legalInstrument/lib/supplementalAffidavitType'
+
+/** City Civil Registrar block on every supplemental affidavit output. */
+const SUPPLEMENTAL_AFFIDAVIT_CCR_SIGNATORY = RECEIVED_BY_OPTIONS[0]
+
+function SupplementalGeographicalItemBlock({ provinceValue, onProvinceBlur }) {
+  return (
+    <div className="my-1.5 leading-tight supplemental-geographical-item-block">
+      <div className="font-bold">GEOGRAPHICAL LOCATION:</div>
+      <div>
+        <span className="font-bold">PROVINCE:</span>{' '}
+        <span
+          className="inline-block min-w-[14ch] outline-none print:outline-none underline decoration-black font-bold uppercase"
+          contentEditable
+          suppressContentEditableWarning
+          onBlur={(e) => onProvinceBlur?.((e.currentTarget.textContent || '').trim().toUpperCase())}
+        >
+          {provinceValue}
+        </span>
+      </div>
+    </div>
+  )
+}
 
 export default function SupplementalReportAffidavit({
   data,
@@ -19,6 +41,8 @@ export default function SupplementalReportAffidavit({
   const cityOfLabel = 'City of'
   const regNo = (data.regNo || '2380-67').trim()
   const cityLine = (data.cityLine || '').replace(/GENERAL\s+SANTOS\s+CITY/gi, '').trim()
+  const cityUpper = (cityLine || '').toUpperCase()
+  const iliganIdx = cityUpper.indexOf('ILIGAN')
   const possessiveRaw = String(data.possessive || 'my').trim().toLowerCase()
   const possessive = (possessiveRaw === 'his' || possessiveRaw === 'her' || possessiveRaw === 'my') ? possessiveRaw : 'my'
   const civilStatusRaw = String(data.civilStatus || 'single').trim().toLowerCase()
@@ -43,9 +67,6 @@ export default function SupplementalReportAffidavit({
   const supplementTypeInfo = resolveSupplementalAffidavitType(data.supplementType || 'geographical')
   const supplementType = supplementTypeInfo.kind
 
-  const affidavitSignatoryIdx = clampTransmittalSignatoryIndex(data.transmittalSignatoryOptionIndex)
-  const affidavitSignatory = RECEIVED_BY_OPTIONS[affidavitSignatoryIdx] ?? RECEIVED_BY_OPTIONS[0]
-
   /**
    * COLB border-bottom blanks: empty = wide centered box + min-height for writing;
    * filled = inline + tight line-height so the rule sits under the text (no float) and punctuation stays flush.
@@ -65,16 +86,6 @@ export default function SupplementalReportAffidavit({
     }
     return <span className="font-bold underline uppercase align-baseline decoration-black leading-none">{t}</span>
   }
-  const item1Box = (checked) => (
-    <span
-      className="inline-flex shrink-0 items-center justify-center w-[0.95em] h-[0.95em] border border-black align-baseline mt-[0.2em] text-[11px] leading-none"
-      aria-hidden
-    >
-      {checked ? '⁄' : ''}
-    </span>
-  )
-  const cityUpper = (cityLine || '').toUpperCase()
-  const iliganIdx = cityUpper.indexOf('ILIGAN')
   const fieldBundle = {
     missingGeo,
     correctedGeo,
@@ -82,7 +93,12 @@ export default function SupplementalReportAffidavit({
   }
   const defaultItem3Text = buildSupplementalAffidavitItemDefault(supplementType, 'missing', fieldBundle)
   const defaultItem5Text = buildSupplementalAffidavitItemDefault(supplementType, 'corrected', fieldBundle)
-  const item3Text = item3Custom || defaultItem3Text
+  /** Item 3: blank form field → empty output; print/PDF field stays editable via item3Custom. */
+  const item3FromForm =
+    missingGeo || supplementType === 'geographical' || supplementType === 'middleName'
+      ? defaultItem3Text
+      : ''
+  const item3Text = item3Custom || item3FromForm
   const item5Text = item5Custom || defaultItem5Text
   const item3CustomValue = supplementalCustomItemValue(item3Text, supplementTypeInfo)
   const item5CustomValue = supplementalCustomItemValue(item5Text, supplementTypeInfo)
@@ -104,35 +120,32 @@ export default function SupplementalReportAffidavit({
       className="ausf-doc print-doc supplemental-report-doc bg-white text-black mx-auto px-7 py-5 leading-relaxed flex flex-col"
       style={{ fontFamily: 'Arial, sans-serif', width: paperWidth, minHeight: paperHeight }}
     >
-      {supplementType === 'middleName' ? (
-        <div className="supplemental-report-top-header mb-4">
-          <div className="grid grid-cols-[140px_1fr_140px] items-center gap-3">
-            <img
-              src="/iligan%20official%20seal.jpg"
-              alt="City of Iligan Official Seal"
-              className="w-[140px] h-[140px] object-contain mx-auto"
-            />
-            <div className="supplemental-header-main text-center leading-none">
-              <p className="text-[20px] font-semibold leading-none m-0">Republic of the Philippines</p>
-              <p className="text-[20px] font-bold uppercase leading-none m-0">City Civil Registrar&apos;s Office</p>
-              <p className="text-[20px] font-bold leading-none m-0">City of Iligan</p>
-              <p className="supplemental-header-address text-[16px] leading-none m-0">
-                Ground Flr., Pedro Generalao Bldg., Buhanginan Hill, Pala-o, Iligan City
-              </p>
-            </div>
-            <img
-              src="/logo-shortcut.png"
-              alt="City Civil Registrar's Office Logo"
-              className="w-[140px] h-[140px] object-contain mx-auto"
-            />
+      <div className="supplemental-report-top-header mb-4">
+        <div className="grid grid-cols-[100px_1fr_100px] items-center gap-3">
+          <img
+            src="/iligan%20official%20seal.jpg"
+            alt="City of Iligan Official Seal"
+            className="w-[100px] h-[100px] object-contain mx-auto"
+          />
+          <div className="supplemental-header-main text-center leading-none">
+            <p className="text-[20px] font-semibold leading-none m-0">Republic of the Philippines</p>
+            <p className="text-[20px] font-bold uppercase leading-none m-0">City Civil Registrar&apos;s Office</p>
+            <p className="text-[20px] font-bold leading-none m-0">City of Iligan</p>
+            <p className="supplemental-header-address text-[16px] leading-none m-0">
+              Ground Flr., Pedro Generalao Bldg., Buhanginan Hill, Pala-o, Iligan City
+            </p>
           </div>
-          <div className="border-b border-black mt-3" />
+          <img
+            src="/logo-shortcut.png"
+            alt="City Civil Registrar's Office Logo"
+            className="w-[100px] h-[100px] object-contain mx-auto"
+          />
         </div>
-      ) : (
-        <div className="supplemental-report-top-header flex justify-between items-start mb-4 text-[16px]">
-          <div className="leading-tight">
-            <p>{republicLine}</p>
-            <p>
+        <div className="border-b border-black mt-3" />
+        <div className="flex justify-between items-start gap-4 text-[16px] mt-1 mb-0 leading-tight">
+          <div className="supplemental-header-jurisdiction text-left">
+            <p className="m-0">{republicLine}</p>
+            <p className="m-0">
               <span>{cityOfLabel}</span>{' '}
               {iliganIdx >= 0 ? (
                 <span className="uppercase font-bold">
@@ -145,11 +158,11 @@ export default function SupplementalReportAffidavit({
               )}
             </p>
           </div>
-          <p className="font-bold">REG. NO. {regNo || ' '}</p>
+          <p className="font-bold text-right shrink-0 m-0">REG. NO. {regNo || ' '}</p>
         </div>
-      )}
+      </div>
 
-      <div className={supplementType === 'middleName' ? 'flex-1 flex flex-col min-h-0 w-full supplemental-affidavit-middle-body' : 'contents'}>
+      <div className="flex-1 flex flex-col min-h-0 w-full supplemental-affidavit-body">
         <h2 className="text-center font-bold text-[16px] uppercase mb-4 leading-tight">
           AFFIDAVIT FOR SUPPLEMENTAL REPORT
           <span className="block normal-case font-normal">(for COLB)</span>
@@ -187,27 +200,22 @@ export default function SupplementalReportAffidavit({
               ) : (
                 <>
                   <span className="block">I am the applicant for the processing of the Supplemental Report of:</span>
-                  <div className="mt-2 space-y-2.5">
-                    <div className="flex gap-2 items-start">
-                      {item1Box(isSelf)}
-                      <span>
-                        my Certificate of Live Birth registered in{' '}
-                        {colbEmph(isSelf ? registeredAt : '', 'min-w-[14ch]')}
-                        {' '}on{' '}
-                        {colbEmph(isSelf ? formattedRegisteredOn : '', 'min-w-[16ch]')};
-                      </span>
-                    </div>
-                    <div className="flex gap-2 items-start">
-                      {item1Box(!isSelf)}
-                      <span>
-                        the Certificate of Live Birth of{' '}
-                        {colbEmph(!isSelf ? subjectColbName : '', 'min-w-[22ch]')}, registered in{' '}
-                        {colbEmph(!isSelf ? registeredAt : '', 'min-w-[14ch]')}
-                        {' '}on{' '}
-                        {colbEmph(!isSelf ? formattedRegisteredOn : '', 'min-w-[16ch]')}.
-                      </span>
-                    </div>
-                  </div>
+                  {isSelf ? (
+                    <span className="block mt-2">
+                      my Certificate of Live Birth registered in{' '}
+                      {colbEmph(registeredAt, 'min-w-[14ch]')}
+                      {' '}on{' '}
+                      {colbEmph(formattedRegisteredOn, 'min-w-[16ch]')};
+                    </span>
+                  ) : (
+                    <span className="block mt-2">
+                      the Certificate of Live Birth of{' '}
+                      {colbEmph(subjectColbName, 'min-w-[22ch]')}, registered in{' '}
+                      {colbEmph(registeredAt, 'min-w-[14ch]')}
+                      {' '}on{' '}
+                      {colbEmph(formattedRegisteredOn, 'min-w-[16ch]')}.
+                    </span>
+                  )}
                 </>
               )}
             </li>
@@ -223,27 +231,11 @@ export default function SupplementalReportAffidavit({
               <span className={possessive === 'his' ? 'font-bold' : undefined}>his</span>/
               <span className={possessive === 'her' ? 'font-bold' : undefined}>her</span> Certificate of Live Birth was secured from PSA/Local Civil Registry Office of{' '}
               <span className="font-bold underline decoration-black">ILIGAN CITY</span> it was discovered that there is no entry under the following items:
-              {supplementType === 'custom' ? (
-                <>
-                  <br />
-                  <br />
-                </>
-              ) : null}
               {supplementType === 'geographical' ? (
-                <div className="my-1.5 leading-tight">
-                  <div className="font-bold">GEOGRAPHICAL LOCATION:</div>
-                  <div>
-                    <span className="font-bold">PROVINCE:</span>{' '}
-                    <span
-                      className="inline-block min-w-[14ch] outline-none print:outline-none underline decoration-black font-bold uppercase"
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={(e) => onItem3CustomChange?.((e.currentTarget.textContent || '').trim().toUpperCase())}
-                    >
-                      {item3GeoValue}
-                    </span>
-                  </div>
-                </div>
+                <SupplementalGeographicalItemBlock
+                  provinceValue={item3GeoValue}
+                  onProvinceBlur={onItem3CustomChange}
+                />
               ) : supplementType === 'middleName' ? (
                 <>
                   <br />
@@ -270,19 +262,18 @@ export default function SupplementalReportAffidavit({
                   </span>
                 </div>
               ) : supplementType === 'custom' ? (
-                <div className="my-1.5 leading-tight">
-                  <div className="font-bold uppercase">{supplementTypeInfo.displayLabel}:</div>
-                  <div>
-                    <span
-                      className="inline-block min-w-[14ch] outline-none print:outline-none underline decoration-black font-bold uppercase whitespace-pre-line"
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={(e) => onItem3CustomChange?.((e.currentTarget.textContent || '').trim())}
-                    >
-                      {item3CustomValue}
-                    </span>
-                  </div>
-                </div>
+                <>
+                  <br />
+                  <span className="font-bold uppercase">{supplementTypeInfo.displayLabel}:</span>{' '}
+                  <span
+                    className="inline min-w-[14ch] outline-none print:outline-none underline decoration-black font-bold uppercase"
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => onItem3CustomChange?.((e.currentTarget.textContent || '').trim())}
+                  >
+                    {item3CustomValue}
+                  </span>
+                </>
               ) : null}
             </li>
             <li className="text-justify">
@@ -290,27 +281,11 @@ export default function SupplementalReportAffidavit({
             </li>
             <li className="text-justify">
               The entries to be indicated therein should be the following:
-              {supplementType === 'custom' ? (
-                <>
-                  <br />
-                  <br />
-                </>
-              ) : null}
               {supplementType === 'geographical' ? (
-                <div className="my-1.5 leading-tight">
-                  <div className="font-bold">GEOGRAPHICAL LOCATION:</div>
-                  <div>
-                    <span className="font-bold">PROVINCE:</span>{' '}
-                    <span
-                      className="inline-block min-w-[14ch] outline-none print:outline-none underline decoration-black font-bold uppercase"
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={(e) => onItem5CustomChange?.((e.currentTarget.textContent || '').trim().toUpperCase())}
-                    >
-                      {item5GeoValue}
-                    </span>
-                  </div>
-                </div>
+                <SupplementalGeographicalItemBlock
+                  provinceValue={item5GeoValue}
+                  onProvinceBlur={onItem5CustomChange}
+                />
               ) : supplementType === 'middleName' ? (
                 <>
                   <br />
@@ -337,19 +312,18 @@ export default function SupplementalReportAffidavit({
                   </span>
                 </div>
               ) : supplementType === 'custom' ? (
-                <div className="my-1.5 leading-tight">
-                  <div className="font-bold uppercase">{supplementTypeInfo.displayLabel}:</div>
-                  <div>
-                    <span
-                      className="inline-block min-w-[14ch] outline-none print:outline-none underline decoration-black font-bold uppercase whitespace-pre-line"
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={(e) => onItem5CustomChange?.((e.currentTarget.textContent || '').trim())}
-                    >
-                      {item5CustomValue}
-                    </span>
-                  </div>
-                </div>
+                <>
+                  <br />
+                  <span className="font-bold uppercase">{supplementTypeInfo.displayLabel}:</span>{' '}
+                  <span
+                    className="inline min-w-[14ch] outline-none print:outline-none underline decoration-black font-bold uppercase"
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => onItem5CustomChange?.((e.currentTarget.textContent || '').trim())}
+                  >
+                    {item5CustomValue}
+                  </span>
+                </>
               ) : null}
             </li>
             <li className="text-justify">
@@ -385,27 +359,24 @@ export default function SupplementalReportAffidavit({
           <span className={fillFieldClass(false, 'min-w-[10ch]', false)} />, Philippines. I certify that I personally examined the affiant and that he/she voluntarily
           executed the foregoing affidavit and understood the contents thereof.
         </p>
-        {supplementType === 'middleName' ? (
-          <div className="supplemental-affidavit-registrar-signatory mt-14 mb-1 shrink-0 w-full flex justify-end pr-2">
-            <div className="inline-block text-center">
-              <p className="font-bold uppercase text-[13px] leading-tight m-0 tracking-tight">{affidavitSignatory.name}</p>
-              <p className="uppercase text-[12px] leading-tight m-0 font-normal">{affidavitSignatory.title}</p>
-            </div>
-          </div>
-        ) : null}
-        {supplementType === 'middleName' ? (
-          <>
-            <div className="flex-1 basis-0 min-h-0 min-w-0 shrink" aria-hidden />
-            <div className="supplemental-bottom-wrap shrink-0 w-full">
-              <DocumentFooter
-                sloganBlue
-                contactPhone="(063) 227 - 2806"
-                contactEmail="civilregistrar.iligan@gmail.com"
-                contentClassName="text-[14px] leading-snug"
-              />
-            </div>
-          </>
-        ) : null}
+      </div>
+      <div className="supplemental-affidavit-registrar-signatory mt-14 mb-1 shrink-0 w-full flex justify-end pr-2">
+        <div className="inline-block text-center">
+          <p className="font-bold uppercase text-[13px] leading-tight m-0 tracking-tight supplemental-affidavit-ccr-name">
+            {SUPPLEMENTAL_AFFIDAVIT_CCR_SIGNATORY.name}
+          </p>
+          <p className="uppercase text-[12px] leading-tight m-0 font-normal supplemental-affidavit-ccr-title">
+            {SUPPLEMENTAL_AFFIDAVIT_CCR_SIGNATORY.title}
+          </p>
+        </div>
+      </div>
+      <div className="supplemental-bottom-wrap shrink-0 w-full mt-auto mb-[1em]">
+        <DocumentFooter
+          sloganBlue
+          contactPhone="(063) 227 - 2806"
+          contactEmail="civilregistrar.iligan@gmail.com"
+          contentClassName="text-[14px] leading-snug"
+        />
       </div>
     </div>
   )

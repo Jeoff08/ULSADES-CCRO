@@ -72,3 +72,35 @@ export function supplementalCustomItemValue(text, typeInfo) {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   return raw.replace(new RegExp(`^${escaped}\\s*:?\\s*`, 'i'), '').trim() || raw
 }
+
+/**
+ * Form labels for missing / corrected COLB fields (affidavit items 3 & 5 values).
+ * Built-in kinds keep fixed wording; any other supplement type uses the typed description.
+ * @param {string} [rawSupplementType]
+ */
+export function getSupplementalMissingCorrectedLabels(rawSupplementType) {
+  const typeInfo = resolveSupplementalAffidavitType(rawSupplementType)
+  if (typeInfo.kind === 'sex') {
+    return {
+      missing: 'Missing on COLB (optional — leave blank for NOT STATED)',
+      corrected: "Correct child's sex (e.g. MALE, FEMALE)",
+    }
+  }
+  if (typeInfo.kind === 'middleName') {
+    return {
+      missing: 'Missing / blank on COLB (optional)',
+      corrected: "Correct child's middle name",
+    }
+  }
+  if (typeInfo.kind === 'geographical') {
+    return {
+      missing: 'Missing province entry',
+      corrected: 'Correct province entry',
+    }
+  }
+  const label = typeInfo.displayLabel || 'entry'
+  return {
+    missing: `Missing on COLB — ${label} (optional)`,
+    corrected: `Correct ${label} entry`,
+  }
+}
