@@ -676,21 +676,21 @@ export default function TransmittalDoc({
               {[0, 1, 2, 3, 4, 5].map((i) => (
                 <div key={`court-decree-psa-edit-${i}`} className="m-0 leading-tight">
                   <input
-                  type="text"
-                  spellCheck={false}
-                  aria-label={i === 0 ? 'PSA addressee line 1' : `PSA addressee line ${i + 1}`}
-                  className={`${inlineAddrInput} normal-case placeholder:normal-case ${i === 0 ? 'court-decree-transmittal-psa-name font-bold text-[12pt]' : 'text-[12pt]'}`}
-                  value={psaDraft[i]}
-                  onChange={(e) =>
-                    setPsaDraft((prev) => {
-                      const next = [...prev]
-                      while (next.length < 6) next.push('')
-                      next[i] = e.target.value
-                      return next
-                    })
-                  }
-                  placeholder={DEFAULT_TRANSMITTAL_PSA_LINES[i]}
-                />
+                    type="text"
+                    spellCheck={false}
+                    aria-label={i === 0 ? 'PSA addressee line 1' : `PSA addressee line ${i + 1}`}
+                    className={`${inlineAddrInput} normal-case placeholder:normal-case ${i === 0 ? 'court-decree-transmittal-psa-name font-bold text-[12pt]' : 'text-[12pt]'}`}
+                    value={psaDraft[i]}
+                    onChange={(e) =>
+                      setPsaDraft((prev) => {
+                        const next = [...prev]
+                        while (next.length < 6) next.push('')
+                        next[i] = e.target.value
+                        return next
+                      })
+                    }
+                    placeholder={DEFAULT_TRANSMITTAL_PSA_LINES[i]}
+                  />
                 </div>
               ))}
             </div>

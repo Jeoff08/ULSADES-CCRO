@@ -29,11 +29,6 @@ import {
   LcrForm1ABirthAvailable,
   LcrForm2ADeathAvailable,
   LcrForm3AMarriageAvailable,
-  AnnotationForForm1A,
-  AnnotationForForm2A,
-  AnnotationForForm3A,
-  MarriageNullityArt42Annotation,
-  MarriageAnnotationModeSidebar,
 } from './print'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
 import { mergeLcrRemarksFontSizePt } from '../../lib/lcrRemarksFontSize'
@@ -70,21 +65,21 @@ function getStoredData() {
   }
 }
 
-/** LCR + annotation print types tied to one civil document */
+/** LCR print types tied to one civil document */
 const LCR_TYPES_BY_AFFECTED = {
-  BIRTH_CERTIFICATE: new Set(['lcr-form-1a', 'annotation-form-1a']),
-  DEATH_CERTIFICATE: new Set(['lcr-form-2a', 'annotation-form-2a']),
-  MARRIAGE_CERTIFICATE: new Set(['lcr-form-3a', 'annotation-form-3a']),
+  BIRTH_CERTIFICATE: new Set(['lcr-form-1a']),
+  DEATH_CERTIFICATE: new Set(['lcr-form-2a']),
+  MARRIAGE_CERTIFICATE: new Set(['lcr-form-3a']),
 }
 
 const RESTRICTED_PRINT_IDS = [
   'lcr-form-1a',
   'lcr-form-2a',
   'lcr-form-3a',
-  'annotation-form-1a',
-  'annotation-form-2a',
-  'annotation-form-3a',
 ]
+
+/** Out-of-town transmittal: no LCR in print/PDF output. */
+const COURT_DECREE_OOT_EXCLUDED_PRINT_IDS = new Set(RESTRICTED_PRINT_IDS)
 
 const COURT_DECREE_LCR_REMARKS_FONT_SIDEBAR_TYPES = new Set(RESTRICTED_PRINT_IDS)
 
@@ -124,14 +119,6 @@ function deriveFilledAffectedDocuments(form) {
   return out
 }
 
-/** Annotation / marriage annotation print — Legal 8.5" × 14" for @page (print/PDF only via usePrintPageSize) */
-const COURT_DECREE_ANNOTATION_TYPES = new Set([
-  'annotation-form-1a',
-  'annotation-form-2a',
-  'annotation-form-3a',
-  'marriage-nullity-art42',
-])
-
 /** LCR Forms 1A, 2A, 3A — long bond only (not A4 or short 8.5" × 11"). */
 const COURT_DECREE_LCR_LONG_BOND_ONLY_TYPES = new Set([
   'lcr-form-1a',
@@ -158,22 +145,19 @@ export default function CourtDecreePrint() {
   const [paperSize, setPaperSize] = useState('a4')
   const type = searchParams.get('type') || 'cert-authenticity'
   const recordId = searchParams.get('id') || 'draft'
-  /** Not in sidebar — use Court Decree → Nullity of marriage. Direct URL still works. */
-  const validType =
-    type === 'marriage-nullity-art42'
-      ? 'marriage-nullity-art42'
-      : COURT_DECREE_TYPES.some((t) => t.id === type)
-        ? type
-        : 'cert-authenticity'
+  const validType = (() => {
+    if (type === 'annotation-form-1a' || type === 'marriage-nullity-art42') return 'lcr-form-1a'
+    if (type === 'annotation-form-2a') return 'lcr-form-2a'
+    if (type === 'annotation-form-3a') return 'lcr-form-3a'
+    return COURT_DECREE_TYPES.some((t) => t.id === type) ? type : 'cert-authenticity'
+  })()
   const paperSizesForPrint = useMemo(() => {
     if (COURT_DECREE_LCR_LONG_BOND_ONLY_TYPES.has(validType)) {
       return PAPER_SIZES.filter((p) => !COURT_DECREE_LCR_EXCLUDED_PAPER_SIZE_IDS.has(p.id))
     }
     return PAPER_SIZES
   }, [validType])
-  const pageSizeForPrint = COURT_DECREE_ANNOTATION_TYPES.has(validType)
-    ? 'legal'
-    : COURT_DECREE_LCR_LONG_BOND_ONLY_TYPES.has(validType) &&
+  const pageSizeForPrint = COURT_DECREE_LCR_LONG_BOND_ONLY_TYPES.has(validType) &&
         COURT_DECREE_LCR_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)
       ? 'long'
       : paperSize
@@ -261,7 +245,7 @@ export default function CourtDecreePrint() {
     if (stored) setData(stored)
   }, [])
 
-  /** Keep draft + certificate wording aligned when switching 1A / 2A / 3A (or matching annotations) in print. */
+  /** Keep draft + certificate wording aligned when switching 1A / 2A / 3A in print. */
   const selectPrintView = useCallback((typeId) => {
     setSearchParams((sp) => {
       const next = new URLSearchParams(sp)
@@ -297,11 +281,18 @@ export default function CourtDecreePrint() {
 
   const affectedDocs = normalizeAffectedList(data)
   const filledAffectedDocs = useMemo(() => deriveFilledAffectedDocuments(data), [data])
-  const effectiveAffectedDocs = filledAffectedDocs.length === 1 ? filledAffectedDocs : affectedDocs
+  /** Out-of-town: section 2 (affected civil document) does not drive print output. */
+  const effectiveAffectedDocs =
+    data?.courtDecreeTransmittalIsOutOfTown === true
+      ? []
+      : filledAffectedDocs.length === 1
+        ? filledAffectedDocs
+        : affectedDocs
 
   const filteredCourtDecreePrintTypes = useMemo(() => {
     const oot = data?.courtDecreeTransmittalIsOutOfTown === true
     return COURT_DECREE_TYPES.filter((t) => {
+      if (oot && COURT_DECREE_OOT_EXCLUDED_PRINT_IDS.has(t.id)) return false
       if (!TRANSMITTAL_PRINT_IDS.has(t.id)) return true
       if (oot) return t.id === 'out-of-town-transmittal'
       return t.id === 'transmittal'
@@ -311,7 +302,7 @@ export default function CourtDecreePrint() {
   /** If draft says out-of-town (or vice versa), keep URL print type consistent */
   useEffect(() => {
     const oot = data?.courtDecreeTransmittalIsOutOfTown === true
-    if (oot && validType === 'transmittal') {
+    if (oot && (validType === 'transmittal' || COURT_DECREE_OOT_EXCLUDED_PRINT_IDS.has(validType))) {
       setSearchParams(
         (sp) => {
           const n = new URLSearchParams(sp)
@@ -342,14 +333,6 @@ export default function CourtDecreePrint() {
     }
   }, [effectiveAffectedDocs, validType, setSearchParams])
 
-  useEffect(() => {
-    if (COURT_DECREE_ANNOTATION_TYPES.has(validType)) {
-      setPaperSize('legal')
-    } else {
-      setPaperSize((prev) => (prev === 'legal' ? 'a4' : prev))
-    }
-  }, [validType])
-
   useEffect(() => () => {
     if (previewPdfUrl) URL.revokeObjectURL(previewPdfUrl)
   }, [previewPdfUrl])
@@ -374,7 +357,7 @@ export default function CourtDecreePrint() {
 
   // LCR Form 1A: court-decree form fields override matched legitimation draft
   const dataForLcr1A = useMemo(() => {
-    if (validType !== 'lcr-form-1a' && validType !== 'annotation-form-1a') return data
+    if (validType !== 'lcr-form-1a') return data
     const ownerName = (data.documentOwnerName || '').trim()
     const normalize = (s) => (s || '').trim().toUpperCase()
     let ownerData = null
@@ -545,42 +528,6 @@ export default function CourtDecreePrint() {
     return mergeLcrRemarksFontSizePt(out, data)
   }, [validType, data])
 
-  /** Remarks for Annotation Form 2A only (legitimation + court merge). */
-  const remarksForAnnotationForm2A = useMemo(() => {
-    if (validType !== 'annotation-form-2a') return ''
-    const ownerName = (data.documentOwnerName || '').trim()
-    const normalize = (s) => (s || '').trim().toUpperCase()
-    let ownerData = null
-    if (ownerName) {
-      const draft = getLegitimationDraft()
-      if (draft) {
-        const forMarriage = getDocumentOwnerLabelFromLegitimationData(draft, 'MARRIAGE_CERTIFICATE')
-        const forDeath = getDocumentOwnerLabelFromLegitimationData(draft, 'DEATH_CERTIFICATE')
-        if (normalize(forMarriage) === normalize(ownerName) || normalize(forDeath) === normalize(ownerName)) ownerData = draft
-      }
-      if (!ownerData) {
-        const saved = getSavedLegitimationList()
-        for (const item of saved) {
-          if (!item.data) continue
-          const forMarriage = getDocumentOwnerLabelFromLegitimationData(item.data, 'MARRIAGE_CERTIFICATE')
-          const forDeath = getDocumentOwnerLabelFromLegitimationData(item.data, 'DEATH_CERTIFICATE')
-          const childLabel = [item.data.childFirst, item.data.childMiddle, item.data.childLast].filter(Boolean).join(' ').trim()
-          if (normalize(forMarriage) === normalize(ownerName) || normalize(forDeath) === normalize(ownerName) || normalize(childLabel) === normalize(ownerName) || normalize(item.label) === normalize(ownerName)) {
-            ownerData = item.data
-            break
-          }
-        }
-      }
-    }
-    const manualRaw = data?.lcrForm2aRemarks
-    const hasManualContent = String(manualRaw ?? '').trim() !== ''
-    const isRemarksTouched = data?.lcrForm2aRemarksTouched === true
-    if (hasManualContent || isRemarksTouched) return String(manualRaw ?? '')
-    if (!ownerData) ownerData = getLegitimationDraft()
-    if (!ownerData) return buildLcrRemarks(data, { ...defaultLegitimation }, 'DEATH')
-    return buildLcrRemarks(data, ownerData, 'DEATH')
-  }, [validType, data])
-
   const subjectLine = data.caseTitle
     ? `SUBJECT: IN RE: ${(data.caseTitle || '').toUpperCase()}`
     : `SUBJECT: IN RE: JOINT PETITION TO APPROVE AND REGISTER THE DIVORCE OF SPOUSES ${(data.documentOwnerName || '').toUpperCase()}`
@@ -673,94 +620,6 @@ export default function CourtDecreePrint() {
             </div>
           )
       break
-    case 'annotation-form-1a':
-      content = (
-        <AnnotationForForm1A
-          paperSize={paperSize}
-          data={{ ...data, remarks: dataForLcr1A.remarks }}
-          onRemarksChange={(remarks) => {
-            const next = { ...data, lcrForm1aRemarks: remarks, lcrForm1aRemarksTouched: true }
-            setData(next)
-            try {
-              const stored = getCourtDecreeDraft() || {}
-              saveCourtDecreeDraft({ ...stored, lcrForm1aRemarks: remarks, lcrForm1aRemarksTouched: true })
-            } catch (_) { }
-          }}
-          onAttachmentChange={(url) => {
-            const next = { ...data, annotationForm1AScanDataUrl: url ?? '' }
-            setData(next)
-            try {
-              const stored = getCourtDecreeDraft() || {}
-              saveCourtDecreeDraft({ ...stored, annotationForm1AScanDataUrl: url ?? '' })
-            } catch (_) { }
-          }}
-        />
-      )
-      break
-    case 'annotation-form-2a':
-      content = (
-        <AnnotationForForm2A
-          paperSize={paperSize}
-          data={{ ...data, remarks: remarksForAnnotationForm2A }}
-          onRemarksChange={(remarks) => {
-            const next = { ...data, lcrForm2aRemarks: remarks, lcrForm2aRemarksTouched: true }
-            setData(next)
-            try {
-              const stored = getCourtDecreeDraft() || {}
-              saveCourtDecreeDraft({ ...stored, lcrForm2aRemarks: remarks, lcrForm2aRemarksTouched: true })
-            } catch (_) { }
-          }}
-          onAttachmentChange={(url) => {
-            const next = { ...data, annotationForm2AScanDataUrl: url ?? '' }
-            setData(next)
-            try {
-              const stored = getCourtDecreeDraft() || {}
-              saveCourtDecreeDraft({ ...stored, annotationForm2AScanDataUrl: url ?? '' })
-            } catch (_) { }
-          }}
-        />
-      )
-      break
-    case 'annotation-form-3a':
-      content = (
-        <AnnotationForForm3A
-          data={{ ...data, remarks: String(data?.lcrForm3aRemarks ?? '') }}
-          onRemarksChange={(remarks) => {
-            const next = { ...data, lcrForm3aRemarks: remarks, lcrForm3aRemarksTouched: true }
-            setData(next)
-            try {
-              const stored = getCourtDecreeDraft() || {}
-              saveCourtDecreeDraft({ ...stored, lcrForm3aRemarks: remarks, lcrForm3aRemarksTouched: true })
-            } catch (_) { }
-          }}
-        />
-      )
-      break
-    case 'marriage-nullity-art42':
-      content = (
-        <MarriageNullityArt42Annotation
-          hugPrintSidebar
-          hideOutputTypeSelector
-          data={data}
-          onAttachmentChange={(url) => {
-            const next = { ...data, marriageNullityScanDataUrl: url ?? '' }
-            setData(next)
-            try {
-              const stored = getCourtDecreeDraft() || {}
-              saveCourtDecreeDraft({ ...stored, marriageNullityScanDataUrl: url ?? '' })
-            } catch (_) { }
-          }}
-          onModeChange={(m) => {
-            const next = { ...data, marriageAnnotationMode: m }
-            setData(next)
-            try {
-              const stored = getCourtDecreeDraft() || {}
-              saveCourtDecreeDraft({ ...stored, marriageAnnotationMode: m })
-            } catch (_) { }
-          }}
-        />
-      )
-      break
     default:
       content = <CertAuthenticityCourtDecree data={data} />
   }
@@ -775,25 +634,17 @@ export default function CourtDecreePrint() {
           </button>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          {COURT_DECREE_ANNOTATION_TYPES.has(validType) ? (
-            <p className="text-xs text-gray-600 max-w-[16rem] leading-snug">
-              Paper: Legal (8.5&quot; × 14&quot;) — fixed for Court Decree annotations only.
-            </p>
-          ) : (
-            <>
-              <label className="sr-only" htmlFor="court-decree-paper-size">Paper size (for print)</label>
-              <select
-                id="court-decree-paper-size"
-                value={paperSize}
-                onChange={(e) => setPaperSize(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
-              >
-                {paperSizesForPrint.map((p) => (
-                  <option key={p.id} value={p.id}>{p.label}</option>
-                ))}
-              </select>
-            </>
-          )}
+          <label className="sr-only" htmlFor="court-decree-paper-size">Paper size (for print)</label>
+          <select
+            id="court-decree-paper-size"
+            value={paperSize}
+            onChange={(e) => setPaperSize(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+          >
+            {paperSizesForPrint.map((p) => (
+              <option key={p.id} value={p.id}>{p.label}</option>
+            ))}
+          </select>
           <button
             type="button"
             onClick={handleSavePdf}
@@ -810,13 +661,13 @@ export default function CourtDecreePrint() {
           </button>
         </div>
       </div>
-      <div className={validType === 'marriage-nullity-art42' ? 'flex gap-3 items-start' : 'flex gap-6'}>
+      <div className="flex gap-6">
         <aside className="no-print w-64 shrink-0 flex flex-col gap-3">
           <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">View &amp; Print</h2>
           <div className="flex flex-col gap-2">
             {effectiveAffectedDocs.length > 0 ? (
               <p className="text-xs text-gray-600 leading-snug -mt-1 mb-1">
-                LCR and annotation options are limited to the civil document forms you filled out.
+                LCR options are limited to the civil document forms you filled out.
               </p>
             ) : null}
             {filteredCourtDecreePrintTypes.map((t) => {
@@ -878,20 +729,6 @@ export default function CourtDecreePrint() {
               )
             })}
           </div>
-          {validType === 'marriage-nullity-art42' ? (
-            <MarriageAnnotationModeSidebar
-              belowPrintNav
-              data={data}
-              onModeChange={(m) => {
-                const next = { ...data, marriageAnnotationMode: m }
-                setData(next)
-                try {
-                  const stored = getCourtDecreeDraft() || {}
-                  saveCourtDecreeDraft({ ...stored, marriageAnnotationMode: m })
-                } catch (_) { }
-              }}
-            />
-          ) : null}
           {COURT_DECREE_CCR_SIDEBAR_TYPES.has(validType) ? (
             <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
               <label htmlFor="court-decree-print-ccr-select" className="block text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1.5">
@@ -942,7 +779,7 @@ export default function CourtDecreePrint() {
               id="court-decree-print-lcr-remarks-font"
               value={data.lcrRemarksFontSizePt}
               onChange={persistLcrRemarksFontPt}
-              helpText="Applies to the REMARKS block on LCR 1A / 2A / 3A and matching annotation printouts."
+              helpText="Applies to the REMARKS block on LCR 1A / 2A / 3A printouts."
             />
           ) : null}
         </aside>

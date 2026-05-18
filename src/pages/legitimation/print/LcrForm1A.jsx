@@ -9,6 +9,7 @@ import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrR
 import { courtDecreeColbInputStyle } from '../../courtDecree/lib/courtDecreeColbPrintStyle'
 import LcrCertificationRequestPartyInline from '../../../components/lcr/LcrCertificationRequestPartyInline'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
+import { legitimationAffidavitCcrDisplayRow } from './legitimationAffidavitCcr'
 
 /** Long bond only — not laid out for A4 or short (8.5" × 11"). */
 export const LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS = new Set(['a4', 'short'])
@@ -109,7 +110,10 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
   const motherFull = fullName(data.motherFirst, data.motherMiddle, data.motherLast)
   const fatherFull = fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
   const formDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
-  const ccrName = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
+  const ccrVariant = data.bothParentsAlive === 'NO' ? 'sole' : 'joint'
+  const ccrRow = legitimationAffidavitCcrDisplayRow(data, ccrVariant)
+  const ccrName = (ccrRow?.name || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
+  const ccrTitle = ccrRow?.title || 'City Civil Registrar'
   const verifiedByName = (data.verifiedByName || data.lcrStaffName || 'SHIRLY L. DEMECILLO').toUpperCase()
   const regOfficerTitle = data.verifiedByTitle || data.lcrStaffTitle || 'Registration Officer II'
 
@@ -203,7 +207,7 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
         <div className="court-decree-lcr-body-scaled flex flex-col h-full">
           <div>
             <p className="font-bold mb-1 pl-0">TO WHOM IT MAY CONCERN:</p>
-            <p className="mb-2 text-left court-decree-lcr-body [text-indent:0.5in]">
+            <p className="mb-2 text-left court-decree-lcr-body">
               <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of birth appear in our Register of Births on Page{' '}
               {editableTable && onDataChange ? (
                 <input
@@ -277,7 +281,7 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
             </table>
 
             <p
-              className="mb-2 text-left court-decree-lcr-body legitimation-lcr1a-cert-request court-decree-lcr-cert-after-table [text-indent:0.5in]"
+              className="mb-2 text-left court-decree-lcr-body legitimation-lcr1a-cert-request court-decree-lcr-cert-after-table"
               style={{ fontSize: '16px', lineHeight: 1.3, textAlign: 'left' }}
             >
               This certification is issued upon the request of{' '}
@@ -322,12 +326,12 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
           <div className="mb-1 flex flex-col-reverse items-stretch gap-1">
             <div className="legitimation-lcr1a-verified-left flex flex-col items-center text-center self-start">
               <p className="font-bold text-sm mb-0.5 self-start">Verified by:</p>
-              <p className="font-bold text-sm border-b border-black inline-block">{verifiedByName}</p>
+              <p className="font-bold text-sm inline-block">{verifiedByName}</p>
               <p className="text-xs mt-0">{regOfficerTitle}</p>
             </div>
             <div className="flex flex-col items-center text-center self-end">
-              <p className="font-bold text-sm border-b border-black inline-block">{ccrName}</p>
-              <p className="text-xs mt-0">City Civil Registrar</p>
+              <p className="font-bold text-sm inline-block">{ccrName}</p>
+              <p className="text-xs mt-0">{ccrTitle}</p>
             </div>
           </div>
           <p className="lcr1a-note-line font-bold text-sm mb-1">Note: This certification is not valid if it has mark, erasure or alteration of any entry.</p>

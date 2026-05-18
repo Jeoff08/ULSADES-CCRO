@@ -17,9 +17,6 @@ const COURT_DECREE_TYPE_LABELS = {
   'lcr-form-1a': 'LCR FORM 1A',
   'lcr-form-2a': 'LCR FORM 2A',
   'lcr-form-3a': 'LCR FORM 3A',
-  'annotation-form-1a': 'ANNOTATION FOR FORM 1A',
-  'annotation-form-2a': 'ANNOTATION FOR FORM 2A',
-  'annotation-form-3a': 'ANNOTATION FOR FORM 3A',
 }
 
 function formatSavedAt(iso) {

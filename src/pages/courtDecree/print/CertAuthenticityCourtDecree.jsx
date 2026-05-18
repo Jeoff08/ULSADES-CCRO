@@ -32,6 +32,118 @@ function documentOwnerForCertificate(data, affectedCode) {
   return '—'
 }
 
+/** Gap between “Issued this …” and CCR signatory (screen, browser print, PDF capture). */
+export const COURT_DECREE_CERT_SIGNATORY_AFTER_ISSUED_GAP = '8em'
+
+export const COURT_DECREE_CERT_SIGNATORY_PRINT_STYLES = `
+@media print {
+  .court-decree-certificate-print .cert-auth-body .court-decree-cert-signatory-after-issued,
+  .court-decree-certificate-print .cert-reg-body .court-decree-cert-signatory-after-issued,
+  .print-doc-cert-registration.court-decree-certificate-print .cert-reg-body .court-decree-cert-signatory-after-issued,
+  html[data-paper-size] .court-decree-certificate-print .court-decree-cert-signatory-after-issued {
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    margin-top: ${COURT_DECREE_CERT_SIGNATORY_AFTER_ISSUED_GAP} !important;
+  }
+  .court-decree-certificate-print .court-decree-cert-body-spacer,
+  .print-doc-cert-registration.court-decree-certificate-print .court-decree-cert-body-spacer {
+    display: none !important;
+    min-height: 0 !important;
+    flex: none !important;
+  }
+}
+body.pdf-capture .court-decree-certificate-print .cert-auth-body .court-decree-cert-signatory-after-issued,
+body.pdf-capture .court-decree-certificate-print .cert-reg-body .court-decree-cert-signatory-after-issued,
+body.pdf-capture .print-doc-cert-registration.court-decree-certificate-print .cert-reg-body .court-decree-cert-signatory-after-issued,
+body.pdf-capture html[data-paper-size] .court-decree-certificate-print .court-decree-cert-signatory-after-issued {
+  display: inline-flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  margin-top: ${COURT_DECREE_CERT_SIGNATORY_AFTER_ISSUED_GAP} !important;
+}
+body.pdf-capture .court-decree-certificate-print .court-decree-cert-body-spacer,
+body.pdf-capture .print-doc-cert-registration.court-decree-certificate-print .court-decree-cert-body-spacer {
+  display: none !important;
+  min-height: 0 !important;
+  flex: none !important;
+}
+`
+
+/** Print/PDF: CoA title 14pt; CoR title 16pt; CoR body justified with normal word spacing. */
+export const COURT_DECREE_CERT_LAYOUT_PRINT_STYLES = `
+@media print {
+  .court-decree-certificate-print.print-doc-cert-auth .court-decree-cert-main-title,
+  html[data-paper-size] .court-decree-certificate-print.print-doc-cert-auth .court-decree-cert-main-title {
+    font-size: 14pt !important;
+    line-height: 1.2 !important;
+  }
+  .court-decree-certificate-print.print-doc-cert-registration .court-decree-cert-main-title,
+  html[data-paper-size] .court-decree-certificate-print.print-doc-cert-registration .court-decree-cert-main-title {
+    font-size: 16pt !important;
+    line-height: 1.2 !important;
+  }
+  .ausf-doc.print-doc.print-doc-cert-registration.court-decree-certificate-print .cert-reg-body,
+  .ausf-doc.print-doc.print-doc-cert-registration.court-decree-certificate-print .cert-reg-body p,
+  .ausf-doc.print-doc.print-doc-cert-registration.court-decree-certificate-print .cert-reg-body span,
+  .court-decree-certificate-print.print-doc-cert-registration .cert-reg-body,
+  .court-decree-certificate-print.print-doc-cert-registration .cert-reg-body p,
+  .court-decree-certificate-print.print-doc-cert-registration .cert-reg-body span,
+  html[data-paper-size] .ausf-doc.print-doc.print-doc-cert-registration.court-decree-certificate-print .cert-reg-body,
+  html[data-paper-size] .ausf-doc.print-doc.print-doc-cert-registration.court-decree-certificate-print .cert-reg-body p,
+  html[data-paper-size] .court-decree-certificate-print.print-doc-cert-registration .cert-reg-body,
+  html[data-paper-size] .court-decree-certificate-print.print-doc-cert-registration .cert-reg-body p,
+  html[data-paper-size] .court-decree-certificate-print.print-doc-cert-registration .cert-reg-body span {
+    text-align: justify !important;
+    text-justify: inter-word !important;
+    word-spacing: normal !important;
+    letter-spacing: normal !important;
+  }
+}
+body.pdf-capture .court-decree-certificate-print.print-doc-cert-auth .court-decree-cert-main-title,
+body.pdf-capture html[data-paper-size] .court-decree-certificate-print.print-doc-cert-auth .court-decree-cert-main-title {
+  font-size: 14pt !important;
+  line-height: 1.2 !important;
+}
+body.pdf-capture .court-decree-certificate-print.print-doc-cert-registration .court-decree-cert-main-title,
+body.pdf-capture html[data-paper-size] .court-decree-certificate-print.print-doc-cert-registration .court-decree-cert-main-title {
+  font-size: 16pt !important;
+  line-height: 1.2 !important;
+}
+body.pdf-capture .ausf-doc.print-doc.print-doc-cert-registration.court-decree-certificate-print .cert-reg-body,
+body.pdf-capture .ausf-doc.print-doc.print-doc-cert-registration.court-decree-certificate-print .cert-reg-body p,
+body.pdf-capture .ausf-doc.print-doc.print-doc-cert-registration.court-decree-certificate-print .cert-reg-body span,
+body.pdf-capture .court-decree-certificate-print.print-doc-cert-registration .cert-reg-body,
+body.pdf-capture .court-decree-certificate-print.print-doc-cert-registration .cert-reg-body p,
+body.pdf-capture .court-decree-certificate-print.print-doc-cert-registration .cert-reg-body span,
+body.pdf-capture html[data-paper-size] .ausf-doc.print-doc.print-doc-cert-registration.court-decree-certificate-print .cert-reg-body,
+body.pdf-capture html[data-paper-size] .ausf-doc.print-doc.print-doc-cert-registration.court-decree-certificate-print .cert-reg-body p,
+body.pdf-capture html[data-paper-size] .court-decree-certificate-print.print-doc-cert-registration .cert-reg-body,
+body.pdf-capture html[data-paper-size] .court-decree-certificate-print.print-doc-cert-registration .cert-reg-body p,
+body.pdf-capture html[data-paper-size] .court-decree-certificate-print.print-doc-cert-registration .cert-reg-body span {
+  text-align: justify !important;
+  text-justify: inter-word !important;
+  word-spacing: normal !important;
+  letter-spacing: normal !important;
+}
+`
+
+export const COURT_DECREE_CERT_ALL_PRINT_STYLES =
+  COURT_DECREE_CERT_SIGNATORY_PRINT_STYLES + COURT_DECREE_CERT_LAYOUT_PRINT_STYLES
+
+export function CourtDecreeCertSignatory({ name, title, className = '' }) {
+  const afterIssued = String(className).includes('court-decree-cert-signatory-after-issued')
+  return (
+    <div
+      className={`court-decree-cert-signatory-block ml-0 inline-flex flex-col items-center gap-0 leading-none ${className}`.trim()}
+      style={afterIssued ? { marginTop: COURT_DECREE_CERT_SIGNATORY_AFTER_ISSUED_GAP } : undefined}
+    >
+      <p className="court-decree-cert-signatory-name m-0 font-bold uppercase text-[15px]">{name}</p>
+      <p className="court-decree-cert-signatory-title m-0 text-[13px] italic">{title}</p>
+    </div>
+  )
+}
+
 /**
  * @param {object} props
  * @param {object} props.data Court decree draft fields
@@ -43,8 +155,9 @@ export default function CertAuthenticityCourtDecree({ data }) {
   const caseNo = data.caseNo || '—'
   const authenticatedBy = data.authenticatedBy || '—'
   const memoCircular = data.courtOrRacco || '2012-02'
-  const affectedCode = resolveSingleAffectedDocumentForCertificate(data)
-  const affectedDoc = formatAffectedDocumentLabel(affectedCode)
+  const isOutOfTown = data?.courtDecreeTransmittalIsOutOfTown === true
+  const affectedCode = isOutOfTown ? '' : resolveSingleAffectedDocumentForCertificate(data)
+  const affectedDoc = isOutOfTown ? '' : formatAffectedDocumentLabel(affectedCode)
   const documentOwner = documentOwnerForCertificate(data, affectedCode)
   const issuedDate =
     formatDateMonthDayYearComma(data.certificateIssuanceDate) || formatDateMonthDayYearComma(new Date())
@@ -54,10 +167,11 @@ export default function CertAuthenticityCourtDecree({ data }) {
 
   return (
     <div className="ausf-doc print-doc print-doc-cert-auth court-decree-certificate-print bg-white text-black text-base max-w-[210mm] mx-auto px-0 py-4 leading-relaxed flex flex-col min-h-[297mm]">
+      <style dangerouslySetInnerHTML={{ __html: COURT_DECREE_CERT_ALL_PRINT_STYLES }} />
       <DocumentHeader />
 
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
-        <h2 className="text-center font-bold text-[30px] uppercase mb-6 tracking-tight">CERTIFICATE OF AUTHENTICITY</h2>
+        <h2 className="court-decree-cert-main-title text-center font-bold text-[30px] uppercase mb-6 tracking-tight">CERTIFICATE OF AUTHENTICITY</h2>
 
         <p className="font-bold text-[18px] mb-4">TO WHOM IT MAY CONCERN:</p>
 
@@ -71,16 +185,17 @@ export default function CertAuthenticityCourtDecree({ data }) {
           <p>
             Issued this <span className="font-bold underline">{issuedDate}</span> at Iligan City, Philippines.
           </p>
+          <CourtDecreeCertSignatory
+            name={signatory}
+            title={signatoryTitle}
+            className="court-decree-cert-signatory-after-issued mb-0"
+          />
         </div>
 
-        <div className="min-h-[8rem] flex-1" aria-hidden />
+        <div className="court-decree-cert-body-spacer min-h-[8rem] flex-1" aria-hidden />
       </div>
 
       <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-start flex-shrink-0">
-        <div className="court-decree-cert-signatory-block ml-0 inline-flex flex-col items-center gap-0 leading-none mb-8">
-          <p className="court-decree-cert-signatory-name m-0 font-bold uppercase text-[15px]">{signatory}</p>
-          <p className="court-decree-cert-signatory-title m-0 text-[13px] italic">{signatoryTitle}</p>
-        </div>
         <div className="w-full">
           <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
         </div>

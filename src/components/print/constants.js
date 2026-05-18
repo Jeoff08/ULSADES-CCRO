@@ -11,9 +11,7 @@ export const VIEW_PRINT_OPTIONS = [
   { label: 'Registration of AUSF', type: 'reg-ausf' },
   { label: 'Registration of Acknowledgement', type: 'reg-ack' },
   { label: 'LCR Form 1A (Birth-Available)', type: 'child-ack-lcr', labelLine1: 'LCR Form 1A (Birth-', labelLine2: 'Available)' },
-  { label: 'Annotation Ack Field', type: 'child-ack-annotation' },
   { label: 'LCR Form A1', type: 'child-not-ack-lcr', buttonRoundedLeft: true },
-  { label: 'Annotation (Child Not Ack)', type: 'child-not-ack-annotation' },
   { label: 'Transmittal', type: 'child-not-ack-transmittal' },
   { label: 'Out-of-Town Transmittal', type: 'out-of-town' },
 ]

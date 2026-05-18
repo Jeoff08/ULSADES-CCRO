@@ -8,7 +8,7 @@ export default function RegistrationOfAcknowledgement({ data }) {
   const [registeredDate, setRegisteredDate] = useState(() => formatDateLong(data.affidavitAckDate) || '')
   const [registryNo, setRegistryNo] = useState(() => data.affidavitAckRegistryNo || '')
   const issuedDate = formatDateLong(data.certificateIssuanceDate) || formatDateLong(new Date())
-  const signatory = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
+  const signatory = (data.cityCivilRegistrarName || 'ATTY.YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
 
   return (
     <div className="registration-of-ack-doc ausf-doc print-doc print-doc-cert-auth legitimation-registrar-footer-print legitimation-cert-auth-no-indent bg-white text-black text-base max-w-[210mm] mx-auto px-0 py-4 leading-relaxed flex flex-col min-h-[297mm]">
@@ -51,16 +51,17 @@ export default function RegistrationOfAcknowledgement({ data }) {
           </p>
         </div>
 
-        <div className="min-h-[8rem] flex-1" aria-hidden />
-      </div>
-
-      <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-end flex-shrink-0">
-        <div className="flex flex-col items-end mb-8">
+        <div className="flex flex-col items-end mt-16 mb-8">
           <div className="legitimation-registrar-signatory-block mr-0 inline-flex flex-col items-center leading-none text-center">
             <div className="font-bold uppercase text-[15px]">{signatory}</div>
             <div className="text-[13px] italic">City Civil Registrar</div>
           </div>
         </div>
+
+        <div className="min-h-[4rem] flex-1" aria-hidden />
+      </div>
+
+      <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-end flex-shrink-0">
         <div className="w-full">
           <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
         </div>

@@ -2,14 +2,18 @@ import React from 'react'
 import { formatDateLong, fullName, joinCommaParts } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter, FILL, FILL_BOLD } from '../../../components/print'
 
+/** Long bond only — not laid out for A4 or short (8.5" × 11"). */
+export const AUSF_06_PRINT_TYPE = 'ausf-0-6'
+export const AUSF_06_EXCLUDED_PAPER_SIZE_IDS = new Set(['a4', 'short'])
+
 export default function Ausf06({ data }) {
   const affiantName = data.applicantName || fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
   const surnameSought = data.fatherLast
   const childFullName = fullName(data.childFirst, data.childMiddle, data.childLast)
   const relationship = String(data.relationshipToChild || '').trim().toUpperCase() || 'SON'
   const dobFormatted = formatDateLong(data.dateOfBirth)
-  const colbReg = data.colbRegistryNo
-  const colbDate = formatDateLong(data.colbDateOfRegistration)
+  const colbReg = String(data.colbRegistryNo ?? '').trim() || ' '
+  const colbDate = formatDateLong(data.colbDateOfRegistration) || ' '
   const publicReg = data.publicDocRegistryNo
   const publicDate = formatDateLong(data.publicDocDate)
   const publicOffice = data.publicDocOffice
@@ -47,7 +51,7 @@ export default function Ausf06({ data }) {
           He/She was born on <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{dobFormatted}</span> at <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{placeStreet}</span>{placeStreet && placeCityProvince ? ', ' : null}{placeCityProvince ? <span className={`${FILL_BOLD} px-0.5 align-baseline uppercase`}>{placeCityProvince}</span> : null}
         </li>
         <li>
-          The Birth was recorded under Registry Number <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{colbReg}</span> on <span className={`${FILL_BOLD} px-0.5 align-baseline`}>{colbDate}</span>
+          The Birth was recorded under Registry Number <span className={`${FILL_BOLD} empty-blank px-0.5 align-baseline`}>{colbReg}</span> on <span className={`${FILL_BOLD} empty-blank px-0.5 align-baseline`}>{colbDate}</span>
         </li>
         <li className="text-justify">
           The Public Documents or the Private Handwritten Instrument was recorded under Registry Number <span className={`${FILL} empty-blank px-0.5 align-baseline`}>{publicReg || ' '}</span> on <span className={`${FILL} empty-blank px-0.5 align-baseline`}>{publicDate || ' '}</span> at the Local Civil Registry Office (LCRO)/Philippine Foreign Service Post (PFSP) of <span className={`${FILL} empty-blank px-0.5 align-baseline`}>{publicOffice || ' '}</span>

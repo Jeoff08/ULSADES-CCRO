@@ -7095,6 +7095,16 @@ html[data-paper-size="legal"] body.pdf-capture .ausf-registration-cert .cert-reg
   margin-top: 0 !important;
 }
 
+/* AUSF Registration of AUSF / Acknowledgement: 8em below “Issued this …” before signatory (print/PDF only) */
+@media print {
+  .ausf-doc.print-doc.court-decree-lcr-form .cert-reg-signatory {
+    margin-top: 8em !important;
+  }
+}
+body.pdf-capture .ausf-doc.print-doc.court-decree-lcr-form .cert-reg-signatory {
+  margin-top: 8em !important;
+}
+
 /* AUSF LCR Form A1 cert sentence: 11.7pt — long bond only */
 @media print {
   html[data-paper-size="long"] .ausf-lcr-a1-form.court-decree-lcr-form .ausf-lcr-cert-line,

@@ -1497,7 +1497,7 @@ export default function CourtDecreeForm() {
                       className="mt-2"
                       value={form.lcrRemarksFontSizePt}
                       onChange={(v) => updateAndPersistDraft('lcrRemarksFontSizePt', v)}
-                      helpText="Controls how large the REMARKS text prints on LCR 1A / 2A / 3A and matching annotation pages."
+                      helpText="Controls how large the REMARKS text prints on LCR 1A / 2A / 3A."
                     />
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">LCRO - Staff (Verified by)</label>

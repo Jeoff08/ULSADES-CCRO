@@ -20,10 +20,8 @@ const FORM_TYPE_LABELS = {
   'reg-ack': 'Registration of Acknowledgement',
   'child-ack': 'Child Acknowledge',
   'child-ack-lcr': 'LCR Form 1A (Birth-Available)',
-  'child-ack-annotation': 'Annotation Ack Field',
   'child-not-ack': 'Child Not Acknowledged',
   'child-not-ack-lcr': 'LCR Form A1 (Child Not Acknowledged)',
-  'child-not-ack-annotation': 'Annotation (Child Not Acknowledged)',
   'child-not-ack-transmittal': 'Transmittal (Child Not Acknowledged)',
   'out-of-town': 'Out-of-Town Transmittal',
 }
@@ -49,10 +47,13 @@ function matchesSearch(item, query, formTypeLabels) {
   return label.includes(q) || formLabel.includes(q) || savedAt.includes(q)
 }
 
-const FORM_TYPE_HIDDEN_IN_AUSF_SAVED = 'child-ack-annotation'
+const FORM_TYPES_HIDDEN_IN_AUSF_SAVED = new Set([
+  'child-ack-annotation',
+  'child-not-ack-annotation',
+])
 
 function getAusfSavedListForDisplay() {
-  return getSavedAUSFList().filter((item) => item.formType !== FORM_TYPE_HIDDEN_IN_AUSF_SAVED)
+  return getSavedAUSFList().filter((item) => !FORM_TYPES_HIDDEN_IN_AUSF_SAVED.has(item.formType))
 }
 
 function sortAusfSavedList(items) {

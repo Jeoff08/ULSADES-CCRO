@@ -18,7 +18,6 @@ import {
   LcrForm1A,
   Transmittal,
   OutOfTownTransmittal,
-  Annotation,
 } from './print'
 import { LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS } from './print/LcrForm1A'
 import { RECEIVED_BY_OPTIONS, legitimationAffidavitCcrPersistPatch, legitimationAffidavitCcrSelectValue } from './print/legitimationAffidavitCcr'
@@ -61,7 +60,8 @@ export default function LegitimationPrint() {
   const [paperSize, setPaperSize] = useState('a4')
   const type = searchParams.get('type') || 'joint-affidavit'
   const recordId = searchParams.get('id') || 'draft'
-  const validType = LEGITIMATION_TYPES.some((t) => t.id === type) ? type : 'joint-affidavit'
+  const resolvedType = type === 'annotation' ? 'lcr-form-1a' : type
+  const validType = LEGITIMATION_TYPES.some((t) => t.id === resolvedType) ? resolvedType : 'joint-affidavit'
   const [data, setData] = useState(() => getStoredData() || defaultLegitimation)
   const uploadInputRef = useRef(null)
   const uploadScopeRef = useRef('')
@@ -96,9 +96,7 @@ export default function LegitimationPrint() {
   }, [effectiveType])
 
   const pageSizeForPrint =
-    effectiveType === 'annotation'
-      ? 'long'
-      : effectiveType === 'lcr-form-1a' && LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)
+    effectiveType === 'lcr-form-1a' && LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)
         ? 'long'
         : paperSize
 
@@ -220,14 +218,6 @@ export default function LegitimationPrint() {
   }, [data?.legitimationTransmittalIsOutOfTown, validType, setSearchParams])
 
   useEffect(() => {
-    if (effectiveType === 'annotation') {
-      setPaperSize('long')
-    } else {
-      setPaperSize((prev) => (prev === 'legal' ? 'a4' : prev))
-    }
-  }, [effectiveType])
-
-  useEffect(() => {
     if (!allowedTypeIds.includes(validType) && allowedTypeIds.length > 0) {
       setSearchParams({ type: allowedTypeIds[0] })
     }
@@ -295,9 +285,6 @@ export default function LegitimationPrint() {
     case 'out-of-town-transmittal':
       content = <OutOfTownTransmittal data={data} subjectLine={subjectLine} onPersistDraft={persistTransmittalDraft} />
       break
-    case 'annotation':
-      content = <Annotation data={data} />
-      break
     default:
       content = <JointAffidavitLegitimation data={data} />
   }
@@ -317,13 +304,7 @@ export default function LegitimationPrint() {
             id="legitimation-paper-size"
             value={paperSize}
             onChange={(e) => setPaperSize(e.target.value)}
-            disabled={effectiveType === 'annotation'}
-            title={
-              effectiveType === 'annotation'
-                ? 'Annotation outputs are fixed to Long (8.5" × 13") for printing'
-                : undefined
-            }
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white disabled:opacity-70 disabled:cursor-not-allowed"
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
           >
             {paperSizesForPrint.map((p) => (
               <option key={p.id} value={p.id}>{p.label}</option>
@@ -445,7 +426,7 @@ export default function LegitimationPrint() {
                 ) : null}
               </select>
               <p className="text-[10px] text-gray-500 mt-1.5 leading-snug">
-                Only the Joint or Sole affidavit signature line is updated. LCR, registration, annotation, and transmittal still use the shared City Civil Registrar fields from the main form.
+                Only the Joint or Sole affidavit signature line is updated. LCR, registration, and transmittal still use the shared City Civil Registrar fields from the main form.
               </p>
             </div>
           ) : null}

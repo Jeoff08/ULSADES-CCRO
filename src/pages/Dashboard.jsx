@@ -12,7 +12,6 @@ const AUSF_ITEMS = [
   { title: 'Registration of AUSF', desc: 'Register the AUSF document', path: '/ausf', type: 'reg-ausf' },
   { title: 'Registration of Acknowledgement', desc: 'Register affidavit of acknowledgement', path: '/ausf', type: 'reg-ack' },
   { title: 'LCR Form 1A (Birth-Available)', desc: 'Child Acknowledge — Birth certification', path: '/ausf', type: 'child-ack-lcr' },
-  { title: 'Annotation Ack Field', desc: 'Annotation with COLB office file preview/output', path: '/ausf', type: 'child-ack-annotation' },
   { title: 'LCR Form A1 (Child Not Acknowledged)', desc: 'LCR Form 1A certification', path: '/ausf', type: 'child-not-ack-lcr' },
   { title: 'Transmittal (Child Not Acknowledged)', desc: 'Endorsement letter to Municipal Civil Registrar', path: '/ausf', type: 'child-not-ack-transmittal' },
   { title: 'Out of Town Transmittal', desc: 'Transmittal for out-of-town / PSA', path: '/ausf', type: 'out-of-town' },

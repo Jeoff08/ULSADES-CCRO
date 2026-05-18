@@ -181,8 +181,10 @@ export default function LcrForm1ABirthAvailable({ data, onDataChange }) {
     onDataChange?.({ ...data, ...partial })
   }
   const childFull = fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.childFirst, data.childMiddle, data.childLast)
-  const motherFull = data.motherName || '—'
-  const fatherFull = data.fatherName || '—'
+  const motherFull = fullName(data.motherFirst, data.motherMiddle, data.motherLast)
+  const fatherFull = fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
+  const showMotherName = Boolean(String(motherFull).trim())
+  const showFatherName = Boolean(String(fatherFull).trim())
   const placeOfBirth = joinCommaParts(data.placeOfBirthAddress, data.placeOfBirthCity, data.placeOfBirthProvince) || '—'
   const formDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
   const regOfficerName = (data.lcrAckSignatoryName || data.certificateSignatoryName || 'LORELIE L. CANTO').toUpperCase()
@@ -199,9 +201,9 @@ export default function LcrForm1ABirthAvailable({ data, onDataChange }) {
     { label: 'Sex', val: data.sex || '—' },
     { label: 'Date of Birth', val: formatDateLong(data.dateOfBirth) || '—' },
     { label: 'Place of Birth', val: placeOfBirth },
-    { label: 'Name of Mother', val: '' },
+    ...(showMotherName ? [{ label: 'Name of Mother', val: motherFull }] : []),
     { label: 'Citizenship of Mother', val: data.motherCitizenship || '—' },
-    { label: 'Name of Father', val: '' },
+    ...(showFatherName ? [{ label: 'Name of Father', val: fatherFull }] : []),
     { label: 'Citizenship of Father', val: data.fatherCitizenship || '—' },
     { label: 'Date of Marriage of Parents', val: 'NOT APPLICABLE' },
     { label: 'Place of Marriage of Parents', val: 'NOT APPLICABLE' },
@@ -231,7 +233,7 @@ export default function LcrForm1ABirthAvailable({ data, onDataChange }) {
         <div className="court-decree-lcr-body-scaled flex flex-col min-h-0">
           <div>
             <p className="font-bold mb-1 pl-8 ausf-lcr-to-whom">TO WHOM IT MAY CONCERN:</p>
-            <p className="mb-2 text-left court-decree-lcr-body ausf-lcr-cert-legal-indent">
+            <p className="mb-2 text-left court-decree-lcr-body">
               <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of birth appear in our Register of Births on Page{' '}
               <span className="court-decree-lcr-colb-val font-bold">{colbPage}</span>
               {' '}of Book number{' '}
@@ -252,7 +254,7 @@ export default function LcrForm1ABirthAvailable({ data, onDataChange }) {
 
             <div className="lcr-form-bottom-content">
               <p
-                className="mb-2 court-decree-lcr-body ausf-lcr-cert-line ausf-lcr-cert-legal-indent"
+                className="mb-2 court-decree-lcr-body ausf-lcr-cert-line"
                 style={{ fontSize: '16px', lineHeight: 1.3 }}
               >
                 This certification is issued upon the request of{' '}

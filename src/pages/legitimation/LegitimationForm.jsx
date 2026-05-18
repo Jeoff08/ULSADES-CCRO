@@ -515,41 +515,6 @@ export default function LegitimationForm() {
             </LegitimationSection>
           </div>
 
-          <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
-            <LegitimationSection number="12" title="Annotation" instruction="Choose from the two sample Annotations applicable to the client">
-              <div className="mb-3 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={() => update('legitimationAnnotationOption', 'A')}
-                  className={`min-h-[2.5rem] px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-colors ${
-                    (form.legitimationAnnotationOption || 'A') === 'A'
-                      ? 'border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm'
-                      : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                  }`}
-                >
-                  Use A
-                </button>
-                <button
-                  type="button"
-                  onClick={() => update('legitimationAnnotationOption', 'B')}
-                  className={`min-h-[2.5rem] px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-colors ${
-                    form.legitimationAnnotationOption === 'B'
-                      ? 'border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm'
-                      : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                  }`}
-                >
-                  Use B
-                </button>
-              </div>
-              <p className="text-sm text-gray-600 mb-2">
-                A. ANNOTATION WITHOUT ACKNOWLEDGEMENT: Legitimated by the subsequent marriage of parents (name of spouse) and (name of spouse) on (date of marriage) at (place of marriage) under registry number (Affidavit of Legitimation).
-              </p>
-              <p className="text-sm text-gray-600">
-                B. ANNOTATION WITH ACKNOWLEDGEMENT: Legitimated by the subsequent marriage of parents (name of spouse) and (name of spouse) on (date of marriage) at (place of marriage) under registry number (Affidavit of Legitimation). The child shall be known as (complete name of child).
-              </p>
-            </LegitimationSection>
-          </div>
-
           <div className="legitimation-form-page__actions no-print">
             <button
               type="button"

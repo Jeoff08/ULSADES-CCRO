@@ -12,7 +12,6 @@ const LEGITIMATION_TYPE_LABELS = {
   'lcr-form-1a': 'LCR Form 1A',
   'transmittal': 'Transmittal',
   'out-of-town-transmittal': 'Out of Town Transmittal',
-  'annotation': 'Annotation',
   'supplemental-report': 'Affidavit for Supplemental Report',
 }
 

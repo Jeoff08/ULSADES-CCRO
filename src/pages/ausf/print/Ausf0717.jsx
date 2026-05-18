@@ -2,9 +2,9 @@ import React from 'react'
 import { formatDateLong, fullName, joinCommaParts } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter, FILL } from '../../../components/print'
 
-/** AUSF 07-17 is not laid out for short bond (8.5" × 11"). */
+/** Long bond only — not laid out for A4 or short (8.5" × 11"). */
 export const AUSF_0717_PRINT_TYPE = 'ausf-07-17'
-export const AUSF_0717_EXCLUDED_PAPER_SIZE_IDS = new Set(['short'])
+export const AUSF_0717_EXCLUDED_PAPER_SIZE_IDS = new Set(['a4', 'short'])
 
 export default function Ausf0717({ data }) {
   const affiantName = data.applicantName || fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
@@ -17,8 +17,8 @@ export default function Ausf0717({ data }) {
       : `${affiantName.trim()} ${surnameSought.trim()}`.trim())
     : affiantName
   const dobFormatted = formatDateLong(data.dateOfBirth)
-  const colbReg = data.colbRegistryNo
-  const colbDate = formatDateLong(data.colbDateOfRegistration)
+  const colbReg = String(data.colbRegistryNo ?? '').trim() || ' '
+  const colbDate = formatDateLong(data.colbDateOfRegistration) || ' '
   const publicReg = data.publicDocRegistryNo
   const publicDate = formatDateLong(data.publicDocDate)
   const publicOffice = data.publicDocOffice
@@ -56,7 +56,7 @@ export default function Ausf0717({ data }) {
       <ol className="list-decimal list-inside space-y-1.5 mb-0 mt-0 ml-6 text-justify">
         <li className="text-justify">I am seeking to use the surname of <span className="fill-blank inline-block font-bold px-1 min-w-[4rem] text-center uppercase">{surnameSought}</span> in the Certificate of Live Birth/Report of Birth of pursuant to R.A No. 9255.</li>
         <li className="ausf-place-of-birth-line text-justify">I was born on <span className={`${FILL} px-0.5 align-baseline`}>{dobFormatted}</span> at <span className={`${FILL} px-0.5 align-baseline`}>{placeStreet}</span>{placeStreet && placeCityProvince ? ', ' : null}{placeCityProvince ? <span className={`${FILL} px-0.5 align-baseline uppercase`}>{placeCityProvince}</span> : null}</li>
-        <li className="text-justify">My Birth was recorded under Registry Number <span className="fill-blank inline-block px-1 min-w-[5rem] text-center">{colbReg}</span> on <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{colbDate}</span>.</li>
+        <li className="text-justify">My Birth was recorded under Registry Number <span className="fill-blank empty-blank inline-block px-1 min-w-[5rem] text-center font-bold">{colbReg}</span> on <span className="fill-blank empty-blank inline-block px-1 min-w-[8rem] text-center font-bold">{colbDate}</span>.</li>
         <li className="text-justify">The Public Documents or the Private Handwritten Instrument was recorded under Registry Number <span className="fill-blank inline-block px-1 min-w-[5rem] text-center">{publicReg || ' '}</span> on <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{publicDate || ' '}</span> at the Local Civil Registry Office (LCRO)/Philippine Foreign Service Post (PFSP) of <span className="fill-blank inline-block px-1 min-w-[8rem] text-center">{publicOffice || ' '}</span>.</li>
         <li className="text-justify">I am filing this AUSF at LCRO/PFSP of <span className="fill-blank inline-block px-1 min-w-[8rem] text-center uppercase">{filingAt}</span> in accordance with R.A No. 9255 and its Revised Implementing Rules and Regulations.</li>
         <li className="text-justify">I hereby certify that the statements made herein are true and correct to the best of my knowledge and belief.</li>

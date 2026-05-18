@@ -12,10 +12,8 @@ const AUSF_FORM_TYPES = new Set([
   'reg-ack',
   'child-ack',
   'child-ack-lcr',
-  'child-ack-annotation',
   'child-not-ack',
   'child-not-ack-lcr',
-  'child-not-ack-annotation',
   'child-not-ack-transmittal',
   'out-of-town',
 ])
@@ -129,10 +127,8 @@ export function addSavedAUSF(data) {
       'reg-ack': 'Registration of Acknowledgement',
       'child-ack': 'Child Acknowledge',
       'child-ack-lcr': 'LCR Form 1A (Birth-Available)',
-      'child-ack-annotation': 'Annotation Ack Field',
       'child-not-ack': 'Child Not Acknowledged',
       'child-not-ack-lcr': 'LCR Form A1 (Child Not Acknowledged)',
-      'child-not-ack-annotation': 'Annotation (Child Not Acknowledged)',
       'child-not-ack-transmittal': 'Transmittal (Child Not Acknowledged)',
       'out-of-town': 'Out-of-Town Transmittal',
     }[payload.formType] || payload.formType
@@ -226,10 +222,8 @@ export function updateSavedAUSF(id, data) {
       'reg-ack': 'Registration of Acknowledgement',
       'child-ack': 'Child Acknowledge',
       'child-ack-lcr': 'LCR Form 1A (Birth-Available)',
-      'child-ack-annotation': 'Annotation Ack Field',
       'child-not-ack': 'Child Not Acknowledged',
       'child-not-ack-lcr': 'LCR Form A1 (Child Not Acknowledged)',
-      'child-not-ack-annotation': 'Annotation (Child Not Acknowledged)',
       'child-not-ack-transmittal': 'Transmittal (Child Not Acknowledged)',
       'out-of-town': 'Out-of-Town Transmittal',
     }[payload.formType] || payload.formType

@@ -89,9 +89,9 @@ export function primaryAffectedDocumentForSave(form, derivedList) {
 /** FORM 1A / annotation 1A → birth; 2A → death; 3A → marriage (standard LCR mapping). */
 export function formTypeToAffectedCode(formType) {
   const t = String(formType || '').trim()
-  if (t === 'lcr-form-1a' || t === 'annotation-form-1a') return 'BIRTH_CERTIFICATE'
-  if (t === 'lcr-form-2a' || t === 'annotation-form-2a') return 'DEATH_CERTIFICATE'
-  if (t === 'lcr-form-3a' || t === 'annotation-form-3a') return 'MARRIAGE_CERTIFICATE'
+  if (t === 'lcr-form-1a') return 'BIRTH_CERTIFICATE'
+  if (t === 'lcr-form-2a') return 'DEATH_CERTIFICATE'
+  if (t === 'lcr-form-3a') return 'MARRIAGE_CERTIFICATE'
   return null
 }
 

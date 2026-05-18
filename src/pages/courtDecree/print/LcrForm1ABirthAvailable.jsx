@@ -109,7 +109,7 @@ export default function LcrForm1ABirthAvailable({
         <div className="court-decree-lcr-body-scaled flex flex-col h-full">
           <div>
             <p className="font-bold mb-1 pl-0">TO WHOM IT MAY CONCERN:</p>
-            <p className="mb-2 text-left court-decree-lcr-body [text-indent:0.5in]">
+            <p className="mb-2 text-left court-decree-lcr-body">
               <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of birth appear in our Register of Births on Page{' '}
               {editableTable && onDataChange ? (
                 <>
@@ -302,7 +302,7 @@ export default function LcrForm1ABirthAvailable({
                   )}
               </tbody>
             </table>
-            <p className="mb-2 text-sm court-decree-lcr-body court-decree-lcr-cert-after-table [text-indent:0.5in]">
+            <p className="mb-2 text-sm court-decree-lcr-body court-decree-lcr-cert-after-table">
               {editableTable
                 ? (
                   <span className="inline-block">
@@ -352,11 +352,11 @@ export default function LcrForm1ABirthAvailable({
           <div className="mb-1 flex flex-col-reverse items-stretch gap-1 court-decree-lcr-1a-signatures">
             <div className="court-decree-lcr-1a-verified-left flex flex-col items-center text-center self-start">
               <p className="font-bold text-sm mb-0.5 self-start">Verified by:</p>
-              <p className="font-bold text-sm border-b border-black inline-block">{regOfficerName}</p>
+              <p className="font-bold text-sm inline-block">{regOfficerName}</p>
               <p className="text-xs mt-0">{regOfficerTitle}</p>
             </div>
             <div className="court-decree-lcr-1a-ccr-right flex flex-col items-center text-center self-end">
-              <p className="font-bold text-sm border-b border-black inline-block">{ccrName}</p>
+              <p className="font-bold text-sm inline-block">{ccrName}</p>
               <p className="text-xs mt-0">{ccrTitle}</p>
             </div>
           </div>

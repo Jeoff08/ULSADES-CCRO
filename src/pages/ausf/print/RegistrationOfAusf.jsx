@@ -4,8 +4,8 @@ import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 
 export default function RegistrationOfAusf({ data }) {
   const affiantName = data.applicantName || fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
-  const regDate = formatDateLong(data.ausfDateOfRegistration)
-  const registryNo = data.ausfRegistryNo
+  const regDate = formatDateLong(data.ausfDateOfRegistration) || '\u00A0'
+  const registryNo = String(data.ausfRegistryNo ?? '').trim() || '\u00A0'
   const issuedDate = formatDateLong(data.certificateIssuanceDate) || formatDateLong(new Date())
   const affidavitLabel = 'Affidavit to Use Surname of the Father'
   const signatoryName = data.regAusfSignatoryName || data.certificateSignatoryName || 'LORELIE L. CANTO'
@@ -16,13 +16,10 @@ export default function RegistrationOfAusf({ data }) {
       <header className="print-doc-header shrink-0">
         <PrintHeaderRow />
         <hr className="border-black border-t my-2" />
-        <div className="flex justify-end mt-1">
-          <p className="text-base font-medium">Registry Number: <span className="font-bold underline">{registryNo}</span></p>
-        </div>
       </header>
       <div className="cert-reg-body-wrap flex-1 flex flex-col min-h-0">
         <div className="cert-reg-body-scaled flex-1 flex flex-col">
-          <div className="flex-1">
+          <div>
             <h2 className="cert-reg-title text-center font-bold text-2xl uppercase tracking-wide mt-12">CERTIFICATE OF REGISTRATION</h2>
             <p className="cert-reg-to-whom font-bold mt-12 text-base uppercase">TO WHOM IT MAY CONCERN:</p>
             <p className="cert-reg-p mt-8 text-justify text-base leading-relaxed">
@@ -32,11 +29,10 @@ export default function RegistrationOfAusf({ data }) {
             <p className="cert-reg-p mt-8 text-justify text-base leading-relaxed uppercase font-bold">
               Issued this <span className="underline px-1">{issuedDate}</span> at Iligan City, Philippines.
             </p>
-          </div>
-
-          <div className="cert-reg-signatory text-left mt-20 mb-16">
-            <div className="font-bold uppercase text-base leading-none m-0 p-0">{signatoryName}</div>
-            <div className="text-sm text-black leading-none m-0 p-0">{signatoryTitle}</div>
+            <div className="cert-reg-signatory text-left mb-16" style={{ marginTop: '8em' }}>
+              <div className="font-bold uppercase text-base leading-none m-0 p-0">{signatoryName}</div>
+              <div className="text-sm text-black leading-none m-0 p-0">{signatoryTitle}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -46,4 +42,3 @@ export default function RegistrationOfAusf({ data }) {
     </div>
   )
 }
-

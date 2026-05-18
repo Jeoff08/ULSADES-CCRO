@@ -2,6 +2,10 @@ import React from 'react'
 import { formatDateMonthDayYearComma } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter } from '../../../components/print'
 import { resolveCourtDecreePrintCcr } from '../lib/courtDecreePrintCcr'
+import {
+  COURT_DECREE_CERT_ALL_PRINT_STYLES,
+  CourtDecreeCertSignatory,
+} from './CertAuthenticityCourtDecree'
 
 /**
  * Court decree Certificate of Registration (output matches sample PDF).
@@ -25,11 +29,12 @@ export default function CertRegistrationCourtDecree({ data }) {
   const signatoryTitle = ccrRow.title
 
   return (
-    <div className="ausf-doc print-doc print-doc-cert-registration bg-white text-black text-base max-w-[210mm] mx-auto px-0 py-4 leading-relaxed flex flex-col min-h-[297mm]">
+    <div className="ausf-doc print-doc print-doc-cert-registration court-decree-certificate-print bg-white text-black text-base max-w-[210mm] mx-auto px-0 py-4 leading-relaxed flex flex-col min-h-[297mm]">
+      <style dangerouslySetInnerHTML={{ __html: COURT_DECREE_CERT_ALL_PRINT_STYLES }} />
       <DocumentHeader />
 
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
-        <h2 className="text-center font-bold text-[30px] uppercase mb-6 tracking-tight">CERTIFICATE OF REGISTRATION</h2>
+        <h2 className="court-decree-cert-main-title text-center font-bold text-[30px] uppercase mb-6 tracking-tight">CERTIFICATE OF REGISTRATION</h2>
 
         <p className="font-bold text-[18px] mb-4">TO WHOM IT MAY CONCERN:</p>
 
@@ -43,16 +48,17 @@ export default function CertRegistrationCourtDecree({ data }) {
           <p>
             Issued this <span className="font-bold underline">{issuedDate}</span> at Iligan City, Philippines.
           </p>
+          <CourtDecreeCertSignatory
+            name={signatory}
+            title={signatoryTitle}
+            className="court-decree-cert-signatory-after-issued mb-0"
+          />
         </div>
 
-        <div className="min-h-[8rem] flex-1" aria-hidden />
+        <div className="court-decree-cert-body-spacer min-h-[8rem] flex-1" aria-hidden />
       </div>
 
       <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-start flex-shrink-0">
-        <div className="court-decree-cert-signatory-block ml-0 inline-flex flex-col items-center gap-0 leading-none mb-8">
-          <p className="court-decree-cert-signatory-name m-0 font-bold uppercase text-[15px]">{signatory}</p>
-          <p className="court-decree-cert-signatory-title m-0 text-[13px] italic">{signatoryTitle}</p>
-        </div>
         <div className="w-full">
           <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
         </div>

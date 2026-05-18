@@ -114,7 +114,7 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
       <div className="court-decree-lcr-body-wrap flex-1 min-h-0 flex flex-col">
         <div className="court-decree-lcr-body-scaled flex flex-col h-full">
           <p className="font-bold mb-1 pl-0">TO WHOM IT MAY CONCERN:</p>
-          <p className="mb-2 text-left court-decree-lcr-body [text-indent:0.5in]">
+          <p className="mb-2 text-left court-decree-lcr-body">
             <span className="font-bold">WE CERTIFY</span> that, among others, the following facts of marriage appear in our Register of Marriages on Page{' '}
             <span className="court-decree-lcr-colb-val font-bold">{colbPage ?? ''}</span>{' '}
             of Book number{' '}
@@ -413,7 +413,7 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
               )}
             </tbody>
           </table>
-          <p className="mb-2 text-sm court-decree-lcr-body court-decree-lcr-cert-after-table [text-indent:0.5in]">
+          <p className="mb-2 text-sm court-decree-lcr-body court-decree-lcr-cert-after-table">
             {editableTable
               ? (
                 <span className="inline-block">
@@ -462,11 +462,11 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
           <div className="mb-1 flex flex-col-reverse items-stretch gap-1 court-decree-lcr-3a-signatures">
             <div className="court-decree-lcr-3a-verified-left flex flex-col items-center text-center self-start">
               <p className="text-sm mb-0.5 self-start">Verified by:</p>
-              <p className="font-bold text-sm border-b border-black inline-block uppercase">{regOfficer}</p>
+              <p className="font-bold text-sm inline-block uppercase">{regOfficer}</p>
               <p className="text-xs mt-0">{regOfficerTitle}</p>
             </div>
             <div className="court-decree-lcr-3a-ccr-right flex flex-col items-center text-center self-end">
-              <p className="font-bold text-sm border-b border-black inline-block uppercase">{ccrName}</p>
+              <p className="font-bold text-sm inline-block uppercase">{ccrName}</p>
               <p className="text-xs mt-0 italic">{ccrTitle}</p>
             </div>
           </div>

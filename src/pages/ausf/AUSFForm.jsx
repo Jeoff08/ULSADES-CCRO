@@ -81,7 +81,7 @@ function getRequiredFields(form) {
       { key: 'childAlreadyAcknowledged', label: 'Child already acknowledged by the father' }
     )
   }
-  const showItems4to7 = form.childAlreadyAcknowledged === 'NO' || form.childAlreadyAcknowledged === 'YES' || form.formType === 'child-not-ack-transmittal' || form.formType === 'out-of-town' || form.formType === 'child-ack-annotation'
+  const showItems4to7 = form.childAlreadyAcknowledged === 'NO' || form.childAlreadyAcknowledged === 'YES' || form.formType === 'child-not-ack-transmittal' || form.formType === 'out-of-town'
   if (showItems4to7 && form.formType !== 'reg-ack' && form.formType !== 'reg-ausf') {
     required.push(
       { key: 'motherFirst', label: "Mother's first name" },
@@ -97,15 +97,7 @@ function getRequiredFields(form) {
       { key: 'placeOfBirthProvince', label: 'Province' },
       { key: 'colbRegistryNo', label: 'COLB Registry No.' },
       { key: 'colbDateOfRegistration', label: 'COLB Date of Registration' },
-      { key: 'ausfRegistryNo', label: 'AUSF Registry No. (Item 6)' },
-      { key: 'ausfDateOfRegistration', label: 'AUSF Date of Registration (Item 6)' }
     )
-    if (form.childAlreadyAcknowledged === 'NO') {
-      required.push(
-        { key: 'ackRegistryNo', label: 'Acknowledgement Registry No.' },
-        { key: 'ackDateOfRegistration', label: 'Acknowledgement Date of Registration' }
-      )
-    }
   }
   return required
 }
@@ -131,10 +123,8 @@ export default function AUSFForm() {
     if (typeFromUrl === 'reg-ack') base.formType = 'reg-ack'
     if (typeFromUrl === 'child-ack') base.formType = 'child-ack'
     if (typeFromUrl === 'child-ack-lcr') base.formType = 'child-ack-lcr'
-    if (typeFromUrl === 'child-ack-annotation') base.formType = 'child-ack-annotation'
     if (typeFromUrl === 'child-not-ack') base.formType = 'child-not-ack'
     if (typeFromUrl === 'child-not-ack-lcr') base.formType = 'child-not-ack-lcr'
-    if (typeFromUrl === 'child-not-ack-annotation') base.formType = 'child-not-ack-annotation'
     if (typeFromUrl === 'child-not-ack-transmittal') base.formType = 'child-not-ack-transmittal'
     if (typeFromUrl === 'out-of-town') base.formType = 'out-of-town'
     return base
@@ -161,10 +151,8 @@ export default function AUSFForm() {
         'reg-ack': 'reg-ack',
         'child-ack': 'child-ack',
         'child-ack-lcr': 'child-ack-lcr',
-        'child-ack-annotation': 'child-ack-annotation',
         'child-not-ack': 'child-not-ack',
         'child-not-ack-lcr': 'child-not-ack-lcr',
-        'child-not-ack-annotation': 'child-not-ack-annotation',
         'child-not-ack-transmittal': 'child-not-ack-transmittal',
         'out-of-town': 'out-of-town',
       }
@@ -218,7 +206,7 @@ export default function AUSFForm() {
     )
   }, [form.childAlreadyAcknowledged, form.formType, form.ausfTransmittalIsOutOfTown])
 
-  const showItems4to7 = form.childAlreadyAcknowledged === 'NO' || form.childAlreadyAcknowledged === 'YES' || form.formType === 'child-not-ack-transmittal' || form.formType === 'out-of-town' || form.formType === 'child-ack-annotation'
+  const showItems4to7 = form.childAlreadyAcknowledged === 'NO' || form.childAlreadyAcknowledged === 'YES' || form.formType === 'child-not-ack-transmittal' || form.formType === 'out-of-town'
   const derivedJuratFormType = deriveAusfJuratAffidavitFormType(form)
   const isEditingSaved = searchParams.get('edit') === '1'
 
@@ -385,7 +373,7 @@ export default function AUSFForm() {
                 <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
                   <FormSection noNumber title="TRANSMITTAL TYPE (LOCAL OR OUT-OF-TOWN)">
                     <p className="text-sm text-gray-600 mb-3 max-w-2xl">
-                      Only one transmittal letter appears on the print page: choose local (Iligan) transmittal or the out-of-town transmittal. This does not change LCR or annotation views.
+                      Only one transmittal letter appears on the print page: choose local (Iligan) transmittal or the out-of-town transmittal. This does not change LCR views.
                     </p>
                     <div className="flex flex-wrap gap-3">
                       <button
@@ -523,7 +511,7 @@ export default function AUSFForm() {
                         id="ausf-lcr-remarks-font"
                         value={form.lcrRemarksFontSizePt}
                         onChange={(v) => update('lcrRemarksFontSizePt', v)}
-                        helpText="Controls how large the REMARKS paragraph prints on LCR 1A, A1, and COLB annotation outputs."
+                        helpText="Controls how large the REMARKS paragraph prints on LCR 1A and A1."
                       />
                     </div>
                   </div>
@@ -554,46 +542,6 @@ export default function AUSFForm() {
                 </FormSection>
               </div>
             </>
-          )}
-
-          {form.formType === 'child-ack-annotation' && (
-            <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
-              <FormSection noNumber title="ANNOTATION (CHILD ACKNOWLEDGED) — ATTACH SCAN &amp; EDIT">
-                <p className="text-sm text-gray-600 mb-3">Attach a scan copy of the COLB office file. The white REMARKS/ANNOTATION section will show this annotation when the child is acknowledged.</p>
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="colb-scan" className="block text-sm font-medium text-gray-700 mb-1">Scan copy of COLB office file</label>
-                    <input
-                      id="colb-scan"
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (!file) return
-                        const reader = new FileReader()
-                        reader.onload = () => update('colbScanDataUrl', reader.result)
-                        reader.readAsDataURL(file)
-                      }}
-                      className="ausf-form-page__file-input block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-100 file:text-gray-800 file:border file:border-gray-300 file:font-medium"
-                    />
-                    {form.colbScanDataUrl && (
-                      <p className="mt-1 text-xs text-green-600">File attached. Preview will appear in print view.</p>
-                    )}
-                  </div>
-                  <div>
-                    <label htmlFor="annotation-text" className="block text-sm font-medium text-gray-700 mb-1">Edit annotation</label>
-                    <textarea
-                      id="annotation-text"
-                      value={form.annotationChildAckText}
-                      onChange={(e) => update('annotationChildAckText', e.target.value)}
-                      placeholder='"The child shall be known as [FULL NAME] pursuant to R.A. 9255"'
-                      rows={4}
-                      className="form-field__input w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-gray-50 transition-colors duration-150"
-                    />
-                  </div>
-                </div>
-              </FormSection>
-            </div>
           )}
 
           <div className="ausf-form-page__actions no-print">

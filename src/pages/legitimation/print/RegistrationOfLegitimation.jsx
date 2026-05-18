@@ -8,7 +8,7 @@ export default function RegistrationOfLegitimation({ data }) {
   const motherFull = fullName(data.motherFirst, data.motherMiddle, data.motherLast)
   const fatherFull = fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
   const issuedDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
-  const signatory = (data.cityCivilRegistrarName || 'YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
+  const signatory = (data.cityCivilRegistrarName || 'ATTY.YUSSIF DON JUSTIN F. MARTIL').toUpperCase()
   const legitRegistryTrim = String(data.affidavitLegitRegistryNo || '').trim()
 
   return (
@@ -42,16 +42,17 @@ export default function RegistrationOfLegitimation({ data }) {
           </p>
         </div>
 
-        <div className="min-h-[8rem] flex-1" aria-hidden />
-      </div>
-
-      <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-end flex-shrink-0">
-        <div className="flex flex-col items-end mb-8">
+        <div className="flex flex-col items-end mt-16 mb-8">
           <div className="legitimation-registrar-signatory-block mr-0 inline-flex flex-col items-center leading-none text-center">
             <div className="font-bold uppercase text-[15px]">{signatory}</div>
             <div className="text-[13px] italic">City Civil Registrar</div>
           </div>
         </div>
+
+        <div className="min-h-[4rem] flex-1" aria-hidden />
+      </div>
+
+      <div className="print-doc-footer-wrap mt-auto pt-6 flex flex-col items-end flex-shrink-0">
         <div className="w-full">
           <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
         </div>

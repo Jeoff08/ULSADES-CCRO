@@ -170,3 +170,19 @@ export function syncAusfTransmittalFlagWithFormType(data) {
   if (data.formType === 'child-not-ack-transmittal') return { ...data, ausfTransmittalIsOutOfTown: false }
   return data
 }
+
+function filledPair(registryNo, dateOfRegistration) {
+  return String(registryNo ?? '').trim() !== '' && String(dateOfRegistration ?? '').trim() !== ''
+}
+
+/** Item 6 — Affidavit to Use Surname of the Father (both fields required to include in print). */
+export function hasAusfAffidavitRegistrationDetails(data) {
+  if (!data || typeof data !== 'object') return false
+  return filledPair(data.ausfRegistryNo, data.ausfDateOfRegistration)
+}
+
+/** Item 7 — Affidavit of Acknowledgement (both fields required to include in print). */
+export function hasAcknowledgementAffidavitRegistrationDetails(data) {
+  if (!data || typeof data !== 'object') return false
+  return filledPair(data.ackRegistryNo, data.ackDateOfRegistration)
+}

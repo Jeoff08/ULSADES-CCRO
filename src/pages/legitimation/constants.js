@@ -8,5 +8,4 @@ export const LEGITIMATION_TYPES = [
   { id: 'lcr-form-1a', title: '5. LCR FORM 1A', desc: 'LCR Form 1A certification' },
   { id: 'transmittal', title: '6. TRANSMITTAL', desc: 'Transmittal document' },
   { id: 'out-of-town-transmittal', title: '7. OUT OF TOWN TRANSMITTAL', desc: 'Out of town transmittal' },
-  { id: 'annotation', title: '8. ANNOTATION', desc: 'Annotation for legitimation' },
 ]
