@@ -78,6 +78,24 @@ export function deleteSavedMc2010(id) {
   } catch {}
 }
 
+export function restoreSavedMc2010(item) {
+  if (!item?.id || !item?.data) return false
+  try {
+    const list = getSavedMc2010List()
+    if (list.some((x) => x.id === item.id)) return false
+    list.unshift({
+      id: item.id,
+      savedAt: item.savedAt || new Date().toISOString(),
+      label: item.label || 'MC2010-04',
+      data: { ...item.data },
+    })
+    localStorage.setItem(KEY_SAVED, JSON.stringify(list))
+    return true
+  } catch {
+    return false
+  }
+}
+
 export function saveOrUpdateMc2010(data) {
   try {
     const activeId = localStorage.getItem(KEY_ACTIVE)

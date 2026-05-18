@@ -729,6 +729,91 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .sup
 body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc .supplemental-bottom-wrap .print-doc-footer p {
   line-height: 1 !important;
 }
+/* Geographical (long bond): tighter body so CCR signatory + contact footer stay on one page */
+@media print {
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-body {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+  }
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc.print-doc .supplemental-report-content,
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc .supplemental-report-content p,
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc .supplemental-report-content li,
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc .supplemental-numbered-items li,
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-subscribed {
+    line-height: 1.32 !important;
+  }
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-geographical-item-block {
+    margin-top: 0.08rem !important;
+    margin-bottom: 0.08rem !important;
+  }
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-numbered-items > li + li {
+    margin-top: 0.3rem !important;
+  }
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-body > h2 {
+    margin-bottom: 0.3rem !important;
+  }
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory,
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"][data-supplement-mn="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory,
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-registrar-signatory {
+    margin-top: 0 !important;
+    transform: translateY(-1em) !important;
+    display: flex !important;
+    visibility: visible !important;
+    flex-shrink: 0 !important;
+  }
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc.print-doc > .supplemental-bottom-wrap {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
+    margin-bottom: 1em !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-bottom-wrap .print-doc-footer {
+    display: block !important;
+    visibility: visible !important;
+  }
+}
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc .supplemental-report-content,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc .supplemental-report-content p,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc .supplemental-report-content li,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc .supplemental-numbered-items li,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-subscribed {
+  line-height: 1.32 !important;
+}
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-geographical-item-block {
+  margin-top: 0.08rem !important;
+  margin-bottom: 0.08rem !important;
+}
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-numbered-items > li + li {
+  margin-top: 0.3rem !important;
+}
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-body > h2 {
+  margin-bottom: 0.3rem !important;
+}
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"][data-supplement-mn="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-registrar-signatory {
+  margin-top: 0 !important;
+  transform: translateY(-1em) !important;
+  display: flex !important;
+  visibility: visible !important;
+  flex-shrink: 0 !important;
+}
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc.print-doc > .supplemental-bottom-wrap {
+  margin-top: auto !important;
+  flex-shrink: 0 !important;
+  margin-bottom: 1em !important;
+  display: block !important;
+  visibility: visible !important;
+}
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-bottom-wrap .print-doc-footer {
+  display: block !important;
+  visibility: visible !important;
+}
 /* Geographical + Child's Sex (affidavit-only): hide transmittal/LCR when user did not add them on the form */
 @media print {
   .supplemental-print-anim-page:has(#supplemental-print-affidavit[data-supplement-geo-sex-affidavit-only="1"]) #supplemental-print-transmittal,
@@ -998,6 +1083,7 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex-affidavit
               <div
                 id="supplemental-print-affidavit"
                 {...(isColbCompactPrintAffidavit ? { 'data-supplement-mn': '1' } : {})}
+                {...(isGeographicalSupplementAffidavit ? { 'data-supplement-geographical': '1' } : {})}
                 {...(isSexSupplementAffidavit || isGeographicalSupplementAffidavit
                   ? {
                       'data-supplement-geo-sex': '1',

@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   previewPdf: async (suggestedFileName) => ipcRenderer.invoke('pdf:preview-current-window', suggestedFileName),
   previewPdfData: async () => ipcRenderer.invoke('pdf:get-current-window-base64'),
   openPdfInBrowser: async (filePath) => ipcRenderer.invoke('pdf:open-in-browser', filePath),
+  openPdfWithBrowser: async (payload) => ipcRenderer.invoke('pdf:open-with-browser', payload),
   openPdfInChrome: async (filePath) => ipcRenderer.invoke('pdf:open-in-chrome', filePath),
   saveBackupJson: async (backupText, suggestedFileName) =>
     ipcRenderer.invoke('backup:save-json', { backupText, suggestedFileName }),

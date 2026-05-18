@@ -2,6 +2,7 @@ import React from 'react'
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import { UnsavedChangesProvider } from './context/UnsavedChangesContext'
+import PdfOpenChooserProvider from './context/PdfOpenChooserProvider'
 import Layout from './components/Layout'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -32,7 +33,9 @@ function AppLayoutShell() {
   return (
     <RequireAuth>
       <UnsavedChangesProvider>
-        <Layout />
+        <PdfOpenChooserProvider>
+          <Layout />
+        </PdfOpenChooserProvider>
       </UnsavedChangesProvider>
     </RequireAuth>
   )

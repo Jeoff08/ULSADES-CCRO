@@ -583,10 +583,8 @@ export default function AnnotationAckFieldPage() {
           actionLabel: "Open",
           onAction: async () => {
             if (!result.filePath) return;
-            await (
-              window?.electronAPI?.openPdfInBrowser?.(result.filePath) ||
-              window?.electronAPI?.openPdfInChrome?.(result.filePath)
-            );
+            const { openSavedPdfInBrowser } = await import('../lib/savePdf')
+            await openSavedPdfInBrowser(result.filePath)
           },
         });
         return;

@@ -6,11 +6,15 @@ import {
   deleteSavedSupplemental,
   getSavedSupplementalList,
   loadSavedSupplementalToDraft,
+  restoreSavedSupplemental,
 } from './lib/supplementalSavedStorage'
 import { hasAnyUploadsForRecord } from '../../lib/uploadedFileStore'
 import hasUploadedFilesIcon from '../../assets/has-uploaded-files-icon.svg'
 import SavedFilesPagination from '../../components/SavedFilesPagination'
+import ConfirmRemoveSavedModal from '../../components/savedFiles/ConfirmRemoveSavedModal'
+import SavedFileRemovedToast from '../../components/savedFiles/SavedFileRemovedToast'
 import { useSavedFilesPagination } from '../../hooks/useSavedFilesPagination'
+import { useSavedFileRemove } from '../../hooks/useSavedFileRemove'
 
 function formatSavedAt(iso) {
   if (!iso) return ''
@@ -67,6 +71,21 @@ export default function SupplementalSaved() {
     rangeEnd,
     showPagination,
   } = useSavedFilesPagination(filteredList, searchQuery)
+
+  const {
+    confirmDeleteId,
+    openDeleteConfirm,
+    closeDeleteConfirm,
+    handleConfirmDelete,
+    toastVisible,
+    toastProgress,
+    handleUndo,
+  } = useSavedFileRemove({
+    list,
+    onListChange: () => setRev((v) => v + 1),
+    deleteItem: deleteSavedSupplemental,
+    restoreItem: restoreSavedSupplemental,
+  })
 
   useEffect(() => {
     const onFocus = () => setUploadsRev((v) => v + 1)
@@ -215,13 +234,7 @@ export default function SupplementalSaved() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                      const label = item.label || 'this saved supplemental report'
-                      const ok = window.confirm(`Delete "${label}"?\n\nThis removes the saved file from this device. You cannot undo this action.`)
-                      if (!ok) return
-                      deleteSavedSupplemental(item.id)
-                      setRev((v) => v + 1)
-                    }}
+                    onClick={() => openDeleteConfirm(item.id)}
                     className="px-3 py-1.5 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-red-200 hover:text-red-600 transition-all duration-200 ease-out active:scale-95"
                   >
                     Remove
@@ -243,6 +256,16 @@ export default function SupplementalSaved() {
         ) : null}
         </>
       )}
+
+      {confirmDeleteId != null ? (
+        <ConfirmRemoveSavedModal
+          backdropClassName="supplemental-saved-anim-backdrop"
+          onCancel={closeDeleteConfirm}
+          onConfirm={handleConfirmDelete}
+        />
+      ) : null}
+
+      <SavedFileRemovedToast visible={toastVisible} progress={toastProgress} onUndo={handleUndo} />
     </div>
   )
 }

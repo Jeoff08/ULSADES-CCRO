@@ -279,6 +279,8 @@ export default function Layout() {
             <span>Files Saved</span>
           </NavLink>
 
+          <hr className="my-2 border-0 border-t border-white/15" aria-hidden="true" />
+
           <UserManualSidebarButton onClick={() => setUserManualOpen(true)} />
 
           <NavLink

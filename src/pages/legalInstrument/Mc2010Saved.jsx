@@ -6,11 +6,15 @@ import {
   deleteSavedMc2010,
   getSavedMc2010List,
   loadSavedMc2010ToDraft,
+  restoreSavedMc2010,
 } from './lib/mc2010SavedStorage'
 import { hasAnyUploadsForRecord } from '../../lib/uploadedFileStore'
 import hasUploadedFilesIcon from '../../assets/has-uploaded-files-icon.svg'
 import SavedFilesPagination from '../../components/SavedFilesPagination'
+import ConfirmRemoveSavedModal from '../../components/savedFiles/ConfirmRemoveSavedModal'
+import SavedFileRemovedToast from '../../components/savedFiles/SavedFileRemovedToast'
 import { useSavedFilesPagination } from '../../hooks/useSavedFilesPagination'
+import { useSavedFileRemove } from '../../hooks/useSavedFileRemove'
 
 function formatSavedAt(iso) {
   if (!iso) return ''
@@ -47,6 +51,21 @@ export default function Mc2010Saved() {
     rangeEnd,
     showPagination,
   } = useSavedFilesPagination(filteredList, searchQuery)
+
+  const {
+    confirmDeleteId,
+    openDeleteConfirm,
+    closeDeleteConfirm,
+    handleConfirmDelete,
+    toastVisible,
+    toastProgress,
+    handleUndo,
+  } = useSavedFileRemove({
+    list,
+    onListChange: () => setRev((v) => v + 1),
+    deleteItem: deleteSavedMc2010,
+    restoreItem: restoreSavedMc2010,
+  })
 
   useEffect(() => {
     const onFocus = () => setUploadsRev((v) => v + 1)
@@ -193,10 +212,7 @@ export default function Mc2010Saved() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    deleteSavedMc2010(item.id)
-                    setRev((v) => v + 1)
-                  }}
+                  onClick={() => openDeleteConfirm(item.id)}
                   className="px-3 py-1.5 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-red-200 hover:text-red-600 transition-all duration-200 ease-out active:scale-95"
                 >
                   Remove
@@ -217,6 +233,16 @@ export default function Mc2010Saved() {
         ) : null}
         </>
       )}
+
+      {confirmDeleteId != null ? (
+        <ConfirmRemoveSavedModal
+          backdropClassName="mc2010-saved-anim-backdrop"
+          onCancel={closeDeleteConfirm}
+          onConfirm={handleConfirmDelete}
+        />
+      ) : null}
+
+      <SavedFileRemovedToast visible={toastVisible} progress={toastProgress} onUndo={handleUndo} />
     </div>
   )
 }

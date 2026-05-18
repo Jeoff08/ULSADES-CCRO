@@ -89,6 +89,24 @@ export function deleteSavedSupplemental(id) {
   } catch {}
 }
 
+export function restoreSavedSupplemental(item) {
+  if (!item?.id || !item?.data) return false
+  try {
+    const list = getSavedSupplementalList()
+    if (list.some((x) => x.id === item.id)) return false
+    list.unshift({
+      id: item.id,
+      savedAt: item.savedAt || new Date().toISOString(),
+      label: item.label || 'Supplemental Report',
+      data: { ...item.data },
+    })
+    localStorage.setItem(KEY_SAVED, JSON.stringify(list))
+    return true
+  } catch {
+    return false
+  }
+}
+
 /** If a saved entry is active (loaded for edit/print), update it; otherwise append a new saved row. */
 export function saveOrUpdateSupplemental(data) {
   try {

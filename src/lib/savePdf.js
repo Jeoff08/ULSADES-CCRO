@@ -1,3 +1,5 @@
+import { runPdfOpenChooser } from './pdfOpenChooserHost'
+
 function sanitizeFileName(name) {
   return String(name || 'document')
     .replace(/[<>:"/\\|?*\u0000-\u001F]/g, '_')
@@ -63,8 +65,24 @@ export async function openSavedPdfInBrowser(filePath) {
 
   const bridge = window?.electronAPI
   if (bridge?.openPdfInBrowser && typeof bridge.openPdfInBrowser === 'function') {
-    const result = await bridge.openPdfInBrowser(target)
+    let result = await bridge.openPdfInBrowser(target)
     if (!result) return { ok: false, reason: 'Unknown response from main process' }
+
+    if (result.needsChooser) {
+      const choice = await runPdfOpenChooser(target)
+      if (!choice || choice.cancelled) return { ok: false, cancelled: true }
+      if (bridge.openPdfWithBrowser && typeof bridge.openPdfWithBrowser === 'function') {
+        result = await bridge.openPdfWithBrowser({
+          filePath: target,
+          browser: choice.browser === 'edge' ? 'edge' : 'chrome',
+          remember: Boolean(choice.remember),
+        })
+        if (!result) return { ok: false, reason: 'Unknown response from main process' }
+        return result
+      }
+      return { ok: false, reason: 'Open-with-browser bridge is unavailable.' }
+    }
+
     return result
   }
   if (bridge?.openPdfInChrome && typeof bridge.openPdfInChrome === 'function') {

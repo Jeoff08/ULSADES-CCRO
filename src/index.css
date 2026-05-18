@@ -8110,3 +8110,253 @@ html[data-paper-size] body.pdf-capture .print-doc .lcr-remarks-print-body {
   /* Combined with zoom-in-95 in modal-content-in */
   visibility: visible;
 }
+
+/* ULSADES — custom Open PDF browser chooser (replaces native Electron dialog) */
+@keyframes pdfOpenChooserBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pdfOpenChooserPanelIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes pdfOpenChooserGlowPulse {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(1.02); }
+}
+
+.pdf-open-chooser-backdrop {
+  background: linear-gradient(135deg, rgba(30, 58, 95, 0.55) 0%, rgba(15, 23, 42, 0.65) 100%);
+  backdrop-filter: blur(8px);
+  animation: pdfOpenChooserBackdropIn 0.28s ease-out forwards;
+}
+
+.pdf-open-chooser-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: linear-gradient(165deg, #ffffff 0%, #f8fafc 48%, #f1f5f9 100%);
+  box-shadow:
+    0 28px 60px -16px rgba(30, 58, 95, 0.35),
+    0 0 0 1px rgba(30, 58, 95, 0.06);
+  animation: pdfOpenChooserPanelIn 0.42s cubic-bezier(0.34, 1.45, 0.64, 1) forwards;
+}
+
+.pdf-open-chooser-panel__glow {
+  pointer-events: none;
+  position: absolute;
+  inset: -40% -20% auto;
+  height: 55%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(59, 130, 246, 0.22) 0%, transparent 70%);
+  animation: pdfOpenChooserGlowPulse 3s ease-in-out infinite;
+}
+
+.pdf-open-chooser-panel__header {
+  display: flex;
+  gap: 0.875rem;
+  align-items: flex-start;
+  padding: 1.35rem 1.35rem 0.75rem;
+}
+
+.pdf-open-chooser-panel__icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(145deg, rgba(30, 58, 95, 0.12), rgba(30, 58, 95, 0.04));
+  border: 1px solid rgba(30, 58, 95, 0.12);
+  flex-shrink: 0;
+}
+
+.pdf-open-chooser-panel__file {
+  margin: 0 1.35rem 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.65rem;
+  background: rgba(30, 58, 95, 0.06);
+  border: 1px dashed rgba(30, 58, 95, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.pdf-open-chooser-panel__file-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+}
+
+.pdf-open-chooser-panel__file-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0f172a;
+  word-break: break-all;
+}
+
+.pdf-open-chooser-panel__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  padding: 0 1.35rem 1rem;
+}
+
+.pdf-open-chooser-browser {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1rem 0.65rem 0.85rem;
+  border-radius: 0.85rem;
+  border: 2px solid #e2e8f0;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1),
+    border-color 0.2s ease,
+    box-shadow 0.22s ease,
+    background 0.2s ease;
+}
+
+.pdf-open-chooser-browser--hover {
+  transform: translateY(-3px);
+  border-color: rgba(30, 58, 95, 0.25);
+  box-shadow: 0 10px 24px -8px rgba(30, 58, 95, 0.2);
+}
+
+.pdf-open-chooser-browser--selected {
+  border-color: var(--primary-blue);
+  background: linear-gradient(180deg, rgba(30, 58, 95, 0.06) 0%, #fff 100%);
+  box-shadow:
+    0 0 0 3px rgba(30, 58, 95, 0.12),
+    0 12px 28px -10px rgba(30, 58, 95, 0.28);
+  transform: translateY(-2px);
+}
+
+.pdf-open-chooser-browser__check {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-blue);
+}
+
+.pdf-open-chooser__browser-icon {
+  width: 3rem;
+  height: 3rem;
+}
+
+.pdf-open-chooser-browser__name {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
+}
+
+.pdf-open-chooser-browser__sub {
+  font-size: 0.6875rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.pdf-open-chooser-panel__remember {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 1.35rem 1rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pdf-open-chooser-panel__checkbox {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--primary-blue);
+  cursor: pointer;
+}
+
+.pdf-open-chooser-panel__remember-text {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #334155;
+}
+
+.pdf-open-chooser-panel__footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.85rem 1.35rem 1.35rem;
+  border-top: 1px solid #e2e8f0;
+  background: rgba(248, 250, 252, 0.85);
+}
+
+.pdf-open-chooser-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 0.65rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.pdf-open-chooser-btn:active {
+  transform: scale(0.97);
+}
+
+.pdf-open-chooser-btn--ghost {
+  color: #475569;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+}
+
+.pdf-open-chooser-btn--ghost:hover {
+  background: #f1f5f9;
+}
+
+.pdf-open-chooser-btn--primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-light, #2d4a6f) 100%);
+  box-shadow: 0 4px 14px -4px rgba(30, 58, 95, 0.45);
+}
+
+.pdf-open-chooser-btn--primary:hover {
+  box-shadow: 0 8px 20px -6px rgba(30, 58, 95, 0.5);
+  filter: brightness(1.05);
+}
+
+/* Geographical supplemental (long bond): CCR signatory — one line up (print + PDF capture) */
+@media print {
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory,
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"][data-supplement-mn="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory {
+    margin-top: 0 !important;
+    transform: translateY(-1em) !important;
+  }
+}
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"][data-supplement-mn="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory {
+  margin-top: 0 !important;
+  transform: translateY(-1em) !important;
+}

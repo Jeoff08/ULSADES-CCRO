@@ -128,6 +128,21 @@ export default function AUSFPrint() {
   const [previewPdfUrl, setPreviewPdfUrl] = useState("");
   const { toasts, show, dismiss } = useToasts();
   const notifyLcrCertSaved = useDebouncedSuccessToast(show);
+  const notifyTransmittalDraftSaved = useDebouncedSuccessToast(show, {
+    title: "Saved",
+    message: "Transmittal changes saved to draft.",
+  });
+
+  const persistAusfTransmittalDraft = useCallback(
+    (partial) => {
+      const next = { ...data, ...partial };
+      setData(next);
+      saveAUSFDraft(next);
+      saveAUSFDraftToApi(next).catch(() => {});
+      notifyTransmittalDraftSaved();
+    },
+    [data, notifyTransmittalDraftSaved],
+  );
 
   const activePrintType = displayType ?? data?.formType;
   const paperSizesForPrint = useMemo(() => {
@@ -531,12 +546,7 @@ export default function AUSFPrint() {
           isOutOfTown: false,
           defaultLabels: TRANSMITTAL_ATTACHMENTS_LOCAL,
         }}
-        onPersistDraft={(partial) => {
-          const next = { ...data, ...partial };
-          setData(next);
-          saveAUSFDraft(next);
-          saveAUSFDraftToApi(next).catch(() => { });
-        }}
+        onPersistDraft={persistAusfTransmittalDraft}
       />
     );
   else if (type === "out-of-town")
@@ -548,12 +558,7 @@ export default function AUSFPrint() {
           isOutOfTown: true,
           defaultLabels: TRANSMITTAL_ATTACHMENTS_PSA,
         }}
-        onPersistDraft={(partial) => {
-          const next = { ...data, ...partial };
-          setData(next);
-          saveAUSFDraft(next);
-          saveAUSFDraftToApi(next).catch(() => { });
-        }}
+        onPersistDraft={persistAusfTransmittalDraft}
       />
     );
   else content = <LegacyPrintSummary data={data} />;

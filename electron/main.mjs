@@ -176,25 +176,7 @@ async function openInBrowserChooser(win, filePath) {
     return launchBrowserForPdf(saved, target, targetUrl)
   }
 
-  const response = await dialog.showMessageBox(win, {
-    type: 'question',
-    title: 'Open PDF',
-    message: 'Where do you want to open this PDF?',
-    detail: target,
-    buttons: ['Google Chrome', 'Microsoft Edge', 'Cancel'],
-    defaultId: 0,
-    cancelId: 2,
-    noLink: true,
-    checkboxLabel: 'Always use this browser',
-    checkboxChecked: false,
-  })
-
-  if (response.response === 2) return { ok: false, cancelled: true }
-  const browser = response.response === 1 ? 'edge' : 'chrome'
-  if (response.checkboxChecked) {
-    await savePdfOpenPreference(browser)
-  }
-  return launchBrowserForPdf(browser, target, targetUrl)
+  return { ok: false, needsChooser: true, filePath: target }
 }
 
 function openInChrome(filePath) {
@@ -389,6 +371,17 @@ ipcMain.handle('pdf:open-in-chrome', async (event, filePath) => {
 
 ipcMain.handle('pdf:open-in-browser', async (event, filePath) => {
   return openInBrowser(filePath, event)
+})
+
+ipcMain.handle('pdf:open-with-browser', async (_event, payload) => {
+  const filePath = typeof payload === 'string' ? payload : payload?.filePath
+  const browser = payload?.browser === 'edge' ? 'edge' : 'chrome'
+  const remember = Boolean(payload?.remember)
+  const target = String(filePath || '').trim()
+  if (!target) return { ok: false, reason: 'Missing file path' }
+  if (remember) await savePdfOpenPreference(browser)
+  const targetUrl = pathToFileURL(target).href
+  return launchBrowserForPdf(browser, target, targetUrl)
 })
 
 ipcMain.handle('backup:save-json', async (event, payload) => {
