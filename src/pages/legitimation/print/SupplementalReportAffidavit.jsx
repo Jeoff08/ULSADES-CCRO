@@ -117,8 +117,13 @@ export default function SupplementalReportAffidavit({
   return (
     <div
       lang="en"
-      className="ausf-doc print-doc supplemental-report-doc bg-white text-black mx-auto px-7 py-5 leading-relaxed flex flex-col"
-      style={{ fontFamily: 'Arial, sans-serif', width: paperWidth, minHeight: paperHeight }}
+      className="ausf-doc print-doc supplemental-report-doc bg-white text-black mx-auto px-[0.3in] py-5 print:px-[0.5in] print:py-0 box-border leading-relaxed flex flex-col"
+      style={{
+        fontFamily: 'Arial, sans-serif',
+        width: paperWidth,
+        minHeight: paperHeight,
+        boxSizing: 'border-box',
+      }}
     >
       <div className="supplemental-report-top-header mb-4">
         <div className="grid grid-cols-[100px_1fr_100px] items-center gap-3">

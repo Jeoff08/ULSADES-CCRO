@@ -471,21 +471,25 @@ body.pdf-capture #supplemental-print-page #supplemental-print-affidavit .supplem
 body.pdf-capture #supplemental-print-page #supplemental-print-affidavit .supplemental-report-doc * {
   font-size: 12pt !important;
 }
-/* Child's middle name (long) / child sex / geographical: compact bond + shared print tweaks */
-#supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-report-doc {
+/* All supplemental affidavits: 0.3in left/right (screen + print/PDF) */
+#supplemental-print-affidavit .supplemental-report-doc,
+#supplemental-print-affidavit .supplemental-report-doc.print-doc {
   padding-left: 0.3in !important;
   padding-right: 0.3in !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  line-height: 1.5 !important;
   box-sizing: border-box !important;
+}
+/* Child's middle name (long) / child sex / geographical: line spacing */
+#supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-report-doc {
+  line-height: 1.5 !important;
 }
 @media print {
   #supplemental-print-affidavit .supplemental-report-doc.print-doc {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
-    padding-left: 0.3in !important;
-    padding-right: 0.3in !important;
+    padding-left: 0.5in !important;
+    padding-right: 0.5in !important;
     height: 13in !important;
     min-height: 13in !important;
     max-height: 13in !important;
@@ -527,8 +531,8 @@ body.pdf-capture #supplemental-print-page #supplemental-print-affidavit .supplem
 body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  padding-left: 0.3in !important;
-  padding-right: 0.3in !important;
+  padding-left: 0.5in !important;
+  padding-right: 0.5in !important;
   height: 13in !important;
   min-height: 13in !important;
   max-height: 13in !important;
@@ -593,8 +597,8 @@ body.pdf-capture #supplemental-print-affidavit .supplemental-bottom-wrap .print-
 @media print {
   #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc.print-doc {
     padding-top: 0 !important;
-    padding-left: 0.3in !important;
-    padding-right: 0.3in !important;
+    padding-left: 0.5in !important;
+    padding-right: 0.5in !important;
     box-sizing: border-box !important;
     line-height: 1.5 !important;
   }
@@ -613,8 +617,8 @@ body.pdf-capture #supplemental-print-affidavit .supplemental-bottom-wrap .print-
 }
 body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc.print-doc {
   padding-top: 0 !important;
-  padding-left: 0.3in !important;
-  padding-right: 0.3in !important;
+  padding-left: 0.5in !important;
+  padding-right: 0.5in !important;
   box-sizing: border-box !important;
   line-height: 1.5 !important;
 }
