@@ -3,6 +3,14 @@ import { fullName, formatDateLong, parseBirthToDate } from '../../../lib/printUt
 import { DocumentHeader, DocumentFooter, FILL_BOLD } from '../../../components/print'
 import { legitimationAffidavitCcrDisplayRow } from './legitimationAffidavitCcr'
 
+const getAffiantFontSize = (name) => {
+  const len = String(name || '').trim().length
+  if (len > 30) return 'text-[11px]'
+  if (len > 25) return 'text-[13px]'
+  if (len > 20) return 'text-[14px]'
+  return 'text-base'
+}
+
 /** JOINT AFFIDAVIT OF LEGITIMATION – matching the specific JOINT layout from the user provided image. */
 export default function JointAffidavitLegitimation({ data }) {
   const childFull = fullName(data.childFirst, data.childMiddle, data.childLast)
@@ -31,9 +39,9 @@ export default function JointAffidavitLegitimation({ data }) {
   const ccrRow = legitimationAffidavitCcrDisplayRow(data, 'joint')
 
   return (
-    <div className="joint-legitimation-doc ausf-doc print-doc legitimation-affidavit-doc bg-white text-black text-[17px] max-w-[210mm] mx-auto px-6 py-4 leading-snug flex flex-col min-h-0">
+    <div className="joint-legitimation-doc ausf-doc print-doc legitimation-affidavit-doc bg-white text-black text-[12pt] max-w-[210mm] mx-auto px-6 py-4 leading-snug flex flex-col min-h-0">
       <DocumentHeader
-        registryNo={data.affidavitLegitRegistryNo}
+        registryNo={data.affidavitAckRegistryNo}
         headerTextSize="20px"
         juratBlock={(
           <div className="m-0 leading-none">
@@ -133,15 +141,15 @@ export default function JointAffidavitLegitimation({ data }) {
           <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> at Iligan City, Philippines.
         </p>
 
-        <div className="flex justify-between gap-12 mt-4 mb-4 leading-none">
+        <div className="flex justify-between gap-12 mt-6 mb-4 leading-none">
           <div className="text-center flex-1">
-            <div className="fill-blank font-bold uppercase inline-block pb-0 border-b border-black min-w-[12rem]">
+            <div className={`fill-blank font-bold uppercase inline-block pb-0 border-b border-black min-w-[12rem] whitespace-nowrap ${getAffiantFontSize(motherFull)}`}>
               {motherFull || '—'}
             </div>
             <div className="text-xs mt-0">Affiant</div>
           </div>
           <div className="text-center flex-1">
-            <div className="fill-blank font-bold uppercase inline-block pb-0 border-b border-black min-w-[12rem]">
+            <div className={`fill-blank font-bold uppercase inline-block pb-0 border-b border-black min-w-[12rem] whitespace-nowrap ${getAffiantFontSize(fatherFull)}`}>
               {fatherFull || '—'}
             </div>
             <div className="text-xs mt-0">Affiant</div>

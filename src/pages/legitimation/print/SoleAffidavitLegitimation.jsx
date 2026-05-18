@@ -3,6 +3,14 @@ import { fullName, formatDateLong, formatDateCert, parseBirthToDate } from '../.
 import { DocumentHeader, DocumentFooter, FILL_BOLD } from '../../../components/print'
 import { legitimationAffidavitCcrDisplayRow } from './legitimationAffidavitCcr'
 
+const getAffiantFontSize = (name) => {
+  const len = String(name || '').trim().length
+  if (len > 30) return 'text-[11px]'
+  if (len > 25) return 'text-[13px]'
+  if (len > 20) return 'text-[14px]'
+  return 'text-base'
+}
+
 /** SOLE AFFIDAVIT OF LEGITIMATION – matching the header layout from the newest user provided image. */
 export default function SoleAffidavitLegitimation({ data }) {
   const childFull = fullName(data.childFirst, data.childMiddle, data.childLast)
@@ -38,9 +46,9 @@ export default function SoleAffidavitLegitimation({ data }) {
   const ccrRow = legitimationAffidavitCcrDisplayRow(data, 'sole')
 
   return (
-    <div className="sole-legitimation-doc ausf-doc print-doc legitimation-affidavit-doc bg-white text-black text-[17px] max-w-[210mm] mx-auto px-6 py-4 leading-snug flex flex-col min-h-0">
+    <div className="sole-legitimation-doc ausf-doc print-doc legitimation-affidavit-doc bg-white text-black text-[12pt] max-w-[210mm] mx-auto px-6 py-4 leading-snug flex flex-col min-h-0">
       <DocumentHeader
-        registryNo={data.affidavitLegitRegistryNo}
+        registryNo={data.affidavitAckRegistryNo}
         headerTextSize="20px"
         juratBlock={(
           <div className="m-0 leading-none">
@@ -148,8 +156,8 @@ export default function SoleAffidavitLegitimation({ data }) {
           <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> at Iligan City, Philippines.
         </p>
 
-        <div className="text-center mt-4 mb-4 leading-none">
-          <div className="fill-blank font-bold uppercase inline-block pb-0 border-b border-black min-w-[16rem]">
+        <div className="text-center mt-12 mb-4 leading-none">
+          <div className={`fill-blank font-bold uppercase inline-block pb-0 border-b border-black min-w-[16rem] whitespace-nowrap ${getAffiantFontSize(affiantName)}`}>
             {affiantName || '—'}
           </div>
           <div className="text-xs mt-0">Affiant</div>

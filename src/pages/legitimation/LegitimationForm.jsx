@@ -33,7 +33,6 @@ function getRequiredFields(form) {
     { key: 'motherLast', label: "Mother's surname" },
     { key: 'fatherFirst', label: "Father's first name" },
     { key: 'fatherLast', label: "Father's surname" },
-    { key: 'affidavitLegitDate', label: 'Affidavit of legitimation registration date' },
   ]
   if (form.birthRegisteredIligan !== 'NO') {
     base.push(
@@ -42,11 +41,7 @@ function getRequiredFields(form) {
       { key: 'colbBookNo', label: 'COLB book number' }
     )
   }
-  if (form.acknowledgedByFatherInColb === 'NO') {
-    base.push(
-      { key: 'affidavitAckDate', label: 'Affidavit of acknowledgement registration date' }
-    )
-  }
+
   if (form.bothParentsAlive === 'NO') {
     base.push(
       { key: 'survivingParentFirst', label: 'Surviving parent first name' },
@@ -418,11 +413,11 @@ export default function LegitimationForm() {
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Registry number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Registry number <span className="font-normal text-gray-500">(optional)</span></label>
                   <input type="text" value={form.affidavitAckRegistryNo} onChange={scInput('affidavitAckRegistryNo')} className={`${inputClass} ${disableItem8 ? 'bg-gray-200 cursor-not-allowed' : ''}`} placeholder='e.g. 1139' disabled={disableItem8} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Registration date</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Registration date <span className="font-normal text-gray-500">(optional)</span></label>
                   <FlexibleFormDateInput value={form.affidavitAckDate} onChange={(v) => update('affidavitAckDate', v)} placeholder="May 15 2026 or dd/mm/yyyy" disabled={disableItem8} inputClassName={`${inputClass} ${disableItem8 ? 'opacity-50 cursor-not-allowed bg-gray-200' : ''}`} />
                 </div>
               </div>
@@ -433,11 +428,11 @@ export default function LegitimationForm() {
             <LegitimationSection number="9" title="Details of the affidavit of legitimation">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Registry number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Registry number <span className="font-normal text-gray-500">(optional)</span></label>
                   <input type="text" value={form.affidavitLegitRegistryNo} onChange={scInput('affidavitLegitRegistryNo')} placeholder="e.g. 1139" className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Registration date</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Registration date <span className="font-normal text-gray-500">(optional)</span></label>
                   <FlexibleFormDateInput value={form.affidavitLegitDate} onChange={(v) => update('affidavitLegitDate', v)} placeholder="May 15 2026 or dd/mm/yyyy" inputClassName={inputClass} />
                 </div>
               </div>

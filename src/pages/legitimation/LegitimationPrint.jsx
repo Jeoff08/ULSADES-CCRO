@@ -75,7 +75,6 @@ export default function LegitimationPrint() {
     if (data.bothParentsAlive === 'NO' && t.id === 'joint-affidavit') return false
     if (data.bothParentsAlive === 'YES' && t.id === 'sole-affidavit') return false
     if (data.birthRegisteredIligan === 'NO' && t.id === 'lcr-form-1a') return false
-    if (data.acknowledgedByFatherInColb === 'YES' && t.id === 'registration-acknowledgement') return false
     if (LEGITIMATION_TRANSMITTAL_TYPES.has(t.id)) {
       const oot = data.legitimationTransmittalIsOutOfTown === true
       if (oot && t.id !== 'out-of-town-transmittal') return false

@@ -13,7 +13,7 @@ export default function RegistrationOfLegitimation({ data }) {
 
   return (
     <div className="ausf-doc print-doc print-doc-cert-auth legitimation-registrar-footer-print legitimation-cert-auth-no-indent bg-white text-black text-base max-w-[210mm] mx-auto px-0 py-4 leading-relaxed flex flex-col min-h-[297mm]">
-      <DocumentHeader registryNo={data.affidavitLegitRegistryNo} />
+      <DocumentHeader />
 
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
         <h2 className="text-center font-bold text-[30px] uppercase mb-6 tracking-tight">REGISTRATION OF LEGITIMATION</h2>
