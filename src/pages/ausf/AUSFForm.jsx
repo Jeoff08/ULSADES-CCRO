@@ -187,13 +187,13 @@ export default function AUSFForm() {
     }
   }, [searchParams])
 
-  /** Keep jurat print type aligned: acknowledged → AUSF only; else age 0–6 → 0-6, age 7+ → 07-17 */
+  /** Keep jurat print type aligned: age 18+ → AUSF only; 0–6 → 0-6; 7–17 → 07-17 */
   useEffect(() => {
     if (!AUSF_JURAT_PRINT_TYPES.has(form.formType)) return
     const want = deriveAusfJuratAffidavitFormType(form)
     if (form.formType === want) return
     setForm((prev) => (AUSF_JURAT_PRINT_TYPES.has(prev.formType) ? { ...prev, formType: want } : prev))
-  }, [form.childAlreadyAcknowledged, form.age, form.dateOfBirth, form.formType])
+  }, [form.age, form.dateOfBirth, form.formType])
 
   /** Local transmittal vs out-of-town letter: single output on print when on a transmittal form type */
   useEffect(() => {

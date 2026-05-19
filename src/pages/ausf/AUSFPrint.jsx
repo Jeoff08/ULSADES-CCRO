@@ -93,9 +93,6 @@ const AUSF_LCR_REMARKS_FONT_TYPES = new Set([
   "child-ack-lcr",
   "child-not-ack-lcr",
 ]);
-/** Jurat affidavit forms — only used when child is not yet acknowledged; hide when YES */
-const AUSF_JURAT_CHILD_NOT_ACK_TYPES = new Set(["ausf-0-6", "ausf-07-17"]);
-
 function usePrintPageSize(paperId) {
   useEffect(() => {
     const spec = getPaperPageSpec(paperId);
@@ -214,17 +211,13 @@ export default function AUSFPrint() {
   const acknowledged = data?.childAlreadyAcknowledged;
   const derivedJurat = React.useMemo(
     () => (data ? deriveAusfJuratAffidavitFormType(data) : "ausf-0-6"),
-    [data?.childAlreadyAcknowledged, data?.age, data?.dateOfBirth]
+    [data?.age, data?.dateOfBirth]
   );
 
   const viewPrintOptions = React.useMemo(() => {
     let base;
     if (acknowledged === "YES") {
-      base = VIEW_PRINT_OPTIONS.filter(
-        (opt) =>
-          !CHILD_NOT_ACK_TYPES.has(opt.type) &&
-          !AUSF_JURAT_CHILD_NOT_ACK_TYPES.has(opt.type)
-      );
+      base = VIEW_PRINT_OPTIONS.filter((opt) => !CHILD_NOT_ACK_TYPES.has(opt.type));
     } else if (acknowledged === "NO") {
       base = VIEW_PRINT_OPTIONS.filter((opt) => !CHILD_ACK_TYPES.has(opt.type));
     } else {
@@ -262,7 +255,7 @@ export default function AUSFPrint() {
     [viewPrintOptions],
   );
 
-  /** Persist correct jurat formType on draft when age/ack changes */
+  /** Persist correct jurat formType on draft when age changes */
   useEffect(() => {
     setData((prev) => {
       if (!prev) return prev;
@@ -274,7 +267,7 @@ export default function AUSFPrint() {
       saveAUSFDraftToApi(next).catch(() => { });
       return next;
     });
-  }, [data?.childAlreadyAcknowledged, data?.age, data?.dateOfBirth, data?.formType]);
+  }, [data?.age, data?.dateOfBirth, data?.formType]);
 
   /** Local vs out-of-town: keep draft formType aligned when on a transmittal letter */
   useEffect(() => {
@@ -304,13 +297,7 @@ export default function AUSFPrint() {
     if (AUSF_JURAT_PRINT_TYPES.has(cur) && cur !== want) {
       setDisplayType(want);
     }
-  }, [
-    displayType,
-    data?.childAlreadyAcknowledged,
-    data?.age,
-    data?.dateOfBirth,
-    data?.formType,
-  ]);
+  }, [displayType, data?.age, data?.dateOfBirth, data?.formType]);
 
   /** Hide transmittal tab mismatch when form flag says local vs out-of-town */
   useEffect(() => {
@@ -333,12 +320,6 @@ export default function AUSFPrint() {
     if (!activePrintType) return;
     if (acknowledged === "YES" && CHILD_NOT_ACK_TYPES.has(activePrintType)) {
       setDisplayType("child-ack-lcr");
-    }
-    if (
-      acknowledged === "YES" &&
-      AUSF_JURAT_CHILD_NOT_ACK_TYPES.has(activePrintType)
-    ) {
-      setDisplayType("ausf-only");
     }
     if (acknowledged === "NO" && CHILD_ACK_TYPES.has(activePrintType)) {
       setDisplayType("child-not-ack-lcr");

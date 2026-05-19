@@ -26,21 +26,21 @@ function numericAgeFromData(data) {
 
 /**
  * Which single jurat-style AUSF print applies:
- * - Acknowledged by father → AUSF only
+ * - Age 18+ → AUSF only
  * - Age 0–6 → AUSF 0-6
- * - Age 7+ (including adults) → AUSF 07-17
- * If age cannot be determined and child is not acknowledged, default to 07-17.
+ * - Age 7–17 → AUSF 07-17
+ * If age cannot be determined, default to 07-17.
  */
 export function deriveAusfJuratAffidavitFormType(data) {
   if (!data || typeof data !== 'object') return 'ausf-0-6'
-  if (data.childAlreadyAcknowledged === 'YES') return 'ausf-only'
   const a = numericAgeFromData(data)
+  if (Number.isFinite(a) && a >= 18) return 'ausf-only'
   if (!Number.isFinite(a) || a < 0) return 'ausf-07-17'
   if (a <= 6) return 'ausf-0-6'
   return 'ausf-07-17'
 }
 
-/** When the record is already a jurat AUSF type, align formType with ack + age (e.g. after loading a saved file for edit). */
+/** When the record is already a jurat AUSF type, align formType with age (e.g. after loading a saved file for edit). */
 export function applyDerivedJuratFormTypeIfApplicable(data) {
   if (!data || typeof data !== 'object') return data
   if (!AUSF_JURAT_PRINT_TYPES.has(data.formType)) return data
