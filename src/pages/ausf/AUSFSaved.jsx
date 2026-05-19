@@ -49,6 +49,24 @@ function matchesSearch(item, query, formTypeLabels) {
   return label.includes(q) || formLabel.includes(q) || savedAt.includes(q)
 }
 
+const AUSF_JURAT_FILTER_OPTIONS = [
+  { value: 'ALL', label: 'All forms' },
+  { value: 'ausf-only', label: 'AUSF only' },
+  { value: 'ausf-0-6', label: 'AUSF 0-6' },
+  { value: 'ausf-07-17', label: 'AUSF 07-17' },
+]
+
+function ausfFormTypeForSavedItem(item) {
+  const data = item?.data && typeof item.data === 'object' ? item.data : {}
+  return String(item?.formType || data.formType || '').trim()
+}
+
+function matchesAusfJuratFilter(item, selectedFilter) {
+  const filter = String(selectedFilter || 'ALL').trim()
+  if (filter === 'ALL') return true
+  return ausfFormTypeForSavedItem(item) === filter
+}
+
 const FORM_TYPES_HIDDEN_IN_AUSF_SAVED = new Set([
   'child-ack-annotation',
   'child-not-ack-annotation',
@@ -72,6 +90,7 @@ export default function AUSFSaved() {
   const [list, setList] = useState(() => sortAusfSavedList(getAusfSavedListForDisplay()))
   const [uploadsRev, setUploadsRev] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
+  const [ausfJuratFilter, setAusfJuratFilter] = useState('ALL')
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [toastVisible, setToastVisible] = useState(false)
   const [toastProgress, setToastProgress] = useState(100)
@@ -155,7 +174,11 @@ export default function AUSFSaved() {
     }
   }
 
-  const filteredList = list.filter((item) => matchesSearch(item, searchQuery, FORM_TYPE_LABELS))
+  const filteredList = list.filter(
+    (item) =>
+      matchesAusfJuratFilter(item, ausfJuratFilter) &&
+      matchesSearch(item, searchQuery, FORM_TYPE_LABELS),
+  )
   const {
     paginatedItems,
     page,
@@ -165,7 +188,7 @@ export default function AUSFSaved() {
     rangeStart,
     rangeEnd,
     showPagination,
-  } = useSavedFilesPagination(filteredList, searchQuery)
+  } = useSavedFilesPagination(filteredList, `${searchQuery}|${ausfJuratFilter}`)
   const ausfTotal = getAusfSavedListForDisplay().length
 
   return (
@@ -228,8 +251,20 @@ export default function AUSFSaved() {
           <span className="text-sm font-bold text-gray-600">Total: {ausfTotal}</span>
         </div>
         {list.length > 0 && (
-          <div className="flex flex-wrap items-center justify-end gap-2 ml-auto">
-            <div className="relative min-w-[200px] w-full sm:w-auto sm:max-w-sm">
+          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-end gap-2 ml-auto w-full sm:w-auto">
+            <select
+              value={ausfJuratFilter}
+              onChange={(e) => setAusfJuratFilter(e.target.value)}
+              aria-label="Filter by AUSF form type"
+              className="w-full sm:w-auto min-w-[10rem] px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:border-[var(--primary-blue)] focus:ring-2 focus:ring-[var(--primary-blue)]/20 outline-none transition-all duration-200"
+            >
+              {AUSF_JURAT_FILTER_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <div className="relative min-w-[200px] w-full sm:w-auto sm:max-w-sm flex-1 sm:flex-initial">
               <input
                 type="search"
                 value={searchQuery}
@@ -246,8 +281,11 @@ export default function AUSFSaved() {
             </div>
             <button
               type="button"
-              onClick={() => setSearchQuery('')}
-              className="px-3 py-2.5 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 ease-out active:scale-95"
+              onClick={() => {
+                setSearchQuery('')
+                setAusfJuratFilter('ALL')
+              }}
+              className="w-full sm:w-auto px-3 py-2.5 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 ease-out active:scale-95"
             >
               Clear
             </button>

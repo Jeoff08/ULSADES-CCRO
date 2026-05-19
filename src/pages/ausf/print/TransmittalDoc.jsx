@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
+import ConfirmRemoveRowModal from '../../../components/ConfirmRemoveRowModal'
 import { formatDateCert, fullName } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter, TRANSMITTAL_ATTACHMENTS_LOCAL, TRANSMITTAL_ATTACHMENTS_PSA } from '../../../components/print'
 import {
@@ -6,7 +7,12 @@ import {
   isLegacyAusfTransmittalRecipient,
 } from '../lib/ausfDefaults'
 import { DEFAULT_TRANSMITTAL_SIGNATORY } from '../../legalInstrument/lib/supplementalTransmittalDefaults'
-import { loadTransmittalChecklist, saveTransmittalChecklist, labelsToChecklistItems } from '../lib/transmittalChecklistStorage'
+import {
+  loadTransmittalChecklist,
+  saveTransmittalChecklist,
+  labelsToChecklistItems,
+  createEmptyChecklistItem,
+} from '../lib/transmittalChecklistStorage'
 
 /** Default six-line â€œTo PSAâ€ block for Court Decree local transmittal */
 const DEFAULT_TRANSMITTAL_PSA_LINES = [
@@ -375,7 +381,36 @@ export default function TransmittalDoc({
     [checklistItems, persistChecklist]
   )
 
-  const checkedLabels = checklistItems?.filter((i) => i.completed).map((i) => i.label) || []
+  const onChecklistAdd = useCallback(() => {
+    if (!checklistItems) return
+    persistChecklist([...checklistItems, createEmptyChecklistItem(checklistItems.length)])
+  }, [checklistItems, persistChecklist])
+
+  const [removeConfirmId, setRemoveConfirmId] = useState(null)
+
+  const requestChecklistRemove = useCallback(
+    (id) => {
+      if (!checklistItems || checklistItems.length <= 1) return
+      setRemoveConfirmId(id)
+    },
+    [checklistItems]
+  )
+
+  const confirmChecklistRemove = useCallback(() => {
+    if (!removeConfirmId || !checklistItems) return
+    persistChecklist(checklistItems.filter((it) => it.id !== removeConfirmId))
+    setRemoveConfirmId(null)
+  }, [removeConfirmId, checklistItems, persistChecklist])
+
+  const removeConfirmLabel = useMemo(() => {
+    const item = checklistItems?.find((it) => it.id === removeConfirmId)
+    return String(item?.label || '').trim()
+  }, [checklistItems, removeConfirmId])
+
+  const checkedLabels =
+    checklistItems
+      ?.filter((i) => i.completed && String(i.label || '').trim())
+      .map((i) => String(i.label).trim()) || []
   const isCourtDecreeLocalChecklist =
     checklistConfig?.listId === 'court-decree-local' || checklistConfig?.listId === 'court-decree-local-v2'
   const isCourtDecreeOutOfTownChecklist = checklistConfig?.listId === 'court-decree-out-of-town'
@@ -967,26 +1002,32 @@ export default function TransmittalDoc({
                 <p className="text-sm font-medium text-gray-700 mb-2">
                   Attachments: all items are included by default. Uncheck the items you want to remove from the printed letter.
                 </p>
-                <ol className="list-decimal list-inside space-y-2 text-left">
+                <ol className="list-none space-y-3 text-left">
                   {checklistItems.map((item, i) => (
-                    <li key={item.id} className="flex flex-wrap items-center gap-2">
-                      <span className="w-5 shrink-0 text-left">{i + 1}.</span>
+                    <li
+                      key={item.id}
+                      className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-2 sm:gap-y-1"
+                    >
+                      <span className="w-6 shrink-0 text-left text-sm font-medium text-gray-700 sm:pt-2">
+                        {i + 1}.
+                      </span>
                       {(() => {
                         const options = getCourtDecreeDropdownOptionsByIndex(i)
                         if (!options) {
                           return (
                             <input
                               type="text"
-                              className="flex-1 min-w-[12rem] border border-gray-300 px-2 py-1 text-sm uppercase rounded"
+                              className="w-full sm:flex-1 sm:min-w-[12rem] border border-gray-300 px-2 py-1.5 text-sm uppercase rounded"
                               value={item.label}
                               onChange={(e) => onChecklistLabelChange(item.id, e.target.value)}
+                              placeholder="Attachment label"
                             />
                           )
                         }
                         const selectOptions = options.includes(item.label) ? options : [item.label, ...options]
                         return (
                           <select
-                            className="flex-1 basis-[20rem] min-w-0 max-w-full border border-gray-300 px-2 py-1 text-sm uppercase rounded bg-white truncate"
+                            className="w-full sm:flex-1 sm:basis-[20rem] sm:min-w-0 max-w-full border border-gray-300 px-2 py-1.5 text-sm uppercase rounded bg-white truncate"
                             value={item.label}
                             onChange={(e) => onChecklistLabelChange(item.id, e.target.value)}
                             title={item.label}
@@ -999,13 +1040,38 @@ export default function TransmittalDoc({
                           </select>
                         )
                       })()}
-                      <label className="flex items-center gap-1 shrink-0 cursor-pointer">
-                        <input type="checkbox" checked={!!item.completed} onChange={() => onChecklistToggle(item.id)} className="w-4 h-4" />
-                        <span className="text-xs text-gray-600">Include in print (uncheck to remove)</span>
-                      </label>
+                      <div className="flex flex-wrap items-center gap-2 sm:pt-1">
+                        <label className="flex items-center gap-1.5 shrink-0 cursor-pointer">
+                          <input type="checkbox" checked={!!item.completed} onChange={() => onChecklistToggle(item.id)} className="w-4 h-4 shrink-0" />
+                          <span className="text-xs text-gray-600">Include in print (uncheck to remove)</span>
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => requestChecklistRemove(item.id)}
+                          disabled={checklistItems.length <= 1}
+                          className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                          aria-label={`Remove attachment row ${i + 1}`}
+                        >
+                          <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Remove
+                        </button>
+                      </div>
                     </li>
                   ))}
                 </ol>
+                <button
+                  type="button"
+                  onClick={onChecklistAdd}
+                  className="mt-3 inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-lg border border-[var(--primary-blue)] bg-white px-3 py-2 text-sm font-medium text-[var(--primary-blue)] hover:bg-[var(--primary-blue)]/10 transition-colors"
+                  aria-label="Add attachment row"
+                >
+                  <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v14M5 12h14" />
+                  </svg>
+                  Add attachment
+                </button>
               </div>
               <ol
                 className={[
@@ -1064,6 +1130,18 @@ export default function TransmittalDoc({
         ) : null}
         <DocumentFooter contactPhone={safe.contactPhone} contactEmail={safe.contactEmail} />
       </footer>
+      {removeConfirmId ? (
+        <ConfirmRemoveRowModal
+          title="Remove attachment?"
+          message={
+            removeConfirmLabel
+              ? `Are you sure you want to remove "${removeConfirmLabel}" from the attachment list? This row will be deleted from the checklist.`
+              : 'Are you sure you want to remove this attachment row from the list?'
+          }
+          onCancel={() => setRemoveConfirmId(null)}
+          onConfirm={confirmChecklistRemove}
+        />
+      ) : null}
     </div>
   )
 }

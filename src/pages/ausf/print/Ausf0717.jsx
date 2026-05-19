@@ -1,6 +1,6 @@
 import React from 'react'
 import { formatDateLong, fullName, joinCommaParts } from '../../../lib/printUtils'
-import { resolveAusf0717SwornAttestationName } from '../lib/ausfDefaults'
+import { ausfCityCivilRegistrarDisplayName, resolveAusf0717SwornAttestationName } from '../lib/ausfDefaults'
 import { DocumentHeader, DocumentFooter, FILL } from '../../../components/print'
 
 /** Long bond only — not laid out for A4 or short (8.5" × 11"). */
@@ -136,7 +136,7 @@ export default function Ausf0717({ data, onPatch }) {
         </div>
         <div className="registrar-signature-zone mt-auto flex w-full min-h-[2rem] flex-col items-end justify-end">
           <div className="ccr-signatory-block city-registrar-signature inline-flex flex-col items-center text-center leading-snug">
-            <p className="ccr-signatory-block__name m-0 p-0 font-bold text-sm">{data.cityCivilRegistrarName}</p>
+            <p className="ccr-signatory-block__name m-0 p-0 font-bold text-sm">{ausfCityCivilRegistrarDisplayName(data.cityCivilRegistrarName)}</p>
             <p className="ccr-signatory-block__title m-0 p-0 text-xs italic">City Civil Registrar</p>
           </div>
         </div>

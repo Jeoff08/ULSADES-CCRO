@@ -22,10 +22,18 @@ import { useToasts } from '../../components/toast/useToasts'
 import { useDebouncedSuccessToast } from '../../hooks/useDebouncedSuccessToast'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
 import FlexibleFormDateInput from '../../components/forms/FlexibleFormDateInput'
+import {
+  getLcroStaffTitleForName,
+  isLikelyFullStaffName,
+  loadLcroStaffNames,
+  rememberLcroStaffName,
+  saveLcroStaffProfile,
+  filterLcroStaffNames,
+  LCRO_STAFF_LIST_KEY,
+  PREFERRED_LCRO_STAFF_KEY,
+} from '../../lib/lcroStaffStorage'
 
 const LCR_FORM_TYPES = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a']
-const PREFERRED_LCRO_STAFF_KEY = 'ulsades_preferred_lcr_staff'
-const LCRO_STAFF_LIST_KEY = 'ulsades_lcro_staff_list'
 const COURT_THAT_ISSUED_LIST_KEY = 'ulsades_court_that_issued_list'
 const COURT_THAT_ISSUED_OPTIONS = [
   "4TH SHARI'A CIRCUIT COURT, 4TH SHARIA JUDICIAL DISTRICT, ILIGAN CITY",
@@ -34,13 +42,6 @@ const ISSUED_BY_NAME_LIST_KEY = 'ulsades_court_decree_issued_by_name_list'
 const ISSUED_BY_NAME_OPTIONS = []
 const AUTHENTICATED_BY_LIST_KEY = 'ulsades_court_decree_authenticated_by_list'
 const AUTHENTICATED_BY_OPTIONS = []
-
-function isLikelyFullStaffName(value) {
-  const name = String(value || '').trim()
-  if (name.length < 5) return false
-  // Require at least two name parts (e.g., first + last).
-  return name.split(/\s+/).filter(Boolean).length >= 2
-}
 
 /** Institutional court line: long enough and at least two words (e.g. "REGIONAL TRIAL COURT ..."). */
 function isLikelyCourtDecreeName(value) {
@@ -456,16 +457,10 @@ export default function CourtDecreeForm() {
     setShowForeignCountryNote(false)
     update('country', value)
   }
-  const saveLcroStaffName = (rawName) => {
+  const saveLcroStaffName = (rawName, rawTitle) => {
     const currentName = String(rawName || '').trim()
-    if (!isLikelyFullStaffName(currentName)) return
-    localStorage.setItem(PREFERRED_LCRO_STAFF_KEY, currentName)
-    setSavedLcroStaff((prev) => {
-      if (prev.some((name) => name.toUpperCase() === currentName.toUpperCase())) return prev
-      const next = [currentName, ...prev]
-      localStorage.setItem(LCRO_STAFF_LIST_KEY, JSON.stringify(next))
-      return next
-    })
+    saveLcroStaffProfile(currentName, rawTitle ?? form.certificateSignatoryTitle, 'courtDecree')
+    setSavedLcroStaff(loadLcroStaffNames('courtDecree'))
   }
   const saveCourtThatIssuedName = (rawName) => {
     const current = String(rawName || '').trim()
@@ -508,13 +503,10 @@ export default function CourtDecreeForm() {
     scInput('lcrCertificationRequestParty')(e)
     notifyLcrCertSaved()
   }
-  const filteredLcroStaff = React.useMemo(() => {
-    const query = String(form.certificateSignatoryName || '').trim().toUpperCase()
-    if (!query) return savedLcroStaff.slice(0, 8)
-    return savedLcroStaff
-      .filter((name) => name.toUpperCase().includes(query))
-      .slice(0, 8)
-  }, [savedLcroStaff, form.certificateSignatoryName])
+  const filteredLcroStaff = React.useMemo(
+    () => filterLcroStaffNames(savedLcroStaff, form.certificateSignatoryName, 8),
+    [savedLcroStaff, form.certificateSignatoryName],
+  )
   const mergedCourtsThatIssued = React.useMemo(() => {
     const seen = new Set()
     const out = []
@@ -585,8 +577,18 @@ export default function CourtDecreeForm() {
     return base.filter((name) => name.toUpperCase().includes(query)).slice(0, 15)
   }, [mergedAuthenticatedByNames, form.authenticatedBy])
   const chooseLcroStaff = (name) => {
-    update('certificateSignatoryName', name)
-    saveLcroStaffName(name)
+    const trimmed = String(name || '').trim()
+    const suggestedTitle = getLcroStaffTitleForName(trimmed, 'courtDecree')
+    setForm((prev) => {
+      const next = {
+        ...prev,
+        certificateSignatoryName: trimmed,
+        ...(suggestedTitle ? { certificateSignatoryTitle: suggestedTitle } : {}),
+      }
+      saveCourtDecreeDraft(next)
+      return next
+    })
+    saveLcroStaffName(trimmed, suggestedTitle)
     setShowStaffSuggestions(false)
     setStaffSuggestionIndex(-1)
   }
@@ -609,22 +611,9 @@ export default function CourtDecreeForm() {
     setAuthenticatedBySuggestionIndex(-1)
   }
 
-  // Persistence for LCRO - Staff (permanently saved as requested)
+  // Persistence for LCRO Staff (permanently saved as requested)
   useEffect(() => {
-    try {
-      const rawList = localStorage.getItem(LCRO_STAFF_LIST_KEY)
-      const parsed = rawList ? JSON.parse(rawList) : []
-      if (Array.isArray(parsed)) {
-        const cleaned = parsed
-          .map((v) => String(v || '').trim())
-          .filter((v) => isLikelyFullStaffName(v))
-          .filter((v, i, arr) => arr.findIndex((x) => x.toUpperCase() === v.toUpperCase()) === i)
-        localStorage.setItem(LCRO_STAFF_LIST_KEY, JSON.stringify(cleaned))
-        setSavedLcroStaff(cleaned)
-      }
-    } catch {
-      setSavedLcroStaff([])
-    }
+    setSavedLcroStaff(loadLcroStaffNames('courtDecree'))
   }, [])
 
   useEffect(() => {
@@ -1500,7 +1489,7 @@ export default function CourtDecreeForm() {
                       helpText="Controls how large the REMARKS text prints on LCR 1A / 2A / 3A."
                     />
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">LCRO - Staff (Verified by)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">LCRO Staff (Verified by)</label>
                       <div className="relative">
                         <input
                           type="text"

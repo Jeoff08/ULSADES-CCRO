@@ -1,12 +1,15 @@
-import React from 'react'
+import React, { useState, useMemo } from 'react'
+import ConfirmRemoveRowModal from '../../components/ConfirmRemoveRowModal'
 import FlexibleFormDateInput from '../../components/forms/FlexibleFormDateInput'
 import {
-  SUPPLEMENTAL_TRANSMITTAL_ATTACHMENT_OPTIONS,
   SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS,
-  SUPPLEMENTAL_TRANSMITTAL_ENDORSEMENT_OPTIONS,
   SUPPLEMENTAL_TRANSMITTAL_SALUTATION_PRESETS,
   RECEIVED_BY_OPTIONS,
   clampTransmittalSignatoryIndex,
+  createTransmittalCustomChecklistRow,
+  getVisibleTransmittalAttachmentRows,
+  getVisibleTransmittalEndorsementRows,
+  isTransmittalCustomChecklistRow,
 } from './lib/supplementalTransmittalDefaults'
 
 const tableCls = 'w-full border-collapse border border-black text-[13px]'
@@ -27,6 +30,10 @@ export default function SupplementalTransmittalFieldsEditor({
   const docType = data.transmittalDocType || ''
   const endorsementIds = Array.isArray(data.transmittalEndorsementIds) ? data.transmittalEndorsementIds : []
   const attachmentIds = Array.isArray(data.transmittalAttachmentIds) ? data.transmittalAttachmentIds : []
+  const visibleEndorsementRows = getVisibleTransmittalEndorsementRows(data)
+  const visibleAttachmentRows = getVisibleTransmittalAttachmentRows(data)
+  const extraEndorsements = Array.isArray(data.transmittalExtraEndorsements) ? data.transmittalExtraEndorsements : []
+  const extraAttachments = Array.isArray(data.transmittalExtraAttachments) ? data.transmittalExtraAttachments : []
 
   const toggleId = (key, id) => {
     const cur = Array.isArray(data[key]) ? data[key] : []
@@ -36,6 +43,96 @@ export default function SupplementalTransmittalFieldsEditor({
 
   const fieldClass = inputClass || 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white'
   const selectClass = fieldClass.replace('bg-white', 'bg-white cursor-pointer')
+  const listAddBtnCls =
+    'mt-2 inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-lg border border-[var(--primary-blue)] bg-white px-3 py-2 text-sm font-medium text-[var(--primary-blue)] hover:bg-[var(--primary-blue)]/10 transition-colors'
+  const listRemoveBtnCls =
+    'inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50'
+
+  const addEndorsementRow = () => {
+    const row = createTransmittalCustomChecklistRow('endorsement')
+    onPatch({
+      transmittalExtraEndorsements: [...extraEndorsements, row],
+      transmittalEndorsementIds: [...endorsementIds, row.id],
+    })
+  }
+
+  const addAttachmentRow = () => {
+    const row = createTransmittalCustomChecklistRow('attachment')
+    onPatch({
+      transmittalExtraAttachments: [...extraAttachments, row],
+      transmittalAttachmentIds: [...attachmentIds, row.id],
+    })
+  }
+
+  const removeEndorsementRow = (rowId) => {
+    if (isTransmittalCustomChecklistRow(rowId, extraEndorsements)) {
+      onPatch({
+        transmittalExtraEndorsements: extraEndorsements.filter((r) => r.id !== rowId),
+        transmittalEndorsementIds: endorsementIds.filter((id) => id !== rowId),
+      })
+      return
+    }
+    const hidden = Array.isArray(data.transmittalHiddenEndorsementIds) ? data.transmittalHiddenEndorsementIds : []
+    onPatch({
+      transmittalHiddenEndorsementIds: hidden.includes(rowId) ? hidden : [...hidden, rowId],
+      transmittalEndorsementIds: endorsementIds.filter((id) => id !== rowId),
+    })
+  }
+
+  const removeAttachmentRow = (rowId) => {
+    if (isTransmittalCustomChecklistRow(rowId, extraAttachments)) {
+      onPatch({
+        transmittalExtraAttachments: extraAttachments.filter((r) => r.id !== rowId),
+        transmittalAttachmentIds: attachmentIds.filter((id) => id !== rowId),
+      })
+      return
+    }
+    const hidden = Array.isArray(data.transmittalHiddenAttachmentIds) ? data.transmittalHiddenAttachmentIds : []
+    onPatch({
+      transmittalHiddenAttachmentIds: hidden.includes(rowId) ? hidden : [...hidden, rowId],
+      transmittalAttachmentIds: attachmentIds.filter((id) => id !== rowId),
+    })
+  }
+
+  const updateCustomEndorsementLabel = (rowId, label) => {
+    onPatch({
+      transmittalExtraEndorsements: extraEndorsements.map((r) => (r.id === rowId ? { ...r, label } : r)),
+    })
+  }
+
+  const updateCustomAttachmentLabel = (rowId, label) => {
+    onPatch({
+      transmittalExtraAttachments: extraAttachments.map((r) => (r.id === rowId ? { ...r, label } : r)),
+    })
+  }
+
+  const [removeConfirm, setRemoveConfirm] = useState(null)
+
+  const requestRemoveEndorsementRow = (rowId) => {
+    setRemoveConfirm({ kind: 'endorsement', rowId })
+  }
+
+  const requestRemoveAttachmentRow = (rowId) => {
+    setRemoveConfirm({ kind: 'attachment', rowId })
+  }
+
+  const confirmRemoveRow = () => {
+    if (!removeConfirm) return
+    if (removeConfirm.kind === 'endorsement') removeEndorsementRow(removeConfirm.rowId)
+    else removeAttachmentRow(removeConfirm.rowId)
+    setRemoveConfirm(null)
+  }
+
+  const removeConfirmLabel = useMemo(() => {
+    if (!removeConfirm) return ''
+    const rows =
+      removeConfirm.kind === 'endorsement' ? visibleEndorsementRows : visibleAttachmentRows
+    const row = rows.find((r) => r.id === removeConfirm.rowId)
+    return String(row?.label || '').trim()
+  }, [removeConfirm, visibleEndorsementRows, visibleAttachmentRows])
+
+  const removeConfirmTitle =
+    removeConfirm?.kind === 'endorsement' ? 'Remove endorsement row?' : 'Remove attachment row?'
 
   const salutationTrim = (data.transmittalSalutation ?? 'Sir:').trim()
   const salutationSelectValue = SUPPLEMENTAL_TRANSMITTAL_SALUTATION_PRESETS.includes(salutationTrim)
@@ -327,47 +424,119 @@ export default function SupplementalTransmittalFieldsEditor({
           <p className="font-bold text-sm mb-1 text-gray-900 uppercase tracking-tight">Request for Endorsement</p>
           <table className={tableCls}>
             <tbody>
-              {SUPPLEMENTAL_TRANSMITTAL_ENDORSEMENT_OPTIONS.map((row, i) => (
-                <tr key={row.id}>
-                  <td className={tdBoxCls}>
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4"
-                      checked={endorsementIds.includes(row.id)}
-                      onChange={() => toggleId('transmittalEndorsementIds', row.id)}
-                    />
-                  </td>
-                  <td className={tdLblCls}>
-                    {i + 1}. {row.label}
-                  </td>
-                </tr>
-              ))}
+              {visibleEndorsementRows.map((row, i) => {
+                const isCustom = isTransmittalCustomChecklistRow(row.id, extraEndorsements)
+                return (
+                  <tr key={row.id}>
+                    <td className={tdBoxCls}>
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4"
+                        checked={endorsementIds.includes(row.id)}
+                        onChange={() => toggleId('transmittalEndorsementIds', row.id)}
+                      />
+                    </td>
+                    <td className={tdLblCls}>
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+                        <span className="shrink-0">{i + 1}.</span>
+                        {isCustom ? (
+                          <input
+                            type="text"
+                            className="w-full min-w-0 border border-gray-300 rounded px-2 py-1 text-sm uppercase"
+                            value={row.label || ''}
+                            onChange={(e) => updateCustomEndorsementLabel(row.id, e.target.value)}
+                            placeholder="Endorsement label"
+                          />
+                        ) : (
+                          <span>{row.label}</span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => requestRemoveEndorsementRow(row.id)}
+                          className={listRemoveBtnCls}
+                          aria-label={`Remove endorsement row ${i + 1}`}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
+          <button type="button" onClick={addEndorsementRow} className={listAddBtnCls} aria-label="Add endorsement row">
+            <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v14M5 12h14" />
+            </svg>
+            Add endorsement
+          </button>
         </div>
         <div className="lg:col-start-1 lg:row-start-2 min-w-0">
           <p className="font-bold text-sm mb-1 text-gray-900 uppercase tracking-tight">Attachments</p>
           <table className={tableCls}>
             <tbody>
-              {SUPPLEMENTAL_TRANSMITTAL_ATTACHMENT_OPTIONS.map((row, i) => (
-                <tr key={row.id}>
-                  <td className={tdBoxCls}>
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4"
-                      checked={attachmentIds.includes(row.id)}
-                      onChange={() => toggleId('transmittalAttachmentIds', row.id)}
-                    />
-                  </td>
-                  <td className={tdLblCls}>
-                    {i + 1}. {row.label}
-                  </td>
-                </tr>
-              ))}
+              {visibleAttachmentRows.map((row, i) => {
+                const isCustom = isTransmittalCustomChecklistRow(row.id, extraAttachments)
+                return (
+                  <tr key={row.id}>
+                    <td className={tdBoxCls}>
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4"
+                        checked={attachmentIds.includes(row.id)}
+                        onChange={() => toggleId('transmittalAttachmentIds', row.id)}
+                      />
+                    </td>
+                    <td className={tdLblCls}>
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+                        <span className="shrink-0">{i + 1}.</span>
+                        {isCustom ? (
+                          <input
+                            type="text"
+                            className="w-full min-w-0 border border-gray-300 rounded px-2 py-1 text-sm uppercase"
+                            value={row.label || ''}
+                            onChange={(e) => updateCustomAttachmentLabel(row.id, e.target.value)}
+                            placeholder="Attachment label"
+                          />
+                        ) : (
+                          <span>{row.label}</span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => requestRemoveAttachmentRow(row.id)}
+                          className={listRemoveBtnCls}
+                          aria-label={`Remove attachment row ${i + 1}`}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
+          <button type="button" onClick={addAttachmentRow} className={listAddBtnCls} aria-label="Add attachment row">
+            <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v14M5 12h14" />
+            </svg>
+            Add attachment
+          </button>
         </div>
       </div>
+      {removeConfirm ? (
+        <ConfirmRemoveRowModal
+          title={removeConfirmTitle}
+          message={
+            removeConfirmLabel
+              ? `Are you sure you want to remove "${removeConfirmLabel}"? This row will be removed from the transmittal checklist.`
+              : 'Are you sure you want to remove this row from the transmittal checklist?'
+          }
+          onCancel={() => setRemoveConfirm(null)}
+          onConfirm={confirmRemoveRow}
+        />
+      ) : null}
     </section>
   )
 }

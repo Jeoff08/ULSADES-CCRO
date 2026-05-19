@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { formatDateCert, parseDdMmYyyyToDate } from '../../../lib/printUtils'
+import { formatDateCert, lcroStaffTitleForPrint, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
 import LcrCertificationRequestPartyInline from '../../../components/lcr/LcrCertificationRequestPartyInline'
@@ -37,6 +37,44 @@ body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-si
 body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-signatures > .court-decree-lcr-2a-ccr-right {
   position: relative !important;
   top: -0.25in !important;
+}
+@media print {
+  .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-signatures,
+  .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-verified-left,
+  .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-ccr-right {
+    gap: 0 !important;
+    row-gap: 0 !important;
+  }
+  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-name,
+  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-name,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-name,
+  html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-name,
+  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-title,
+  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-title,
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-title,
+  html[data-paper-size="legal"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-title {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.15 !important;
+  }
+}
+body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-signatures,
+body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-verified-left,
+body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-ccr-right {
+  gap: 0 !important;
+  row-gap: 0 !important;
+}
+html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-name,
+html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-name,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-name,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-name,
+html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-title,
+html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-title,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-title,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-signatory-title {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.15 !important;
 }
 `
 
@@ -80,7 +118,7 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
     return formatDateCert(raw) || formatDateCert(new Date())
   })()
   const regOfficer = data.certificateSignatoryName || 'SHIRLY L. DEMECILLO'
-  const regOfficerTitle = data.certificateSignatoryTitle || 'LCRO - Staff'
+  const regOfficerTitle = lcroStaffTitleForPrint(data.certificateSignatoryTitle)
   const { row: ccrRow } = resolveCourtDecreeLcrPrintCcr(data, 'lcr-form-2a')
   const ccrName = ccrRow.name
   const ccrTitle = ccrRow.title
@@ -317,15 +355,15 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
       </div>
       <div className="court-decree-lcr-footer mt-auto shrink-0 flex flex-col">
         <div className="court-decree-lcr-body mb-1">
-          <div className="mb-1 flex flex-col-reverse items-stretch gap-1 court-decree-lcr-2a-signatures">
-            <div className="court-decree-lcr-2a-verified-left flex flex-col items-center text-center self-start">
+          <div className="mb-1 flex flex-col-reverse items-stretch gap-0 court-decree-lcr-2a-signatures">
+            <div className="court-decree-lcr-2a-verified-left flex flex-col items-center text-center self-start gap-0">
               <p className="text-sm mb-0.5 self-start">Verified by:</p>
-              <p className="font-bold text-sm inline-block uppercase">{regOfficer}</p>
-              <p className="text-xs mt-0">{regOfficerTitle}</p>
+              <p className="court-decree-lcr-signatory-name font-bold text-sm inline-block uppercase m-0 p-0 leading-[1.15]">{regOfficer}</p>
+              <p className="court-decree-lcr-signatory-title text-xs m-0 p-0 leading-[1.15]">{regOfficerTitle}</p>
             </div>
-            <div className="court-decree-lcr-2a-ccr-right flex flex-col items-center text-center self-end">
-              <p className="font-bold text-sm inline-block uppercase">{ccrName}</p>
-              <p className="text-xs mt-0 italic">{ccrTitle}</p>
+            <div className="court-decree-lcr-2a-ccr-right flex flex-col items-center text-center self-end gap-0">
+              <p className="court-decree-lcr-signatory-name font-bold text-sm inline-block uppercase m-0 p-0 leading-[1.15]">{ccrName}</p>
+              <p className="court-decree-lcr-signatory-title text-xs italic m-0 p-0 leading-[1.15]">{ccrTitle}</p>
             </div>
           </div>
         </div>

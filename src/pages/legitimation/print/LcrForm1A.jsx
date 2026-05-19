@@ -3,6 +3,7 @@ import {
   formatDateCert,
   fullName,
   formatLcrFormShortDate,
+  lcroStaffTitleForPrint,
   parseBirthToDate,
 } from '../../../lib/printUtils'
 import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
@@ -10,6 +11,7 @@ import { courtDecreeColbInputStyle } from '../../courtDecree/lib/courtDecreeColb
 import LcrCertificationRequestPartyInline from '../../../components/lcr/LcrCertificationRequestPartyInline'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { legitimationAffidavitCcrDisplayRow } from './legitimationAffidavitCcr'
+import LcroStaffVerifiedByFields from '../../../components/lcr/LcroStaffVerifiedByFields'
 
 /** Long bond only — not laid out for A4 or short (8.5" × 11"). */
 export const LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS = new Set(['a4', 'short'])
@@ -78,6 +80,80 @@ body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-verified-left {
   position: relative !important;
   top: -0.28in !important;
 }
+@media print {
+  .legitimation-lcr1a-doc .legitimation-lcr1a-signatures-row,
+  .legitimation-lcr1a-doc .legitimation-lcr1a-verified-left,
+  .legitimation-lcr1a-doc .legitimation-lcr1a-ccr-right {
+    gap: 0 !important;
+    row-gap: 0 !important;
+  }
+  .legitimation-lcr1a-doc .legitimation-lcr1a-signatory-name,
+  .legitimation-lcr1a-doc .legitimation-lcr1a-signatory-title {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.15 !important;
+  }
+}
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-signatures-row,
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-verified-left,
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-ccr-right {
+  gap: 0 !important;
+  row-gap: 0 !important;
+}
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-signatory-name,
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-signatory-title {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.15 !important;
+}
+@media print {
+  .legitimation-lcr1a-doc.court-decree-lcr-form .court-decree-lcr-footer {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .legitimation-lcr1a-doc .legitimation-lcr1a-note-hr-block {
+    margin-top: auto !important;
+    width: 100% !important;
+  }
+  .legitimation-lcr1a-doc .legitimation-lcr1a-note-hr-block .lcr1a-note-line {
+    width: 100% !important;
+    text-align: center !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .legitimation-lcr1a-doc .legitimation-lcr1a-note-hr-block > .print-doc-footer {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+  .legitimation-lcr1a-doc .legitimation-lcr1a-note-hr-block > .print-doc-footer > hr {
+    margin-top: 0 !important;
+  }
+}
+body.pdf-capture .legitimation-lcr1a-doc.court-decree-lcr-form .court-decree-lcr-footer {
+  display: flex !important;
+  flex-direction: column !important;
+}
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-note-hr-block {
+  margin-top: auto !important;
+  width: 100% !important;
+}
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-note-hr-block .lcr1a-note-line {
+  width: 100% !important;
+  text-align: center !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-note-hr-block > .print-doc-footer {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-note-hr-block > .print-doc-footer > hr {
+  margin-top: 0 !important;
+}
 `
 
 function cellEditText(displayed) {
@@ -114,8 +190,15 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
   const ccrRow = legitimationAffidavitCcrDisplayRow(data, ccrVariant)
   const ccrName = (ccrRow?.name || 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB').toUpperCase()
   const ccrTitle = ccrRow?.title || 'City Civil Registrar'
-  const verifiedByName = (data.verifiedByName || data.lcrStaffName || 'SHIRLY L. DEMECILLO').toUpperCase()
-  const regOfficerTitle = data.verifiedByTitle || data.lcrStaffTitle || 'Registration Officer II'
+  const verifiedByName = (
+    data.certificateSignatoryName ||
+    data.verifiedByName ||
+    data.lcrStaffName ||
+    'SHIRLY L. DEMECILLO'
+  ).toUpperCase()
+  const regOfficerTitle = data.certificateSignatoryTitle
+    ? lcroStaffTitleForPrint(data.certificateSignatoryTitle)
+    : data.verifiedByTitle || data.lcrStaffTitle || 'Registration Officer II'
 
   const [editableRemarks, setEditableRemarks] = useState(data?.remarks || '')
 
@@ -321,26 +404,46 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
         </div>
       </div>
 
-      <div className="court-decree-lcr-footer mt-auto shrink-0">
+      <div className="court-decree-lcr-footer mt-auto shrink-0 flex flex-col">
         <div className="court-decree-lcr-body mb-1">
-          <div className="mb-1 flex flex-col-reverse items-stretch gap-1">
-            <div className="legitimation-lcr1a-verified-left flex flex-col items-center text-center self-start">
+          <div className="mb-1 flex flex-col-reverse items-stretch gap-0 legitimation-lcr1a-signatures-row">
+            <div className="legitimation-lcr1a-verified-left flex flex-col items-center text-center self-start gap-0">
               <p className="font-bold text-sm mb-0.5 self-start">Verified by:</p>
-              <p className="font-bold text-sm inline-block">{verifiedByName}</p>
-              <p className="text-xs mt-0">{regOfficerTitle}</p>
+              {onDataChange ? (
+                <div className="no-print self-start w-full max-w-[14rem] mb-1 text-left">
+                  <LcroStaffVerifiedByFields
+                    storageScope="legitimation"
+                    name={data.certificateSignatoryName || data.verifiedByName || data.lcrStaffName || ''}
+                    title={
+                      data.certificateSignatoryTitle || data.verifiedByTitle || data.lcrStaffTitle || ''
+                    }
+                    showHelperText={false}
+                    nameLabel="Name"
+                    titleLabel="Title"
+                    inputClass="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white"
+                    nameInputClassName="font-bold uppercase"
+                    titleInputClassName="text-xs"
+                    onChange={(patch) => onDataChange({ ...data, ...patch })}
+                  />
+                </div>
+              ) : null}
+              <p className="legitimation-lcr1a-signatory-name font-bold text-sm inline-block m-0 p-0 leading-[1.15]">{verifiedByName}</p>
+              <p className="legitimation-lcr1a-signatory-title text-xs m-0 p-0 leading-[1.15]">{regOfficerTitle}</p>
             </div>
-            <div className="flex flex-col items-center text-center self-end">
-              <p className="font-bold text-sm inline-block">{ccrName}</p>
-              <p className="text-xs mt-0">{ccrTitle}</p>
+            <div className="legitimation-lcr1a-ccr-right flex flex-col items-center text-center self-end gap-0">
+              <p className="legitimation-lcr1a-signatory-name font-bold text-sm inline-block m-0 p-0 leading-[1.15]">{ccrName}</p>
+              <p className="legitimation-lcr1a-signatory-title text-xs m-0 p-0 leading-[1.15]">{ccrTitle}</p>
             </div>
           </div>
-          <p className="lcr1a-note-line font-bold text-sm mb-1">Note: This certification is not valid if it has mark, erasure or alteration of any entry.</p>
         </div>
-        <DocumentFooter
-          contactPhone={data.contactPhone || '228-1311'}
-          contactEmail={data.contactEmail || 'civilregistrar.iligan@gmail.com'}
-          sloganBlue
-        />
+        <div className="legitimation-lcr1a-note-hr-block court-decree-lcr-note-hr-block mt-auto flex w-full flex-col">
+          <p className="lcr1a-note-line font-bold text-sm mb-0">Note: This certification is not valid if it has mark, erasure or alteration of any entry.</p>
+          <DocumentFooter
+            contactPhone={data.contactPhone || '228-1311'}
+            contactEmail={data.contactEmail || 'civilregistrar.iligan@gmail.com'}
+            sloganBlue
+          />
+        </div>
       </div>
     </div>
   )

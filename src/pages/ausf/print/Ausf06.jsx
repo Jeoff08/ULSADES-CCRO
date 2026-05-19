@@ -1,6 +1,7 @@
 import React from 'react'
 import { formatDateLong, fullName, joinCommaParts } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter, FILL, FILL_BOLD } from '../../../components/print'
+import { ausfCityCivilRegistrarDisplayName } from '../lib/ausfDefaults'
 
 /** Long bond only — not laid out for A4 or short (8.5" × 11"). */
 export const AUSF_06_PRINT_TYPE = 'ausf-0-6'
@@ -72,7 +73,7 @@ export default function Ausf06({ data }) {
         <p className="ausf-subscribed-sworn mb-1 leading-normal text-justify"><span className="font-bold">SUBSCRIBED AND SWORN</span> to before me this <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>
         <div className="registrar-signature-zone mt-auto flex w-full min-h-[3rem] flex-col items-end justify-end">
           <div className="ccr-signatory-block city-registrar-signature inline-flex flex-col items-center text-center leading-snug">
-            <p className="ccr-signatory-block__name m-0 p-0 font-bold">{data.cityCivilRegistrarName}</p>
+            <p className="ccr-signatory-block__name m-0 p-0 font-bold">{ausfCityCivilRegistrarDisplayName(data.cityCivilRegistrarName)}</p>
             <p className="ccr-signatory-block__title m-0 p-0 text-sm">City Civil Registrar</p>
           </div>
         </div>

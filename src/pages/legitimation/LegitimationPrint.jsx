@@ -22,7 +22,6 @@ import {
 import { LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS } from './print/LcrForm1A'
 import { RECEIVED_BY_OPTIONS, legitimationAffidavitCcrPersistPatch, legitimationAffidavitCcrSelectValue } from './print/legitimationAffidavitCcr'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
-
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-legitimation'
 const LEGITIMATION_TRANSMITTAL_TYPES = new Set(['transmittal', 'out-of-town-transmittal'])
 

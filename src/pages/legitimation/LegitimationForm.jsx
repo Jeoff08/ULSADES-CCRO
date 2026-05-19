@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { afterUnsavedAcknowledge, useWarnIfUnsaved } from '../../hooks/useWarnIfUnsaved'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { defaultLegitimation, syncLegitimationTransmittalFlagWithFormType } from './lib/legitimationDefaults'
-import { addSavedLegitimation, getLegitimationDraft, updateSavedLegitimation } from './lib/legitimationStorage'
+import { addSavedLegitimation, getLegitimationDraft, saveLegitimationDraft, updateSavedLegitimation } from './lib/legitimationStorage'
 import { DATE_MONTHS, LEGITIMATION_TYPES } from './constants'
 import { commitFirstLetterUpperFromInput } from '../../lib/sentenceCase'
 import ToastHost from '../../components/toast/ToastHost'
@@ -13,6 +13,7 @@ import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
 import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShortcuts'
 import FlexibleFormDateInput from '../../components/forms/FlexibleFormDateInput'
 import { parseBirthToDate } from '../../lib/printUtils'
+import LcroStaffVerifiedByFields from '../../components/lcr/LcroStaffVerifiedByFields'
 
 const inputClass = 'legitimation-form-page__input w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-gray-50 transition-colors duration-150'
 
@@ -131,6 +132,18 @@ export default function LegitimationForm() {
   const notifyLcrCertSaved = useDebouncedSuccessToast(show)
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
+  const persistForm = useCallback(
+    (patch) => {
+      setForm((prev) => {
+        const next = { ...prev, ...patch }
+        saveLegitimationDraft(next)
+        const sid = String(editId || next._savedLegitimationId || '').trim()
+        if (sid) updateSavedLegitimation(sid, next)
+        return next
+      })
+    },
+    [editId],
+  )
   const disableItem8 = form.acknowledgedByFatherInColb === 'YES'
   const disableItem11 = form.birthRegisteredIligan === 'NO'
   const scInput = (key) => (e) => {
@@ -500,6 +513,18 @@ export default function LegitimationForm() {
                     placeholder="OCRG/OWNER/PARENTS/GUARDIAN"
                     className={`${inputClass} ${disableItem11 ? 'bg-gray-200 cursor-not-allowed' : ''}`}
                     disabled={disableItem11}
+                  />
+                </div>
+                <div className={`sm:col-span-2 ${disableItem11 ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <LcroStaffVerifiedByFields
+                    storageScope="legitimation"
+                    disabled={disableItem11}
+                    name={form.certificateSignatoryName || ''}
+                    title={form.certificateSignatoryTitle || ''}
+                    nameLabel="LCR Form 1A — Verified by (name to sign)"
+                    titleLabel="LCR Form 1A — Verified by (title)"
+                    inputClass={`${inputClass} ${disableItem11 ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+                    onChange={persistForm}
                   />
                 </div>
                 <div className={`sm:col-span-2 ${disableItem11 ? 'opacity-50 pointer-events-none' : ''}`}>

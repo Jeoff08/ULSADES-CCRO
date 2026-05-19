@@ -7465,6 +7465,58 @@ html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-l
   top: 0 !important;
 }
 
+/* Court Decree LCR 1A/2A/3A: tight Verified-by + CCR name/title lines (print/PDF) */
+@media print {
+  .court-decree-lcr-form .court-decree-lcr-1a-signatures,
+  .court-decree-lcr-form .court-decree-lcr-2a-signatures,
+  .court-decree-lcr-form .court-decree-lcr-3a-signatures,
+  .court-decree-lcr-form .court-decree-lcr-1a-verified-left,
+  .court-decree-lcr-form .court-decree-lcr-2a-verified-left,
+  .court-decree-lcr-form .court-decree-lcr-3a-verified-left,
+  .court-decree-lcr-form .court-decree-lcr-1a-ccr-right,
+  .court-decree-lcr-form .court-decree-lcr-2a-ccr-right,
+  .court-decree-lcr-form .court-decree-lcr-3a-ccr-right {
+    gap: 0 !important;
+    row-gap: 0 !important;
+  }
+  html[data-paper-size="a4"] .court-decree-lcr-form .court-decree-lcr-signatory-name,
+  html[data-paper-size="short"] .court-decree-lcr-form .court-decree-lcr-signatory-name,
+  html[data-paper-size="long"] .court-decree-lcr-form .court-decree-lcr-signatory-name,
+  html[data-paper-size="legal"] .court-decree-lcr-form .court-decree-lcr-signatory-name,
+  html[data-paper-size="a4"] .court-decree-lcr-form .court-decree-lcr-signatory-title,
+  html[data-paper-size="short"] .court-decree-lcr-form .court-decree-lcr-signatory-title,
+  html[data-paper-size="long"] .court-decree-lcr-form .court-decree-lcr-signatory-title,
+  html[data-paper-size="legal"] .court-decree-lcr-form .court-decree-lcr-signatory-title {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.15 !important;
+  }
+}
+body.pdf-capture .court-decree-lcr-form .court-decree-lcr-1a-signatures,
+body.pdf-capture .court-decree-lcr-form .court-decree-lcr-2a-signatures,
+body.pdf-capture .court-decree-lcr-form .court-decree-lcr-3a-signatures,
+body.pdf-capture .court-decree-lcr-form .court-decree-lcr-1a-verified-left,
+body.pdf-capture .court-decree-lcr-form .court-decree-lcr-2a-verified-left,
+body.pdf-capture .court-decree-lcr-form .court-decree-lcr-3a-verified-left,
+body.pdf-capture .court-decree-lcr-form .court-decree-lcr-1a-ccr-right,
+body.pdf-capture .court-decree-lcr-form .court-decree-lcr-2a-ccr-right,
+body.pdf-capture .court-decree-lcr-form .court-decree-lcr-3a-ccr-right {
+  gap: 0 !important;
+  row-gap: 0 !important;
+}
+html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form .court-decree-lcr-signatory-name,
+html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form .court-decree-lcr-signatory-name,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form .court-decree-lcr-signatory-name,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form .court-decree-lcr-signatory-name,
+html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form .court-decree-lcr-signatory-title,
+html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form .court-decree-lcr-signatory-title,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form .court-decree-lcr-signatory-title,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form .court-decree-lcr-signatory-title {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.15 !important;
+}
+
 /* Legitimation LCR Form 1A: move left Verified-by block upward */
 @media print {
   html[data-paper-size="a4"] .legitimation-lcr1a-doc .legitimation-lcr1a-verified-left,
@@ -7504,6 +7556,34 @@ html[data-paper-size="short"] body.pdf-capture .legitimation-lcr1a-doc .legitima
 
 html[data-paper-size="short"] body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-verified-left {
   top: -0.38in !important;
+}
+
+/* Legitimation LCR 1A: tight name/title lines (print/PDF) */
+@media print {
+  .legitimation-lcr1a-doc .legitimation-lcr1a-signatures-row,
+  .legitimation-lcr1a-doc .legitimation-lcr1a-verified-left,
+  .legitimation-lcr1a-doc .legitimation-lcr1a-ccr-right {
+    gap: 0 !important;
+    row-gap: 0 !important;
+  }
+  .legitimation-lcr1a-doc .legitimation-lcr1a-signatory-name,
+  .legitimation-lcr1a-doc .legitimation-lcr1a-signatory-title {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.15 !important;
+  }
+}
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-signatures-row,
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-verified-left,
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-ccr-right {
+  gap: 0 !important;
+  row-gap: 0 !important;
+}
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-signatory-name,
+body.pdf-capture .legitimation-lcr1a-doc .legitimation-lcr1a-signatory-title {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.15 !important;
 }
 
 /* Legitimation affidavits: Arial in system and print/PDF */

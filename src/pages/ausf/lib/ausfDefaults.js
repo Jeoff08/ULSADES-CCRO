@@ -1,4 +1,17 @@
 import { fullName } from '../../../lib/printUtils'
+import { normReceivedByNameForMatch } from '../../legalInstrument/lib/supplementalTransmittalDefaults'
+
+export const AUSF_CCR_SIGNATORY_NAME = 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB'
+
+/** AUSF City Civil Registrar line — always includes ", REB" for legacy saves. */
+export function ausfCityCivilRegistrarDisplayName(name) {
+  const n = String(name ?? '').trim()
+  if (!n) return AUSF_CCR_SIGNATORY_NAME
+  if (normReceivedByNameForMatch(n) === normReceivedByNameForMatch(AUSF_CCR_SIGNATORY_NAME)) {
+    return AUSF_CCR_SIGNATORY_NAME
+  }
+  return n
+}
 
 export const defaultAUSF = {
   formType: 'ausf-0-6',
@@ -39,7 +52,7 @@ export const defaultAUSF = {
   publicDocOffice: '',
   filingLocation: 'ILIGAN CITY',
   affidavitExecutionDate: '',
-  cityCivilRegistrarName: 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB',
+  cityCivilRegistrarName: AUSF_CCR_SIGNATORY_NAME,
   certificateSignatoryName: 'LORELIE L. CANTO',
   certificateSignatoryTitle: '',
   regAusfSignatoryName: '',
@@ -173,9 +186,13 @@ export function resolveAusf0717SwornAttestationName(data) {
 }
 
 export function mergeAUSFDraftData(partial) {
-  return applyAusfTransmittalAddresseeDefaults(
+  const merged = applyAusfTransmittalAddresseeDefaults(
     syncAusfTransmittalFlagWithFormType({ ...defaultAUSF, ...(partial || {}) }),
   )
+  return {
+    ...merged,
+    cityCivilRegistrarName: ausfCityCivilRegistrarDisplayName(merged.cityCivilRegistrarName),
+  }
 }
 
 /** Align out-of-town toggle with saved transmittal form type (legacy rows may omit the flag). */

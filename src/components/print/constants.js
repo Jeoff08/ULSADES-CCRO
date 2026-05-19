@@ -73,7 +73,7 @@ export const LEGITIMATION_TRANSMITTAL_LIST = [
   'LCR FORM 1A',
 ]
 
-/** Legitimation Out-of-Town transmittal: 6-item list per official letter format */
+/** Legitimation Out-of-Town transmittal: 7-item list per official letter format */
 export const LEGITIMATION_OUT_OF_TOWN_ATTACHMENTS = [
   'CERTIFICATE OF LIVE BIRTH OF CHILD',
   'MARRIAGE CERTIFICATE OF PARENTS',
@@ -81,6 +81,7 @@ export const LEGITIMATION_OUT_OF_TOWN_ATTACHMENTS = [
   'AFFIDAVIT OF LEGITIMATION',
   'CERTIFICATE OF LIVE BIRTH OF PARENTS',
   'VALID ID OF PARENT/S',
+  'CERTIFICATE OF REGISTRATION',
 ]
 
 /** Court decree local transmittal: 7-item attachment list (PSA routing letter) */

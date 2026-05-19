@@ -501,3 +501,17 @@ export function splitFieldLines(value) {
     .map((s) => s.trim())
     .filter(Boolean)
 }
+
+/** Default LCR “Verified by” title on printed LCR forms. */
+export const DEFAULT_LCRO_STAFF_TITLE = 'LCRO Staff'
+
+/** Strip hyphen from legacy “LCRO - Staff” titles (print + forms). */
+export function normalizeLcroStaffTitle(title) {
+  const s = String(title ?? '').trim()
+  if (!s) return s
+  return s.replace(/\bLCRO\s*-\s*Staff\b/gi, 'LCRO Staff')
+}
+
+export function lcroStaffTitleForPrint(title) {
+  return normalizeLcroStaffTitle(title) || DEFAULT_LCRO_STAFF_TITLE
+}

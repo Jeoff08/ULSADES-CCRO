@@ -2,10 +2,9 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getSavedCourtDecreeList, loadSavedCourtDecreeToDraft, deleteSavedCourtDecree, restoreSavedCourtDecree } from './lib/courtDecreeStorage'
 import {
-  deriveAffectedDocumentsForPrint,
-  formTypeToAffectedCode,
-  primaryAffectedDocumentForSave,
-} from './lib/courtDecreeAffectedDocuments'
+  courtDecreeFilteredPrintTypeIds,
+  courtDecreeSavedItemHasLcrInPrintMenu,
+} from './lib/courtDecreePrintEligibility'
 import { hasAnyUploadsForRecord } from '../../lib/uploadedFileStore'
 import hasUploadedFilesIcon from '../../assets/has-uploaded-files-icon.svg'
 import SavedFilesPagination from '../../components/SavedFilesPagination'
@@ -32,38 +31,31 @@ function formatSavedAt(iso) {
 }
 
 const TOAST_DURATION_MS = 8000
-const LCR_GROUP_FILTER_OPTIONS = ['ALL', '1A', '2A', '3A']
 
-const AFFECTED_TO_LCR_GROUP = {
-  BIRTH_CERTIFICATE: '1A',
-  DEATH_CERTIFICATE: '2A',
-  MARRIAGE_CERTIFICATE: '3A',
+const COURT_DECREE_SAVED_FILTER_OPTIONS = [
+  { value: 'ALL', label: 'All forms' },
+  { value: 'NON_LCR', label: 'No LCR' },
+  { value: '1A', label: '1A only' },
+  { value: '2A', label: '2A only' },
+  { value: '3A', label: '3A only' },
+]
+
+const LCR_FILTER_TO_PRINT_TYPE = {
+  '1A': 'lcr-form-1a',
+  '2A': 'lcr-form-2a',
+  '3A': 'lcr-form-3a',
 }
 
-/** One LCR group per saved file (2A filter must not include 1A/3A, including after edit/re-save). */
-function lcrGroupForSavedItem(item) {
+/** Uses the same rules as Court Decree → View & Print (complete LCR table / out-of-town). */
+function matchesCourtDecreeSavedFilter(item, selectedFilter) {
+  const filter = String(selectedFilter || 'ALL').trim()
+  if (filter === 'ALL') return true
   const data = item?.data && typeof item.data === 'object' ? item.data : {}
-  const formType = String(item?.formType || data.formType || '').trim()
-
-  const fromFormType = formTypeToAffectedCode(formType)
-  if (fromFormType && AFFECTED_TO_LCR_GROUP[fromFormType]) {
-    return AFFECTED_TO_LCR_GROUP[fromFormType]
-  }
-
-  const explicit = String(data.affectedDocument || '').trim()
-  if (explicit && AFFECTED_TO_LCR_GROUP[explicit]) {
-    return AFFECTED_TO_LCR_GROUP[explicit]
-  }
-
-  const derived = deriveAffectedDocumentsForPrint(data)
-  const primary = primaryAffectedDocumentForSave(data, derived)
-  return AFFECTED_TO_LCR_GROUP[primary] || null
-}
-
-function matchesLcrGroup(item, selectedGroup) {
-  const group = String(selectedGroup || 'ALL').toUpperCase()
-  if (group === 'ALL') return true
-  return lcrGroupForSavedItem(item) === group
+  const printTypes = courtDecreeFilteredPrintTypeIds(data)
+  if (filter === 'NON_LCR') return !courtDecreeSavedItemHasLcrInPrintMenu(item)
+  const lcrType = LCR_FILTER_TO_PRINT_TYPE[filter]
+  if (lcrType) return printTypes.includes(lcrType)
+  return true
 }
 
 function matchesSearch(item, query, formTypeLabels) {
@@ -142,7 +134,7 @@ export default function CourtDecreeSaved() {
 
   const filteredList = list.filter(
     (item) =>
-      matchesLcrGroup(item, lcrGroupFilter) &&
+      matchesCourtDecreeSavedFilter(item, lcrGroupFilter) &&
       matchesSearch(item, searchQuery, COURT_DECREE_TYPE_LABELS)
   )
   const {
@@ -218,20 +210,20 @@ export default function CourtDecreeSaved() {
           <span className="text-sm font-bold text-gray-600">Total: {courtDecreeTotal}</span>
         </div>
         {list.length > 0 && (
-          <div className="flex flex-wrap items-center justify-end gap-2 ml-auto">
+          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-end gap-2 ml-auto w-full sm:w-auto">
             <select
               value={lcrGroupFilter}
               onChange={(e) => setLcrGroupFilter(e.target.value)}
-              aria-label="Filter by LCR type"
-              className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:border-[var(--primary-blue)] focus:ring-2 focus:ring-[var(--primary-blue)]/20 outline-none transition-all duration-200"
+              aria-label="Filter by form type"
+              className="w-full sm:w-auto min-w-[10rem] px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:border-[var(--primary-blue)] focus:ring-2 focus:ring-[var(--primary-blue)]/20 outline-none transition-all duration-200"
             >
-              {LCR_GROUP_FILTER_OPTIONS.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt === 'ALL' ? 'All forms' : `${opt} only`}
+              {COURT_DECREE_SAVED_FILTER_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
                 </option>
               ))}
             </select>
-            <div className="relative min-w-[200px] w-full sm:w-auto sm:max-w-sm">
+            <div className="relative min-w-[200px] w-full sm:w-auto sm:max-w-sm flex-1 sm:flex-initial">
               <input
                 type="search"
                 value={searchQuery}
@@ -252,7 +244,7 @@ export default function CourtDecreeSaved() {
                 setSearchQuery('')
                 setLcrGroupFilter('ALL')
               }}
-              className="px-3 py-2.5 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 ease-out active:scale-95"
+              className="w-full sm:w-auto px-3 py-2.5 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 ease-out active:scale-95"
             >
               Clear
             </button>

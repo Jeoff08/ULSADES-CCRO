@@ -22,15 +22,20 @@ export function loadTransmittalChecklist(isOutOfTown, defaultLabels, listId) {
       const decoded = JSON.parse(raw)
       if (Array.isArray(decoded)) parsed = decoded
     }
-    // Saved checklist length must match current template; otherwise ignore (avoids wrong row mapping after list updates).
-    if (defaultList && defaultList.length > 0 && parsed && parsed.length !== defaultList.length) {
-      parsed = null
-    }
-    // When we have defaultLabels (e.g. AUSF local = 6 items, PSA = 8), use them as source of truth for labels and length
+    // When we have defaultLabels, merge saved rows: defaults + any user-added rows beyond the template.
     if (defaultList && defaultList.length > 0) {
       // Migration: old saved data had all items unchecked. Treat "all false" as legacy and default to checked.
       const isLegacyAllUnchecked = parsed && parsed.length > 0 && parsed.every((item) => item.completed === false)
-      return defaultList.map((label, i) => {
+      // User removed default rows: saved list is shorter than template — use it as-is.
+      if (parsed && parsed.length > 0 && parsed.length < defaultList.length) {
+        return parsed.map((item, i) => ({
+          id: item.id || `t-${i}-${String(item.label).slice(0, 12).replace(/\s/g, '-')}`,
+          label: typeof item.label === 'string' ? item.label : '',
+          completed: isLegacyAllUnchecked ? true : !!item.completed,
+          notes: typeof item.notes === 'string' ? item.notes : '',
+        }))
+      }
+      const base = defaultList.map((label, i) => {
         const saved = parsed && parsed[i]
         const useCompleted = isLegacyAllUnchecked ? true : (saved != null ? !!saved.completed : true)
         const savedLabel = saved && typeof saved.label === 'string' ? saved.label.trim() : ''
@@ -41,6 +46,16 @@ export function loadTransmittalChecklist(isOutOfTown, defaultLabels, listId) {
           notes: saved && typeof saved.notes === 'string' ? saved.notes : '',
         }
       })
+      const extras =
+        parsed && parsed.length > defaultList.length
+          ? parsed.slice(defaultList.length).map((item, j) => ({
+              id: item.id || `t-extra-${defaultList.length + j}`,
+              label: typeof item.label === 'string' ? item.label : '',
+              completed: isLegacyAllUnchecked ? true : !!item.completed,
+              notes: typeof item.notes === 'string' ? item.notes : '',
+            }))
+          : []
+      return [...base, ...extras]
     }
     if (parsed && parsed.length > 0) {
       const isLegacyAllUnchecked = parsed.every((item) => item.completed === false)
@@ -74,4 +89,13 @@ export function labelsToChecklistItems(labels) {
     completed: true,
     notes: '',
   }))
+}
+
+export function createEmptyChecklistItem(index = 0) {
+  return {
+    id: `t-custom-${Date.now()}-${index}`,
+    label: '',
+    completed: true,
+    notes: '',
+  }
 }

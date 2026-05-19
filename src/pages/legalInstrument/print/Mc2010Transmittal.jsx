@@ -2,9 +2,9 @@ import React from 'react'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { formatTransmittalDateLong, formatDobDayMonthYearUpper } from '../../../lib/printUtils'
 import {
-  SUPPLEMENTAL_TRANSMITTAL_ATTACHMENT_OPTIONS,
   SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS,
-  SUPPLEMENTAL_TRANSMITTAL_ENDORSEMENT_OPTIONS,
+  getVisibleTransmittalAttachmentRows,
+  getVisibleTransmittalEndorsementRows,
   transmittalRecipientOfficeLinesForPrint,
   transmittalRecipientPositionLines,
   transmittalThruPositionLinesForPrint,
@@ -148,10 +148,10 @@ export default function Mc2010Transmittal({
               <p className="font-bold mb-1 uppercase">Request for Endorsement</p>
               <table className={checklistTableCls}>
                 <tbody>
-                  {SUPPLEMENTAL_TRANSMITTAL_ENDORSEMENT_OPTIONS.map((row, i) => (
+                  {getVisibleTransmittalEndorsementRows(data).map((row, i) => (
                     <tr key={row.id} className={endorsementIds.includes(row.id) ? 'mc2010-checked-row' : 'mc2010-unchecked-row'}>
                       <td className={tdBoxCls}>{endorsementIds.includes(row.id) ? filledBox() : emptyBox()}</td>
-                      <td className={tdLblCls}>{`${i + 1}. ${row.label}`}</td>
+                      <td className={tdLblCls}>{`${i + 1}. ${row.label || ''}`}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -161,10 +161,10 @@ export default function Mc2010Transmittal({
               <p className="font-bold mb-1 uppercase">Attachments</p>
               <table className={checklistTableCls}>
                 <tbody>
-                  {SUPPLEMENTAL_TRANSMITTAL_ATTACHMENT_OPTIONS.map((row, i) => (
+                  {getVisibleTransmittalAttachmentRows(data).map((row, i) => (
                     <tr key={row.id} className={attachmentIds.includes(row.id) ? 'mc2010-checked-row' : 'mc2010-unchecked-row'}>
                       <td className={tdBoxCls}>{attachmentIds.includes(row.id) ? filledBox() : emptyBox()}</td>
-                      <td className={tdLblCls}>{`${i + 1}. ${row.label}`}</td>
+                      <td className={tdLblCls}>{`${i + 1}. ${row.label || ''}`}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -2,9 +2,9 @@ import React, { useMemo } from 'react'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { formatTransmittalDateLong, formatDobDayMonthYearUpper } from '../../../lib/printUtils'
 import {
-  SUPPLEMENTAL_TRANSMITTAL_ATTACHMENT_OPTIONS,
   SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS,
-  SUPPLEMENTAL_TRANSMITTAL_ENDORSEMENT_OPTIONS,
+  getVisibleTransmittalAttachmentRows,
+  getVisibleTransmittalEndorsementRows,
   resolveTransmittalSignatory,
   transmittalRecipientOfficeLinesForPrint,
   transmittalRecipientPositionLines,
@@ -54,12 +54,18 @@ export default function SupplementalTransmittal({
     [docType]
   )
   const endorsementRowsPrint = useMemo(
-    () => SUPPLEMENTAL_TRANSMITTAL_ENDORSEMENT_OPTIONS.filter((row) => endorsementIds.includes(row.id)),
-    [endorsementIds]
+    () =>
+      getVisibleTransmittalEndorsementRows(data).filter(
+        (row) => endorsementIds.includes(row.id) && String(row.label || '').trim()
+      ),
+    [data, endorsementIds]
   )
   const attachmentRowsPrint = useMemo(
-    () => SUPPLEMENTAL_TRANSMITTAL_ATTACHMENT_OPTIONS.filter((row) => attachmentIds.includes(row.id)),
-    [attachmentIds]
+    () =>
+      getVisibleTransmittalAttachmentRows(data).filter(
+        (row) => attachmentIds.includes(row.id) && String(row.label || '').trim()
+      ),
+    [data, attachmentIds]
   )
   const hasAnyChecklistForPrint =
     docTypeRowsPrint.length > 0 || endorsementRowsPrint.length > 0 || attachmentRowsPrint.length > 0
@@ -174,13 +180,13 @@ export default function SupplementalTransmittal({
             <p className="font-bold text-sm mb-1 uppercase tracking-tight">Request for Endorsement</p>
             <table className={tableCls}>
               <tbody>
-                {SUPPLEMENTAL_TRANSMITTAL_ENDORSEMENT_OPTIONS.map((row, i) => (
+                {getVisibleTransmittalEndorsementRows(data).map((row, i) => (
                   <tr key={row.id}>
                     <td className={tdBoxCls}>
                       {endorsementIds.includes(row.id) ? filledBox() : emptyBox()}
                     </td>
                     <td className={tdLblCls}>
-                      {i + 1}. {row.label}
+                      {i + 1}. {row.label || '\u00a0'}
                     </td>
                   </tr>
                 ))}
@@ -191,13 +197,13 @@ export default function SupplementalTransmittal({
             <p className="font-bold text-sm mb-1 uppercase tracking-tight">Attachments</p>
             <table className={tableCls}>
               <tbody>
-                {SUPPLEMENTAL_TRANSMITTAL_ATTACHMENT_OPTIONS.map((row, i) => (
+                {getVisibleTransmittalAttachmentRows(data).map((row, i) => (
                   <tr key={row.id}>
                     <td className={tdBoxCls}>
                       {attachmentIds.includes(row.id) ? filledBox() : emptyBox()}
                     </td>
                     <td className={tdLblCls}>
-                      {i + 1}. {row.label}
+                      {i + 1}. {row.label || '\u00a0'}
                     </td>
                   </tr>
                 ))}

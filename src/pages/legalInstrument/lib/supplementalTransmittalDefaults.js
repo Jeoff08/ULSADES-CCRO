@@ -29,6 +29,41 @@ export const SUPPLEMENTAL_TRANSMITTAL_ATTACHMENT_OPTIONS = [
   { id: 'cert-registration', label: 'Certification - Registration' },
 ]
 
+const TRANSMITTAL_DRAFT_ARRAY_KEYS = [
+  'transmittalEndorsementIds',
+  'transmittalAttachmentIds',
+  'transmittalExtraEndorsements',
+  'transmittalExtraAttachments',
+  'transmittalHiddenEndorsementIds',
+  'transmittalHiddenAttachmentIds',
+]
+
+export function createTransmittalCustomChecklistRow(prefix = 'custom') {
+  return { id: `${prefix}-${Date.now()}`, label: '' }
+}
+
+export function getVisibleTransmittalEndorsementRows(data) {
+  const hidden = new Set(
+    Array.isArray(data?.transmittalHiddenEndorsementIds) ? data.transmittalHiddenEndorsementIds : []
+  )
+  const builtin = SUPPLEMENTAL_TRANSMITTAL_ENDORSEMENT_OPTIONS.filter((row) => !hidden.has(row.id))
+  const extra = Array.isArray(data?.transmittalExtraEndorsements) ? data.transmittalExtraEndorsements : []
+  return [...builtin, ...extra.filter((row) => row && row.id)]
+}
+
+export function getVisibleTransmittalAttachmentRows(data) {
+  const hidden = new Set(
+    Array.isArray(data?.transmittalHiddenAttachmentIds) ? data.transmittalHiddenAttachmentIds : []
+  )
+  const builtin = SUPPLEMENTAL_TRANSMITTAL_ATTACHMENT_OPTIONS.filter((row) => !hidden.has(row.id))
+  const extra = Array.isArray(data?.transmittalExtraAttachments) ? data.transmittalExtraAttachments : []
+  return [...builtin, ...extra.filter((row) => row && row.id)]
+}
+
+export function isTransmittalCustomChecklistRow(rowId, extraRows) {
+  return Array.isArray(extraRows) && extraRows.some((row) => row.id === rowId)
+}
+
 export function getDefaultSupplementalTransmittalFields() {
   return {
     transmittalDate: '',
@@ -51,6 +86,10 @@ export function getDefaultSupplementalTransmittalFields() {
     transmittalDocType: '',
     transmittalEndorsementIds: [],
     transmittalAttachmentIds: [],
+    transmittalExtraEndorsements: [],
+    transmittalExtraAttachments: [],
+    transmittalHiddenEndorsementIds: [],
+    transmittalHiddenAttachmentIds: [],
     /** Index into RECEIVED_BY_OPTIONS for transmittal sign-off block. */
     transmittalSignatoryOptionIndex: DEFAULT_TRANSMITTAL_SIGNATORY_INDEX,
   }
@@ -79,6 +118,8 @@ export function supplementalTransmittalHasFilledData(data) {
   if (t(data.transmittalFather) || t(data.transmittalMother)) return true
   if (Array.isArray(data.transmittalEndorsementIds) && data.transmittalEndorsementIds.length > 0) return true
   if (Array.isArray(data.transmittalAttachmentIds) && data.transmittalAttachmentIds.length > 0) return true
+  if (Array.isArray(data.transmittalExtraEndorsements) && data.transmittalExtraEndorsements.some((r) => t(r?.label))) return true
+  if (Array.isArray(data.transmittalExtraAttachments) && data.transmittalExtraAttachments.some((r) => t(r?.label))) return true
   if (t(data.transmittalDocType)) return true
   return false
 }
@@ -89,8 +130,14 @@ export function pickTransmittalStateFromDraft(base) {
   const out = { ...defaults }
   for (const key of Object.keys(defaults)) {
     if (base[key] === undefined || base[key] === null) continue
-    if (key === 'transmittalEndorsementIds' || key === 'transmittalAttachmentIds') {
-      out[key] = Array.isArray(base[key]) ? [...base[key]] : []
+    if (TRANSMITTAL_DRAFT_ARRAY_KEYS.includes(key)) {
+      if (key === 'transmittalExtraEndorsements' || key === 'transmittalExtraAttachments') {
+        out[key] = Array.isArray(base[key])
+          ? base[key].map((row) => ({ id: row.id, label: typeof row.label === 'string' ? row.label : '' }))
+          : []
+      } else {
+        out[key] = Array.isArray(base[key]) ? [...base[key]] : []
+      }
     } else {
       out[key] = base[key]
     }

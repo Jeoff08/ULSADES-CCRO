@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react'
+import { normalizeLcroStaffTitle } from '../../lib/printUtils'
 import { RECEIVED_BY_OPTIONS, matchReceivedByPresetIndex } from './lib/supplementalTransmittalDefaults'
 
 /** LCR footer pickers for supplemental data entry (no-print). */
@@ -39,9 +40,9 @@ export default function SupplementalLcrFooterSignatoryPickers({ lcrData, onPatch
           <input
             type="text"
             className={inputClass}
-            placeholder="Title (e.g. LCRO - Staff)"
-            value={vt || ''}
-            onChange={(e) => onPatch({ certificateSignatoryTitle: e.target.value })}
+            placeholder="Title (e.g. LCRO Staff)"
+            value={normalizeLcroStaffTitle(vt) || ''}
+            onChange={(e) => onPatch({ certificateSignatoryTitle: normalizeLcroStaffTitle(e.target.value) })}
           />
         </div>
 

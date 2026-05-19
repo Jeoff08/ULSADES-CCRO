@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatDateCert, formatDateLong } from '../../lib/printUtils'
+import { formatDateCert, formatDateLong, lcroStaffTitleForPrint } from '../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../components/print'
 
 /** LCR Form No. 2A (Death-Available) – court decree / death certification. */
@@ -44,7 +44,7 @@ export default function LcrForm2ADeathAvailable({ data }) {
         <div>
           <p className="text-sm mb-0.5">Verified by:</p>
           <p className="font-bold">{regOfficer}</p>
-          <p className="text-xs italic">LCRO - Staff</p>
+          <p className="text-xs italic">{lcroStaffTitleForPrint(data.certificateSignatoryTitle)}</p>
         </div>
         <div className="text-right">
           <p className="font-bold">{ccrName}</p>
