@@ -9,6 +9,8 @@ import { getSavedCourtDecreeList, getCourtDecreeDraft } from '../courtDecree/lib
 import { getSavedLegitimationList, getLegitimationDraft } from '../legitimation/lib/legitimationStorage'
 import { mapSourceToSupplementalLcrData } from './lib/supplementalLcrPrefill'
 import SupplementalTransmittalFieldsEditor from './SupplementalTransmittalFieldsEditor'
+import TransmittalProfilesSidebarButton from '../../components/transmittal/TransmittalProfilesSidebarButton'
+import { TRANSMITTAL_PROFILE_VARIANT } from '../../lib/transmittalProfileStorage'
 import SupplementalLcrFooterSignatoryPickers from './SupplementalLcrFooterSignatoryPickers'
 import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailable'
 import LcrForm2ADeathAvailable from '../courtDecree/print/LcrForm2ADeathAvailable'
@@ -296,6 +298,14 @@ export default function Mc2010Form() {
               <aside className="w-full lg:w-56 shrink-0 lg:sticky lg:top-6 flex flex-col gap-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Form Sections</p>
 
+                <TransmittalProfilesSidebarButton
+                  moduleKey="mc2010"
+                  variant={TRANSMITTAL_PROFILE_VARIANT.CCR}
+                  form={form}
+                  onApply={updateTransmittalPatch}
+                  showRecipientCity={false}
+                />
+
                 <button
                   type="button"
                   onClick={() => setActiveSection('transmittal')}
@@ -365,6 +375,7 @@ export default function Mc2010Form() {
                       inputClass={inputClass}
                       showRecipientCity={false}
                       signatoryDropdownPlacement="endorsementColumn"
+                      transmittalProfileModuleKey="mc2010"
                     />
                     <div className="mt-8 p-4 rounded-xl bg-amber-50 border border-amber-200 text-center">
                       <button

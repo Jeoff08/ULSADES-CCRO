@@ -5,12 +5,12 @@ import { buildLcr3aTableDisplay } from '../lib/lcr3aTable'
 export default function LcrForm3ATableOnly({ data }) {
   const t = buildLcr3aTableDisplay(data)
   const cell = 'py-1 px-2 border border-black text-center font-bold text-sm align-top'
-  const label = 'py-1 px-2 border border-black font-medium align-top w-[28%]'
+  const label = 'py-1 px-2 border border-black font-medium align-middle w-[28%]'
   const head = 'py-1 px-2 border border-black font-bold text-center bg-gray-800 text-white'
 
   return (
     <div className="lcr-form-3a-table-only bg-white text-black text-sm max-w-[210mm] mx-auto p-6 print:p-4">
-      <table className="w-full border-collapse border border-black table-fixed">
+      <table className="w-full border-collapse border border-black table-fixed court-decree-lcr-table">
         <colgroup>
           <col style={{ width: '28%' }} />
           <col style={{ width: '36%' }} />

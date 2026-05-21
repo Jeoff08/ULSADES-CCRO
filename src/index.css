@@ -143,6 +143,58 @@ body.pdf-capture .lcr-search-print-header.court-decree-lcr-header {
   animation: toastProgress 5s linear forwards;
 }
 
+@keyframes toastSuccessCheckDraw {
+  from {
+    stroke-dashoffset: 48;
+    opacity: 0.3;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes toastSuccessCircleDraw {
+  from {
+    stroke-dashoffset: 180;
+    opacity: 0.4;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes toastSuccessIconPop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.toast-success-icon-wrap {
+  animation: toastSuccessIconPop 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toast-success-circle {
+  stroke-dasharray: 180;
+  stroke-dashoffset: 180;
+  animation: toastSuccessCircleDraw 0.55s ease-out 0.05s forwards;
+}
+
+.toast-success-check {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: toastSuccessCheckDraw 0.4s ease-out 0.35s forwards;
+}
+
 /* Fill-in blanks: single line only (border-bottom). No text-decoration: underline to avoid double line. */
 .fill-blank {
   border-bottom: 1px solid #000;
@@ -641,6 +693,33 @@ html[data-paper-size="long"] .print-doc-footer , html[data-paper-size="legal"] .
   margin-top: 1em;
 }
 
+/* LCR certification sentence (“issued upon the request of …”): 12pt in print/PDF — all modules */
+@media print {
+  .court-decree-lcr-form .lcr-cert-request-line,
+  .court-decree-lcr-form .lcr-cert-request-line *,
+  .court-decree-lcr-form p.court-decree-lcr-cert-after-table,
+  .court-decree-lcr-form p.court-decree-lcr-cert-after-table *,
+  .ausf-lcr-cert-line,
+  .ausf-lcr-cert-line *,
+  .legitimation-lcr1a-cert-request,
+  .legitimation-lcr1a-cert-request * {
+    font-size: 12pt !important;
+    line-height: 1.3 !important;
+  }
+}
+
+body.pdf-capture .court-decree-lcr-form .lcr-cert-request-line,
+body.pdf-capture .court-decree-lcr-form .lcr-cert-request-line *,
+body.pdf-capture .court-decree-lcr-form p.court-decree-lcr-cert-after-table,
+body.pdf-capture .court-decree-lcr-form p.court-decree-lcr-cert-after-table *,
+body.pdf-capture .ausf-lcr-cert-line,
+body.pdf-capture .ausf-lcr-cert-line *,
+body.pdf-capture .legitimation-lcr1a-cert-request,
+body.pdf-capture .legitimation-lcr1a-cert-request * {
+  font-size: 12pt !important;
+  line-height: 1.3 !important;
+}
+
 /* Court Decree LCR Forms 1A/2A/3A: screen preview body text 15px (A4/short) or 16px (long) */
 html[data-paper-size="a4"] .court-decree-lcr-form .lcr-form-bottom-content p,
 html[data-paper-size="a4"] .court-decree-lcr-form .lcr-form-bottom-content .court-decree-lcr-body,
@@ -727,7 +806,7 @@ body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-cert-line {
   }
   .ausf-lcr-1a-birth-available .ausf-lcr-cert-line,
   .ausf-lcr-1a-birth-available .ausf-lcr-cert-line * {
-    font-size: 11pt !important;
+    font-size: 12pt !important;
     line-height: 1.3 !important;
   }
   .ausf-lcr-1a-birth-available .ausf-lcr-verified-by-bottom,
@@ -755,7 +834,7 @@ body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer div
 
 body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-cert-line,
 body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-cert-line * {
-  font-size: 11pt !important;
+  font-size: 12pt !important;
   line-height: 1.3 !important;
 }
 
@@ -994,6 +1073,20 @@ body.pdf-capture .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-trans
 }
 body.pdf-capture .print-doc-transmittal-elderly .legitimation-transmittal-attn-block .legitimation-transmittal-attn-print {
   display: grid !important;
+}
+/* Out-of-town transmittal: show print layer in PDF capture; hide inline editors */
+body.pdf-capture .print-doc-transmittal-elderly .court-decree-transmittal-psa-header .print-only,
+body.pdf-capture .print-doc-transmittal-elderly .oot-transmittal-addressee-header .print-only,
+body.pdf-capture .print-doc-transmittal-elderly .ausf-transmittal-psa-header .print-only.court-decree-transmittal-psa-block {
+  display: block !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly .court-decree-transmittal-psa-header .no-print,
+body.pdf-capture .print-doc-transmittal-elderly .oot-transmittal-addressee-header .no-print,
+body.pdf-capture .print-doc-transmittal-elderly .ausf-transmittal-psa-header .no-print {
+  display: none !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly .legitimation-transmittal-attn-block .no-print {
+  display: none !important;
 }
 body.pdf-capture .print-doc-transmittal-elderly .legitimation-transmittal-attn-block .legitimation-transmittal-attn-print p {
   font-family: 'Times New Roman', Times, serif !important;
@@ -7276,85 +7369,35 @@ body.pdf-capture .ausf-doc.print-doc.court-decree-lcr-form .cert-reg-signatory {
 @media print {
   html[data-paper-size="long"] .ausf-lcr-a1-form.court-decree-lcr-form .ausf-lcr-cert-line,
   html[data-paper-size="legal"] .ausf-lcr-a1-form.court-decree-lcr-form .ausf-lcr-cert-line {
-    font-size: 11.7pt !important;
-    line-height: 1.2 !important;
+    font-size: 12pt !important;
+    line-height: 1.3 !important;
   }
 }
 
 html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form .ausf-lcr-cert-line,
 html[data-paper-size="legal"] body.pdf-capture .ausf-lcr-a1-form.court-decree-lcr-form .ausf-lcr-cert-line {
-  font-size: 11.7pt !important;
-  line-height: 1.2 !important;
+  font-size: 12pt !important;
+  line-height: 1.3 !important;
 }
 
 body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-cert-line {
-  font-size: 11.7pt !important;
-  line-height: 1.2 !important;
+  font-size: 12pt !important;
+  line-height: 1.3 !important;
 }
 
-/* Court Decree LCR Form 2A: gap before REMARKS; keep left "Verified by" at baseline (A4 / short / long, print + PDF) */
+/* Court Decree LCR 1A/2A/3A: REMARKS ~2 lines lower; one line space below (print + PDF) */
 @media print {
-  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-remarks-block,
-  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-remarks-block,
-  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-remarks-block {
-    margin-top: 3.25em !important;
+  .court-decree-lcr-form.print-doc-lcr-1a .court-decree-lcr-1a-remarks-block,
+  .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-remarks-block,
+  .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-remarks-block {
+    margin-top: 2em !important;
+    margin-bottom: 1em !important;
+    position: relative !important;
+    top: 0 !important;
   }
   html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-signatures > .court-decree-lcr-2a-verified-left,
   html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-signatures > .court-decree-lcr-2a-verified-left,
-  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-signatures > .court-decree-lcr-2a-verified-left {
-    position: relative !important;
-    top: 0 !important;
-  }
-}
-
-html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-remarks-block,
-html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-remarks-block,
-html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-remarks-block {
-  margin-top: 3.25em !important;
-}
-
-html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-signatures > .court-decree-lcr-2a-verified-left,
-html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-signatures > .court-decree-lcr-2a-verified-left,
-html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-signatures > .court-decree-lcr-2a-verified-left {
-  position: relative !important;
-  top: 0 !important;
-}
-
-/* Court Decree LCR 1A: A4 print/PDF — keep REMARKS lower (bottom area) */
-@media print {
-  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-1a .court-decree-lcr-1a-remarks-block {
-    position: relative !important;
-    top: 0 !important;
-  }
-
-  /* Keep existing A4 nudge for LCR 2A/3A only */
-  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-remarks-block,
-  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-remarks-block {
-    position: relative !important;
-    top: -0.40in !important;
-  }
-}
-
-html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a .court-decree-lcr-1a-remarks-block {
-  position: relative !important;
-  top: 0 !important;
-}
-
-html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-remarks-block,
-html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-remarks-block {
-  position: relative !important;
-  top: -0.40in !important;
-}
-
-/* Court Decree LCR Form 3A: move remarks slightly down; keep left Verified-by at baseline (A4/short/long, print+PDF) */
-@media print {
-  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-remarks-block,
-  html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-remarks-block,
-  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-remarks-block {
-    position: relative !important;
-    top: 0 !important;
-    margin-top: 1em !important;
-  }
+  html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-signatures > .court-decree-lcr-2a-verified-left,
   html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-signatures > .court-decree-lcr-3a-verified-left,
   html[data-paper-size="short"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-signatures > .court-decree-lcr-3a-verified-left,
   html[data-paper-size="long"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-signatures > .court-decree-lcr-3a-verified-left {
@@ -7363,39 +7406,19 @@ html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr
   }
 }
 
-html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-remarks-block,
-html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-remarks-block,
-html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-remarks-block {
-  position: relative !important;
-  top: 0 !important;
-  margin-top: 1em !important;
-}
-
-html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-signatures > .court-decree-lcr-3a-verified-left,
-html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-signatures > .court-decree-lcr-3a-verified-left,
-html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-signatures > .court-decree-lcr-3a-verified-left {
+body.pdf-capture .court-decree-lcr-form.print-doc-lcr-1a .court-decree-lcr-1a-remarks-block,
+body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-remarks-block,
+body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-remarks-block {
+  margin-top: 2em !important;
+  margin-bottom: 1em !important;
   position: relative !important;
   top: 0 !important;
 }
 
-/* LCR 3A A4-only fine tune: keep left Verified block at baseline, raise remarks slightly */
-@media print {
-  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-signatures > .court-decree-lcr-3a-verified-left {
-    top: 0 !important;
-  }
-  html[data-paper-size="a4"] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-remarks-block {
-    top: -0.10in !important;
-    margin-top: 0.4em !important;
-  }
-}
-
-html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-signatures > .court-decree-lcr-3a-verified-left {
+body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-2a-signatures > .court-decree-lcr-2a-verified-left,
+body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-signatures > .court-decree-lcr-3a-verified-left {
+  position: relative !important;
   top: 0 !important;
-}
-
-html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-3a-remarks-block {
-  top: -0.10in !important;
-  margin-top: 0.4em !important;
 }
 
 /* Court Decree LCR 1A/2A/3A: move City Civil Registrar block up by ~2 lines (A4/short/long print + PDF) */
@@ -8178,6 +8201,131 @@ html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form.print-doc-
 @keyframes modal-content-in {
   0% { opacity: 0; transform: scale(0.9) translateY(20px); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Court Decree LCR facts tables only: true 12pt in print/PDF (overrides paper-size px rules); label column centered when value wraps */
+@media print {
+  html[data-paper-size="a4"] .court-decree-lcr-form-outer .court-decree-lcr-table,
+  html[data-paper-size="a4"] .court-decree-lcr-form-outer .court-decree-lcr-table td,
+  html[data-paper-size="a4"] .court-decree-lcr-form-outer .court-decree-lcr-table th,
+  html[data-paper-size="short"] .court-decree-lcr-form-outer .court-decree-lcr-table,
+  html[data-paper-size="short"] .court-decree-lcr-form-outer .court-decree-lcr-table td,
+  html[data-paper-size="short"] .court-decree-lcr-form-outer .court-decree-lcr-table th,
+  html[data-paper-size="long"] .court-decree-lcr-form-outer .court-decree-lcr-table,
+  html[data-paper-size="long"] .court-decree-lcr-form-outer .court-decree-lcr-table td,
+  html[data-paper-size="long"] .court-decree-lcr-form-outer .court-decree-lcr-table th,
+  html[data-paper-size="legal"] .court-decree-lcr-form-outer .court-decree-lcr-table,
+  html[data-paper-size="legal"] .court-decree-lcr-form-outer .court-decree-lcr-table td,
+  html[data-paper-size="legal"] .court-decree-lcr-form-outer .court-decree-lcr-table th,
+  html[data-paper-size="a4"] .lcr-form-1a-table-only .court-decree-lcr-table,
+  html[data-paper-size="a4"] .lcr-form-1a-table-only .court-decree-lcr-table td,
+  html[data-paper-size="short"] .lcr-form-1a-table-only .court-decree-lcr-table,
+  html[data-paper-size="short"] .lcr-form-1a-table-only .court-decree-lcr-table td,
+  html[data-paper-size="long"] .lcr-form-1a-table-only .court-decree-lcr-table,
+  html[data-paper-size="long"] .lcr-form-1a-table-only .court-decree-lcr-table td,
+  html[data-paper-size="legal"] .lcr-form-1a-table-only .court-decree-lcr-table,
+  html[data-paper-size="legal"] .lcr-form-1a-table-only .court-decree-lcr-table td,
+  html[data-paper-size="a4"] .lcr-form-2a-table-only .court-decree-lcr-table,
+  html[data-paper-size="a4"] .lcr-form-2a-table-only .court-decree-lcr-table td,
+  html[data-paper-size="short"] .lcr-form-2a-table-only .court-decree-lcr-table,
+  html[data-paper-size="short"] .lcr-form-2a-table-only .court-decree-lcr-table td,
+  html[data-paper-size="long"] .lcr-form-2a-table-only .court-decree-lcr-table,
+  html[data-paper-size="long"] .lcr-form-2a-table-only .court-decree-lcr-table td,
+  html[data-paper-size="legal"] .lcr-form-2a-table-only .court-decree-lcr-table,
+  html[data-paper-size="legal"] .lcr-form-2a-table-only .court-decree-lcr-table td,
+  html[data-paper-size="a4"] .lcr-form-3a-table-only .court-decree-lcr-table,
+  html[data-paper-size="a4"] .lcr-form-3a-table-only .court-decree-lcr-table td,
+  html[data-paper-size="short"] .lcr-form-3a-table-only .court-decree-lcr-table,
+  html[data-paper-size="short"] .lcr-form-3a-table-only .court-decree-lcr-table td,
+  html[data-paper-size="long"] .lcr-form-3a-table-only .court-decree-lcr-table,
+  html[data-paper-size="long"] .lcr-form-3a-table-only .court-decree-lcr-table td,
+  html[data-paper-size="legal"] .lcr-form-3a-table-only .court-decree-lcr-table,
+  html[data-paper-size="legal"] .lcr-form-3a-table-only .court-decree-lcr-table td {
+    font-size: 12pt !important;
+    line-height: 1.3 !important;
+  }
+  /* Short/long bond scales body (0.84 / 0.86); size up table type so printed result reads as 12pt */
+  html[data-paper-size="short"] .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table,
+  html[data-paper-size="short"] .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table td,
+  html[data-paper-size="short"] .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table th {
+    font-size: calc(12pt / 0.84) !important;
+  }
+  html[data-paper-size="long"] .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table,
+  html[data-paper-size="long"] .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table td,
+  html[data-paper-size="long"] .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table th,
+  html[data-paper-size="legal"] .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table,
+  html[data-paper-size="legal"] .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table td,
+  html[data-paper-size="legal"] .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table th {
+    font-size: calc(12pt / 0.86) !important;
+  }
+  .court-decree-lcr-form-outer .court-decree-lcr-table tbody tr > td:first-child,
+  .lcr-form-1a-table-only .court-decree-lcr-table tbody tr > td:first-child,
+  .lcr-form-2a-table-only .court-decree-lcr-table tbody tr > td:first-child,
+  .lcr-form-3a-table-only .court-decree-lcr-table tbody tr > td:first-child {
+    vertical-align: middle !important;
+  }
+}
+
+html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table,
+html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table td,
+html[data-paper-size="a4"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table th,
+html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table,
+html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table td,
+html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table th,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table td,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table th,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table td,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table th,
+html[data-paper-size="a4"] body.pdf-capture .lcr-form-1a-table-only .court-decree-lcr-table,
+html[data-paper-size="a4"] body.pdf-capture .lcr-form-1a-table-only .court-decree-lcr-table td,
+html[data-paper-size="short"] body.pdf-capture .lcr-form-1a-table-only .court-decree-lcr-table,
+html[data-paper-size="short"] body.pdf-capture .lcr-form-1a-table-only .court-decree-lcr-table td,
+html[data-paper-size="long"] body.pdf-capture .lcr-form-1a-table-only .court-decree-lcr-table,
+html[data-paper-size="long"] body.pdf-capture .lcr-form-1a-table-only .court-decree-lcr-table td,
+html[data-paper-size="legal"] body.pdf-capture .lcr-form-1a-table-only .court-decree-lcr-table,
+html[data-paper-size="legal"] body.pdf-capture .lcr-form-1a-table-only .court-decree-lcr-table td,
+html[data-paper-size="a4"] body.pdf-capture .lcr-form-2a-table-only .court-decree-lcr-table,
+html[data-paper-size="a4"] body.pdf-capture .lcr-form-2a-table-only .court-decree-lcr-table td,
+html[data-paper-size="short"] body.pdf-capture .lcr-form-2a-table-only .court-decree-lcr-table,
+html[data-paper-size="short"] body.pdf-capture .lcr-form-2a-table-only .court-decree-lcr-table td,
+html[data-paper-size="long"] body.pdf-capture .lcr-form-2a-table-only .court-decree-lcr-table,
+html[data-paper-size="long"] body.pdf-capture .lcr-form-2a-table-only .court-decree-lcr-table td,
+html[data-paper-size="legal"] body.pdf-capture .lcr-form-2a-table-only .court-decree-lcr-table,
+html[data-paper-size="legal"] body.pdf-capture .lcr-form-2a-table-only .court-decree-lcr-table td,
+html[data-paper-size="a4"] body.pdf-capture .lcr-form-3a-table-only .court-decree-lcr-table,
+html[data-paper-size="a4"] body.pdf-capture .lcr-form-3a-table-only .court-decree-lcr-table td,
+html[data-paper-size="short"] body.pdf-capture .lcr-form-3a-table-only .court-decree-lcr-table,
+html[data-paper-size="short"] body.pdf-capture .lcr-form-3a-table-only .court-decree-lcr-table td,
+html[data-paper-size="long"] body.pdf-capture .lcr-form-3a-table-only .court-decree-lcr-table,
+html[data-paper-size="long"] body.pdf-capture .lcr-form-3a-table-only .court-decree-lcr-table td,
+html[data-paper-size="legal"] body.pdf-capture .lcr-form-3a-table-only .court-decree-lcr-table,
+html[data-paper-size="legal"] body.pdf-capture .lcr-form-3a-table-only .court-decree-lcr-table td {
+  font-size: 12pt !important;
+  line-height: 1.3 !important;
+}
+
+html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table,
+html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table td,
+html[data-paper-size="short"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table th {
+  font-size: calc(12pt / 0.84) !important;
+}
+
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table td,
+html[data-paper-size="long"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table th,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table td,
+html[data-paper-size="legal"] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table th {
+  font-size: calc(12pt / 0.86) !important;
+}
+
+body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table tbody tr > td:first-child,
+body.pdf-capture .lcr-form-1a-table-only .court-decree-lcr-table tbody tr > td:first-child,
+body.pdf-capture .lcr-form-2a-table-only .court-decree-lcr-table tbody tr > td:first-child,
+body.pdf-capture .lcr-form-3a-table-only .court-decree-lcr-table tbody tr > td:first-child {
+  vertical-align: middle !important;
 }
 
 /* LCR remarks font size: honor --lcr-remarks-font-pt on screen, print, and PDF capture */

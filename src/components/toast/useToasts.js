@@ -13,6 +13,8 @@ export function useToasts() {
 
   const show = useCallback((toast) => {
     const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`
+    const durationMs =
+      typeof toast?.durationMs === 'number' && toast.durationMs > 0 ? toast.durationMs : 5000
     const next = {
       id,
       type: toast?.type || 'info',
@@ -20,9 +22,10 @@ export function useToasts() {
       message: toast?.message || '',
       actionLabel: toast?.actionLabel || '',
       onAction: typeof toast?.onAction === 'function' ? toast.onAction : null,
+      durationMs,
     }
     setToasts((prev) => [next, ...prev].slice(0, 4))
-    const timer = window.setTimeout(() => dismiss(id), 5000)
+    const timer = window.setTimeout(() => dismiss(id), durationMs)
     timersRef.current.set(id, timer)
     return id
   }, [dismiss])

@@ -3,6 +3,13 @@ import ConfirmRemoveRowModal from '../../../components/ConfirmRemoveRowModal'
 import { formatDateCert, fullName } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter, TRANSMITTAL_ATTACHMENTS_LOCAL, TRANSMITTAL_ATTACHMENTS_PSA } from '../../../components/print'
 import {
+  LOCAL_TRANSMITTAL_ATTN_LINES,
+  LOCAL_TRANSMITTAL_ATTN_PREFIX,
+  LOCAL_TRANSMITTAL_TO_PSA_LINES,
+  resolveOotAttnForPrint,
+  resolveOotPsaPrintLines,
+} from '../../../lib/transmittalLocalAddressee'
+import {
   AUSF_TRANSMITTAL_ADDRESSEE_EXAMPLE_LINES,
   isLegacyAusfTransmittalRecipient,
 } from '../lib/ausfDefaults'
@@ -14,41 +21,21 @@ import {
   createEmptyChecklistItem,
 } from '../lib/transmittalChecklistStorage'
 
-/** Default six-line â€œTo PSAâ€ block for Court Decree local transmittal */
-const DEFAULT_TRANSMITTAL_PSA_LINES = [
-  'Minerva Eloisa P. Esquivas',
-  'Assistant Secretary',
-  'Deputy National Statistician',
-  'Civil Registration and Central Support Office',
-  'CRS Building, Philippines Statistics Authority Complex East Avenue Diliman',
-  'Quezon City, 1101',
-]
+/** Out-of-town addressee placeholders (local uses fixed {@link LOCAL_TRANSMITTAL_TO_PSA_LINES}). */
+const DEFAULT_TRANSMITTAL_PSA_LINES = LOCAL_TRANSMITTAL_TO_PSA_LINES
+const DEFAULT_LEGITIMATION_TRANSMITTAL_ADDRESSEE_LINES = LOCAL_TRANSMITTAL_TO_PSA_LINES
 
-/** Legitimation local + out-of-town addressee (replaces former Cebu CCR block) */
-const DEFAULT_LEGITIMATION_TRANSMITTAL_ADDRESSEE_LINES = [
-  'Minerva Eloisa P. Esquivas',
-  'Assistant Secretary',
-  'Deputy National Statistician',
-  'Civil Registration and Central Support Office',
-  'CRS Building, Philippines Statistics Authority Complex East Avenue Diliman',
-  'Quezon City, 1101',
-]
+/** Out-of-town ATTN placeholders (local uses fixed {@link LOCAL_TRANSMITTAL_ATTN_LINES}). */
+const DEFAULT_ATTN_PREFIX = LOCAL_TRANSMITTAL_ATTN_PREFIX
+const DEFAULT_TRANSMITTAL_ATTN_EXAMPLE_LINES = LOCAL_TRANSMITTAL_ATTN_LINES
 
-/** Transmittal ATTN: editable prefix (bold) + name / title / office â€” example text is UI-only until user types */
-const DEFAULT_ATTN_PREFIX = 'ATTN:'
-const DEFAULT_TRANSMITTAL_ATTN_EXAMPLE_LINES = [
-  'Marizza B. Grande',
-  'Assistant National Statistician',
-  'Civil Registration Service',
-]
-
-/** Print/PDF: any non-empty field; default ATTN: when detail lines exist but prefix is blank. */
+/** Print/PDF: draft lines when set, else PSA national statistician ATTN defaults. */
 function resolveAttnPrintBlock(prefixDraft, detailDraft, { uppercasePrefix = false } = {}) {
-  const detailLines = [0, 1, 2].map((i) => String(detailDraft[i] ?? '').trim())
-  const hasDetail = detailLines.some(Boolean)
-  let prefix = String(prefixDraft ?? '').trim()
-  if (!prefix && hasDetail) prefix = DEFAULT_ATTN_PREFIX
-  if (!prefix && !hasDetail) return { prefix: '', detailLines: ['', '', ''] }
+  const detailLines = [0, 1, 2].map((i) => {
+    const draft = String(detailDraft[i] ?? '').trim()
+    return draft || LOCAL_TRANSMITTAL_ATTN_LINES[i] || ''
+  })
+  let prefix = String(prefixDraft ?? '').trim() || LOCAL_TRANSMITTAL_ATTN_PREFIX
   const prefixOut = uppercasePrefix ? prefix.toUpperCase() : prefix
   return { prefix: prefixOut, detailLines }
 }
@@ -73,6 +60,140 @@ function TransmittalAttnGhostField({ value, onChange, example, inputClassName, a
         value={value}
         onChange={onChange}
       />
+    </div>
+  )
+}
+
+function TransmittalLocalToPsaBlock({ className = '', uppercase = false, courtDecreeStyle = false }) {
+  return (
+    <div className={className}>
+      <p
+        className={[
+          'm-0 p-0 text-left',
+          courtDecreeStyle ? 'leading-none normal-case' : 'leading-tight',
+          uppercase ? 'uppercase' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        {LOCAL_TRANSMITTAL_TO_PSA_LINES.map((line, printIdx) => (
+          <React.Fragment key={`local-psa-line-${printIdx}`}>
+            {printIdx > 0 ? <br /> : null}
+            <span
+              className={
+                printIdx === 0
+                  ? courtDecreeStyle
+                    ? 'court-decree-transmittal-psa-name font-bold'
+                    : 'ausf-transmittal-psa-name font-bold'
+                  : courtDecreeStyle
+                    ? ''
+                    : 'ausf-transmittal-psa-line'
+              }
+            >
+              {uppercase ? line.toUpperCase() : line}
+            </span>
+          </React.Fragment>
+        ))}
+      </p>
+    </div>
+  )
+}
+
+function localPsaPrintLinesFromDraft(psaDraft, { uppercase = false } = {}) {
+  const filled = filledAddresseePrintLines(psaDraft, { uppercase })
+  if (filled.length > 0) return filled
+  return LOCAL_TRANSMITTAL_TO_PSA_LINES.map((line, i) => ({
+    i,
+    text: uppercase ? line.toUpperCase() : line,
+  }))
+}
+
+/** Local transmittal To block: draft lines when set, otherwise PSA national statistician defaults. */
+function EditableLocalPsaAddresseeBlock({
+  className = '',
+  psaDraft,
+  setPsaDraft,
+  inlineAddrInput,
+  onPersistDraft,
+  savePsaFields,
+  courtDecreeStyle = false,
+  uppercase = false,
+}) {
+  const printLines = localPsaPrintLinesFromDraft(psaDraft, { uppercase })
+  const firstLineClass = courtDecreeStyle
+    ? 'court-decree-transmittal-psa-name font-bold'
+    : 'ausf-transmittal-psa-name font-bold'
+
+  return (
+    <div className={className}>
+      <p
+        className={[
+          'print-only m-0 p-0 text-left',
+          courtDecreeStyle ? 'court-decree-transmittal-psa-block leading-none normal-case' : 'leading-tight',
+          uppercase ? 'uppercase' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        {printLines.map(({ i, text }, printIdx) => (
+          <React.Fragment key={`local-psa-print-${i}`}>
+            {printIdx > 0 ? <br /> : null}
+            <span
+              className={
+                printIdx === 0
+                  ? firstLineClass
+                  : courtDecreeStyle
+                    ? ''
+                    : uppercase
+                      ? 'ausf-transmittal-psa-line'
+                      : 'ausf-transmittal-psa-line'
+              }
+            >
+              {text}
+            </span>
+          </React.Fragment>
+        ))}
+      </p>
+      <div className="no-print space-y-0">
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <div key={`local-psa-edit-${i}`} className={courtDecreeStyle ? 'm-0 leading-tight' : 'm-0 text-left'}>
+            <input
+              type="text"
+              spellCheck={false}
+              aria-label={`Transmittal addressee line ${i + 1}`}
+              className={[
+                inlineAddrInput,
+                courtDecreeStyle ? 'normal-case placeholder:normal-case text-[12pt]' : '',
+                i === 0 ? `${firstLineClass} ${courtDecreeStyle ? 'text-[12pt]' : ''}` : courtDecreeStyle ? 'text-[12pt]' : '',
+                uppercase ? 'uppercase tracking-wide' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              value={psaDraft[i] ?? ''}
+              onChange={(e) =>
+                setPsaDraft((prev) => {
+                  const next = [...prev]
+                  while (next.length < 6) next.push('')
+                  next[i] = e.target.value
+                  return next
+                })
+              }
+              placeholder={LOCAL_TRANSMITTAL_TO_PSA_LINES[i] ?? ''}
+            />
+          </div>
+        ))}
+      </div>
+      {typeof onPersistDraft === 'function' && savePsaFields ? (
+        <div className="no-print mt-2">
+          <button
+            type="button"
+            onClick={savePsaFields}
+            className="text-sm font-medium text-slate-700 underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
+          >
+            Save To block to draft
+          </button>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -514,7 +635,8 @@ export default function TransmittalDoc({
   const ausfLocalLine2 = (ausfCdRecipientLines[1] || '').trim().toUpperCase()
   const ausfLocalLine3 = (ausfCdRecipientLines[2] || '').trim().toUpperCase()
 
-  const needsPsaEditor = (isCourtDecreeTransmittal || isLegitimationTransmittal) && !isOutOfTown
+  const needsPsaEditor =
+    (isCourtDecreeTransmittal || isLegitimationTransmittal || isAusfTransmittal) && !isOutOfTown
   const readPsaDraftFrom = useCallback(
     (src) => [
       src.transmittalToPsaLine1 != null ? String(src.transmittalToPsaLine1) : '',
@@ -546,7 +668,8 @@ export default function TransmittalDoc({
     stripAusfExamplePlaceholderRows(ausfCdRecipientLines),
     { uppercase: true },
   )
-  const courtDecreeOotPsaPrintLines = filledAddresseePrintLines(ausfCdRecipientLines)
+  const courtDecreeOotPsaPrintLines = resolveOotPsaPrintLines(ausfCdRecipientLines)
+  const legOotPsaPrintLines = resolveOotPsaPrintLines(legOotLines, { uppercase: true })
 
   const savePsaFields = useCallback(() => {
     if (typeof onPersistDraft !== 'function') return
@@ -654,9 +777,13 @@ export default function TransmittalDoc({
     return Array.from({ length: count }, (_, k) => k)
   })()
 
-  const attnPrint = resolveAttnPrintBlock(attnPrefixDraft, attnDetailDraft, {
-    uppercasePrefix: isLegitimationTransmittal,
-  })
+  const attnPrint = isOutOfTown
+    ? resolveOotAttnForPrint(attnPrefixDraft, attnDetailDraft, {
+        uppercasePrefix: isLegitimationTransmittal,
+      })
+    : resolveAttnPrintBlock(attnPrefixDraft, attnDetailDraft, {
+        uppercasePrefix: isLegitimationTransmittal,
+      })
   const attnPrefixPrint = attnPrint.prefix
   const attnDetailPrintLines = attnPrint.detailLines
 
@@ -696,95 +823,25 @@ export default function TransmittalDoc({
 
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
         {isCourtDecreeTransmittal && !isOutOfTown ? (
-          <div className={`court-decree-transmittal-psa-header mt-4 pl-0 pr-0 text-left text-[12pt] leading-none normal-case ${psaBlockBottomClass}`}>
-            <p className="print-only court-decree-transmittal-psa-block m-0 p-0 text-left leading-none normal-case">
-              {courtDecreePsaPrintLines.map(({ i, text }, printIdx) => (
-                <React.Fragment key={`court-decree-psa-print-${i}`}>
-                  {printIdx > 0 ? <br /> : null}
-                  <span className={printIdx === 0 ? 'court-decree-transmittal-psa-name font-bold' : ''}>
-                    {text}
-                  </span>
-                </React.Fragment>
-              ))}
-            </p>
-            <div className="no-print space-y-0">
-              {[0, 1, 2, 3, 4, 5].map((i) => (
-                <div key={`court-decree-psa-edit-${i}`} className="m-0 leading-tight">
-                  <input
-                    type="text"
-                    spellCheck={false}
-                    aria-label={i === 0 ? 'PSA addressee line 1' : `PSA addressee line ${i + 1}`}
-                    className={`${inlineAddrInput} normal-case placeholder:normal-case ${i === 0 ? 'court-decree-transmittal-psa-name font-bold text-[12pt]' : 'text-[12pt]'}`}
-                    value={psaDraft[i]}
-                    onChange={(e) =>
-                      setPsaDraft((prev) => {
-                        const next = [...prev]
-                        while (next.length < 6) next.push('')
-                        next[i] = e.target.value
-                        return next
-                      })
-                    }
-                    placeholder={DEFAULT_TRANSMITTAL_PSA_LINES[i]}
-                  />
-                </div>
-              ))}
-            </div>
-            {typeof onPersistDraft === 'function' ? (
-              <div className="no-print mt-2">
-                <button
-                  type="button"
-                  onClick={savePsaFields}
-                  className="text-sm font-medium text-slate-700 underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
-                >
-                  Save to draft
-                </button>
-              </div>
-            ) : null}
-          </div>
+          <EditableLocalPsaAddresseeBlock
+            className={`court-decree-transmittal-psa-header mt-4 pl-0 pr-0 text-left text-[12pt] leading-none normal-case ${psaBlockBottomClass}`}
+            psaDraft={psaDraft}
+            setPsaDraft={setPsaDraft}
+            inlineAddrInput={inlineAddrInput}
+            onPersistDraft={onPersistDraft}
+            savePsaFields={savePsaFields}
+            courtDecreeStyle
+          />
         ) : isLegitimationTransmittal && !isOutOfTown ? (
-          <div className={`legitimation-transmittal-psa-header mt-2 text-sm leading-tight space-y-0 text-left ${legitimationHeaderAboveSubjectGapClass}`}>
-            {legitimationPsaRowIndices.map((i) => {
-              const trimmed = String(psaDraft[i] ?? '').trim()
-              const showPrintLine = trimmed.length > 0
-              return (
-                <div key={i} className="m-0 leading-tight">
-                  {showPrintLine ? (
-                    <p
-                      className={`print-only m-0 leading-tight uppercase ${isFirstFilledLegitimationPsaLine(i) ? 'font-bold' : ''}`}
-                    >
-                      {trimmed.toUpperCase()}
-                    </p>
-                  ) : null}
-                  <input
-                    type="text"
-                    spellCheck={false}
-                    aria-label={i === 0 ? 'PSA addressee line 1' : `PSA addressee line ${i + 1}`}
-                    className={`${inlineAddrInput} uppercase ${isFirstFilledLegitimationPsaLine(i) ? 'font-bold' : ''}`}
-                    value={psaDraft[i] ?? ''}
-                    onChange={(e) =>
-                      setPsaDraft((prev) => {
-                        const next = [...prev]
-                        while (next.length < 6) next.push('')
-                        next[i] = e.target.value
-                        return next
-                      })
-                    }
-                    placeholder={DEFAULT_LEGITIMATION_TRANSMITTAL_ADDRESSEE_LINES[i]}
-                  />
-                </div>
-              )
-            })}            {typeof onPersistDraft === 'function' ? (
-              <div className="no-print mt-2">
-                <button
-                  type="button"
-                  onClick={savePsaFields}
-                  className="text-sm font-medium text-slate-700 underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
-                >
-                  Save to draft
-                </button>
-              </div>
-            ) : null}
-          </div>
+          <EditableLocalPsaAddresseeBlock
+            className={`legitimation-transmittal-psa-header mt-2 text-sm text-left ${legitimationHeaderAboveSubjectGapClass}`}
+            psaDraft={psaDraft}
+            setPsaDraft={setPsaDraft}
+            inlineAddrInput={inlineAddrInput}
+            onPersistDraft={onPersistDraft}
+            savePsaFields={savePsaFields}
+            uppercase
+          />
         ) : showStyledOotAddressee && isLegOot ? (
           <div
             className={[
@@ -794,18 +851,17 @@ export default function TransmittalDoc({
               .filter(Boolean)
               .join(' ')}
           >
+            <p className="print-only m-0 p-0 text-left uppercase tracking-wide leading-snug">
+              {legOotPsaPrintLines.map(({ i, text }, printIdx) => (
+                <React.Fragment key={`leg-oot-psa-print-${i}`}>
+                  {printIdx > 0 ? <br /> : null}
+                  <span className={printIdx === 0 ? 'font-bold' : 'font-normal'}>{text}</span>
+                </React.Fragment>
+              ))}
+            </p>
             {legitimationOotRowIndices.map((i) => {
-              const trimmed = String(legOotLines[i] ?? '').trim()
-              const showPrintLine = trimmed.length > 0
               return (
-                <div key={i} className="m-0 text-left">
-                  {showPrintLine ? (
-                    <p
-                      className={`print-only m-0 text-left uppercase tracking-wide ${isFirstFilledLegOotLine(i) ? 'font-bold' : 'font-normal'}`}
-                    >
-                      {trimmed.toUpperCase()}
-                    </p>
-                  ) : null}
+                <div key={i} className="m-0 text-left no-print">
                   <input
                     type="text"
                     spellCheck={false}
@@ -837,53 +893,15 @@ export default function TransmittalDoc({
             ) : null}
           </div>
         ) : usesAusfCdSixLineRecipient && isAusfTransmittal ? (
-          <div
+          <EditableLocalPsaAddresseeBlock
             className={`ausf-transmittal-psa-header mt-4 pl-0 pr-0 text-left text-[12pt] uppercase ${psaBlockBottomClass}`}
-          >
-            <p className="print-only ausf-transmittal-psa-block m-0 p-0 text-left uppercase">
-              {ausfPsaPrintLines.map(({ i, text }, printIdx) => (
-                <React.Fragment key={`ausf-psa-print-${i}`}>
-                  {printIdx > 0 ? <br /> : null}
-                  <span className={printIdx === 0 ? 'ausf-transmittal-psa-name' : 'ausf-transmittal-psa-line'}>
-                    {text}
-                  </span>
-                </React.Fragment>
-              ))}
-            </p>
-            <div className="no-print space-y-0">
-              {[0, 1, 2, 3, 4, 5].map((i) => (
-                <div key={`ausf-psa-edit-${i}`} className="m-0 leading-tight">
-                  <input
-                    type="text"
-                    spellCheck={false}
-                    aria-label={i === 0 ? 'PSA addressee line 1' : `PSA addressee line ${i + 1}`}
-                    className={`${inlineAddrInput} uppercase placeholder:uppercase ${i === 0 ? 'ausf-transmittal-psa-name text-[12pt]' : 'ausf-transmittal-psa-line text-[12pt]'}`}
-                    value={ausfCdRecipientLines[i] ?? ''}
-                    onChange={(e) =>
-                      setAusfCdRecipientLines((prev) => {
-                        const next = [...prev]
-                        while (next.length < 6) next.push('')
-                        next[i] = e.target.value
-                        return next
-                      })
-                    }
-                    placeholder={(DEFAULT_AUSF_CD_TRANSMITTAL_ADDRESSEE_LINES[i] ?? '').toUpperCase()}
-                  />
-                </div>
-              ))}
-            </div>
-            {typeof onPersistDraft === 'function' ? (
-              <div className="no-print mt-2">
-                <button
-                  type="button"
-                  onClick={saveAusfCdRecipientFields}
-                  className="text-sm font-medium text-slate-700 underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
-                >
-                  Save to draft
-                </button>
-              </div>
-            ) : null}
-          </div>
+            psaDraft={psaDraft}
+            setPsaDraft={setPsaDraft}
+            inlineAddrInput={inlineAddrInput}
+            onPersistDraft={onPersistDraft}
+            savePsaFields={savePsaFields}
+            uppercase
+          />
         ) : usesAusfCdSixLineRecipient ? (
           <div
             className={`court-decree-transmittal-psa-header mt-4 pl-0 pr-0 text-left text-[12pt] leading-none normal-case ${psaBlockBottomClass}`}

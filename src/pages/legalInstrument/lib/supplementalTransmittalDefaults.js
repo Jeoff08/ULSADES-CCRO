@@ -1,4 +1,9 @@
 import { splitFieldLines } from '../../../lib/printUtils'
+import {
+  LOCAL_TRANSMITTAL_ATTN_LINES,
+  LOCAL_TRANSMITTAL_ATTN_PREFIX,
+  LOCAL_TRANSMITTAL_TO_PSA_LINES,
+} from '../../../lib/transmittalLocalAddressee'
 
 /** Iligan CCR transmittal — checklist options (supplemental print). */
 
@@ -193,6 +198,28 @@ export function transmittalThruPositionLinesForPrint(data) {
   const d = String(data.transmittalThruPosition4 || '').trim()
   if (a || b || c || d) return [a, b, c, d].filter(Boolean)
   return splitFieldLines(data.transmittalThruTitle)
+}
+
+/** To block on MC2010 / Supplemental transmittal: saved addressee when set, else PSA default. */
+export function ccrTransmittalToLinesForPrint(data) {
+  const recipient = String(data?.transmittalRecipient ?? '').trim()
+  const custom = [
+    recipient,
+    ...transmittalRecipientPositionLines(data || {}),
+    ...transmittalRecipientOfficeLinesForPrint(data || {}),
+  ].filter(Boolean)
+  if (custom.length > 0) return custom
+  return [...LOCAL_TRANSMITTAL_TO_PSA_LINES]
+}
+
+/** ATTN / Thru block: saved addressee when set, else PSA default. */
+export function ccrTransmittalThruBlockForPrint(data) {
+  const name = String(data?.transmittalThru ?? '').trim()
+  const custom = [name, ...transmittalThruPositionLinesForPrint(data || {})].filter(Boolean)
+  if (custom.length > 0) {
+    return { prefix: LOCAL_TRANSMITTAL_ATTN_PREFIX, lines: custom }
+  }
+  return { prefix: LOCAL_TRANSMITTAL_ATTN_PREFIX, lines: [...LOCAL_TRANSMITTAL_ATTN_LINES] }
 }
 
 export const SUPPLEMENTAL_TRANSMITTAL_SALUTATION_PRESETS = [

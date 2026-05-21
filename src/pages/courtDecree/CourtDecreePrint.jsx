@@ -197,14 +197,18 @@ export default function CourtDecreePrint() {
         ? await withLcrTriplePdfCapture({}, savePdf)
         : await savePdf()
       if (result?.ok) {
+        const savedPath = result.filePath || ''
         show({
           type: 'success',
           title: 'PDF saved',
-          message: result.filePath || '',
+          message: savedPath
+            ? 'Where should we open this file? Click Open to choose Chrome or Edge.'
+            : '',
+          durationMs: 10000,
           actionLabel: 'Open',
           onAction: async () => {
-            if (!result.filePath) return
-            await openSavedPdfInBrowser(result.filePath)
+            if (!savedPath) return
+            await openSavedPdfInBrowser(savedPath)
           },
         })
         return

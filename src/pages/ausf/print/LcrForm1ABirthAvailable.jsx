@@ -28,7 +28,7 @@ const AUSF_LCR_1A_BIRTH_VERIFIED_BY_PRINT_STYLES = `
 @media print {
   .ausf-lcr-1a-birth-available .ausf-lcr-cert-line,
   .ausf-lcr-1a-birth-available .ausf-lcr-cert-line * {
-    font-size: 10pt !important;
+    font-size: 12pt !important;
     line-height: 1.3 !important;
   }
   .ausf-lcr-1a-birth-available .ausf-lcr-verified-block .ausf-lcr-verified-by-region {
@@ -90,7 +90,7 @@ const AUSF_LCR_1A_BIRTH_VERIFIED_BY_PRINT_STYLES = `
 }
 body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-cert-line,
 body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-cert-line * {
-  font-size: 10pt !important;
+  font-size: 12pt !important;
   line-height: 1.3 !important;
 }
 body.pdf-capture .ausf-lcr-1a-birth-available .ausf-lcr-to-whom {

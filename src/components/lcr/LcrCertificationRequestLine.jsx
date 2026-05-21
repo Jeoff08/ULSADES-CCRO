@@ -7,11 +7,18 @@ export default function LcrCertificationRequestLine({
   variant = '1a',
   copyKind,
   onPartyChange,
-  className = 'mb-2 court-decree-lcr-body court-decree-lcr-cert-after-table',
+  className = '',
   style,
 }) {
+  const mergedClassName = [
+    'lcr-cert-request-line court-decree-lcr-cert-after-table court-decree-lcr-body mb-2',
+    className,
+  ]
+    .join(' ')
+    .trim()
+
   return (
-    <p className={className} style={style}>
+    <p className={mergedClassName} style={style}>
       This certification is issued upon the request of{' '}
       <LcrCertificationRequestPartyInline
         data={data}

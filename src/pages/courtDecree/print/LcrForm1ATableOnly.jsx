@@ -20,11 +20,11 @@ export default function LcrForm1ATableOnly({ data }) {
   ]
   return (
     <div className="lcr-form-1a-table-only bg-white text-black text-sm max-w-[210mm] mx-auto p-6 print:p-4">
-      <table className="w-full border-collapse border border-black">
+      <table className="w-full border-collapse border border-black court-decree-lcr-table">
         <tbody>
           {rows.map(([label, val, isDate]) => (
             <tr key={label}>
-              <td className="py-1 px-3 border border-black font-medium align-top w-[42%]">{label}</td>
+              <td className="py-1 px-3 border border-black font-medium align-middle w-[42%]">{label}</td>
               <td
                 className={`py-1 px-3 border border-black text-left font-bold align-top ${
                   isDate ? '' : 'uppercase'

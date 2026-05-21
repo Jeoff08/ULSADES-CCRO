@@ -11,6 +11,8 @@ import { useDebouncedSuccessToast } from '../../hooks/useDebouncedSuccessToast'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
 import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
 import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShortcuts'
+import TransmittalProfilesSidebarButton from '../../components/transmittal/TransmittalProfilesSidebarButton'
+import { TRANSMITTAL_PROFILE_VARIANT } from '../../lib/transmittalProfileStorage'
 import FlexibleFormDateInput from '../../components/forms/FlexibleFormDateInput'
 import { parseBirthToDate } from '../../lib/printUtils'
 import LcroStaffVerifiedByFields from '../../components/lcr/LcroStaffVerifiedByFields'
@@ -283,6 +285,14 @@ export default function LegitimationForm() {
               number="3A"
               title="Transmittal type (local or out-of-town)"
             >
+              <div className="mb-4 max-w-xs">
+                <TransmittalProfilesSidebarButton
+                  moduleKey="legitimation"
+                  variant={TRANSMITTAL_PROFILE_VARIANT.STANDARD}
+                  form={form}
+                  onApply={persistForm}
+                />
+              </div>
               <p className="text-sm text-gray-600 mb-3 max-w-2xl">
                 Choose if this legitimation case is out of town. Print will show only one transmittal output: local Transmittal or Out-of-Town Transmittal.
               </p>

@@ -3,12 +3,11 @@ import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { formatTransmittalDateLong, formatDobDayMonthYearUpper } from '../../../lib/printUtils'
 import {
   SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS,
+  ccrTransmittalThruBlockForPrint,
+  ccrTransmittalToLinesForPrint,
   getVisibleTransmittalAttachmentRows,
   getVisibleTransmittalEndorsementRows,
   resolveTransmittalSignatory,
-  transmittalRecipientOfficeLinesForPrint,
-  transmittalRecipientPositionLines,
-  transmittalThruPositionLinesForPrint,
 } from '../lib/supplementalTransmittalDefaults'
 
 const tableCls = 'w-full border-collapse border border-black text-[14px] leading-tight'
@@ -48,6 +47,8 @@ export default function SupplementalTransmittal({
   const attachmentIds = Array.isArray(data.transmittalAttachmentIds) ? data.transmittalAttachmentIds : []
 
   const signatory = resolveTransmittalSignatory(data)
+  const toLines = ccrTransmittalToLinesForPrint(data)
+  const thruBlock = ccrTransmittalThruBlockForPrint(data)
 
   const docTypeRowsPrint = useMemo(
     () => SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS.filter((row) => docType === row.id),
@@ -69,10 +70,6 @@ export default function SupplementalTransmittal({
   )
   const hasAnyChecklistForPrint =
     docTypeRowsPrint.length > 0 || endorsementRowsPrint.length > 0 || attachmentRowsPrint.length > 0
-
-  const recipientTitleLines = transmittalRecipientPositionLines(data)
-  const recipientOfficeLines = transmittalRecipientOfficeLinesForPrint(data)
-  const thruTitleLines = transmittalThruPositionLinesForPrint(data)
 
   const emph = (v) => {
     const t = (v || '').trim().toUpperCase()
@@ -101,32 +98,25 @@ export default function SupplementalTransmittal({
         </p>
 
         <div className="mb-6 space-y-1 text-sm">
-          <p className="font-bold uppercase">{(data.transmittalRecipient || '').trim() || '\u00a0'}</p>
-          {recipientTitleLines.map((line, i) => (
-            <p key={`rec-title-${i}`} className="uppercase">
-              {line}
-            </p>
-          ))}
-          {recipientOfficeLines.map((line, i) => (
-            <p key={`rec-office-${i}`} className="uppercase">
+          <p className="font-bold uppercase">{toLines[0]}</p>
+          {toLines.slice(1).map((line, i) => (
+            <p key={`rec-psa-${i}`} className="uppercase">
               {line}
             </p>
           ))}
         </div>
 
-        {(data.transmittalThru || '').trim() ? (
-          <div className="supplemental-transmittal-attn-block mb-6 text-sm ml-10 md:ml-16 space-y-0.5">
-            <p>
-              <span className="font-bold">Attn:</span>{' '}
-              <span className="font-bold uppercase">{(data.transmittalThru || '').trim()}</span>
+        <div className="supplemental-transmittal-attn-block mb-6 text-sm ml-10 md:ml-16 space-y-0.5">
+          <p>
+            <span className="font-bold">{thruBlock.prefix}</span>{' '}
+            <span className="font-bold uppercase">{thruBlock.lines[0]}</span>
+          </p>
+          {thruBlock.lines.slice(1).map((line, i) => (
+            <p key={`thru-title-${i}`} className="uppercase leading-snug">
+              {line}
             </p>
-            {thruTitleLines.map((line, i) => (
-              <p key={`thru-title-${i}`} className="uppercase leading-snug">
-                {line}
-              </p>
-            ))}
-          </div>
-        ) : null}
+          ))}
+        </div>
 
         <div className="text-sm space-y-4 mb-4 text-left">
           <p>

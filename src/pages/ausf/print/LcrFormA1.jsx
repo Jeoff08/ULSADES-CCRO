@@ -25,7 +25,7 @@ const AUSF_LCR_A1_VERIFIED_BY_PRINT_STYLES = `
 @media print {
   .ausf-lcr-a1-form .ausf-lcr-cert-line,
   .ausf-lcr-a1-form .ausf-lcr-cert-line * {
-    font-size: 10pt !important;
+    font-size: 12pt !important;
     line-height: 1.3 !important;
   }
   html[data-paper-size="long"] .ausf-lcr-a1-form .ausf-lcr-verified-block > .flex > .ausf-lcr-verified-by-region,
@@ -92,7 +92,7 @@ const AUSF_LCR_A1_VERIFIED_BY_PRINT_STYLES = `
 }
 body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-cert-line,
 body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-cert-line * {
-  font-size: 10pt !important;
+  font-size: 12pt !important;
   line-height: 1.3 !important;
 }
 html[data-paper-size="long"] body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-to-whom,

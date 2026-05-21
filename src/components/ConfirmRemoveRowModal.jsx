@@ -9,10 +9,11 @@ export default function ConfirmRemoveRowModal({
   onCancel,
   onConfirm,
   confirmLabel = 'Remove',
+  overlayClassName = 'z-50',
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+      className={`fixed inset-0 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm ${overlayClassName}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-remove-row-title"

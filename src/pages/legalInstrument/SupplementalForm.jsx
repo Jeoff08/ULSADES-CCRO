@@ -29,6 +29,8 @@ import {
   supplementalLcrSliceHasFilledFields,
 } from './lib/supplementalLcrFormsState'
 import SupplementalTransmittalFieldsEditor from './SupplementalTransmittalFieldsEditor'
+import TransmittalProfilesSidebarButton from '../../components/transmittal/TransmittalProfilesSidebarButton'
+import { TRANSMITTAL_PROFILE_VARIANT } from '../../lib/transmittalProfileStorage'
 import SupplementalLcrFooterSignatoryPickers from './SupplementalLcrFooterSignatoryPickers'
 import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailable'
 import LcrForm2ADeathAvailable from '../courtDecree/print/LcrForm2ADeathAvailable'
@@ -643,6 +645,13 @@ export default function SupplementalForm() {
                   </>
                 ) : null}
 
+                <TransmittalProfilesSidebarButton
+                  moduleKey="supplemental"
+                  variant={TRANSMITTAL_PROFILE_VARIANT.CCR}
+                  form={form}
+                  onApply={updateTransmittalPatch}
+                />
+
                 <button
                   type="button"
                   onClick={() => setActiveSection('transmittal')}
@@ -1063,9 +1072,11 @@ export default function SupplementalForm() {
                   </div>
                 ) : (
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                    <SupplementalTransmittalFieldsEditor data={form}
+                    <SupplementalTransmittalFieldsEditor
+                      data={form}
                       onPatch={updateTransmittalPatch}
                       inputClass={inputClass}
+                      transmittalProfileModuleKey="supplemental"
                     />
                     <div className="mt-8 p-4 rounded-xl bg-amber-50 border border-amber-200 text-center flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                       <button

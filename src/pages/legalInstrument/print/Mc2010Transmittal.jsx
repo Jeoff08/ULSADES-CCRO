@@ -3,11 +3,10 @@ import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { formatTransmittalDateLong, formatDobDayMonthYearUpper } from '../../../lib/printUtils'
 import {
   SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS,
+  ccrTransmittalThruBlockForPrint,
+  ccrTransmittalToLinesForPrint,
   getVisibleTransmittalAttachmentRows,
   getVisibleTransmittalEndorsementRows,
-  transmittalRecipientOfficeLinesForPrint,
-  transmittalRecipientPositionLines,
-  transmittalThruPositionLinesForPrint,
   resolveTransmittalSignatory,
 } from '../lib/supplementalTransmittalDefaults'
 
@@ -51,12 +50,9 @@ export default function Mc2010Transmittal({
   const docType = data.transmittalDocType || ''
   const endorsementIds = Array.isArray(data.transmittalEndorsementIds) ? data.transmittalEndorsementIds : []
   const attachmentIds = Array.isArray(data.transmittalAttachmentIds) ? data.transmittalAttachmentIds : []
-  const recipientTitleLines = transmittalRecipientPositionLines(data)
-  const recipientOfficeLines = transmittalRecipientOfficeLinesForPrint(data)
-  const thruTitleLines = transmittalThruPositionLinesForPrint(data)
-  const trimmedThru = (data.transmittalThru || '').trim()
-  const recipientName = ((data.transmittalRecipient || '').trim() || '\u00a0')
   const signatory = resolveTransmittalSignatory(data)
+  const toLines = ccrTransmittalToLinesForPrint(data)
+  const thruBlock = ccrTransmittalThruBlockForPrint(data)
 
   const emph = (v) => {
     const t = (v || '').trim().toUpperCase()
@@ -85,37 +81,27 @@ export default function Mc2010Transmittal({
           <Mc2010LetterGap />
 
           <p className="mc2010-stack-tight-p mc2010-recipient-block uppercase">
-            <span className="font-bold">{recipientName}</span>
-            {recipientTitleLines.map((line, i) => (
-              <React.Fragment key={`rec-title-${i}`}>
-                <br />
-                {line}
-              </React.Fragment>
-            ))}
-            {recipientOfficeLines.map((line, i) => (
-              <React.Fragment key={`rec-office-${i}`}>
+            <span className="font-bold">{toLines[0]}</span>
+            {toLines.slice(1).map((line, i) => (
+              <React.Fragment key={`rec-psa-${i}`}>
                 <br />
                 {line}
               </React.Fragment>
             ))}
           </p>
 
-          {trimmedThru ? (
-            <>
-              <Mc2010LetterGap />
-              <p className="mc2010-stack-tight-p mc2010-attn-block ml-14 uppercase">
-                <span className="font-bold">Attn:</span>{' '}
-                <span className="font-bold">{trimmedThru}</span>
-                {thruTitleLines.map((line, i) => (
-                  <React.Fragment key={`thru-title-${i}`}>
-                    <br />
-                    {line}
-                  </React.Fragment>
-                ))}
-              </p>
-              <Mc2010LetterGap />
-            </>
-          ) : null}
+          <Mc2010LetterGap />
+          <p className="mc2010-stack-tight-p mc2010-attn-block ml-14 uppercase">
+            <span className="font-bold">{thruBlock.prefix}</span>{' '}
+            <span className="font-bold">{thruBlock.lines[0]}</span>
+            {thruBlock.lines.slice(1).map((line, i) => (
+              <React.Fragment key={`thru-title-${i}`}>
+                <br />
+                {line}
+              </React.Fragment>
+            ))}
+          </p>
+          <Mc2010LetterGap />
 
           <div className="space-y-1.5 mb-4 text-left">
             <p>

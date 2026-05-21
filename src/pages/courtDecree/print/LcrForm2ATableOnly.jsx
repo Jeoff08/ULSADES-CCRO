@@ -4,7 +4,7 @@ import { buildLcr2aTableDisplay } from '../lib/lcr2aTable'
 /** LCR Form No. 2A — death facts table only (court decree). Form + continue flow: CourtDecreeForm.jsx. */
 export default function LcrForm2ATableOnly({ data }) {
   const t = buildLcr2aTableDisplay(data)
-  const label = 'py-2 px-3 border border-black font-medium align-top w-[42%]'
+  const label = 'py-2 px-3 border border-black font-medium align-middle w-[42%]'
   const cell = 'py-2 px-3 border border-black text-left font-bold text-sm align-top'
   const valCause = 'py-2 px-3 border border-black text-left font-bold text-sm whitespace-pre-wrap align-top'
   const causeLines = 8
@@ -23,7 +23,7 @@ export default function LcrForm2ATableOnly({ data }) {
 
   return (
     <div className="lcr-form-2a-table-only bg-white text-black text-sm max-w-[210mm] mx-auto p-6 print:p-4">
-      <table className="w-full border-collapse border border-black">
+      <table className="w-full border-collapse border border-black court-decree-lcr-table">
         <tbody>
           {rows.map(([lb, v, upper]) => (
             <tr key={lb}>

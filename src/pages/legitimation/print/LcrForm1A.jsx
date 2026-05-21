@@ -38,7 +38,7 @@ const LEGITIMATION_LCR_1A_PRINT_STYLES = `
   .legitimation-lcr1a-doc.court-decree-lcr-form p.legitimation-lcr1a-cert-request,
   .legitimation-lcr1a-doc.court-decree-lcr-form .legitimation-lcr1a-cert-request,
   .legitimation-lcr1a-doc.court-decree-lcr-form .legitimation-lcr1a-cert-request * {
-    font-size: 10pt !important;
+    font-size: 12pt !important;
     line-height: 1.3 !important;
     text-align: left !important;
     text-justify: none !important;
@@ -61,7 +61,7 @@ const LEGITIMATION_LCR_1A_PRINT_STYLES = `
 body.pdf-capture .legitimation-lcr1a-doc.court-decree-lcr-form p.legitimation-lcr1a-cert-request,
 body.pdf-capture .legitimation-lcr1a-doc.court-decree-lcr-form .legitimation-lcr1a-cert-request,
 body.pdf-capture .legitimation-lcr1a-doc.court-decree-lcr-form .legitimation-lcr1a-cert-request * {
-  font-size: 10pt !important;
+  font-size: 12pt !important;
   line-height: 1.3 !important;
   text-align: left !important;
   text-justify: none !important;
