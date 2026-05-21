@@ -1,5 +1,7 @@
 export const defaultLegitimation = {
   formType: 'joint-affidavit',
+  /** Optional — shown in Files Saved when set; otherwise child name. */
+  receiptOrFileOwner: '',
   /** When true, print offers Out-of-Town Transmittal only; when false, local Transmittal only. */
   legitimationTransmittalIsOutOfTown: false,
   // Child

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { afterUnsavedAcknowledge, useWarnIfUnsaved } from '../../hooks/useWarnIfUnsaved'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import FormSection from '../../components/FormSection'
-import { FormInput, FormSelect, FormRadioGroup, FormFlexibleDateInput } from '../../components/FormField'
+import { FormInput, FormSuggestInput, FormSelect, FormRadioGroup, FormFlexibleDateInput } from '../../components/FormField'
 import { defaultAUSF, mergeAUSFDraftData, resolveAusf0717SwornAttestationName } from './lib/ausfDefaults'
 import {
   saveAUSFDraft,
@@ -28,6 +28,7 @@ import { useDebouncedSuccessToast } from '../../hooks/useDebouncedSuccessToast'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
 import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
 import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShortcuts'
+import { CITIZENSHIP_SUGGESTIONS } from '../../lib/data_citizenship'
 
 const RELATIONSHIP_OPTIONS = [
   { value: '', label: '—' },
@@ -48,6 +49,65 @@ const SEX_OPTIONS = [
   { value: 'MALE', label: 'MALE' },
   { value: 'FEMALE', label: 'FEMALE' },
 ]
+
+const AUSF_PLACE_ADDRESS_LIST_KEY = 'ulsades_ausf_place_of_birth_address_list'
+const AUSF_PLACE_CITY_LIST_KEY = 'ulsades_ausf_place_of_birth_city_list'
+const AUSF_PLACE_PROVINCE_LIST_KEY = 'ulsades_ausf_place_of_birth_province_list'
+
+function loadAusfPlaceStringList(key) {
+  try {
+    const raw = localStorage.getItem(key)
+    const parsed = raw ? JSON.parse(raw) : []
+    if (!Array.isArray(parsed)) return []
+    const seen = new Set()
+    const out = []
+    for (const item of parsed) {
+      const v = String(item ?? '').trim()
+      if (!v) continue
+      const k = v.toUpperCase()
+      if (seen.has(k)) continue
+      seen.add(k)
+      out.push(v)
+    }
+    return out
+  } catch {
+    return []
+  }
+}
+
+function mergePlaceSuggestions(current, saved) {
+  const seen = new Set()
+  const out = []
+  for (const s of [current, ...saved]) {
+    const v = String(s ?? '').trim()
+    if (!v) continue
+    const k = v.toUpperCase()
+    if (seen.has(k)) continue
+    seen.add(k)
+    out.push(v)
+  }
+  return out
+}
+
+const AUSF_PLACE_SUGGEST_PROPS = {
+  hideListOnExactMatch: false,
+  requireTypeToShow: false,
+}
+
+function rememberAusfPlaceString(key, rawValue, setSaved) {
+  const current = String(rawValue ?? '').trim()
+  if (current.length < 2) return
+  setSaved((prev) => {
+    if (prev.some((v) => v.toUpperCase() === current.toUpperCase())) return prev
+    const next = [current, ...prev].slice(0, 50)
+    try {
+      localStorage.setItem(key, JSON.stringify(next))
+    } catch {
+      /* ignore quota errors */
+    }
+    return next
+  })
+}
 
 function isEmpty(v) {
   return v == null || String(v).trim() === ''
@@ -215,6 +275,39 @@ export default function AUSFForm() {
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [showValidationModal, setShowValidationModal] = useState(false)
   const [missingFields, setMissingFields] = useState([])
+  const [savedPlaceAddresses, setSavedPlaceAddresses] = useState([])
+  const [savedPlaceCities, setSavedPlaceCities] = useState([])
+  const [savedPlaceProvinces, setSavedPlaceProvinces] = useState([])
+
+  useEffect(() => {
+    setSavedPlaceAddresses(loadAusfPlaceStringList(AUSF_PLACE_ADDRESS_LIST_KEY))
+    setSavedPlaceCities(loadAusfPlaceStringList(AUSF_PLACE_CITY_LIST_KEY))
+    setSavedPlaceProvinces(loadAusfPlaceStringList(AUSF_PLACE_PROVINCE_LIST_KEY))
+  }, [])
+
+  useEffect(() => {
+    const t = setTimeout(
+      () => rememberAusfPlaceString(AUSF_PLACE_ADDRESS_LIST_KEY, form.placeOfBirthAddress, setSavedPlaceAddresses),
+      600,
+    )
+    return () => clearTimeout(t)
+  }, [form.placeOfBirthAddress])
+
+  useEffect(() => {
+    const t = setTimeout(
+      () => rememberAusfPlaceString(AUSF_PLACE_CITY_LIST_KEY, form.placeOfBirthCity, setSavedPlaceCities),
+      600,
+    )
+    return () => clearTimeout(t)
+  }, [form.placeOfBirthCity])
+
+  useEffect(() => {
+    const t = setTimeout(
+      () => rememberAusfPlaceString(AUSF_PLACE_PROVINCE_LIST_KEY, form.placeOfBirthProvince, setSavedPlaceProvinces),
+      600,
+    )
+    return () => clearTimeout(t)
+  }, [form.placeOfBirthProvince])
 
   const handleDoneClick = () => {
     const missing = getMissingFields(form)
@@ -284,6 +377,18 @@ export default function AUSFForm() {
         </header>
 
         <FormBodyFieldShortcuts className="ausf-form-page__body" onKeyDown={handleEnterFocusNextField}>
+          <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
+            <FormSection noNumber title="FILE RECIPIENT OR OWNER">
+              <FormInput
+                label="RECEIPT OR OWNER OF THE FILE (OPTIONAL)"
+                id="receiptOrFileOwner"
+                value={form.receiptOrFileOwner}
+                onChange={(v) => update('receiptOrFileOwner', v)}
+                placeholder="Name shown in Files Saved when filled"
+              />
+            </FormSection>
+          </div>
+
           <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
             <FormSection number={1} title="DETAILS OF APPLICANT/CLIENT">
               <div className="grid gap-4 sm:grid-cols-2">
@@ -416,7 +521,7 @@ export default function AUSFForm() {
                         <FormInput label="LAST NAME" labelBelow id="motherLast" value={form.motherLast} onChange={(v) => update('motherLast', v)} />
                       </div>
                       <div className="mt-2 max-w-xs">
-                        <FormInput label="CITIZENSHIP" id="motherCitizenship" value={form.motherCitizenship} onChange={(v) => update('motherCitizenship', v)} />
+                        <FormSuggestInput label="CITIZENSHIP" id="motherCitizenship" value={form.motherCitizenship} onChange={(v) => update('motherCitizenship', v)} suggestions={CITIZENSHIP_SUGGESTIONS} capitalizeFirstLetter={false} placeholder="Type to search" hideListOnExactMatch={false} />
                       </div>
                     </div>
                     <div>
@@ -427,15 +532,29 @@ export default function AUSFForm() {
                         <FormInput label="LAST NAME" labelBelow id="fatherLast" value={form.fatherLast} onChange={(v) => update('fatherLast', v)} />
                       </div>
                       <div className="mt-2 max-w-xs">
-                        <FormInput label="CITIZENSHIP" id="fatherCitizenship" value={form.fatherCitizenship} onChange={(v) => update('fatherCitizenship', v)} />
+                        <FormSuggestInput label="CITIZENSHIP" id="fatherCitizenship" value={form.fatherCitizenship} onChange={(v) => update('fatherCitizenship', v)} suggestions={CITIZENSHIP_SUGGESTIONS} capitalizeFirstLetter={false} placeholder="Type to search" hideListOnExactMatch={false} />
                       </div>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-700 mb-2">NAME OF CHILD</p>
                       <div className="grid gap-3 sm:grid-cols-3">
                         <FormInput label="FIRST NAME" labelBelow id="childFirst" value={form.childFirst} onChange={(v) => update('childFirst', v)} />
-                        <FormInput label="MIDDLE NAME" labelBelow id="childMiddle" value={form.childMiddle} onChange={(v) => update('childMiddle', v)} />
-                        <FormInput label="LAST NAME" labelBelow id="childLast" value={form.childLast} onChange={(v) => update('childLast', v)} />
+                        <FormSuggestInput
+                          label="MIDDLE NAME"
+                          labelBelow
+                          id="childMiddle"
+                          value={form.childMiddle}
+                          onChange={(v) => update('childMiddle', v)}
+                          suggestions={form.motherLast ? [form.motherLast] : []}
+                        />
+                        <FormSuggestInput
+                          label="LAST NAME"
+                          labelBelow
+                          id="childLast"
+                          value={form.childLast}
+                          onChange={(v) => update('childLast', v)}
+                          suggestions={form.fatherLast ? [form.fatherLast] : []}
+                        />
                       </div>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -466,16 +585,18 @@ export default function AUSFForm() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-700 mb-2">PLACE OF BIRTH</p>
-                      <FormInput
+                      <FormSuggestInput
                         label="HOUSE NO./HOSPITAL/CLINIC/STREET/PUROK/BRGY"
                         id="placeAddress"
                         value={form.placeOfBirthAddress}
                         onChange={(v) => update('placeOfBirthAddress', v)}
+                        suggestions={mergePlaceSuggestions(form.placeOfBirthAddress, savedPlaceAddresses)}
                         className="mb-3"
+                        {...AUSF_PLACE_SUGGEST_PROPS}
                       />
                       <div className="grid gap-3 sm:grid-cols-2">
-                        <FormInput label="CITY/MUNICIPALITY" id="placeCity" value={form.placeOfBirthCity} onChange={(v) => update('placeOfBirthCity', v)} />
-                        <FormInput label="PROVINCE" id="placeProvince" value={form.placeOfBirthProvince} onChange={(v) => update('placeOfBirthProvince', v)} />
+                        <FormSuggestInput label="CITY/MUNICIPALITY" id="placeCity" value={form.placeOfBirthCity} onChange={(v) => update('placeOfBirthCity', v)} suggestions={mergePlaceSuggestions(form.placeOfBirthCity, savedPlaceCities)} {...AUSF_PLACE_SUGGEST_PROPS} />
+                        <FormSuggestInput label="PROVINCE" id="placeProvince" value={form.placeOfBirthProvince} onChange={(v) => update('placeOfBirthProvince', v)} suggestions={mergePlaceSuggestions(form.placeOfBirthProvince, savedPlaceProvinces)} {...AUSF_PLACE_SUGGEST_PROPS} />
                       </div>
                     </div>
                   </div>
@@ -494,25 +615,9 @@ export default function AUSFForm() {
                       <FormInput label="BOOK NUMBER" id="colbBook" value={form.colbBookNumber} onChange={(v) => update('colbBookNumber', v)} />
                     </div>
                     <div className="ausf-form-page__colb-row">
-                      <FormInput
-                        label="LCR FORM — PARTY REQUESTING CERTIFICATION (printed in bold)"
-                        id="lcrCertificationRequestParty"
-                        value={form.lcrCertificationRequestParty}
-                        onChange={(v) => {
-                          update('lcrCertificationRequestParty', v)
-                          notifyLcrCertSaved()
-                        }}
-                        placeholder="OCRG/OWNER/PARENTS/GUARDIAN"
-                      />
-                      <p className="text-xs text-gray-500 mt-1.5">Shown after “This certification is issued upon the request of …” on LCR Form 1A / A1.</p>
                     </div>
                     <div className="ausf-form-page__colb-row sm:col-span-2">
-                      <LcrRemarksFontSizeSelect
-                        id="ausf-lcr-remarks-font"
-                        value={form.lcrRemarksFontSizePt}
-                        onChange={(v) => update('lcrRemarksFontSizePt', v)}
-                        helpText="Controls how large the REMARKS paragraph prints on LCR 1A and A1."
-                      />
+                      
                     </div>
                   </div>
                 </FormSection>
@@ -524,20 +629,6 @@ export default function AUSFForm() {
                     <FormInput label="REGISTRY NO." id="ausfRegistry" value={form.ausfRegistryNo} onChange={(v) => update('ausfRegistryNo', v)} />
                     <FormFlexibleDateInput label="DATE OF REGISTRATION" id="ausfDate" value={form.ausfDateOfRegistration} onChange={(v) => update('ausfDateOfRegistration', v)} />
                   </div>
-                  {derivedJuratFormType === 'ausf-07-17' ? (
-                    <div className="mt-4 max-w-xl">
-                      <FormInput
-                        label="SWORN ATTESTATION — NAME (AUSF 07-17)"
-                        id="ausf0717SwornAttestationName"
-                        value={form.ausf0717SwornAttestationName}
-                        onChange={(v) => update('ausf0717SwornAttestationName', v)}
-                        placeholder={resolveAusf0717SwornAttestationName(form) || "Child's full name"}
-                      />
-                      <p className="text-xs text-gray-500 mt-1.5">
-                        Printed in the Sworn Attestation block. Leave blank to use the child&apos;s name from Item 4.
-                      </p>
-                    </div>
-                  ) : null}
                 </FormSection>
               </div>
 

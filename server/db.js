@@ -83,7 +83,12 @@ export function getSavedList() {
 
 export function addSaved(data) {
   const id = `ausf_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
-  const label = (data.applicantName || data.childFirst || data.formType || 'AUSF').toString().trim() || (FORM_TYPE_LABELS[data.formType] || data.formType || 'AUSF')
+  const receipt = (data.receiptOrFileOwner || '').toString().trim()
+  const applicant = (data.applicantName || '').toString().trim()
+  const label =
+    receipt ||
+    applicant ||
+    (FORM_TYPE_LABELS[data.formType] || data.formType || 'AUSF')
   getDb()
     .prepare('INSERT INTO ausf_saved (id, saved_at, label, form_type, data) VALUES (?, ?, ?, ?, ?)')
     .run(id, new Date().toISOString(), label, data.formType || null, JSON.stringify({ ...data }))

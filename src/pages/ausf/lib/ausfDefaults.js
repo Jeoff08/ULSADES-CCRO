@@ -15,6 +15,8 @@ export function ausfCityCivilRegistrarDisplayName(name) {
 
 export const defaultAUSF = {
   formType: 'ausf-0-6',
+  /** Optional — shown in Files Saved when set; otherwise applicant name. */
+  receiptOrFileOwner: '',
   applicantName: '',
   civilStatus: 'single',
   relationshipToChild: '',

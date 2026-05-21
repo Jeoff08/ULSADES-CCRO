@@ -59,6 +59,16 @@ import {
   mergeAusfTransmittalSignatoryIntoData,
 } from "./lib/ausfPrintPreparedBy";
 import LcrRemarksFontSizeSelect from "../../components/lcr/LcrRemarksFontSizeSelect";
+import {
+  LCR_CERTIFICATION_COPIES,
+  isAusfLcrPrintType,
+  mergeLcrCertificationCopyIntoData,
+  parseLcrPrintTypeId,
+} from "../../lib/lcrCertificationRequest";
+import {
+  lcrTriplePdfPageClassName,
+  withLcrTriplePdfCapture,
+} from "../../lib/lcrPdfExport";
 
 const VIEW_PRINT_OPTIONS = [
   { label: "AUSF only", type: "ausf-only" },
@@ -135,7 +145,7 @@ export default function AUSFPrint() {
       const next = { ...data, ...partial };
       setData(next);
       saveAUSFDraft(next);
-      saveAUSFDraftToApi(next).catch(() => {});
+      saveAUSFDraftToApi(next).catch(() => { });
       notifyTransmittalDraftSaved();
     },
     [data, notifyTransmittalDraftSaved],
@@ -166,17 +176,17 @@ export default function AUSFPrint() {
   }, [activePrintType]);
   const pageSizeForPrint =
     (activePrintType === AUSF_ONLY_PRINT_TYPE &&
-            AUSF_ONLY_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)) ||
-          (activePrintType === AUSF_06_PRINT_TYPE &&
-            AUSF_06_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)) ||
-          (activePrintType === AUSF_0717_PRINT_TYPE &&
-            AUSF_0717_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)) ||
-          (activePrintType === AUSF_LCR_1A_BIRTH_PRINT_TYPE &&
-            AUSF_LCR_1A_BIRTH_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)) ||
-          (activePrintType === AUSF_LCR_A1_PRINT_TYPE &&
-            AUSF_LCR_A1_EXCLUDED_PAPER_SIZE_IDS.has(paperSize))
-        ? "long"
-        : paperSize;
+      AUSF_ONLY_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)) ||
+      (activePrintType === AUSF_06_PRINT_TYPE &&
+        AUSF_06_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)) ||
+      (activePrintType === AUSF_0717_PRINT_TYPE &&
+        AUSF_0717_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)) ||
+      (activePrintType === AUSF_LCR_1A_BIRTH_PRINT_TYPE &&
+        AUSF_LCR_1A_BIRTH_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)) ||
+      (activePrintType === AUSF_LCR_A1_PRINT_TYPE &&
+        AUSF_LCR_A1_EXCLUDED_PAPER_SIZE_IDS.has(paperSize))
+      ? "long"
+      : paperSize;
   usePrintPageSize(pageSizeForPrint);
 
   useEffect(() => {
@@ -318,10 +328,10 @@ export default function AUSFPrint() {
 
   useEffect(() => {
     if (!activePrintType) return;
-    if (acknowledged === "YES" && CHILD_NOT_ACK_TYPES.has(activePrintType)) {
+    if (acknowledged === "YES" && CHILD_NOT_ACK_TYPES.has(parseLcrPrintTypeId(activePrintType).baseType)) {
       setDisplayType("child-ack-lcr");
     }
-    if (acknowledged === "NO" && CHILD_ACK_TYPES.has(activePrintType)) {
+    if (acknowledged === "NO" && CHILD_ACK_TYPES.has(parseLcrPrintTypeId(activePrintType).baseType)) {
       setDisplayType("child-not-ack-lcr");
     }
     if (activePrintType === "child-ack-annotation") {
@@ -331,6 +341,14 @@ export default function AUSFPrint() {
       setDisplayType("child-not-ack-lcr");
     }
   }, [acknowledged, activePrintType]);
+
+  useEffect(() => {
+    if (!activePrintType) return;
+    const { baseType } = parseLcrPrintTypeId(activePrintType);
+    if (isAusfLcrPrintType(activePrintType) && activePrintType !== baseType) {
+      setDisplayType(baseType);
+    }
+  }, [activePrintType]);
 
   useEffect(() => {
     const draft = getAUSFDraft();
@@ -362,7 +380,10 @@ export default function AUSFPrint() {
 
   const handlePrint = async () => {
     try {
-      const result = await saveCurrentViewAsPdf(`AUSF-${type}`);
+      const savePdf = () => saveCurrentViewAsPdf(`AUSF-${type}`);
+      const result = isAusfLcrPrintType(type)
+        ? await withLcrTriplePdfCapture({}, savePdf)
+        : await savePdf();
       if (result?.ok) {
         show({
           type: "success",
@@ -405,7 +426,10 @@ export default function AUSFPrint() {
         show({ type: "error", title: "Preview unavailable", message: "PDF preview bridge is unavailable. Restart Electron." });
         return;
       }
-      const result = await bridge.previewPdfData();
+      const previewPdf = () => bridge.previewPdfData();
+      const result = isAusfLcrPrintType(type)
+        ? await withLcrTriplePdfCapture({}, previewPdf)
+        : await previewPdf();
       if (!result?.ok || !result?.base64) {
         show({ type: "error", title: "Preview failed", message: result?.reason || "Unable to generate PDF preview." });
         return;
@@ -513,11 +537,38 @@ export default function AUSFPrint() {
   else if (type === "reg-ausf") content = <RegistrationOfAusf data={data} />;
   else if (type === "reg-ack")
     content = <RegistrationOfAcknowledgement data={data} />;
-  else if (type === "child-ack-lcr")
+  else if (parseLcrPrintTypeId(type).baseType === "child-ack-lcr")
     content = (
-      <LcrForm1ABirthAvailable data={data} onDataChange={persistAusfLcrPrintPatch} />
+      <>
+        {LCR_CERTIFICATION_COPIES.map((copy, idx) => (
+          <div
+            key={copy.id}
+            className={lcrTriplePdfPageClassName(idx)}
+          >
+            <LcrForm1ABirthAvailable
+              data={mergeLcrCertificationCopyIntoData(data, copy.id)}
+              onDataChange={persistAusfLcrPrintPatch}
+            />
+          </div>
+        ))}
+      </>
     );
-  else if (type === "child-not-ack-lcr") content = <LcrFormA1 data={data} onDataChange={persistAusfLcrPrintPatch} />;
+  else if (parseLcrPrintTypeId(type).baseType === "child-not-ack-lcr")
+    content = (
+      <>
+        {LCR_CERTIFICATION_COPIES.map((copy, idx) => (
+          <div
+            key={copy.id}
+            className={lcrTriplePdfPageClassName(idx)}
+          >
+            <LcrFormA1
+              data={mergeLcrCertificationCopyIntoData(data, copy.id)}
+              onDataChange={persistAusfLcrPrintPatch}
+            />
+          </div>
+        ))}
+      </>
+    );
   else if (type === "child-not-ack-transmittal")
     content = (
       <TransmittalDoc
@@ -557,7 +608,7 @@ export default function AUSFPrint() {
             Back to Files Saved
           </button>
         </div>
-                <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <label className="sr-only" htmlFor="paper-size-select">
             Paper size (for print)
           </label>
@@ -596,10 +647,10 @@ export default function AUSFPrint() {
           </h2>
           <div className="flex flex-col gap-2">
             {viewPrintOptions.map((opt) => {
-              const isSelected = type === opt.type;
-              const isLcrButton =
-                opt.type === "child-not-ack-lcr" ||
-                opt.type === "child-ack-lcr";
+              const isSelected =
+                type === opt.type ||
+                parseLcrPrintTypeId(type).baseType === opt.type;
+              const isLcrButton = isAusfLcrPrintType(opt.type);
               const btnClass = [
                 "text-left px-3 py-2.5 text-sm font-medium transition text-white rounded-lg",
                 isLcrButton
@@ -748,7 +799,7 @@ export default function AUSFPrint() {
                 ) : null}
               </div>
             ) : null}
-            {AUSF_LCR_REMARKS_FONT_TYPES.has(type) ? (
+            {isAusfLcrPrintType(type) ? (
               <LcrRemarksFontSizeSelect
                 id="ausf-print-lcr-remarks-font"
                 value={data.lcrRemarksFontSizePt}

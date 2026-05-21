@@ -13,6 +13,7 @@ import { hasAnyUploadsForRecord } from '../../lib/uploadedFileStore'
 import hasUploadedFilesIcon from '../../assets/has-uploaded-files-icon.svg'
 import SavedFilesPagination from '../../components/SavedFilesPagination'
 import { useSavedFilesPagination } from '../../hooks/useSavedFilesPagination'
+import { resolveAusfSavedRowLabel } from '../../lib/savedFileDisplayLabel'
 
 const FORM_TYPE_LABELS = {
   'ausf-only': 'AUSF only',
@@ -43,7 +44,7 @@ const TOAST_DURATION_MS = 8000
 function matchesSearch(item, query, formTypeLabels) {
   if (!query.trim()) return true
   const q = query.trim().toLowerCase()
-  const label = (item.label || '').toLowerCase()
+  const label = resolveAusfSavedRowLabel(item, FORM_TYPE_LABELS[item.formType] || item.formType || 'AUSF').toLowerCase()
   const formLabel = (formTypeLabels[item.formType] || item.formType || '').toLowerCase()
   const savedAt = formatSavedAt(item.savedAt).toLowerCase()
   return label.includes(q) || formLabel.includes(q) || savedAt.includes(q)
@@ -312,7 +313,7 @@ export default function AUSFSaved() {
             >
               <div className="min-w-0">
                 <p className="font-medium text-gray-800 truncate">
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate">{resolveAusfSavedRowLabel(item, FORM_TYPE_LABELS[item.formType] || item.formType || 'AUSF')}</span>
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">
                   {FORM_TYPE_LABELS[item.formType] || item.formType} · {formatSavedAt(item.savedAt)}

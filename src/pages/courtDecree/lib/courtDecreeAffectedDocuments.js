@@ -1,7 +1,8 @@
+import { parseLcrPrintTypeId } from '../../../lib/lcrCertificationRequest'
+
 /** Shared logic: which civil document(s) apply from LCR table field presence (matches form → print flow). */
 
-function hasValue(v) {
-  return v != null && String(v).trim() !== ''
+function hasValue(v) {  return v != null && String(v).trim() !== ''
 }
 
 /**
@@ -88,10 +89,10 @@ export function primaryAffectedDocumentForSave(form, derivedList) {
 
 /** FORM 1A / annotation 1A → birth; 2A → death; 3A → marriage (standard LCR mapping). */
 export function formTypeToAffectedCode(formType) {
-  const t = String(formType || '').trim()
-  if (t === 'lcr-form-1a') return 'BIRTH_CERTIFICATE'
-  if (t === 'lcr-form-2a') return 'DEATH_CERTIFICATE'
-  if (t === 'lcr-form-3a') return 'MARRIAGE_CERTIFICATE'
+  const { baseType } = parseLcrPrintTypeId(formType)
+  if (baseType === 'lcr-form-1a') return 'BIRTH_CERTIFICATE'
+  if (baseType === 'lcr-form-2a') return 'DEATH_CERTIFICATE'
+  if (baseType === 'lcr-form-3a') return 'MARRIAGE_CERTIFICATE'
   return null
 }
 

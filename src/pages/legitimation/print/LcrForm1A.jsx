@@ -8,7 +8,7 @@ import {
 } from '../../../lib/printUtils'
 import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
 import { courtDecreeColbInputStyle } from '../../courtDecree/lib/courtDecreeColbPrintStyle'
-import LcrCertificationRequestPartyInline from '../../../components/lcr/LcrCertificationRequestPartyInline'
+import LcrCertificationRequestLine from '../../../components/lcr/LcrCertificationRequestLine'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { legitimationAffidavitCcrDisplayRow } from './legitimationAffidavitCcr'
 import LcroStaffVerifiedByFields from '../../../components/lcr/LcroStaffVerifiedByFields'
@@ -363,19 +363,14 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
               </tbody>
             </table>
 
-            <p
+            <LcrCertificationRequestLine
+              data={data}
+              variant="1a"
+              copyKind={data?.lcrCertificationCopy}
+              onPartyChange={onDataChange ? patchData : undefined}
               className="mb-2 text-left court-decree-lcr-body legitimation-lcr1a-cert-request court-decree-lcr-cert-after-table"
               style={{ fontSize: '16px', lineHeight: 1.3, textAlign: 'left' }}
-            >
-              This certification is issued upon the request of{' '}
-              <LcrCertificationRequestPartyInline
-                data={data}
-                variant="1a"
-                onPartyChange={onDataChange ? patchData : undefined}
-                inputClassName="no-print inline min-w-0 w-auto max-w-none border-0 border-b border-dashed border-gray-500 bg-transparent font-bold text-left px-0.5 align-baseline"
-              />{' '}
-              for any legal purposes.
-            </p>
+            />
 
             <div className="mt-10 mb-2 court-decree-lcr-body legitimation-lcr1a-remarks-block">
               <p className="font-bold text-sm mb-0.5">REMARKS:</p>

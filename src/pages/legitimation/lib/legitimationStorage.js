@@ -1,3 +1,4 @@
+import { legitimationSavedApplicantName, savedFilesListLabel } from '../../../lib/savedFileDisplayLabel'
 import { defaultLegitimation, syncLegitimationTransmittalFlagWithFormType } from './legitimationDefaults'
 
 const KEY_DRAFT = 'legitimationDraft'
@@ -15,9 +16,11 @@ const FORM_TYPE_LABELS = {
 }
 
 function getLabel(data) {
-  const child = [data.childFirst, data.childMiddle, data.childLast].filter(Boolean).join(' ')
-  if (child) return child
-  return FORM_TYPE_LABELS[data.formType] || 'Legitimation'
+  return savedFilesListLabel(
+    data,
+    legitimationSavedApplicantName(data),
+    FORM_TYPE_LABELS[data?.formType] || 'Legitimation',
+  )
 }
 
 /** Document owner label for Court Decree dropdown: marriage = "SPS. Father AND Mother", death = deceased parent full name. */

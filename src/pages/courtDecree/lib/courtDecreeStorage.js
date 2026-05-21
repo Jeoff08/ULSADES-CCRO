@@ -1,3 +1,4 @@
+import { savedFilesListLabel } from '../../../lib/savedFileDisplayLabel'
 import { defaultCourtDecree, syncCourtDecreeTransmittalFlagFromFormType } from './courtDecreeDefaults'
 
 const KEY_DRAFT = 'courtDecreeDraft'
@@ -14,23 +15,11 @@ const FORM_TYPE_LABELS = {
 }
 
 function getLabel(data) {
-  if (data.formType === 'lcr-form-2a') {
-    const n = (data.lcr2aNameDeceased || '').trim()
-    if (n) return n
-  }
-  if (data.formType === 'lcr-form-3a') {
-    const h = (data.lcr3aHusbandName || '').trim()
-    const w = (data.lcr3aWifeName || '').trim()
-    if (h && w) return `${h} & ${w}`
-    if (h || w) return h || w
-  }
-  const lcrChild = (data.lcr1aNameOfChild || '').trim()
-  if (data.formType === 'lcr-form-1a' && lcrChild) return lcrChild
-  const name = (data.documentOwnerName || '').trim()
-  const title = (data.caseTitle || '').trim()
-  if (name) return name
-  if (title) return title.length > 60 ? title.slice(0, 57) + '...' : title
-  return FORM_TYPE_LABELS[data.formType] || 'Court Decree'
+  return savedFilesListLabel(
+    data,
+    data?.documentOwnerName,
+    FORM_TYPE_LABELS[data?.formType] || 'Court Decree',
+  )
 }
 
 export function saveCourtDecreeDraft(data) {

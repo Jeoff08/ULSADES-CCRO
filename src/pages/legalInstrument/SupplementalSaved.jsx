@@ -15,6 +15,7 @@ import ConfirmRemoveSavedModal from '../../components/savedFiles/ConfirmRemoveSa
 import SavedFileRemovedToast from '../../components/savedFiles/SavedFileRemovedToast'
 import { useSavedFilesPagination } from '../../hooks/useSavedFilesPagination'
 import { useSavedFileRemove } from '../../hooks/useSavedFileRemove'
+import { resolveSupplementalSavedRowLabel } from '../../lib/savedFileDisplayLabel'
 
 function formatSavedAt(iso) {
   if (!iso) return ''
@@ -55,7 +56,7 @@ export default function SupplementalSaved() {
     const q = searchQuery.trim().toLowerCase()
     if (!q) return list
     return list.filter((item) => {
-      const label = String(item.label || 'Supplemental Report').toLowerCase()
+      const label = resolveSupplementalSavedRowLabel(item).toLowerCase()
       const kind = formatSupplementType(item?.data?.supplementType).toLowerCase()
       const savedAt = formatSavedAt(item.savedAt).toLowerCase()
       return label.includes(q) || kind.includes(q) || savedAt.includes(q)
@@ -198,7 +199,7 @@ export default function SupplementalSaved() {
                 style={{ animationDelay: `${0.2 + idx * 0.05}s` }}
               >
                 <div className="min-w-0">
-                  <p className="font-medium text-gray-800 truncate">{item.label || 'Supplemental Report'}</p>
+                  <p className="font-medium text-gray-800 truncate">{resolveSupplementalSavedRowLabel(item)}</p>
                   <p className="text-xs text-gray-500 mt-0.5">Affidavit for Supplemental Report · {formatSavedAt(item.savedAt)}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">

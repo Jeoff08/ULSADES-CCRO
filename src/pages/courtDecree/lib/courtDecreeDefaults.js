@@ -1,5 +1,7 @@
 export const defaultCourtDecree = {
   formType: 'cert-authenticity',
+  /** Optional — shown in Files Saved when set; otherwise document owner name. */
+  receiptOrFileOwner: '',
   // Section 1: What country issued the court order/decree
   country: 'PHILIPPINES',
   courtOrRacco: '',

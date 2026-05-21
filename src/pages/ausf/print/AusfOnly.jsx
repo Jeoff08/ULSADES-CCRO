@@ -7,16 +7,29 @@ import { ausfCityCivilRegistrarDisplayName } from '../lib/ausfDefaults'
 export const AUSF_ONLY_PRINT_TYPE = 'ausf-only'
 export const AUSF_ONLY_EXCLUDED_PAPER_SIZE_IDS = new Set(['a4', 'short'])
 
+/** Affiant line / signature: given names + surname sought under R.A. 9255 (father's surname). */
+function ausfOnlyAffiantDisplayName(data) {
+  const surnameSought = (data.fatherLast || '').trim()
+  const fromChild = fullName(data.childFirst, data.childMiddle, surnameSought)
+  if (fromChild) return fromChild
+  const applicant = (data.applicantName || '').trim()
+  if (applicant && surnameSought) {
+    const parts = applicant.split(/\s+/).filter(Boolean)
+    if (parts.length > 1) return [...parts.slice(0, -1), surnameSought].join(' ')
+    if (parts.length === 1) return `${parts[0]} ${surnameSought}`.trim()
+    return surnameSought
+  }
+  return (
+    applicant ||
+    fullName(data.childFirst, data.childMiddle, data.fatherLast) ||
+    fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast) ||
+    surnameSought
+  )
+}
+
 export default function AusfOnly({ data }) {
-  const affiantName = data.applicantName || fullName(data.childFirst, data.childMiddle, data.fatherLast) || fullName(data.fatherFirst, data.fatherMiddle, data.fatherLast)
+  const affiantDisplayName = ausfOnlyAffiantDisplayName(data)
   const surnameSought = data.fatherLast
-  const relationship = String(data.relationshipToChild || '').trim().toUpperCase()
-  const shouldAppendSurname = relationship === 'MYSELF' || relationship === 'SON'
-  const affiantWithSurname = (shouldAppendSurname && affiantName && surnameSought)
-    ? (affiantName.trim().toUpperCase().endsWith((surnameSought || '').trim().toUpperCase())
-      ? affiantName
-      : `${affiantName.trim()} ${surnameSought.trim()}`.trim())
-    : affiantName
   const dobFormatted = formatDateLong(data.dateOfBirth)
   const colbReg = data.colbRegistryNo
   const colbDate = formatDateLong(data.colbDateOfRegistration)
@@ -46,7 +59,7 @@ export default function AusfOnly({ data }) {
       <div className="ausf-only-doc-body flex flex-col flex-1 min-h-0">
         <h2 className="text-center font-bold text-[14px] uppercase mb-4 mt-0">AFFIDAVIT TO USE THE SURNAME OF THE FATHER (AUSF)</h2>
         <p className="mb-0 leading-normal text-justify">
-          I, <span className={`${FILL} affiant-name-blank affiant-name-bold-underline uppercase mx-0.5 align-baseline`}><span className="affiant-name-inner">{affiantWithSurname}</span></span>, of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
+          I, <span className={`${FILL} affiant-name-blank affiant-name-bold-underline uppercase mx-0.5 align-baseline`}><span className="affiant-name-inner">{affiantDisplayName}</span></span>, of legal age, single/married, Filipino, and a resident of Iligan City, Philippines, after having been duly sworn to in accordance with law, do hereby declare THAT:
         </p>
 
         <ol className="list-decimal list-outside ml-8 mr-0 pl-1 space-y-3 mb-0 mt-0 text-justify leading-normal">
@@ -72,7 +85,7 @@ export default function AusfOnly({ data }) {
 
         <p className="mb-1 leading-normal mt-0 text-justify"><span className="font-bold">IN WITNESS WHEREOF,</span> I have hereunto set my hand this <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> at Iligan City, Philippines.</p>
         <div className="text-center mt-4 mb-4 leading-none">
-          <div className="fill-blank font-bold uppercase inline-block pb-0 border-b border-black min-w-[16rem]">{affiantWithSurname}</div>
+          <div className="fill-blank font-bold uppercase inline-block pb-0 border-b border-black min-w-[16rem]">{affiantDisplayName}</div>
           <div className="text-xs mt-0">Affiant</div>
         </div>
         <p className="ausf-subscribed-sworn mb-1 leading-normal text-justify"><span className="font-bold">SUBSCRIBED AND SWORN</span> to before me this <span className={`${FILL_BOLD} ml-1 align-baseline`}>{witnessDate}</span> in the City of Iligan. I certify that I personally examined the affiant and that he/she voluntarily executed the foregoing affidavit and understood the contents thereof.</p>

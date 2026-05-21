@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react'
 import { useWarnIfUnsaved } from '../../hooks/useWarnIfUnsaved'
 import { searchLegitimationForForm1a } from './lib/supplementalForm1a'
 import PrintHeaderRow from '../../components/print/PrintHeaderRow'
+import LcrCertificationRequestLine from '../../components/lcr/LcrCertificationRequestLine'
+import { LCR_CERTIFICATION_COPIES } from '../../lib/lcrCertificationRequest'
 
 export default function LcrSearchAndPrint({ title, type }) {
   const [lcrForm, setLcrForm] = useState('')
@@ -127,22 +129,30 @@ export default function LcrSearchAndPrint({ title, type }) {
     }
   }
 
-  const renderLcrForm = () => {
+  const renderLcrFormCopy = (copy, copyIndex) => {
     const formNum = lcrForm.toUpperCase() || '1A'
     const formTitle = formNum === '1A' ? '(Birth-Available)' : formNum === '2A' ? '(Death-Available)' : '(Marriage-Available)'
+    const lcrData = selectedClient?.data || {}
 
     return (
-      <div className="bg-white p-12 shadow-2xl max-w-[816px] mx-auto min-h-[1056px] text-gray-900 font-serif print:shadow-none print:p-0 ring-1 ring-gray-200 print:ring-0 mb-12">
-        <PrintHeaderRow />
-        <hr className="border-black my-4" />
-
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <p className="font-bold text-lg">LCR Form No. {formNum}</p>
-            <p className="text-sm italic">{formTitle}</p>
-          </div>
-          <div className="text-right">
-            <input type="text" className="border-b border-gray-400 focus:outline-none focus:border-blue-500 font-bold text-sm w-40 bg-transparent text-right" defaultValue={new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} />
+      <div
+        key={copy.id}
+        className={`bg-white p-12 shadow-2xl max-w-[816px] mx-auto min-h-[1056px] text-gray-900 font-serif print:shadow-none print:p-0 ring-1 ring-gray-200 print:ring-0 ${copyIndex > 0 ? 'mt-12 print:mt-0 print:[page-break-before:always]' : 'mb-12'}`}
+      >
+        <div className="court-decree-lcr-header lcr-search-print-header shrink-0">
+          <header className="print-doc-header">
+            <PrintHeaderRow />
+            <hr className="border-black my-4" />
+          </header>
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <p className="font-bold text-lg">LCR Form No. {formNum}</p>
+              <p className="text-sm italic">{formTitle}</p>
+              <p className="text-xs font-semibold text-gray-600 mt-1">Requester: {copy.menuSuffix}</p>
+            </div>
+            <div className="text-right">
+              <input type="text" className="border-b border-gray-400 focus:outline-none focus:border-blue-500 font-bold text-sm w-40 bg-transparent text-right" defaultValue={new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} />
+            </div>
           </div>
         </div>
 
@@ -180,7 +190,11 @@ export default function LcrSearchAndPrint({ title, type }) {
           </tbody>
         </table>
 
-        <p className="mb-12">This certification is issued upon the request of <span className="font-bold">OCRG/OWNER/PARENTS/GUARDIAN</span> for any legal purposes.</p>
+        <LcrCertificationRequestLine
+          data={lcrData}
+          copyKind={copy.id}
+          className="mb-12"
+        />
 
         <div className="flex justify-between items-end mt-12">
           <div className="text-center w-64">
@@ -196,6 +210,8 @@ export default function LcrSearchAndPrint({ title, type }) {
       </div>
     )
   }
+
+  const renderLcrForm = () => LCR_CERTIFICATION_COPIES.map((copy, idx) => renderLcrFormCopy(copy, idx))
 
   const renderSupplementalAffidavit = () => {
     return (

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { formatDateCert, lcroStaffTitleForPrint, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
-import LcrCertificationRequestPartyInline from '../../../components/lcr/LcrCertificationRequestPartyInline'
+import LcrCertificationRequestLine from '../../../components/lcr/LcrCertificationRequestLine'
 import { buildLcr2aTableDisplay } from '../lib/lcr2aTable'
 import { resolveCourtDecreeLcrPrintCcr } from '../lib/courtDecreePrintCcr'
 import { courtDecreeColbPage, courtDecreeColbBook } from '../lib/courtDecreeColbPrintStyle'
@@ -309,25 +309,13 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
                 )}
             </tbody>
           </table>
-          <p className="mb-2 text-sm court-decree-lcr-body court-decree-lcr-cert-after-table">
-            {editableTable
-              ? (
-                <span className="inline-block">
-                  This certification is issued to <span className="font-bold underline">CCR-FILE</span> for any legal purpose.
-                </span>
-              )
-              : (
-                <>
-                  This certification is issued upon the request of{' '}
-                  <LcrCertificationRequestPartyInline
-                    data={data}
-                    variant="2a3a"
-                    onPartyChange={onDataChange && !editableTable ? patchData : undefined}
-                  />{' '}
-                  for any legal purposes.
-                </>
-              )}
-          </p>
+          <LcrCertificationRequestLine
+            data={data}
+            variant="2a3a"
+            copyKind={data?.lcrCertificationCopy}
+            onPartyChange={onDataChange && !editableTable ? patchData : undefined}
+            className="mb-2 text-sm court-decree-lcr-body court-decree-lcr-cert-after-table"
+          />
           <div className="mb-2 court-decree-lcr-body court-decree-lcr-2a-remarks-block">
             <p className="font-bold text-sm mb-0.5">REMARKS:</p>
             <div className="no-print mb-1">

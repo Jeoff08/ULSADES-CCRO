@@ -14,6 +14,8 @@ import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShor
 import FlexibleFormDateInput from '../../components/forms/FlexibleFormDateInput'
 import { parseBirthToDate } from '../../lib/printUtils'
 import LcroStaffVerifiedByFields from '../../components/lcr/LcroStaffVerifiedByFields'
+import { FormPlaceCityProvinceInputs, FormSuggestInput } from '../../components/FormField'
+import { CITIZENSHIP_SUGGESTIONS } from '../../lib/data_citizenship'
 
 const inputClass = 'legitimation-form-page__input w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-gray-50 transition-colors duration-150'
 
@@ -74,8 +76,8 @@ const LEGITIMATION_TRANSMITTAL_TYPES = new Set(['transmittal', 'out-of-town-tran
 
 function LegitimationSection({ number, title, children, instruction }) {
   return (
-    <div className="legitimation-form-page__section-card mb-6 rounded-xl overflow-hidden border border-gray-200 bg-[var(--card-bg)] shadow-sm">
-      <div className="legitimation-form-page__section-header bg-[var(--primary-blue)] text-white px-4 py-2.5 font-semibold text-sm uppercase tracking-wide">
+    <div className="legitimation-form-page__section-card mb-6 rounded-xl border border-gray-200 overflow-visible bg-[var(--card-bg)] shadow-sm">
+      <div className="legitimation-form-page__section-header rounded-t-xl bg-[var(--primary-blue)] text-white px-4 py-2.5 font-semibold text-sm uppercase tracking-wide">
         {number} {title}
       </div>
       {instruction && (
@@ -218,6 +220,26 @@ export default function LegitimationForm() {
 
         <FormBodyFieldShortcuts className="legitimation-form-page__body" onKeyDown={handleEnterFocusNextField}>
           <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
+            <div className="legitimation-form-page__section-card mb-6 rounded-xl border border-gray-200 overflow-visible bg-[var(--card-bg)] shadow-sm">
+              <div className="legitimation-form-page__section-header rounded-t-xl bg-[var(--primary-blue)] text-white px-4 py-2.5 font-semibold text-sm uppercase tracking-wide">
+                File recipient or owner
+              </div>
+              <div className="p-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Receipt or owner of the file <span className="font-normal text-gray-500">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={form.receiptOrFileOwner}
+                  onChange={scInput('receiptOrFileOwner')}
+                  placeholder="Name shown in Files Saved when filled"
+                  className={inputClass}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="legitimation-form-page__section" style={sectionDelay(sectionIndex++)}>
             <LegitimationSection
               number="1"
               title="Birth of child registered in Iligan?"
@@ -282,22 +304,20 @@ export default function LegitimationForm() {
                 <button
                   type="button"
                   onClick={() => update('legitimationTransmittalIsOutOfTown', false)}
-                  className={`min-h-[2.75rem] px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-colors ${
-                    !form.legitimationTransmittalIsOutOfTown
+                  className={`min-h-[2.75rem] px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-colors ${!form.legitimationTransmittalIsOutOfTown
                       ? 'border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm'
                       : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   Local — Transmittal only
                 </button>
                 <button
                   type="button"
                   onClick={() => update('legitimationTransmittalIsOutOfTown', true)}
-                  className={`min-h-[2.75rem] px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-colors ${
-                    form.legitimationTransmittalIsOutOfTown
+                  className={`min-h-[2.75rem] px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-colors ${form.legitimationTransmittalIsOutOfTown
                       ? 'border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm'
                       : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   Out of town — Out-of-Town Transmittal only
                 </button>
@@ -341,8 +361,20 @@ export default function LegitimationForm() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Place of birth</label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <input type="text" value={form.placeOfBirthStreet} onChange={scInput('placeOfBirthStreet')} placeholder="House/Hospital/Street/Purok/Barangay" className={inputClass} />
-                    <input type="text" value={form.placeOfBirthCity} onChange={scInput('placeOfBirthCity')} placeholder="City/Municipality" className={inputClass} />
-                    <input type="text" value={form.placeOfBirthProvince} onChange={scInput('placeOfBirthProvince')} placeholder="Province" className={inputClass} />
+                    <FormPlaceCityProvinceInputs
+                      cityId="legitimation-place-city"
+                      provinceId="legitimation-place-province"
+                      cityValue={form.placeOfBirthCity}
+                      provinceValue={form.placeOfBirthProvince}
+                      onCityChange={(v) => update('placeOfBirthCity', v)}
+                      onProvinceChange={(v) => update('placeOfBirthProvince', v)}
+                      onPick={(city, province) =>
+                        setForm((prev) => ({ ...prev, placeOfBirthCity: city, placeOfBirthProvince: province }))
+                      }
+                      cityPlaceholder="City/Municipality"
+                      provincePlaceholder="Province"
+                      inputClassName={inputClass}
+                    />
                   </div>
                 </div>
               </div>
@@ -372,7 +404,7 @@ export default function LegitimationForm() {
                     <input type="text" value={form.motherMiddle} onChange={scInput('motherMiddle')} className={inputClass} placeholder='Middle' />
                     <input type="text" value={form.motherLast} onChange={scInput('motherLast')} className={inputClass} placeholder='Surname' />
                   </div>
-                  <input type="text" value={form.motherCitizenship} onChange={scInput('motherCitizenship')} placeholder="Citizenship" className={`${inputClass} mt-2`} />
+                  <FormSuggestInput id="motherCitizenship" value={form.motherCitizenship} onChange={(v) => update('motherCitizenship', v)} suggestions={CITIZENSHIP_SUGGESTIONS} capitalizeFirstLetter={false} placeholder="Citizenship" className="mt-2" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Father&apos;s name (First, Middle, Surname)</label>
@@ -381,7 +413,7 @@ export default function LegitimationForm() {
                     <input type="text" value={form.fatherMiddle} onChange={scInput('fatherMiddle')} className={inputClass} placeholder='Middle' />
                     <input type="text" value={form.fatherLast} onChange={scInput('fatherLast')} className={inputClass} placeholder='Surname' />
                   </div>
-                  <input type="text" value={form.fatherCitizenship} onChange={scInput('fatherCitizenship')} placeholder="Citizenship" className={`${inputClass} mt-2`} />
+                  <FormSuggestInput id="fatherCitizenship" value={form.fatherCitizenship} onChange={(v) => update('fatherCitizenship', v)} suggestions={CITIZENSHIP_SUGGESTIONS} capitalizeFirstLetter={false} placeholder="Citizenship" className="mt-2" />
                 </div>
               </div>
             </LegitimationSection>
@@ -401,7 +433,11 @@ export default function LegitimationForm() {
                     <input type="text" value={form.survivingParentMiddle} onChange={scInput('survivingParentMiddle')} className={`${inputClass} ${form.bothParentsAlive === 'YES' ? 'bg-gray-200 cursor-not-allowed' : ''}`} placeholder='Middle' disabled={form.bothParentsAlive === 'YES'} />
                     <input type="text" value={form.survivingParentLast} onChange={scInput('survivingParentLast')} className={`${inputClass} ${form.bothParentsAlive === 'YES' ? 'bg-gray-200 cursor-not-allowed' : ''}`} placeholder='Surname' disabled={form.bothParentsAlive === 'YES'} />
                   </div>
-                  <input type="text" value={form.survivingParentCitizenship} onChange={scInput('survivingParentCitizenship')} placeholder="Citizenship" className={`${inputClass} mt-2 ${form.bothParentsAlive === 'YES' ? 'bg-gray-200 cursor-not-allowed' : ''}`} disabled={form.bothParentsAlive === 'YES'} />
+                  {form.bothParentsAlive === 'YES' ? (
+                    <input type="text" value={form.survivingParentCitizenship} readOnly disabled className={`${inputClass} mt-2 bg-gray-200 cursor-not-allowed`} placeholder="Citizenship" />
+                  ) : (
+                    <FormSuggestInput id="survivingParentCitizenship" value={form.survivingParentCitizenship} onChange={(v) => update('survivingParentCitizenship', v)} suggestions={CITIZENSHIP_SUGGESTIONS} capitalizeFirstLetter={false} placeholder="Citizenship" className="mt-2" />
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Deceased parent</label>
@@ -503,38 +539,6 @@ export default function LegitimationForm() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Book number</label>
                   <input type="text" value={form.colbBookNo} onChange={scInput('colbBookNo')} className={`${inputClass} ${disableItem11 ? 'bg-gray-200 cursor-not-allowed' : ''}`} placeholder='e.g. 2' disabled={disableItem11} />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">LCR Form 1A — party requesting certification (printed in bold)</label>
-                  <input
-                    type="text"
-                    value={form.lcrCertificationRequestParty}
-                    onChange={onLcrCertPartyChange}
-                    placeholder="OCRG/OWNER/PARENTS/GUARDIAN"
-                    className={`${inputClass} ${disableItem11 ? 'bg-gray-200 cursor-not-allowed' : ''}`}
-                    disabled={disableItem11}
-                  />
-                </div>
-                <div className={`sm:col-span-2 ${disableItem11 ? 'opacity-50 pointer-events-none' : ''}`}>
-                  <LcroStaffVerifiedByFields
-                    storageScope="legitimation"
-                    disabled={disableItem11}
-                    name={form.certificateSignatoryName || ''}
-                    title={form.certificateSignatoryTitle || ''}
-                    nameLabel="LCR Form 1A — Verified by (name to sign)"
-                    titleLabel="LCR Form 1A — Verified by (title)"
-                    inputClass={`${inputClass} ${disableItem11 ? 'bg-gray-200 cursor-not-allowed' : ''}`}
-                    onChange={persistForm}
-                  />
-                </div>
-                <div className={`sm:col-span-2 ${disableItem11 ? 'opacity-50 pointer-events-none' : ''}`}>
-                  <LcrRemarksFontSizeSelect
-                    id="legitimation-lcr-remarks-font"
-                    disabled={disableItem11}
-                    value={form.lcrRemarksFontSizePt}
-                    onChange={(v) => update('lcrRemarksFontSizePt', v)}
-                    helpText="Controls how large the REMARKS paragraph prints on LCR Form 1A."
-                  />
                 </div>
               </div>
             </LegitimationSection>

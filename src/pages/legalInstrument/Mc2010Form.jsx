@@ -108,6 +108,7 @@ function buildMc2010LcrRows(lcrSource, lcrType) {
 }
 
 const defaultMc2010Draft = {
+  receiptOrFileOwner: '',
   includeForm1a: true,
   lcrType: '1A',
   lcrRemarksFontSizePt: '12',
@@ -262,6 +263,18 @@ export default function Mc2010Form() {
           <p className="text-sm text-gray-600 mb-5">
             Use <span className="font-semibold">Form Sections</span> on the left to switch between the transmittal letter and the LCR form (manual entry or module prefill). The layout matches the supplemental transmittal editor for consistency.
           </p>
+          <div className="mb-5 max-w-xl">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Receipt or owner of the file <span className="font-normal text-gray-500">(optional)</span>
+            </label>
+            <input
+              type="text"
+              className={inputClass}
+              value={form.receiptOrFileOwner}
+              onChange={(e) => update('receiptOrFileOwner', e.target.value)}
+              placeholder="Name shown in Files Saved when filled"
+            />
+          </div>
           {!activeSavedId ? (
             <button
               type="button"

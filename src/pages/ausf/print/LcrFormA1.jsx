@@ -7,7 +7,7 @@ import {
 } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
-import LcrCertificationRequestPartyInline from '../../../components/lcr/LcrCertificationRequestPartyInline'
+import LcrCertificationRequestLine from '../../../components/lcr/LcrCertificationRequestLine'
 
 /** AUSF print type for LCR Form A1. */
 export const AUSF_LCR_A1_PRINT_TYPE = 'child-not-ack-lcr'
@@ -241,18 +241,14 @@ export default function LcrFormA1({ data, onDataChange }) {
             </table>
 
             <div className="lcr-form-bottom-content">
-              <p
+              <LcrCertificationRequestLine
+                data={data}
+                variant="1a"
+                copyKind={data?.lcrCertificationCopy}
+                onPartyChange={onDataChange ? patchData : undefined}
                 className="mb-2 court-decree-lcr-body ausf-lcr-cert-line"
                 style={{ fontSize: '16px', lineHeight: 1.3 }}
-              >
-                This certification is issued upon the request of{' '}
-                <LcrCertificationRequestPartyInline
-                  data={data}
-                  variant="1a"
-                  onPartyChange={onDataChange ? patchData : undefined}
-                />{' '}
-                for any legal purposes.
-              </p>
+              />
 
               <div className="mt-10 mb-4 court-decree-lcr-body ausf-lcr-remarks-block">
                 <p className="font-bold text-sm mb-1 uppercase">REMARKS:</p>

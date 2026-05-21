@@ -32,6 +32,16 @@ import {
 } from './print'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
 import { mergeLcrRemarksFontSizePt } from '../../lib/lcrRemarksFontSize'
+import {
+  LCR_CERTIFICATION_COPIES,
+  mergeLcrCertificationCopyIntoData,
+  parseLcrPrintTypeId,
+} from '../../lib/lcrCertificationRequest'
+import {
+  isCourtDecreeLcrTriplePdfView,
+  lcrTriplePdfPageClassName,
+  withLcrTriplePdfCapture,
+} from '../../lib/lcrPdfExport'
 
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-court'
 
@@ -92,13 +102,14 @@ function normalizeAffectedList(data) {
 }
 
 function isPrintTypeAllowedForAffected(printTypeId, affectedDocuments) {
+  const { baseType } = parseLcrPrintTypeId(printTypeId)
   const list = Array.isArray(affectedDocuments) ? affectedDocuments : [affectedDocuments].filter(Boolean)
-  if (!RESTRICTED_PRINT_IDS.includes(printTypeId)) return true
+  if (!RESTRICTED_PRINT_IDS.includes(baseType)) return true
   if (list.length === 0) return true
   return list.some((doc) => {
     const aff = String(doc || '').trim()
     if (!aff || !LCR_TYPES_BY_AFFECTED[aff]) return false
-    return LCR_TYPES_BY_AFFECTED[aff].has(printTypeId)
+    return LCR_TYPES_BY_AFFECTED[aff].has(baseType)
   })
 }
 
@@ -149,18 +160,21 @@ export default function CourtDecreePrint() {
     if (type === 'annotation-form-1a' || type === 'marriage-nullity-art42') return 'lcr-form-1a'
     if (type === 'annotation-form-2a') return 'lcr-form-2a'
     if (type === 'annotation-form-3a') return 'lcr-form-3a'
+    const { baseType } = parseLcrPrintTypeId(type)
+    if (RESTRICTED_PRINT_IDS.includes(baseType)) return baseType
     return COURT_DECREE_TYPES.some((t) => t.id === type) ? type : 'cert-authenticity'
   })()
+  const { baseType: lcrBaseType } = parseLcrPrintTypeId(validType)
   const paperSizesForPrint = useMemo(() => {
-    if (COURT_DECREE_LCR_LONG_BOND_ONLY_TYPES.has(validType)) {
+    if (COURT_DECREE_LCR_LONG_BOND_ONLY_TYPES.has(lcrBaseType)) {
       return PAPER_SIZES.filter((p) => !COURT_DECREE_LCR_EXCLUDED_PAPER_SIZE_IDS.has(p.id))
     }
     return PAPER_SIZES
-  }, [validType])
-  const pageSizeForPrint = COURT_DECREE_LCR_LONG_BOND_ONLY_TYPES.has(validType) &&
-        COURT_DECREE_LCR_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)
-      ? 'long'
-      : paperSize
+  }, [lcrBaseType])
+  const pageSizeForPrint = COURT_DECREE_LCR_LONG_BOND_ONLY_TYPES.has(lcrBaseType) &&
+    COURT_DECREE_LCR_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)
+    ? 'long'
+    : paperSize
   const [data, setData] = useState(() => getStoredData() || defaultCourtDecree)
   const uploadInputRef = useRef(null)
   const uploadScopeRef = useRef('')
@@ -178,7 +192,10 @@ export default function CourtDecreePrint() {
         // Wait for the view to switch so PDF capture uses the intended output.
         await new Promise((resolve) => requestAnimationFrame(() => resolve()))
       }
-      const result = await saveCurrentViewAsPdf(`CourtDecree-${outputType}`)
+      const savePdf = () => saveCurrentViewAsPdf(`CourtDecree-${outputType}`)
+      const result = isCourtDecreeLcrTriplePdfView(lcrBaseType)
+        ? await withLcrTriplePdfCapture({}, savePdf)
+        : await savePdf()
       if (result?.ok) {
         show({
           type: 'success',
@@ -208,7 +225,10 @@ export default function CourtDecreePrint() {
         show({ type: 'error', title: 'Preview unavailable', message: 'PDF preview bridge is unavailable. Restart Electron.' })
         return
       }
-      const result = await bridge.previewPdfData()
+      const previewPdf = () => bridge.previewPdfData()
+      const result = isCourtDecreeLcrTriplePdfView(lcrBaseType)
+        ? await withLcrTriplePdfCapture({}, previewPdf)
+        : await previewPdf()
       if (!result?.ok || !result?.base64) {
         show({ type: 'error', title: 'Preview failed', message: result?.reason || 'Unable to generate PDF preview.' })
         return
@@ -235,15 +255,31 @@ export default function CourtDecreePrint() {
   usePrintPageSize(pageSizeForPrint)
 
   useEffect(() => {
-    if (!COURT_DECREE_LCR_LONG_BOND_ONLY_TYPES.has(validType)) return
+    if (!COURT_DECREE_LCR_LONG_BOND_ONLY_TYPES.has(lcrBaseType)) return
     if (!COURT_DECREE_LCR_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)) return
     setPaperSize('long')
-  }, [validType, paperSize])
+  }, [lcrBaseType, paperSize])
 
   useEffect(() => {
     const stored = getStoredData()
     if (stored) setData(stored)
   }, [])
+
+  /** One sidebar LCR button; normalize legacy ?type=…-ccr-file URLs. */
+  useEffect(() => {
+    const t = searchParams.get('type') || ''
+    const { baseType } = parseLcrPrintTypeId(t)
+    if (RESTRICTED_PRINT_IDS.includes(baseType) && t !== baseType) {
+      setSearchParams(
+        (sp) => {
+          const n = new URLSearchParams(sp)
+          n.set('type', baseType)
+          return n
+        },
+        { replace: true },
+      )
+    }
+  }, [searchParams, setSearchParams])
 
   /** Keep draft + certificate wording aligned when switching 1A / 2A / 3A in print. */
   const selectPrintView = useCallback((typeId) => {
@@ -291,12 +327,13 @@ export default function CourtDecreePrint() {
 
   const filteredCourtDecreePrintTypes = useMemo(() => {
     const oot = data?.courtDecreeTransmittalIsOutOfTown === true
-    return COURT_DECREE_TYPES.filter((t) => {
+    const base = COURT_DECREE_TYPES.filter((t) => {
       if (oot && COURT_DECREE_OOT_EXCLUDED_PRINT_IDS.has(t.id)) return false
       if (!TRANSMITTAL_PRINT_IDS.has(t.id)) return true
       if (oot) return t.id === 'out-of-town-transmittal'
       return t.id === 'transmittal'
     }).filter((t) => isPrintTypeAllowedForAffected(t.id, effectiveAffectedDocs))
+    return base
   }, [data?.courtDecreeTransmittalIsOutOfTown, effectiveAffectedDocs])
 
   /** If draft says out-of-town (or vice versa), keep URL print type consistent */
@@ -357,7 +394,7 @@ export default function CourtDecreePrint() {
 
   // LCR Form 1A: court-decree form fields override matched legitimation draft
   const dataForLcr1A = useMemo(() => {
-    if (validType !== 'lcr-form-1a') return data
+    if (lcrBaseType !== 'lcr-form-1a') return data
     const ownerName = (data.documentOwnerName || '').trim()
     const normalize = (s) => (s || '').trim().toUpperCase()
     let ownerData = null
@@ -395,7 +432,7 @@ export default function CourtDecreePrint() {
       out.lcrCertificationRequestParty = data.lcrCertificationRequestParty
     }
     return mergeLcrRemarksFontSizePt(out, data)
-  }, [validType, data])
+  }, [lcrBaseType, data])
 
   const LCR_2A_FORM_KEYS = [
     'lcr2aRegistryNumber', 'lcr2aDateRegistration', 'lcr2aNameDeceased', 'lcr2aSex', 'lcr2aCivilStatus',
@@ -412,7 +449,7 @@ export default function CourtDecreePrint() {
   ]
 
   const dataForLcr2A = useMemo(() => {
-    if (validType !== 'lcr-form-2a') return data
+    if (lcrBaseType !== 'lcr-form-2a') return data
     const ownerName = (data.lcr2aNameDeceased || data.documentOwnerName || '').trim()
     const normalize = (s) => (s || '').trim().toUpperCase()
     let ownerData = null
@@ -457,7 +494,7 @@ export default function CourtDecreePrint() {
       out.lcrCertificationRequestParty = data.lcrCertificationRequestParty
     }
     return mergeLcrRemarksFontSizePt(out, data)
-  }, [validType, data])
+  }, [lcrBaseType, data])
 
   const LCR_3A_FORM_KEYS = [
     'lcr3aHusbandName', 'lcr3aHusbandDobAge', 'lcr3aHusbandCitizenship', 'lcr3aHusbandCivilStatus',
@@ -478,7 +515,7 @@ export default function CourtDecreePrint() {
   ]
 
   const dataForLcr3A = useMemo(() => {
-    if (validType !== 'lcr-form-3a') return data
+    if (lcrBaseType !== 'lcr-form-3a') return data
     const normalize = (s) => (s || '').trim().toUpperCase()
     const ownerName = (data.documentOwnerName || '').trim()
     const hCourt = (data.lcr3aHusbandName || '').trim()
@@ -526,7 +563,7 @@ export default function CourtDecreePrint() {
       out.lcrCertificationRequestParty = data.lcrCertificationRequestParty
     }
     return mergeLcrRemarksFontSizePt(out, data)
-  }, [validType, data])
+  }, [lcrBaseType, data])
 
   const subjectLine = data.caseTitle
     ? `SUBJECT: IN RE: ${(data.caseTitle || '').toUpperCase()}`
@@ -568,60 +605,64 @@ export default function CourtDecreePrint() {
   }, [notifyLcrCertSaved])
 
   let content
-  switch (validType) {
-    case 'cert-authenticity':
-      content = <CertAuthenticityCourtDecree data={data} />
-      break
-    case 'cert-registration':
-      content = <CertRegistrationCourtDecree data={data} />
-      break
-    case 'transmittal':
-      content = <Transmittal data={data} subjectLine={subjectLine} onPersistDraft={persistTransmittalDraft} />
-      break
-    case 'out-of-town-transmittal':
-      content = <OutOfTownTransmittal data={data} subjectLine={subjectLine} onPersistDraft={persistTransmittalDraft} />
-      break
-    case 'lcr-form-1a':
-      content =
-        effectiveAffectedDocs.length <= 1
-          ? (
-            <div className="court-decree-lcr-form-outer">
-              <LcrForm1ABirthAvailable data={dataForLcr1A} onDataChange={persistLcrPrintPatch} />
-            </div>
-          )
-          : (
-            <div className="court-decree-lcr-form-outer space-y-6">
-              {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} onDataChange={persistLcrPrintPatch} /> : null}
-              {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} onDataChange={persistLcrPrintPatch} /> : null}
-              {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} onDataChange={persistLcrPrintPatch} /> : null}
-            </div>
-          )
-      break
-    case 'lcr-form-2a':
-      content = (
-        <div className="court-decree-lcr-form-outer">
-          <LcrForm2ADeathAvailable data={dataForLcr2A} onDataChange={persistLcrPrintPatch} />
-        </div>
-      )
-      break
-    case 'lcr-form-3a':
-      content =
-        effectiveAffectedDocs.length <= 1
-          ? (
-            <div className="court-decree-lcr-form-outer">
-              <LcrForm3AMarriageAvailable data={dataForLcr3A} onDataChange={persistLcrPrintPatch} />
-            </div>
-          )
-          : (
-            <div className="court-decree-lcr-form-outer space-y-6">
-              {effectiveAffectedDocs.includes('BIRTH_CERTIFICATE') ? <LcrForm1ABirthAvailable data={dataForLcr1A} onDataChange={persistLcrPrintPatch} /> : null}
-              {effectiveAffectedDocs.includes('DEATH_CERTIFICATE') ? <LcrForm2ADeathAvailable data={dataForLcr2A} onDataChange={persistLcrPrintPatch} /> : null}
-              {effectiveAffectedDocs.includes('MARRIAGE_CERTIFICATE') ? <LcrForm3AMarriageAvailable data={dataForLcr3A} onDataChange={persistLcrPrintPatch} /> : null}
-            </div>
-          )
-      break
-    default:
-      content = <CertAuthenticityCourtDecree data={data} />
+  if (validType === 'cert-authenticity') {
+    content = <CertAuthenticityCourtDecree data={data} />
+  } else if (validType === 'cert-registration') {
+    content = <CertRegistrationCourtDecree data={data} />
+  } else if (validType === 'transmittal') {
+    content = <Transmittal data={data} subjectLine={subjectLine} onPersistDraft={persistTransmittalDraft} />
+  } else if (validType === 'out-of-town-transmittal') {
+    content = <OutOfTownTransmittal data={data} subjectLine={subjectLine} onPersistDraft={persistTransmittalDraft} />
+  } else if (lcrBaseType === 'lcr-form-1a') {
+    content = (
+      <div className="court-decree-lcr-form-outer">
+        {LCR_CERTIFICATION_COPIES.map((copy, idx) => (
+          <div
+            key={copy.id}
+            className={lcrTriplePdfPageClassName(idx)}
+          >
+            <LcrForm1ABirthAvailable
+              data={mergeLcrCertificationCopyIntoData(dataForLcr1A, copy.id)}
+              onDataChange={persistLcrPrintPatch}
+            />
+          </div>
+        ))}
+      </div>
+    )
+  } else if (lcrBaseType === 'lcr-form-2a') {
+    content = (
+      <div className="court-decree-lcr-form-outer">
+        {LCR_CERTIFICATION_COPIES.map((copy, idx) => (
+          <div
+            key={copy.id}
+            className={lcrTriplePdfPageClassName(idx)}
+          >
+            <LcrForm2ADeathAvailable
+              data={mergeLcrCertificationCopyIntoData(dataForLcr2A, copy.id)}
+              onDataChange={persistLcrPrintPatch}
+            />
+          </div>
+        ))}
+      </div>
+    )
+  } else if (lcrBaseType === 'lcr-form-3a') {
+    content = (
+      <div className="court-decree-lcr-form-outer">
+        {LCR_CERTIFICATION_COPIES.map((copy, idx) => (
+          <div
+            key={copy.id}
+            className={lcrTriplePdfPageClassName(idx)}
+          >
+            <LcrForm3AMarriageAvailable
+              data={mergeLcrCertificationCopyIntoData(dataForLcr3A, copy.id)}
+              onDataChange={persistLcrPrintPatch}
+            />
+          </div>
+        ))}
+      </div>
+    )
+  } else {
+    content = <CertAuthenticityCourtDecree data={data} />
   }
 
   return (
@@ -672,7 +713,7 @@ export default function CourtDecreePrint() {
             ) : null}
             {filteredCourtDecreePrintTypes.map((t) => {
               const isSelected = validType === t.id
-              const isLcrForm = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a'].includes(t.id)
+              const isLcrForm = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a'].includes(parseLcrPrintTypeId(t.id).baseType)
               const btnClass = [
                 'text-left px-3 py-2.5 text-sm font-medium transition text-white rounded-lg',
                 isLcrForm ? 'bg-[#283750] hover:bg-[#1e2d42]' : 'bg-[var(--primary-blue)]/80 hover:bg-[var(--primary-blue)]',
@@ -729,10 +770,10 @@ export default function CourtDecreePrint() {
               )
             })}
           </div>
-          {COURT_DECREE_CCR_SIDEBAR_TYPES.has(validType) ? (
+          {COURT_DECREE_CCR_SIDEBAR_TYPES.has(lcrBaseType) ? (
             <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
               <label htmlFor="court-decree-print-ccr-select" className="block text-xs font-semibold uppercase tracking-wide text-gray-600 mb-1.5">
-                {['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a'].includes(validType)
+                {['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a'].includes(lcrBaseType)
                   ? 'Prepared by (right column only)'
                   : 'Prepared by (certificate & transmittal)'}
               </label>
@@ -774,7 +815,7 @@ export default function CourtDecreePrint() {
               </select>
             </div>
           ) : null}
-          {COURT_DECREE_LCR_REMARKS_FONT_SIDEBAR_TYPES.has(validType) ? (
+          {COURT_DECREE_LCR_REMARKS_FONT_SIDEBAR_TYPES.has(lcrBaseType) ? (
             <LcrRemarksFontSizeSelect
               id="court-decree-print-lcr-remarks-font"
               value={data.lcrRemarksFontSizePt}

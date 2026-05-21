@@ -5,6 +5,7 @@ import { hasAnyUploadsForRecord } from '../../lib/uploadedFileStore'
 import hasUploadedFilesIcon from '../../assets/has-uploaded-files-icon.svg'
 import SavedFilesPagination from '../../components/SavedFilesPagination'
 import { useSavedFilesPagination } from '../../hooks/useSavedFilesPagination'
+import { resolveLegitimationSavedRowLabel } from '../../lib/savedFileDisplayLabel'
 
 const LEGITIMATION_TYPE_LABELS = {
   'sole-affidavit': 'Affidavit Legitimation',
@@ -51,7 +52,7 @@ function matchesAffidavitKind(item, selectedKind) {
 function matchesSearch(item, query, formTypeLabels) {
   if (!query.trim()) return true
   const q = query.trim().toLowerCase()
-  const label = (item.label || '').toLowerCase()
+  const label = resolveLegitimationSavedRowLabel(item, formTypeLabels[item.formType] || item.formType || 'Legitimation').toLowerCase()
   const formLabel = (formTypeLabels[item.formType] || item.formType || '').toLowerCase()
   const savedAt = formatSavedAt(item.savedAt).toLowerCase()
   return label.includes(q) || formLabel.includes(q) || savedAt.includes(q)
@@ -263,7 +264,7 @@ export default function LegitimationSaved() {
             >
               <div className="min-w-0">
                 <p className="font-medium text-gray-800 truncate">
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate">{resolveLegitimationSavedRowLabel(item, LEGITIMATION_TYPE_LABELS[item.formType] || item.formType || 'Legitimation')}</span>
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">
                   {LEGITIMATION_TYPE_LABELS[item.formType] || item.formType} · {formatSavedAt(item.savedAt)}

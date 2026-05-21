@@ -32,6 +32,8 @@ import {
   LCRO_STAFF_LIST_KEY,
   PREFERRED_LCRO_STAFF_KEY,
 } from '../../lib/lcroStaffStorage'
+import { FormSuggestInput } from '../../components/FormField'
+import { CITIZENSHIP_SUGGESTIONS } from '../../lib/data_citizenship'
 
 const LCR_FORM_TYPES = ['lcr-form-1a', 'lcr-form-2a', 'lcr-form-3a']
 const COURT_THAT_ISSUED_LIST_KEY = 'ulsades_court_that_issued_list'
@@ -828,6 +830,19 @@ export default function CourtDecreeForm() {
         </header>
 
         <FormBodyFieldShortcuts className="court-decree-form-page__body" onKeyDown={handleEnterFocusNextField}>
+          <div className="court-decree-form-page__section mb-4" style={sectionDelay(sectionIndex++)}>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Receipt or owner of the file <span className="font-normal text-gray-500">(optional)</span>
+            </label>
+            <input
+              type="text"
+              value={form.receiptOrFileOwner}
+              onChange={scInput('receiptOrFileOwner')}
+              placeholder="Name shown in Files Saved when filled"
+              className={inputClass}
+            />
+          </div>
+
           {form.formType === 'lcr-form-1a' ? (
             <div className="court-decree-form-page__section" style={sectionDelay(0)}>
               <LcrFormNavLinks form={form} activeType="lcr-form-1a" />
@@ -865,18 +880,12 @@ export default function CourtDecreeForm() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Name of Mother</label>
                     <input type="text" value={form.lcr1aNameOfMother} onChange={scInput('lcr1aNameOfMother')} className={inputClass} />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Citizenship of Mother</label>
-                    <input type="text" value={form.lcr1aMotherCitizenship} onChange={scInput('lcr1aMotherCitizenship')} className={inputClass} />
-                  </div>
+                  <FormSuggestInput label="Citizenship of Mother" id="lcr1aMotherCitizenship" value={form.lcr1aMotherCitizenship} onChange={(v) => update('lcr1aMotherCitizenship', v)} suggestions={CITIZENSHIP_SUGGESTIONS} capitalizeFirstLetter={false} placeholder="Type to search" />
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Name of Father</label>
                     <input type="text" value={form.lcr1aNameOfFather} onChange={scInput('lcr1aNameOfFather')} className={inputClass} />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Citizenship of Father</label>
-                    <input type="text" value={form.lcr1aFatherCitizenship} onChange={scInput('lcr1aFatherCitizenship')} className={inputClass} />
-                  </div>
+                  <FormSuggestInput label="Citizenship of Father" id="lcr1aFatherCitizenship" value={form.lcr1aFatherCitizenship} onChange={(v) => update('lcr1aFatherCitizenship', v)} suggestions={CITIZENSHIP_SUGGESTIONS} capitalizeFirstLetter={false} placeholder="Type to search" />
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Date of Marriage of Parents</label>
                     <FlexibleFormDateInput value={form.lcr1aDateMarriageParents} onChange={(v) => update('lcr1aDateMarriageParents', v)} inputClassName={inputClass} />
@@ -916,9 +925,9 @@ export default function CourtDecreeForm() {
                     </select>
                   </div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Civil Status</label><input type="text" value={form.lcr2aCivilStatus} onChange={scInput('lcr2aCivilStatus')} placeholder="e.g. SINGLE" className={inputClass} /></div>
-                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label><input type="text" value={form.lcr2aCitizenship} onChange={scInput('lcr2aCitizenship')} className={inputClass} /></div>
+                  <FormSuggestInput label="Citizenship" id="lcr2aCitizenship" value={form.lcr2aCitizenship} onChange={(v) => update('lcr2aCitizenship', v)} suggestions={CITIZENSHIP_SUGGESTIONS} capitalizeFirstLetter={false} placeholder="Type to search" />
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Date of Death</label><FlexibleFormDateInput value={form.lcr2aDateDeath} onChange={(v) => update('lcr2aDateDeath', v)} inputClassName={inputClass} /></div>
-                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Citizenship of Father</label><input type="text" value={form.lcr2aCitizenshipFather} onChange={scInput('lcr2aCitizenshipFather')} className={inputClass} /></div>
+                  <FormSuggestInput label="Citizenship of Father" id="lcr2aCitizenshipFather" value={form.lcr2aCitizenshipFather} onChange={(v) => update('lcr2aCitizenshipFather', v)} suggestions={CITIZENSHIP_SUGGESTIONS} capitalizeFirstLetter={false} placeholder="Type to search" />
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Place of Death</label><input type="text" value={form.lcr2aPlaceDeath} onChange={scInput('lcr2aPlaceDeath')} className={inputClass} /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Cause of Death</label><textarea value={form.lcr2aCauseDeath} onChange={scInput('lcr2aCauseDeath')} rows={4} className={inputClass} placeholder="As stated on the record" /></div>
                   <CourtDecreeLcrColbFields lcrKind="2a" form={form} scInput={scInput} inputClass={inputClass} />
@@ -982,7 +991,7 @@ export default function CourtDecreeForm() {
                           <input type="text" value={form.lcr3aHusbandDobAge} onChange={scInput('lcr3aHusbandDobAge')} className={inputClass} />
                         </div>
                       ) : null}
-                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label><input type="text" value={form.lcr3aHusbandCitizenship} onChange={scInput('lcr3aHusbandCitizenship')} className={inputClass} /></div>
+                      <FormSuggestInput label="Citizenship" id="lcr3aHusbandCitizenship" value={form.lcr3aHusbandCitizenship} onChange={(v) => update('lcr3aHusbandCitizenship', v)} suggestions={CITIZENSHIP_SUGGESTIONS} capitalizeFirstLetter={false} placeholder="Type to search" />
                       <div><label className="block text-sm font-medium text-gray-700 mb-1">Civil Status</label><input type="text" value={form.lcr3aHusbandCivilStatus} onChange={scInput('lcr3aHusbandCivilStatus')} className={inputClass} /></div>
                       <div><label className="block text-sm font-medium text-gray-700 mb-1">Mother</label><input type="text" value={form.lcr3aHusbandMother} onChange={scInput('lcr3aHusbandMother')} placeholder="e.g. MARIAM T. PIQUERO (D)" className={inputClass} /></div>
                       <div><label className="block text-sm font-medium text-gray-700 mb-1">Father</label><input type="text" value={form.lcr3aHusbandFather} onChange={scInput('lcr3aHusbandFather')} className={inputClass} /></div>
@@ -1030,7 +1039,7 @@ export default function CourtDecreeForm() {
                           <input type="text" value={form.lcr3aWifeDobAge} onChange={scInput('lcr3aWifeDobAge')} className={inputClass} />
                         </div>
                       ) : null}
-                      <div><label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label><input type="text" value={form.lcr3aWifeCitizenship} onChange={scInput('lcr3aWifeCitizenship')} className={inputClass} /></div>
+                      <FormSuggestInput label="Citizenship" id="lcr3aWifeCitizenship" value={form.lcr3aWifeCitizenship} onChange={(v) => update('lcr3aWifeCitizenship', v)} suggestions={CITIZENSHIP_SUGGESTIONS} capitalizeFirstLetter={false} placeholder="Type to search" />
                       <div><label className="block text-sm font-medium text-gray-700 mb-1">Civil Status</label><input type="text" value={form.lcr3aWifeCivilStatus} onChange={scInput('lcr3aWifeCivilStatus')} className={inputClass} /></div>
                       <div><label className="block text-sm font-medium text-gray-700 mb-1">Mother</label><input type="text" value={form.lcr3aWifeMother} onChange={scInput('lcr3aWifeMother')} className={inputClass} /></div>
                       <div><label className="block text-sm font-medium text-gray-700 mb-1">Father</label><input type="text" value={form.lcr3aWifeFather} onChange={scInput('lcr3aWifeFather')} placeholder="e.g. JOSE G. FIGUEROA (D)" className={inputClass} /></div>
@@ -1471,23 +1480,7 @@ export default function CourtDecreeForm() {
                 <CourtDecreeSection number="6" title="Signatory">
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">LCR forms — party requesting certification (bold in print)</label>
-                      <input
-                        type="text"
-                        value={form.lcrCertificationRequestParty}
-                        onChange={onLcrCertPartyChange}
-                        placeholder="Leave blank for defaults: 1A uses OCRG/OWNER/…; 2A and 3A use OCRG/DOCUMENT OWNER"
-                        className={inputClass}
-                      />
-                      <p className="text-xs text-gray-500 mt-1">If you type here, this exact text is used on every LCR certification line. Leave blank to keep each form’s usual wording.</p>
                     </div>
-                    <LcrRemarksFontSizeSelect
-                      id="court-decree-lcr-remarks-font"
-                      className="mt-2"
-                      value={form.lcrRemarksFontSizePt}
-                      onChange={(v) => updateAndPersistDraft('lcrRemarksFontSizePt', v)}
-                      helpText="Controls how large the REMARKS text prints on LCR 1A / 2A / 3A."
-                    />
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">LCRO Staff (Verified by)</label>
                       <div className="relative">

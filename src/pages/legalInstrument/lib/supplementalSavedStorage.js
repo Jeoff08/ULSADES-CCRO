@@ -1,4 +1,9 @@
+import { supplementalSavedApplicantName, savedFilesListLabel } from '../../../lib/savedFileDisplayLabel'
 import { migrateRecordUploads } from '../../../lib/uploadedFileStore'
+
+function supplementalSavedListLabel(data) {
+  return savedFilesListLabel(data, supplementalSavedApplicantName(data), 'Supplemental Report')
+}
 
 const KEY_DRAFT = 'legalInstrumentSupplementalDraft'
 const KEY_SAVED = 'legalInstrumentSupplementalSaved'
@@ -54,7 +59,7 @@ export function addSavedSupplemental(data) {
     list.unshift({
       id,
       savedAt: new Date().toISOString(),
-      label: data.affiantName || data.regNo || 'Supplemental Report',
+      label: supplementalSavedListLabel(data),
       data: { ...data },
     })
     localStorage.setItem(KEY_SAVED, JSON.stringify(list))
@@ -118,7 +123,7 @@ export function saveOrUpdateSupplemental(data) {
       next[idx] = {
         ...list[idx],
         savedAt: new Date().toISOString(),
-        label: data.affiantName || data.regNo || 'Supplemental Report',
+        label: supplementalSavedListLabel(data),
         data: { ...data },
       }
       localStorage.setItem(KEY_SAVED, JSON.stringify(next))

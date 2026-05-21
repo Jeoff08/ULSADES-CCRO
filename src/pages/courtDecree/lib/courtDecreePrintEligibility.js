@@ -1,3 +1,4 @@
+import { parseLcrPrintTypeId } from '../../../lib/lcrCertificationRequest'
 import { COURT_DECREE_TYPES } from '../constants'
 import { isLcr1aTableComplete, isLcr2aTableComplete, isLcr3aTableComplete } from './courtDecreeLcrCompletion'
 
@@ -42,13 +43,14 @@ export function effectiveAffectedDocumentsForCourtDecree(data) {
 }
 
 export function isCourtDecreeLcrPrintTypeAllowed(printTypeId, effectiveAffectedDocs) {
+  const { baseType } = parseLcrPrintTypeId(printTypeId)
   const list = Array.isArray(effectiveAffectedDocs) ? effectiveAffectedDocs : []
-  if (!COURT_DECREE_LCR_PRINT_IDS.includes(printTypeId)) return true
+  if (!COURT_DECREE_LCR_PRINT_IDS.includes(baseType)) return true
   if (list.length === 0) return true
   return list.some((doc) => {
     const aff = String(doc || '').trim()
     if (!aff || !LCR_TYPES_BY_AFFECTED[aff]) return false
-    return LCR_TYPES_BY_AFFECTED[aff].has(printTypeId)
+    return LCR_TYPES_BY_AFFECTED[aff].has(baseType)
   })
 }
 
@@ -57,7 +59,7 @@ export function courtDecreeFilteredPrintTypeIds(data) {
   const d = data && typeof data === 'object' ? data : {}
   const oot = d.courtDecreeTransmittalIsOutOfTown === true
   const effectiveDocs = effectiveAffectedDocumentsForCourtDecree(d)
-  return COURT_DECREE_TYPES.filter((t) => {
+  const baseIds = COURT_DECREE_TYPES.filter((t) => {
     if (oot && COURT_DECREE_OOT_EXCLUDED_PRINT_IDS.has(t.id)) return false
     if (!TRANSMITTAL_PRINT_IDS.has(t.id)) return true
     if (oot) return t.id === 'out-of-town-transmittal'
@@ -65,10 +67,13 @@ export function courtDecreeFilteredPrintTypeIds(data) {
   })
     .filter((t) => isCourtDecreeLcrPrintTypeAllowed(t.id, effectiveDocs))
     .map((t) => t.id)
+  return baseIds
 }
 
 export function courtDecreeSavedItemHasLcrInPrintMenu(item) {
   const data = item?.data && typeof item.data === 'object' ? item.data : {}
   const printTypes = courtDecreeFilteredPrintTypeIds(data)
-  return COURT_DECREE_LCR_PRINT_IDS.some((id) => printTypes.includes(id))
+  return COURT_DECREE_LCR_PRINT_IDS.some((baseId) =>
+    printTypes.some((id) => parseLcrPrintTypeId(id).baseType === baseId),
+  )
 }

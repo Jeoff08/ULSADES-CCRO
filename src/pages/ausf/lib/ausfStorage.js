@@ -1,5 +1,25 @@
+import { savedFilesListLabel } from '../../../lib/savedFileDisplayLabel'
 import { mergeAUSFDraftData } from './ausfDefaults'
 import { applyDerivedJuratFormTypeIfApplicable } from './ausfJuratRouting'
+
+const AUSF_FORM_TYPE_LABELS = {
+  'ausf-only': 'AUSF only',
+  'ausf-0-6': 'AUSF 0-6',
+  'ausf-07-17': 'AUSF 07-17',
+  'reg-ausf': 'Registration of AUSF',
+  'reg-ack': 'Registration of Acknowledgement',
+  'child-ack': 'Child Acknowledge',
+  'child-ack-lcr': 'LCR Form 1A (Birth-Available)',
+  'child-not-ack': 'Child Not Acknowledged',
+  'child-not-ack-lcr': 'LCR Form A1 (Child Not Acknowledged)',
+  'child-not-ack-transmittal': 'Transmittal (Child Not Acknowledged)',
+  'out-of-town': 'Out-of-Town Transmittal',
+}
+
+function ausfSavedListLabel(data) {
+  const formTypeLabel = AUSF_FORM_TYPE_LABELS[data?.formType] || data?.formType || 'AUSF'
+  return savedFilesListLabel(data, data?.applicantName, formTypeLabel)
+}
 
 const KEY = 'ulsades_ausf_draft'
 const KEY_SAVED = 'ulsades_ausf_saved'
@@ -118,24 +138,11 @@ export function addSavedAUSF(data) {
     const payload = { ...data }
     delete payload._savedAUSFId
     const id = `ausf_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
-    const label = payload.applicantName || payload.childFirst || payload.formType || 'AUSF'
-    const formTypeLabel = {
-      'ausf-only': 'AUSF only',
-      'ausf-0-6': 'AUSF 0-6',
-      'ausf-07-17': 'AUSF 07-17',
-      'reg-ausf': 'Registration of AUSF',
-      'reg-ack': 'Registration of Acknowledgement',
-      'child-ack': 'Child Acknowledge',
-      'child-ack-lcr': 'LCR Form 1A (Birth-Available)',
-      'child-not-ack': 'Child Not Acknowledged',
-      'child-not-ack-lcr': 'LCR Form A1 (Child Not Acknowledged)',
-      'child-not-ack-transmittal': 'Transmittal (Child Not Acknowledged)',
-      'out-of-town': 'Out-of-Town Transmittal',
-    }[payload.formType] || payload.formType
+    const label = ausfSavedListLabel(payload)
     list.unshift({
       id,
       savedAt: new Date().toISOString(),
-      label: String(label).trim() || formTypeLabel,
+      label,
       formType: payload.formType,
       data: payload,
     })
@@ -213,24 +220,11 @@ export function updateSavedAUSF(id, data) {
     if (idx === -1) return false
     const payload = { ...data }
     delete payload._savedAUSFId
-    const label = payload.applicantName || payload.childFirst || payload.formType || 'AUSF'
-    const formTypeLabel = {
-      'ausf-only': 'AUSF only',
-      'ausf-0-6': 'AUSF 0-6',
-      'ausf-07-17': 'AUSF 07-17',
-      'reg-ausf': 'Registration of AUSF',
-      'reg-ack': 'Registration of Acknowledgement',
-      'child-ack': 'Child Acknowledge',
-      'child-ack-lcr': 'LCR Form 1A (Birth-Available)',
-      'child-not-ack': 'Child Not Acknowledged',
-      'child-not-ack-lcr': 'LCR Form A1 (Child Not Acknowledged)',
-      'child-not-ack-transmittal': 'Transmittal (Child Not Acknowledged)',
-      'out-of-town': 'Out-of-Town Transmittal',
-    }[payload.formType] || payload.formType
+    const label = ausfSavedListLabel(payload)
     list[idx] = {
       id,
       savedAt: new Date().toISOString(),
-      label: String(label).trim() || formTypeLabel,
+      label,
       formType: payload.formType,
       data: payload,
     }

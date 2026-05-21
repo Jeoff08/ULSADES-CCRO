@@ -9,6 +9,8 @@ import { hasAnyUploadsForRecord } from '../../lib/uploadedFileStore'
 import hasUploadedFilesIcon from '../../assets/has-uploaded-files-icon.svg'
 import SavedFilesPagination from '../../components/SavedFilesPagination'
 import { useSavedFilesPagination } from '../../hooks/useSavedFilesPagination'
+import { resolveCourtDecreeSavedRowLabel } from '../../lib/savedFileDisplayLabel'
+import { parseLcrPrintTypeId } from '../../lib/lcrCertificationRequest'
 
 const COURT_DECREE_TYPE_LABELS = {
   'cert-authenticity': 'Certificate of authenticity',
@@ -54,14 +56,14 @@ function matchesCourtDecreeSavedFilter(item, selectedFilter) {
   const printTypes = courtDecreeFilteredPrintTypeIds(data)
   if (filter === 'NON_LCR') return !courtDecreeSavedItemHasLcrInPrintMenu(item)
   const lcrType = LCR_FILTER_TO_PRINT_TYPE[filter]
-  if (lcrType) return printTypes.includes(lcrType)
+  if (lcrType) return printTypes.some((id) => parseLcrPrintTypeId(id).baseType === lcrType)
   return true
 }
 
 function matchesSearch(item, query, formTypeLabels) {
   if (!query.trim()) return true
   const q = query.trim().toLowerCase()
-  const label = (item.label || '').toLowerCase()
+  const label = resolveCourtDecreeSavedRowLabel(item, formTypeLabels[item.formType] || item.formType || 'Court Decree').toLowerCase()
   const formLabel = (formTypeLabels[item.formType] || item.formType || '').toLowerCase()
   const savedAt = formatSavedAt(item.savedAt).toLowerCase()
   return label.includes(q) || formLabel.includes(q) || savedAt.includes(q)
@@ -271,7 +273,7 @@ export default function CourtDecreeSaved() {
             >
               <div className="min-w-0">
                 <p className="font-medium text-gray-800 truncate">
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate">{resolveCourtDecreeSavedRowLabel(item, COURT_DECREE_TYPE_LABELS[item.formType] || item.formType || 'Court Decree')}</span>
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">
                   {COURT_DECREE_TYPE_LABELS[item.formType] || item.formType} · {formatSavedAt(item.savedAt)}

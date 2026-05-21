@@ -84,6 +84,13 @@ html[data-paper-size="legal"] .correction-print-doc {
   height: 330.2mm !important;
 }
 
+/* LCR header top margin — saved/preview PDF capture only (not on-screen preview) */
+body.pdf-capture .court-decree-lcr-form .court-decree-lcr-header,
+body.pdf-capture .lcr-search-print-header.court-decree-lcr-header {
+  padding-top: 0.5in !important;
+  box-sizing: border-box !important;
+}
+
 /* Screen only — do not affect @media print output */
 @media screen {
   /* PDF capture in Electron: keep original rem scale for the snapshot */
@@ -105,6 +112,24 @@ html[data-paper-size="legal"] .correction-print-doc {
   body:not(.pdf-capture) .correction-print-doc {
     height: auto !important;
     min-height: 0 !important;
+  }
+
+  /* LCR triple PDF save/preview: keep on-screen size/zoom unchanged while capturing */
+  html:has(body.lcr-triple-pdf-export.pdf-capture) {
+    font-size: revert !important;
+  }
+  body.lcr-triple-pdf-export.pdf-capture .print-doc,
+  body.lcr-triple-pdf-export.pdf-capture .ausf-doc,
+  body.lcr-triple-pdf-export.pdf-capture .correction-print-doc,
+  body.lcr-triple-pdf-export.pdf-capture .court-decree-lcr-form,
+  body.lcr-triple-pdf-export.pdf-capture .court-decree-lcr-body-scaled,
+  body.lcr-triple-pdf-export.pdf-capture .ausf-lcr-1a-birth-available,
+  body.lcr-triple-pdf-export.pdf-capture .ausf-lcr-a1-form,
+  body.lcr-triple-pdf-export.pdf-capture .legitimation-lcr1a-doc {
+    zoom: 0.92 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
   }
 }
 
@@ -2579,6 +2604,12 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   /* Print PDF only: header and footer fixed; only body content is flexible */
   .print-doc-header {
     flex-shrink: 0 !important;
+  }
+  /* LCR forms (AUSF, Court Decree, Legitimation, Supplemental, MC2010): 0.5" top margin before office header */
+  .court-decree-lcr-form .court-decree-lcr-header,
+  .lcr-search-print-header.court-decree-lcr-header {
+    padding-top: 0.5in !important;
+    box-sizing: border-box !important;
   }
   .print-doc-header .text-center > div > p {
     margin: 0 !important;

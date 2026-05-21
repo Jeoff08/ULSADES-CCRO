@@ -63,6 +63,7 @@ function recordHasLcrType(data, lcrType) {
 }
 
 const defaultSupplementalDraft = {
+  receiptOrFileOwner: '',
   supplementType: 'geographical',
   colbSubject: 'self',
   subjectColbName: '',
@@ -505,6 +506,19 @@ export default function SupplementalForm() {
               Use <span className="font-medium">New Supplemental</span> on the saved list to start a blank form.
             </div>
           ) : null}
+
+          <div className="mb-5 max-w-xl">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Receipt or owner of the file <span className="font-normal text-gray-500">(optional)</span>
+            </label>
+            <input
+              type="text"
+              className={inputClass}
+              value={form.receiptOrFileOwner}
+              onChange={(e) => update('receiptOrFileOwner', e.target.value)}
+              placeholder="Name shown in Files Saved when filled"
+            />
+          </div>
 
           <div className="legitimation-form-page__section">
             <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">

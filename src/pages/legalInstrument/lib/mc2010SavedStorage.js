@@ -1,4 +1,9 @@
+import { mc2010SavedApplicantName, savedFilesListLabel } from '../../../lib/savedFileDisplayLabel'
 import { migrateRecordUploads } from '../../../lib/uploadedFileStore'
+
+function mc2010SavedListLabel(data) {
+  return savedFilesListLabel(data, mc2010SavedApplicantName(data), 'MC2010-04')
+}
 
 const KEY_DRAFT = 'legalInstrumentMc2010Draft'
 const KEY_SAVED = 'legalInstrumentMc2010Saved'
@@ -43,7 +48,7 @@ export function addSavedMc2010(data) {
     list.unshift({
       id,
       savedAt: new Date().toISOString(),
-      label: data.transmittalColbName || data.transmittalRegistryNo || 'MC2010-04',
+      label: mc2010SavedListLabel(data),
       data: { ...data },
     })
     localStorage.setItem(KEY_SAVED, JSON.stringify(list))
@@ -106,7 +111,7 @@ export function saveOrUpdateMc2010(data) {
       next[idx] = {
         ...list[idx],
         savedAt: new Date().toISOString(),
-        label: data.transmittalColbName || data.transmittalRegistryNo || 'MC2010-04',
+        label: mc2010SavedListLabel(data),
         data: { ...data },
       }
       localStorage.setItem(KEY_SAVED, JSON.stringify(next))

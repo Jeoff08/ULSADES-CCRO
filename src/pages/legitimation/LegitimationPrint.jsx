@@ -22,6 +22,16 @@ import {
 import { LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS } from './print/LcrForm1A'
 import { RECEIVED_BY_OPTIONS, legitimationAffidavitCcrPersistPatch, legitimationAffidavitCcrSelectValue } from './print/legitimationAffidavitCcr'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
+import {
+  LCR_CERTIFICATION_COPIES,
+  mergeLcrCertificationCopyIntoData,
+  parseLcrPrintTypeId,
+} from '../../lib/lcrCertificationRequest'
+import {
+  isLegitimationLcrTriplePdfView,
+  lcrTriplePdfPageClassName,
+  withLcrTriplePdfCapture,
+} from '../../lib/lcrPdfExport'
 const PRINT_SIZE_STYLE_ID = 'print-paper-size-legitimation'
 const LEGITIMATION_TRANSMITTAL_TYPES = new Set(['transmittal', 'out-of-town-transmittal'])
 
@@ -60,7 +70,12 @@ export default function LegitimationPrint() {
   const type = searchParams.get('type') || 'joint-affidavit'
   const recordId = searchParams.get('id') || 'draft'
   const resolvedType = type === 'annotation' ? 'lcr-form-1a' : type
-  const validType = LEGITIMATION_TYPES.some((t) => t.id === resolvedType) ? resolvedType : 'joint-affidavit'
+  const validType = LEGITIMATION_TYPES.some((t) => t.id === resolvedType)
+    ? resolvedType
+    : parseLcrPrintTypeId(resolvedType).baseType === 'lcr-form-1a'
+      ? 'lcr-form-1a'
+      : 'joint-affidavit'
+  const { baseType: lcrBaseType } = parseLcrPrintTypeId(validType)
   const [data, setData] = useState(() => getStoredData() || defaultLegitimation)
   const uploadInputRef = useRef(null)
   const uploadScopeRef = useRef('')
@@ -73,7 +88,7 @@ export default function LegitimationPrint() {
   const allowedTypes = LEGITIMATION_TYPES.filter((t) => {
     if (data.bothParentsAlive === 'NO' && t.id === 'joint-affidavit') return false
     if (data.bothParentsAlive === 'YES' && t.id === 'sole-affidavit') return false
-    if (data.birthRegisteredIligan === 'NO' && t.id === 'lcr-form-1a') return false
+    if (data.birthRegisteredIligan === 'NO' && parseLcrPrintTypeId(t.id).baseType === 'lcr-form-1a') return false
     if (LEGITIMATION_TRANSMITTAL_TYPES.has(t.id)) {
       const oot = data.legitimationTransmittalIsOutOfTown === true
       if (oot && t.id !== 'out-of-town-transmittal') return false
@@ -82,28 +97,43 @@ export default function LegitimationPrint() {
     return true
   })
   const allowedTypeIds = allowedTypes.map((t) => t.id)
+
+  useEffect(() => {
+    const t = searchParams.get('type') || ''
+    const { baseType } = parseLcrPrintTypeId(t)
+    if (baseType === 'lcr-form-1a' && t !== baseType) {
+      setSearchParams(
+        (sp) => {
+          const n = new URLSearchParams(sp)
+          n.set('type', baseType)
+          return n
+        },
+        { replace: true },
+      )
+    }
+  }, [searchParams, setSearchParams])
   const showAffidavitCcrInSidebar =
     allowedTypeIds.includes('joint-affidavit') || allowedTypeIds.includes('sole-affidavit')
   const effectiveType = allowedTypeIds.includes(validType)
     ? validType
     : (allowedTypeIds[0] || 'joint-affidavit')
   const paperSizesForPrint = useMemo(() => {
-    if (effectiveType === 'lcr-form-1a') {
+    if (lcrBaseType === 'lcr-form-1a') {
       return PAPER_SIZES.filter((p) => !LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS.has(p.id))
     }
     return PAPER_SIZES
-  }, [effectiveType])
+  }, [lcrBaseType])
 
   const pageSizeForPrint =
-    effectiveType === 'lcr-form-1a' && LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)
-        ? 'long'
-        : paperSize
+    lcrBaseType === 'lcr-form-1a' && LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)
+      ? 'long'
+      : paperSize
 
   useEffect(() => {
-    if (effectiveType !== 'lcr-form-1a') return
+    if (lcrBaseType !== 'lcr-form-1a') return
     if (!LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS.has(paperSize)) return
     setPaperSize('long')
-  }, [effectiveType, paperSize])
+  }, [lcrBaseType, paperSize])
 
   const [affidavitCcrSidebarTarget, setAffidavitCcrSidebarTarget] = useState(() =>
     allowedTypeIds.includes('joint-affidavit') ? 'joint' : 'sole'
@@ -118,7 +148,10 @@ export default function LegitimationPrint() {
     effectiveType === 'sole-affidavit' ? 'sole' : effectiveType === 'joint-affidavit' ? 'joint' : affidavitCcrSidebarTarget
   const handleSavePdf = async () => {
     try {
-      const result = await saveCurrentViewAsPdf(`Legitimation-${effectiveType}`)
+      const savePdf = () => saveCurrentViewAsPdf(`Legitimation-${effectiveType}`)
+      const result = isLegitimationLcrTriplePdfView(lcrBaseType)
+        ? await withLcrTriplePdfCapture({}, savePdf)
+        : await savePdf()
       if (result?.ok) {
         show({
           type: 'success',
@@ -150,7 +183,10 @@ export default function LegitimationPrint() {
       }
       let result
       try {
-        result = await bridge.previewPdfData()
+        const previewPdf = () => bridge.previewPdfData()
+        result = isLegitimationLcrTriplePdfView(lcrBaseType)
+          ? await withLcrTriplePdfCapture({}, previewPdf)
+          : await previewPdf()
       } catch (invokeErr) {
         const msg = String(invokeErr?.message || '')
         if (msg.includes("No handler registered for 'pdf:get-current-window-base64'")) {
@@ -248,7 +284,29 @@ export default function LegitimationPrint() {
   }, [])
 
   let content
-  switch (effectiveType) {
+  if (lcrBaseType === 'lcr-form-1a') {
+    content = (
+      <>
+        {LCR_CERTIFICATION_COPIES.map((copy, idx) => (
+          <div
+            key={copy.id}
+            className={lcrTriplePdfPageClassName(idx)}
+          >
+            <LcrForm1A
+              data={mergeLcrCertificationCopyIntoData(data, copy.id)}
+              onDataChange={(patch) => {
+                setData((prev) => {
+                  const next = { ...prev, ...patch }
+                  saveLegitimationDraft(next)
+                  return next
+                })
+              }}
+            />
+          </div>
+        ))}
+      </>
+    )
+  } else switch (effectiveType) {
     case 'sole-affidavit':
       content = <SoleAffidavitLegitimation data={data} />
       break
@@ -260,23 +318,6 @@ export default function LegitimationPrint() {
       break
     case 'registration-acknowledgement':
       content = <RegistrationOfAcknowledgement data={data} />
-      break
-    case 'lcr-form-1a':
-      content = (
-        <LcrForm1A
-          data={data}
-          onDataChange={(patch) => {
-            setData((prev) => {
-              const next = { ...prev, ...patch }
-              const prevParty = String(prev.lcrCertificationRequestParty ?? '')
-              const nextParty = String(next.lcrCertificationRequestParty ?? '')
-              if (prevParty !== nextParty) notifyLcrCertSaved()
-              saveLegitimationDraft(next)
-              return next
-            })
-          }}
-        />
-      )
       break
     case 'transmittal':
       content = <Transmittal data={data} subjectLine={subjectLine} onPersistDraft={persistTransmittalDraft} />
@@ -385,9 +426,9 @@ export default function LegitimationPrint() {
                 Affidavit — Received by (CCR)
               </label>
               {allowedTypeIds.includes('joint-affidavit') &&
-              allowedTypeIds.includes('sole-affidavit') &&
-              effectiveType !== 'joint-affidavit' &&
-              effectiveType !== 'sole-affidavit' ? (
+                allowedTypeIds.includes('sole-affidavit') &&
+                effectiveType !== 'joint-affidavit' &&
+                effectiveType !== 'sole-affidavit' ? (
                 <div className="mb-2">
                   <label htmlFor="legitimation-print-affidavit-ccr-target" className="block text-[10px] font-semibold text-gray-600 mb-1">
                     Which affidavit?
@@ -429,7 +470,7 @@ export default function LegitimationPrint() {
               </p>
             </div>
           ) : null}
-          {effectiveType === 'lcr-form-1a' ? (
+          {lcrBaseType === 'lcr-form-1a' ? (
             <LcrRemarksFontSizeSelect
               id="legitimation-print-lcr-remarks-font"
               value={data.lcrRemarksFontSizePt}

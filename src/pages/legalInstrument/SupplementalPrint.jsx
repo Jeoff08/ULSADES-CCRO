@@ -31,6 +31,8 @@ import { defaultLegitimation } from '../legitimation/lib/legitimationDefaults'
 import { defaultCourtDecree } from '../courtDecree/lib/courtDecreeDefaults'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
 import { mergeLcrRemarksFontSizePt, parseLcrRemarksFontPt } from '../../lib/lcrRemarksFontSize'
+import { LCR_CERTIFICATION_COPIES, mergeLcrCertificationCopyIntoData } from '../../lib/lcrCertificationRequest'
+import { lcrTriplePdfPageClassName, withLcrTriplePdfCapture } from '../../lib/lcrPdfExport'
 import {
   emptyLcrDataForType,
   getSupplementalLcrBundleFromDraft,
@@ -429,14 +431,23 @@ export default function SupplementalPrint() {
     if (savingPdf) return
     setSavingPdf(true)
     setExportMode(mode)
-    const root = document.documentElement
-    const cls = PDF_EXPORT_CLASS[mode]
-    root.classList.add(cls)
-    await new Promise((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(resolve))
-    })
     try {
-      const result = await saveCurrentViewAsPdf(suggestedBaseName)
+      const result = await withLcrTriplePdfCapture(
+        { lcrOnlyExport: mode === 'lcr' },
+        async () => {
+          const root = document.documentElement
+          const cls = PDF_EXPORT_CLASS[mode]
+          if (mode !== 'lcr') root.classList.add(cls)
+          await new Promise((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(resolve))
+          })
+          try {
+            return await saveCurrentViewAsPdf(suggestedBaseName)
+          } finally {
+            if (mode !== 'lcr') root.classList.remove(cls)
+          }
+        },
+      )
       if (result?.ok) {
         show({
           type: 'success',
@@ -463,7 +474,6 @@ export default function SupplementalPrint() {
         message: error?.message || 'Unable to save PDF right now. Please try again.',
       })
     } finally {
-      root.classList.remove(cls)
       setExportMode(null)
       setSavingPdf(false)
     }
@@ -483,15 +493,24 @@ export default function SupplementalPrint() {
         return
       }
       const previewMode = getExportModeForActivePanel()
-      const previewClass = PDF_EXPORT_CLASS[previewMode]
-      const root = document.documentElement
-      root.classList.add(previewClass)
-      await new Promise((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(resolve))
-      })
       let result
       try {
-        result = await bridge.previewPdfData()
+        result = await withLcrTriplePdfCapture(
+          { lcrOnlyExport: previewMode === 'lcr' },
+          async () => {
+            const root = document.documentElement
+            const previewClass = PDF_EXPORT_CLASS[previewMode]
+            if (previewMode !== 'lcr') root.classList.add(previewClass)
+            await new Promise((resolve) => {
+              requestAnimationFrame(() => requestAnimationFrame(resolve))
+            })
+            try {
+              return await bridge.previewPdfData()
+            } finally {
+              if (previewMode !== 'lcr') root.classList.remove(previewClass)
+            }
+          },
+        )
       } catch (invokeErr) {
         const msg = String(invokeErr?.message || '')
         if (msg.includes("No handler registered for 'pdf:get-current-window-base64'") && typeof bridge.previewPdf === 'function') {
@@ -502,8 +521,6 @@ export default function SupplementalPrint() {
           }
         }
         throw invokeErr
-      } finally {
-        root.classList.remove(previewClass)
       }
       if (!result?.ok || !result?.base64) {
         window.alert(result?.reason || 'Unable to generate PDF preview.')
@@ -1086,9 +1103,9 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex-affidavit
                 {...(isGeographicalSupplementAffidavit ? { 'data-supplement-geographical': '1' } : {})}
                 {...(isSexSupplementAffidavit || isGeographicalSupplementAffidavit
                   ? {
-                      'data-supplement-geo-sex': '1',
-                      ...(isAffidavitOnlySupplementOutput ? { 'data-supplement-geo-sex-affidavit-only': '1' } : {}),
-                    }
+                    'data-supplement-geo-sex': '1',
+                    ...(isAffidavitOnlySupplementOutput ? { 'data-supplement-geo-sex-affidavit-only': '1' } : {}),
+                  }
                   : {})}
                 className={
                   `${activePanel === 'affidavit' ? 'block' : 'hidden print:block print:[page-break-before:avoid]'} ${isMiddleNameAffidavit || isColbCompactPrintAffidavit ? 'mx-auto' : ''
@@ -1134,41 +1151,53 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex-affidavit
                     )}
                     Table cells are editable below; changes are saved with this supplemental file.
                   </div>
-                  {lcrIncludedList.map((t, idx) => (
-                    <div key={t} className={idx > 0 ? 'mt-8 print:mt-0 print:[page-break-before:always]' : ''}>
-                      {lcrIncludedList.length > 1 ? (
-                        <p className="no-print text-xs font-bold text-slate-700 max-w-[210mm] mx-auto mb-2">LCR Form {t}</p>
-                      ) : null}
-                      <SupplementalLcrFooterSignatoryPickers
-                        lcrData={lcrPrintDataForType(t)}
-                        inputClass="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white"
-                        onPatch={(p) => patchLcrDataForType(t, p)}
-                      />
-                      <div className="max-w-[210mm] mx-auto">
-                        {t === '1A' ? (
-                          <LcrForm1ABirthAvailable
-                            data={lcrPrintDataForType(t)}
-                            editableTable
-                            onDataChange={(n) => handleLcrDataChangeForType('1A', n)}
+                  {lcrIncludedList.flatMap((t, typeIdx) =>
+                    LCR_CERTIFICATION_COPIES.map((copy, copyIdx) => {
+                      const sectionIdx = typeIdx * LCR_CERTIFICATION_COPIES.length + copyIdx
+                      const lcrSlice = mergeLcrCertificationCopyIntoData(lcrPrintDataForType(t), copy.id)
+                      return (
+                        <div
+                          key={`${t}-${copy.id}`}
+                          className={lcrTriplePdfPageClassName(sectionIdx)}
+                        >
+                          <p className="no-print text-xs font-bold text-slate-700 max-w-[210mm] mx-auto mb-2">
+                            LCR Form {t}
+                            {lcrIncludedList.length > 1 || LCR_CERTIFICATION_COPIES.length > 1
+                              ? ` — ${copy.menuSuffix}`
+                              : ''}
+                          </p>
+                          <SupplementalLcrFooterSignatoryPickers
+                            lcrData={lcrSlice}
+                            inputClass="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white"
+                            onPatch={(p) => patchLcrDataForType(t, p)}
                           />
-                        ) : null}
-                        {t === '2A' ? (
-                          <LcrForm2ADeathAvailable
-                            data={lcrPrintDataForType(t)}
-                            editableTable
-                            onDataChange={(n) => handleLcrDataChangeForType('2A', n)}
-                          />
-                        ) : null}
-                        {t === '3A' ? (
-                          <LcrForm3AMarriageAvailable
-                            data={lcrPrintDataForType(t)}
-                            editableTable
-                            onDataChange={(n) => handleLcrDataChangeForType('3A', n)}
-                          />
-                        ) : null}
-                      </div>
-                    </div>
-                  ))}
+                          <div className="max-w-[210mm] mx-auto">
+                            {t === '1A' ? (
+                              <LcrForm1ABirthAvailable
+                                data={lcrSlice}
+                                editableTable
+                                onDataChange={(n) => handleLcrDataChangeForType('1A', n)}
+                              />
+                            ) : null}
+                            {t === '2A' ? (
+                              <LcrForm2ADeathAvailable
+                                data={lcrSlice}
+                                editableTable
+                                onDataChange={(n) => handleLcrDataChangeForType('2A', n)}
+                              />
+                            ) : null}
+                            {t === '3A' ? (
+                              <LcrForm3AMarriageAvailable
+                                data={lcrSlice}
+                                editableTable
+                                onDataChange={(n) => handleLcrDataChangeForType('3A', n)}
+                              />
+                            ) : null}
+                          </div>
+                        </div>
+                      )
+                    }),
+                  )}
                 </div>
               ) : null}
             </div>

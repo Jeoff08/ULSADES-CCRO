@@ -25,6 +25,8 @@ import UploadFileModal from '../../components/upload/UploadFileModal'
 import PrintSidebarNavAttachIcons from '../../components/upload/PrintSidebarNavAttachIcons'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
 import { mergeLcrRemarksFontSizePt, parseLcrRemarksFontPt } from '../../lib/lcrRemarksFontSize'
+import { LCR_CERTIFICATION_COPIES, mergeLcrCertificationCopyIntoData } from '../../lib/lcrCertificationRequest'
+import { lcrTriplePdfPageClassName, withLcrTriplePdfCapture } from '../../lib/lcrPdfExport'
 
 const defaultMc2010Draft = {
   includeForm1a: true,
@@ -300,12 +302,21 @@ export default function Mc2010Print() {
   const savePdfWithExportMode = async (mode, suggestedBaseName) => {
     if (savingPdf) return
     setSavingPdf(true)
-    const root = document.documentElement
-    const cls = PDF_EXPORT_CLASS[mode]
-    root.classList.add(cls)
-    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
     try {
-      const result = await saveCurrentViewAsPdf(suggestedBaseName)
+      const result = await withLcrTriplePdfCapture(
+        { lcrOnlyExport: mode === 'lcr' },
+        async () => {
+          const root = document.documentElement
+          const cls = PDF_EXPORT_CLASS[mode]
+          if (mode !== 'lcr') root.classList.add(cls)
+          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+          try {
+            return await saveCurrentViewAsPdf(suggestedBaseName)
+          } finally {
+            if (mode !== 'lcr') root.classList.remove(cls)
+          }
+        },
+      )
       if (result?.ok) {
         show({
           type: 'success',
@@ -327,7 +338,6 @@ export default function Mc2010Print() {
     } catch (err) {
       show({ type: 'error', title: 'Save failed', message: err?.message || 'Unable to save PDF.' })
     } finally {
-      root.classList.remove(cls)
       setSavingPdf(false)
     }
   }
@@ -343,15 +353,24 @@ export default function Mc2010Print() {
       const pl = baseData.includeForm1a !== false && (l || bothEmpty)
       const previewMode =
         pt && pl ? (activePanel === 'form1a' ? 'lcr' : 'transmittal') : pl ? 'lcr' : 'transmittal'
-      const previewClass = PDF_EXPORT_CLASS[previewMode]
-      const root = document.documentElement
-      root.classList.add(previewClass)
-      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
       let result
       try {
-        result = await bridge.previewPdfData()
-      } finally {
-        root.classList.remove(previewClass)
+        result = await withLcrTriplePdfCapture(
+          { lcrOnlyExport: previewMode === 'lcr' },
+          async () => {
+            const root = document.documentElement
+            const previewClass = PDF_EXPORT_CLASS[previewMode]
+            if (previewMode !== 'lcr') root.classList.add(previewClass)
+            await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+            try {
+              return await bridge.previewPdfData()
+            } finally {
+              if (previewMode !== 'lcr') root.classList.remove(previewClass)
+            }
+          },
+        )
+      } catch {
+        return
       }
       if (!result?.ok || !result?.base64) return
       const binary = atob(result.base64)
@@ -447,11 +466,10 @@ export default function Mc2010Print() {
                   if (!transmittalHasData) return
                   setActivePanel('transmittal')
                 }}
-                className={`w-full text-left px-3 py-2.5 text-sm font-medium transition rounded-lg pr-[5.75rem] ${
-                  transmittalHasData
+                className={`w-full text-left px-3 py-2.5 text-sm font-medium transition rounded-lg pr-[5.75rem] ${transmittalHasData
                     ? `text-white bg-[#1a4d3a] ${activePanel === 'transmittal' ? 'ring-2 ring-offset-1 ring-[var(--primary-blue)]' : ''}`
                     : 'text-white/80 bg-[#1a4d3a]/45 cursor-not-allowed'
-                }`}
+                  }`}
               >
                 MC2010 Transmittal
               </button>
@@ -505,8 +523,8 @@ export default function Mc2010Print() {
                     : 'Use the upload icon to attach a scan first — this output enables after a file is saved'
                 }
                 className={`w-full text-left px-3 py-2.5 text-sm font-medium transition rounded-lg pr-[5.75rem] ${hasMc2010PacketScan
-                    ? 'text-white bg-slate-700 hover:bg-slate-800'
-                    : 'text-slate-400 bg-slate-200 cursor-not-allowed'
+                  ? 'text-white bg-slate-700 hover:bg-slate-800'
+                  : 'text-slate-400 bg-slate-200 cursor-not-allowed'
                   }`}
               >
                 MC2010-04
@@ -565,9 +583,9 @@ export default function Mc2010Print() {
               <div
                 id="supplemental-print-lcr"
                 className={`${activePanel === 'form1a' ? 'block mt-0' : 'hidden'} ${printLcr
-                    ? `print:block print:mt-0 ${printTransmittal ? 'print:[page-break-before:always]' : 'print:[page-break-before:auto]'
-                    }`
-                    : 'print:hidden'
+                  ? `print:block print:mt-0 ${printTransmittal ? 'print:[page-break-before:always]' : 'print:[page-break-before:auto]'
+                  }`
+                  : 'print:hidden'
                   }`}
               >
                 <div className="no-print mb-3 max-w-[210mm] mx-auto rounded-lg border border-emerald-200 bg-emerald-50/90 px-3 py-2 text-[11px] text-emerald-900 leading-snug">
@@ -593,9 +611,34 @@ export default function Mc2010Print() {
                   onPatch={patchLcrFooter}
                 />
                 <div className="max-w-[210mm] mx-auto">
-                  {data.lcrType === '1A' ? <LcrForm1ABirthAvailable data={lcrPrintData} editableTable onDataChange={handleLcrDataChange} /> : null}
-                  {data.lcrType === '2A' ? <LcrForm2ADeathAvailable data={lcrPrintData} editableTable onDataChange={handleLcrDataChange} /> : null}
-                  {data.lcrType === '3A' ? <LcrForm3AMarriageAvailable data={lcrPrintData} editableTable onDataChange={handleLcrDataChange} /> : null}
+                  {LCR_CERTIFICATION_COPIES.map((copy, copyIdx) => (
+                    <div
+                      key={copy.id}
+                      className={lcrTriplePdfPageClassName(copyIdx)}
+                    >
+                      {data.lcrType === '1A' ? (
+                        <LcrForm1ABirthAvailable
+                          data={mergeLcrCertificationCopyIntoData(lcrPrintData, copy.id)}
+                          editableTable
+                          onDataChange={handleLcrDataChange}
+                        />
+                      ) : null}
+                      {data.lcrType === '2A' ? (
+                        <LcrForm2ADeathAvailable
+                          data={mergeLcrCertificationCopyIntoData(lcrPrintData, copy.id)}
+                          editableTable
+                          onDataChange={handleLcrDataChange}
+                        />
+                      ) : null}
+                      {data.lcrType === '3A' ? (
+                        <LcrForm3AMarriageAvailable
+                          data={mergeLcrCertificationCopyIntoData(lcrPrintData, copy.id)}
+                          editableTable
+                          onDataChange={handleLcrDataChange}
+                        />
+                      ) : null}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

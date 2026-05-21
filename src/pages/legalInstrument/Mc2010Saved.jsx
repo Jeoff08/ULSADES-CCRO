@@ -15,6 +15,7 @@ import ConfirmRemoveSavedModal from '../../components/savedFiles/ConfirmRemoveSa
 import SavedFileRemovedToast from '../../components/savedFiles/SavedFileRemovedToast'
 import { useSavedFilesPagination } from '../../hooks/useSavedFilesPagination'
 import { useSavedFileRemove } from '../../hooks/useSavedFileRemove'
+import { resolveMc2010SavedRowLabel } from '../../lib/savedFileDisplayLabel'
 
 function formatSavedAt(iso) {
   if (!iso) return ''
@@ -36,7 +37,7 @@ export default function Mc2010Saved() {
     const q = searchQuery.trim().toLowerCase()
     if (!q) return list
     return list.filter((item) => {
-      const label = String(item.label || 'MC2010-04').toLowerCase()
+      const label = resolveMc2010SavedRowLabel(item).toLowerCase()
       const savedAt = formatSavedAt(item.savedAt).toLowerCase()
       return label.includes(q) || savedAt.includes(q)
     })
@@ -179,7 +180,7 @@ export default function Mc2010Saved() {
               style={{ animationDelay: `${0.2 + idx * 0.05}s` }}
             >
               <div className="min-w-0">
-                <p className="font-medium text-gray-800 truncate">{item.label || 'MC2010-04'}</p>
+                <p className="font-medium text-gray-800 truncate">{resolveMc2010SavedRowLabel(item)}</p>
                 <p className="text-xs text-gray-500 mt-0.5">MC2010-04 · {formatSavedAt(item.savedAt)}</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
