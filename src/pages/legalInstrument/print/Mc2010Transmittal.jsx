@@ -1,4 +1,5 @@
 import React from 'react'
+import './mc2010TransmittalLayout.css'
 import { PrintHeaderRow, TransmittalDocumentTitle, DocumentFooter } from '../../../components/print'
 import { formatTransmittalDateLong, formatDobDayMonthYearUpper } from '../../../lib/printUtils'
 import {
@@ -61,17 +62,17 @@ export default function Mc2010Transmittal({
   }
   return (
     <div
-      className="ausf-doc print-doc print-doc-transmittal mc2010-transmittal-doc bg-white text-black mx-auto px-7 py-5 leading-snug flex flex-col"
+      className="ausf-doc print-doc print-doc-transmittal mc2010-transmittal-doc bg-white text-black mx-auto leading-snug flex flex-col"
       style={{ fontFamily: 'Arial, sans-serif', width: paperWidth, minHeight: paperHeight }}
     >
-      <div className="print-doc-header shrink-0">
-        <PrintHeaderRow headerImageClassName="w-24 h-24 print:w-20 print:h-20 object-contain shrink-0" singleLineAddress />
+      <header className="mc2010-transmittal-header-zone print-doc-header shrink-0">
+        <PrintHeaderRow headerImageClassName="w-28 h-28 object-contain shrink-0" singleLineAddress />
         <hr className="border-black my-2" />
         <TransmittalDocumentTitle />
-      </div>
+      </header>
 
-      <div className="print-doc-body flex flex-col flex-1 min-h-0">
-        <div className="ml-2 pl-6 pr-2 flex flex-col flex-1 min-h-0 min-w-0 text-[16px] print:text-[12pt] leading-[1.2]">
+      <div className="mc2010-transmittal-body-zone print-doc-body">
+        <div className="mc2010-transmittal-letter-body text-[16px] print:text-[12pt] leading-[1.2]">
           {/* Single paragraph + <br /> so print/PDF has no sibling-p gap */}
           <p className="mc2010-stack-tight-p mc2010-date-block">
             <span className="font-bold">{dateLine || '\u00a0'}</span>
@@ -158,10 +159,12 @@ export default function Mc2010Transmittal({
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 min-w-0" />
-          <div className="flex flex-col gap-0 pt-0 print:pb-0 shrink-0">
-            <p className="mb-1.5">Respectfully yours,</p>
-            <p className="mc2010-stack-tight-p mc2010-signatory-lines">
+          <div className="mc2010-transmittal-body-spacer flex-1 min-h-0 min-w-0" aria-hidden />
+
+          <div className="mc2010-transmittal-closing-block flex flex-col gap-0 pt-0 print:pb-0 shrink-0">
+            <p className="mc2010-closing-action-line m-0">For appropriate action.</p>
+            <p className="mc2010-closing-respectfully-line m-0">Respectfully yours,</p>
+            <p className="mc2010-stack-tight-p mc2010-signatory-lines m-0">
               <span className="font-bold uppercase">{signatory.name}</span>
               <br />
               <span>{signatory.title}</span>
@@ -171,7 +174,7 @@ export default function Mc2010Transmittal({
         </div>
       </div>
 
-      <footer className="print-doc-footer-wrap mt-auto pt-1 print:pt-0 shrink-0" role="contentinfo">
+      <footer className="mc2010-transmittal-footer-zone print-doc-footer-wrap shrink-0" role="contentinfo">
         <DocumentFooter
           sloganBlue
           contactPhone="(063) 224 - 5038"

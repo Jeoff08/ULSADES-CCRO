@@ -134,3 +134,84 @@ body.pdf-capture .supplemental-transmittal-doc.print-doc .supplemental-transmitt
   padding-left: 0 !important;
   margin-left: var(--supp-tx-body-letter-inset-left-print) !important;
 }
+
+/* Print/PDF: pin Iligan contact footer to page bottom; header + letter body keep natural position */
+@media print {
+  #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc,
+  html[data-paper-size="long"] #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc,
+  html[data-paper-size="legal"] #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 13in !important;
+    height: 13in !important;
+    max-height: 13in !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+  }
+
+  html[data-paper-size="short"] #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc {
+    min-height: 11in !important;
+    height: 11in !important;
+    max-height: 11in !important;
+  }
+
+  html[data-paper-size="a4"] #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc {
+    min-height: 297mm !important;
+    height: 297mm !important;
+    max-height: 297mm !important;
+  }
+
+  #supplemental-print-transmittal .supplemental-transmittal-header-zone.print-doc-header {
+    flex-shrink: 0 !important;
+  }
+
+  #supplemental-print-transmittal .supplemental-transmittal-body-zone.print-doc-body {
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+  }
+
+  #supplemental-print-transmittal .supplemental-transmittal-letter-body {
+    flex: 0 0 auto !important;
+  }
+
+  #supplemental-print-transmittal .supplemental-transmittal-footer-zone.print-doc-footer-wrap {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
+    padding-top: 0 !important;
+  }
+}
+
+body.pdf-capture #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc,
+body.pdf-capture html[data-paper-size="long"] #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc,
+body.pdf-capture html[data-paper-size="legal"] #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 13in !important;
+  height: 13in !important;
+  max-height: 13in !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+body.pdf-capture html[data-paper-size="short"] #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc {
+  min-height: 11in !important;
+  height: 11in !important;
+  max-height: 11in !important;
+}
+
+body.pdf-capture html[data-paper-size="a4"] #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc {
+  min-height: 297mm !important;
+  height: 297mm !important;
+  max-height: 297mm !important;
+}
+
+body.pdf-capture #supplemental-print-transmittal .supplemental-transmittal-body-zone.print-doc-body {
+  flex: 0 0 auto !important;
+  min-height: 0 !important;
+}
+
+body.pdf-capture #supplemental-print-transmittal .supplemental-transmittal-footer-zone.print-doc-footer-wrap {
+  margin-top: auto !important;
+  flex-shrink: 0 !important;
+  padding-top: 0 !important;
+}

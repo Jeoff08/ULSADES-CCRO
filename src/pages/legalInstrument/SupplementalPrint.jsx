@@ -5,6 +5,7 @@ import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailabl
 import LcrForm2ADeathAvailable from '../courtDecree/print/LcrForm2ADeathAvailable'
 import LcrForm3AMarriageAvailable from '../courtDecree/print/LcrForm3AMarriageAvailable'
 import SupplementalTransmittal from './print/SupplementalTransmittal'
+import './print/supplementalAffidavitPrintLayout.css'
 import SupplementalLcrFooterSignatoryPickers from './SupplementalLcrFooterSignatoryPickers'
 import ToastHost from '../../components/toast/ToastHost'
 import { useToasts } from '../../components/toast/useToasts'
@@ -102,7 +103,7 @@ function usePrintPageSize(paperId) {
       el.id = PRINT_SIZE_STYLE_ID
       document.head.appendChild(el)
     }
-    el.textContent = `@media print { @page { size: ${spec.size}; } }`
+    el.textContent = `@media print { @page { size: ${spec.size}; margin: 0; } }`
     return () => {
       delete document.documentElement.dataset.paperSize
     }
@@ -376,14 +377,6 @@ export default function SupplementalPrint() {
   const paperSpec = useMemo(() => getPaperPageSpec(printPageSize), [printPageSize])
   usePrintPageSize(printPageSize)
 
-  /** Long bond compact COLB layout (middle name / sex / geographical). */
-  const colbCompactAffidavitWidthMm = useMemo(() => {
-    const insetMm = 25.4
-    const narrow = Math.max(158, affidavitPaperSpec.widthMm - insetMm)
-    if (isMiddleNameAffidavit || isColbCompactPrintAffidavit) return narrow
-    return null
-  }, [isMiddleNameAffidavit, isColbCompactPrintAffidavit, affidavitPaperSpec.widthMm])
-
   useEffect(() => {
     if (showAffidavitOutput && activePanel === 'affidavit') {
       setPaperSize('long')
@@ -456,12 +449,15 @@ export default function SupplementalPrint() {
           const root = document.documentElement
           const cls = PDF_EXPORT_CLASS[mode]
           if (mode !== 'lcr') root.classList.add(cls)
+          const useAffidavitMargins = mode === 'affidavit' || mode === 'bundle'
+          if (useAffidavitMargins) document.body.classList.add('pdf-capture')
           await new Promise((resolve) => {
             requestAnimationFrame(() => requestAnimationFrame(resolve))
           })
           try {
             return await saveCurrentViewAsPdf(suggestedBaseName)
           } finally {
+            if (useAffidavitMargins) document.body.classList.remove('pdf-capture')
             if (mode !== 'lcr') root.classList.remove(cls)
           }
         },
@@ -519,12 +515,15 @@ export default function SupplementalPrint() {
             const root = document.documentElement
             const previewClass = PDF_EXPORT_CLASS[previewMode]
             if (previewMode !== 'lcr') root.classList.add(previewClass)
+            const useAffidavitMargins = previewMode === 'affidavit' || previewMode === 'bundle'
+            if (useAffidavitMargins) document.body.classList.add('pdf-capture')
             await new Promise((resolve) => {
               requestAnimationFrame(() => requestAnimationFrame(resolve))
             })
             try {
               return await bridge.previewPdfData()
             } finally {
+              if (useAffidavitMargins) document.body.classList.remove('pdf-capture')
               if (previewMode !== 'lcr') root.classList.remove(previewClass)
             }
           },
@@ -628,119 +627,16 @@ body.pdf-capture #supplemental-print-page #supplemental-print-affidavit .supplem
 body.pdf-capture #supplemental-print-page #supplemental-print-affidavit .supplemental-report-doc * {
   font-size: 12pt !important;
 }
-/* All supplemental affidavits: 0.3in left/right (screen + print/PDF) */
+/* Supplemental affidavit: screen preview side inset (print/PDF uses header/body/footer zones) */
 #supplemental-print-affidavit .supplemental-report-doc,
 #supplemental-print-affidavit .supplemental-report-doc.print-doc {
-  padding-left: 0.3in !important;
-  padding-right: 0.3in !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
   box-sizing: border-box !important;
 }
 /* Child's middle name (long) / child sex / geographical: line spacing */
 #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-report-doc {
   line-height: 1.5 !important;
 }
-@media print {
-  #supplemental-print-affidavit .supplemental-report-doc.print-doc {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    padding-left: 0.5in !important;
-    padding-right: 0.5in !important;
-    height: 13in !important;
-    min-height: 13in !important;
-    max-height: 13in !important;
-    display: flex !important;
-    flex-direction: column !important;
-    box-sizing: border-box !important;
-  }
-  #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-report-top-header {
-    margin-top: 0.3in !important;
-    flex-shrink: 0 !important;
-  }
-  #supplemental-print-affidavit .supplemental-affidavit-body {
-    flex: 0 0 auto !important;
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: 0 !important;
-    overflow: visible !important;
-  }
-  #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-affidavit-body > :not(h2) {
-    margin-left: 3em !important;
-    padding-left: 0 !important;
-    box-sizing: border-box !important;
-  }
-  #supplemental-print-affidavit .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory {
-    display: flex !important;
-    visibility: visible !important;
-    flex-shrink: 0 !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    margin-top: 6em !important;
-    padding-right: 0.1in !important;
-  }
-  #supplemental-print-affidavit .supplemental-affidavit-registrar-signatory .supplemental-affidavit-ccr-name,
-  #supplemental-print-affidavit .supplemental-affidavit-registrar-signatory .supplemental-affidavit-ccr-title {
-    font-size: 12pt !important;
-  }
-  #supplemental-print-affidavit .supplemental-report-doc.print-doc > .supplemental-bottom-wrap {
-    margin-top: auto !important;
-    flex-shrink: 0 !important;
-    margin-bottom: 1em !important;
-  }
-  #supplemental-print-affidavit .supplemental-bottom-wrap .print-doc-footer {
-    margin-top: 0 !important;
-  }
-}
-body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  padding-left: 0.5in !important;
-  padding-right: 0.5in !important;
-  height: 13in !important;
-  min-height: 13in !important;
-  max-height: 13in !important;
-  display: flex !important;
-  flex-direction: column !important;
-  box-sizing: border-box !important;
-}
-body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-report-top-header {
-  margin-top: 0.3in !important;
-  flex-shrink: 0 !important;
-}
-body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-body {
-  flex: 0 0 auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  min-height: 0 !important;
-  overflow: visible !important;
-}
-body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-affidavit-body > :not(h2) {
-  margin-left: 3em !important;
-  padding-left: 0 !important;
-  box-sizing: border-box !important;
-}
-body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory {
-  display: flex !important;
-  visibility: visible !important;
-  flex-shrink: 0 !important;
-  page-break-inside: avoid !important;
-  break-inside: avoid !important;
-  margin-top: 3em !important;
-  padding-right: 0.1in !important;
-}
-body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-registrar-signatory .supplemental-affidavit-ccr-name,
-body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-registrar-signatory .supplemental-affidavit-ccr-title {
-  font-size: 12pt !important;
-}
-body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc > .supplemental-bottom-wrap {
-  margin-top: auto !important;
-  flex-shrink: 0 !important;
-  margin-bottom: 1em !important;
-}
-body.pdf-capture #supplemental-print-affidavit .supplemental-bottom-wrap .print-doc-footer {
-  margin-top: 0 !important;
-}
+/* Supplemental affidavit print/PDF margins: supplementalAffidavitPrintLayout.css (header/body/footer zones) */
 #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-report-doc .mb-4 {
   margin-bottom: 0.3rem !important;
 }
@@ -764,17 +660,12 @@ body.pdf-capture #supplemental-print-affidavit .supplemental-bottom-wrap .print-
     line-height: 1 !important;
   }
 }
-/* Geographical + Child's Sex: 1.5 line spacing; 0.3in top (header), 0.3in left/right (print) */
+/* Geographical + Child's Sex: 1.5 line spacing (margins on header/body/footer zones) */
 @media print {
   #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc.print-doc {
-    padding-top: 0 !important;
-    padding-left: 0.5in !important;
-    padding-right: 0.5in !important;
+    padding: 0 !important;
     box-sizing: border-box !important;
     line-height: 1.5 !important;
-  }
-  #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc.print-doc .supplemental-report-top-header {
-    margin-top: 0.3in !important;
   }
   #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-report-content,
   #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-report-content p,
@@ -787,14 +678,9 @@ body.pdf-capture #supplemental-print-affidavit .supplemental-bottom-wrap .print-
   }
 }
 body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc.print-doc {
-  padding-top: 0 !important;
-  padding-left: 0.5in !important;
-  padding-right: 0.5in !important;
+  padding: 0 !important;
   box-sizing: border-box !important;
   line-height: 1.5 !important;
-}
-body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc.print-doc .supplemental-report-top-header {
-  margin-top: 0.3in !important;
 }
 body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-report-content,
 body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex="1"] .supplemental-report-doc .supplemental-report-content p,
@@ -831,16 +717,16 @@ body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc .supplem
   html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-body > h2 {
     margin-bottom: 0.3rem !important;
   }
-  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory,
-  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"][data-supplement-mn="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory,
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-body-zone .supplemental-affidavit-registrar-signatory,
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"][data-supplement-mn="1"] .supplemental-affidavit-body-zone .supplemental-affidavit-registrar-signatory,
   html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-registrar-signatory {
-    margin-top: 0 !important;
-    transform: translateY(-1em) !important;
+    margin-top: 2.5em !important;
+    transform: none !important;
     display: flex !important;
     visibility: visible !important;
     flex-shrink: 0 !important;
   }
-  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc.print-doc > .supplemental-bottom-wrap {
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-footer-zone {
     margin-top: auto !important;
     flex-shrink: 0 !important;
     margin-bottom: 1em !important;
@@ -873,16 +759,16 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"]
 body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-body > h2 {
   margin-bottom: 0.3rem !important;
 }
-body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory,
-body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"][data-supplement-mn="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-body-zone .supplemental-affidavit-registrar-signatory,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"][data-supplement-mn="1"] .supplemental-affidavit-body-zone .supplemental-affidavit-registrar-signatory,
 body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-registrar-signatory {
-  margin-top: 0 !important;
-  transform: translateY(-1em) !important;
+  margin-top: 2.5em !important;
+  transform: none !important;
   display: flex !important;
   visibility: visible !important;
   flex-shrink: 0 !important;
 }
-body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc.print-doc > .supplemental-bottom-wrap {
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-footer-zone {
   margin-top: auto !important;
   flex-shrink: 0 !important;
   margin-bottom: 1em !important;
@@ -1169,17 +1055,14 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex-affidavit
                     ...(isAffidavitOnlySupplementOutput ? { 'data-supplement-geo-sex-affidavit-only': '1' } : {}),
                   }
                   : {})}
-                className={
-                  `${activePanel === 'affidavit' ? 'block' : 'hidden'} ${isMiddleNameAffidavit || isColbCompactPrintAffidavit ? 'mx-auto' : ''
-                    }`.trim()
-                }
+                className={`${activePanel === 'affidavit' ? 'block' : 'hidden'} print:w-full`.trim()}
               >
                 <SupplementalReportAffidavit
                   data={data}
                   showCcrSignatory={data.affidavitShowCcrSignatory}
                   onItem3CustomChange={setItem3Custom}
                   onItem5CustomChange={setItem5Custom}
-                  paperWidth={`${colbCompactAffidavitWidthMm ?? affidavitPaperSpec.widthMm}mm`}
+                  paperWidth={`${affidavitPaperSpec.widthMm}mm`}
                   paperHeight={`${affidavitPaperSpec.heightMm}mm`}
                 />
               </div>

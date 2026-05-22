@@ -89,6 +89,7 @@ export default function LegitimationPrint() {
     if (data.bothParentsAlive === 'NO' && t.id === 'joint-affidavit') return false
     if (data.bothParentsAlive === 'YES' && t.id === 'sole-affidavit') return false
     if (data.birthRegisteredIligan === 'NO' && parseLcrPrintTypeId(t.id).baseType === 'lcr-form-1a') return false
+    if (data.legitimationTransmittalIsOutOfTown === true && parseLcrPrintTypeId(t.id).baseType === 'lcr-form-1a') return false
     if (LEGITIMATION_TRANSMITTAL_TYPES.has(t.id)) {
       const oot = data.legitimationTransmittalIsOutOfTown === true
       if (oot && t.id !== 'out-of-town-transmittal') return false
@@ -237,7 +238,7 @@ export default function LegitimationPrint() {
   /** Keep URL print type aligned with transmittal toggle */
   useEffect(() => {
     const oot = data?.legitimationTransmittalIsOutOfTown === true
-    if (oot && validType === 'transmittal') {
+    if (oot && (validType === 'transmittal' || lcrBaseType === 'lcr-form-1a')) {
       setSearchParams((sp) => {
         const n = new URLSearchParams(sp)
         n.set('type', 'out-of-town-transmittal')
@@ -250,7 +251,7 @@ export default function LegitimationPrint() {
         return n
       }, { replace: true })
     }
-  }, [data?.legitimationTransmittalIsOutOfTown, validType, setSearchParams])
+  }, [data?.legitimationTransmittalIsOutOfTown, validType, lcrBaseType, setSearchParams])
 
   useEffect(() => {
     if (!allowedTypeIds.includes(validType) && allowedTypeIds.length > 0) {

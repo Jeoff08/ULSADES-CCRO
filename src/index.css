@@ -9,7 +9,7 @@
   --card-bg: #ffffff;
   --sidebar-bg: #1e3a5f;
   --ulsades-font: 'Montserrat', sans-serif;
-  /* AUSF / Court Decree / Legitimation print & PDF: left/right legal margin (header, body, and footer) */
+  /* AUSF / Court Decree / Legitimation: screen default; print/PDF uses 0.6in via @media print and body.pdf-capture */
   --print-legal-margin-x: 1in;
 }
 
@@ -58,6 +58,7 @@ body.pdf-capture .layout-main,
 body:has(.print-doc) .layout-root,
 body:has(.print-doc) .layout-main {
   background: #fff !important;
+  --print-legal-margin-x: 0.6in;
 }
 
 /* LCR Form Width Management (Screen & Print PDF) */
@@ -87,7 +88,7 @@ html[data-paper-size="legal"] .correction-print-doc {
 /* LCR header top margin — saved/preview PDF capture only (not on-screen preview) */
 body.pdf-capture .court-decree-lcr-form .court-decree-lcr-header,
 body.pdf-capture .lcr-search-print-header.court-decree-lcr-header {
-  padding-top: 0.5in !important;
+  padding-top: 0.3in !important;
   box-sizing: border-box !important;
 }
 
@@ -1272,7 +1273,7 @@ body .mc2010-print-root .court-decree-lcr-form .print-doc-footer p,
 body .mc2010-print-root .court-decree-lcr-form .print-doc-footer .text-xs {
   font-size: 16px !important;
 }
-.mc2010-transmittal-doc .print-doc-body {
+.mc2010-transmittal-doc .mc2010-transmittal-body-zone.print-doc-body {
   padding-top: 0 !important;
 }
 /* Stacked labels (single <p> + <br />) — tighten vertical rhythm; do NOT zero attn left indent (ml-14) */
@@ -1337,10 +1338,10 @@ html[data-paper-size="legal"] .mc2010-transmittal-doc {
   }
 
   .mc2010-transmittal-doc .print-doc-header img {
-    width: 3.15rem !important;
-    height: 3.15rem !important;
-    max-width: 3.15rem !important;
-    max-height: 3.15rem !important;
+    width: 4rem !important;
+    height: 4rem !important;
+    max-width: 4rem !important;
+    max-height: 4rem !important;
   }
   .mc2010-transmittal-doc .mc2010-attn-block {
     line-height: 1.06 !important;
@@ -1617,26 +1618,16 @@ html[data-paper-size="long"] .ausf-0-6-doc.print-doc , html[data-paper-size="leg
   line-height: 1.1;
 }
 
-/* PDF capture: supplemental transmittal zones (see supplementalTransmittalLayout.css) */
+/* PDF capture: MC2010-04 transmittal zones (see mc2010TransmittalLayout.css) */
 body.pdf-capture .ausf-doc.print-doc.mc2010-transmittal-doc {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  padding-left: 0.4in !important;
-  padding-right: 0.4in !important;
+  padding: 0 !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
   max-width: none !important;
   box-sizing: border-box !important;
 }
-body.pdf-capture .ausf-doc.print-doc.mc2010-transmittal-doc .print-doc-header {
-  margin-top: 0.2in !important;
-}
-body.pdf-capture .mc2010-transmittal-doc .print-doc-body > div {
-  padding-left: 0 !important;
-  margin-left: 0 !important;
-}
-/* PDF capture: AUSF / Court Decree / Legitimation — legal side margins (not supplemental affidavit) */
-body.pdf-capture .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc) {
+/* PDF capture: AUSF / Court Decree / Legitimation — legal side margins (not supplemental affidavit or LCR forms) */
+body.pdf-capture .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc):not(.court-decree-lcr-form):not(.mc2010-transmittal-doc) {
   font-family: 'Times New Roman', Times, serif !important;
   padding-left: var(--print-legal-margin-x) !important;
   padding-right: var(--print-legal-margin-x) !important;
@@ -1650,15 +1641,26 @@ body.pdf-capture .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.sup
 body.pdf-capture #supplemental-print-affidavit .ausf-doc.print-doc.supplemental-report-doc,
 body.pdf-capture .ausf-doc.print-doc.supplemental-report-doc {
   font-family: Arial, Helvetica, sans-serif !important;
-  padding-left: 0.5in !important;
-  padding-right: 0.5in !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-header-zone.print-doc-header {
+  padding: 0.3in 0.6in 0 !important;
+  box-sizing: border-box !important;
+}
+body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-body-zone.print-doc-body {
+  padding-left: 0.6in !important;
+  padding-right: 0.6in !important;
+  box-sizing: border-box !important;
+}
+body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-footer-zone.print-doc-footer-wrap {
+  padding-left: 0.6in !important;
+  padding-right: 0.6in !important;
   box-sizing: border-box !important;
 }
 /* PDF capture: remove gaps between standard print header lines */
-body.pdf-capture .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc) .print-doc-header .text-center > div > p,
-body.pdf-capture .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc) .print-doc-header .print-header-address {
+body.pdf-capture .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc):not(.court-decree-lcr-form):not(.mc2010-transmittal-doc) .print-doc-header .text-center > div > p,
+body.pdf-capture .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc):not(.court-decree-lcr-form):not(.mc2010-transmittal-doc) .print-doc-header .print-header-address {
   margin: 0 !important;
   padding: 0 !important;
   line-height: 1.05 !important;
@@ -1777,6 +1779,22 @@ body.pdf-capture .registration-of-ack-doc p.registration-of-ack-to-whom {
 }
 body.pdf-capture .registration-of-ack-doc .registration-of-ack-opening {
   text-indent: 0.25in !important;
+}
+
+/* Transmittal: letter body natural height; Iligan contact footer at page bottom (PDF) */
+body.pdf-capture .print-doc-transmittal .print-doc-body {
+  flex: 0 0 auto !important;
+  min-height: 0 !important;
+}
+body.pdf-capture .print-doc-transmittal .print-doc-body > div.flex-1[aria-hidden="true"] {
+  display: none !important;
+  flex: 0 0 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+}
+body.pdf-capture .print-doc-transmittal .print-doc-footer-wrap {
+  flex-shrink: 0 !important;
+  margin-top: auto !important;
 }
 
 /* Transmittal (court decree): elderly-friendly larger text when capturing to PDF */
@@ -2098,6 +2116,9 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   }
   .no-print { display: none !important; }
   .print-only { display: block !important; }
+  :root {
+    --print-legal-margin-x: 0.6in;
+  }
   /* Ensure print page content is visible and uses full width */
   main .flex.gap-6 { display: block !important; }
   main .flex-1.min-w-0 { max-width: none !important; overflow: visible !important; }
@@ -2120,36 +2141,46 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     font-size: 11px !important; /* Ground Flr., Pedro Generalao... */
   }
   /* Browser print: remove gaps between standard print header lines */
-  .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc) .print-doc-header .text-center > div > p,
-  .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc) .print-doc-header .print-header-address {
+  .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc):not(.court-decree-lcr-form):not(.mc2010-transmittal-doc) .print-doc-header .text-center > div > p,
+  .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc):not(.court-decree-lcr-form):not(.mc2010-transmittal-doc) .print-doc-header .print-header-address {
     margin: 0 !important;
     padding: 0 !important;
     line-height: 1.05 !important;
   }
-  /* Browser print: legal side margins on full page (not supplemental affidavit) */
-  .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc) {
+  /* Browser print: legal side margins on full page (not supplemental affidavit or LCR forms) */
+  .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc):not(.court-decree-lcr-form):not(.mc2010-transmittal-doc) {
     padding-left: var(--print-legal-margin-x) !important;
     padding-right: var(--print-legal-margin-x) !important;
     box-sizing: border-box !important;
   }
   #supplemental-print-page #supplemental-print-affidavit .ausf-doc.print-doc.supplemental-report-doc,
-  #supplemental-print-affidavit .ausf-doc.print-doc.supplemental-report-doc {
-    padding-left: 0.5in !important;
-    padding-right: 0.5in !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+  #supplemental-print-affidavit .ausf-doc.print-doc.supplemental-report-doc,
+  #supplemental-print-affidavit .supplemental-report-doc.supplemental-affidavit-print-layout.print-doc {
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+  #supplemental-print-affidavit .supplemental-affidavit-header-zone.print-doc-header {
+    margin: 0 !important;
+    padding: 0.3in 0.6in 0 !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+  }
+  #supplemental-print-affidavit .supplemental-affidavit-body-zone.print-doc-body {
+    margin: 0 !important;
+    padding: 0 0.6in !important;
+    box-sizing: border-box !important;
+  }
+  #supplemental-print-affidavit .supplemental-affidavit-footer-zone.print-doc-footer-wrap {
+    padding: 0 0.6in !important;
     box-sizing: border-box !important;
   }
   .supplemental-report-doc {
     font-family: Arial, sans-serif !important;
   }
-  /* Supplemental CCR transmittal: 14px Arial throughout PDF; footer matches Iligan sample */
+  /* Supplemental CCR transmittal: 14px Arial; full-page height + footer pin in supplementalTransmittalLayout.css */
   .supplemental-transmittal-doc.print-doc {
     page-break-inside: auto !important;
     overflow: visible !important;
-    max-height: none !important;
-    height: auto !important;
-    min-height: 0 !important;
     font-family: Arial, Helvetica, sans-serif !important;
     font-size: 14px !important;
     line-height: 1.35 !important;
@@ -2210,13 +2241,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     padding-left: 0 !important;
     padding-right: 0 !important;
   }
-  .mc2010-transmittal-doc.print-doc .print-doc-header {
-    margin-top: 0.2in !important;
-  }
-  .mc2010-transmittal-doc .print-doc-body > div {
-    padding-left: 0 !important;
-    margin-left: 0 !important;
-  }
+  /* MC2010-04 header/body/footer zones: mc2010TransmittalLayout.css */
   /* Attn / thru lines: extra indent in PDF (replaces Tailwind ml-* for consistent print) */
   .supplemental-transmittal-doc.print-doc
     .print-doc-body
@@ -2304,7 +2329,8 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-bottom: 0 !important;
     line-height: 1.05 !important;
   }
-  .supplemental-transmittal-doc.print-doc .print-doc-footer-wrap {
+  /* Footer at page bottom: supplementalTransmittalLayout.css (#supplemental-print-transmittal .supplemental-transmittal-footer-zone) */
+  .supplemental-transmittal-doc.print-doc .print-doc-footer-wrap:not(.supplemental-transmittal-footer-zone) {
     padding-top: 0 !important;
     margin-top: 0 !important;
   }
@@ -2323,15 +2349,12 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     padding-right: 0 !important;
     box-sizing: border-box !important;
   }
-  /* MC2010-04 transmittal: 0.4in left/right; header top 0.2in (not on doc padding-top) */
+  /* MC2010-04 transmittal: zone padding in mc2010TransmittalLayout.css */
   html[data-paper-size="short"] .mc2010-transmittal-doc.print-doc,
   html[data-paper-size="a4"] .mc2010-transmittal-doc.print-doc,
   html[data-paper-size="long"] .mc2010-transmittal-doc.print-doc,
   html[data-paper-size="legal"] .mc2010-transmittal-doc.print-doc {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    padding-left: 0.4in !important;
-    padding-right: 0.4in !important;
+    padding: 0 !important;
     box-sizing: border-box !important;
   }
   html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc,
@@ -2479,7 +2502,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-top: 0 !important;
     margin-bottom: 0 !important;
   }
-  .print-doc {
+  .print-doc:not(.supplemental-report-doc):not(.supplemental-transmittal-doc) {
     max-width: 100% !important;
     box-shadow: none !important;
     padding: 0.3in 0.5in !important;
@@ -2496,59 +2519,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     min-height: 0 !important;
   }
   /* Supplemental affidavit (long bond): full page height so footer sits at bottom */
-  #supplemental-print-affidavit .supplemental-report-doc.print-doc {
-    page-break-inside: auto !important;
-    overflow: visible !important;
-    height: 13in !important;
-    min-height: 13in !important;
-    max-height: 13in !important;
-    display: flex !important;
-    flex-direction: column !important;
-    box-sizing: border-box !important;
-    /* Top space only on header (0.3in) — not stacked with .print-doc padding */
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    padding-left: 0.5in !important;
-    padding-right: 0.5in !important;
-  }
-  #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-report-top-header {
-    margin-top: 0.3in !important;
-    flex-shrink: 0 !important;
-  }
-  #supplemental-print-affidavit .supplemental-affidavit-body {
-    flex: 0 0 auto !important;
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: 0 !important;
-    overflow: visible !important;
-  }
-  #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-affidavit-body > :not(h2) {
-    margin-left: 3em !important;
-    padding-left: 0 !important;
-    box-sizing: border-box !important;
-  }
-  #supplemental-print-affidavit .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory {
-    display: flex !important;
-    visibility: visible !important;
-    flex-shrink: 0 !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    margin-top: 4em !important;
-    padding-right: 0.1in !important;
-  }
-  #supplemental-print-affidavit .supplemental-affidavit-registrar-signatory .supplemental-affidavit-ccr-name,
-  #supplemental-print-affidavit .supplemental-affidavit-registrar-signatory .supplemental-affidavit-ccr-title {
-    font-size: 12pt !important;
-  }
-  #supplemental-print-affidavit .supplemental-report-doc.print-doc > .supplemental-bottom-wrap {
-    margin-top: auto !important;
-    flex-shrink: 0 !important;
-    padding-top: 0 !important;
-    margin-bottom: 1em !important;
-  }
-  #supplemental-print-affidavit .supplemental-bottom-wrap .print-doc-footer {
-    margin-top: 0 !important;
-  }
+  /* Affidavit zone margins: supplementalAffidavitPrintLayout.css */
   #supplemental-print-affidavit .supplemental-bottom-wrap .print-doc-footer hr {
     margin-bottom: 0.15in !important;
   }
@@ -2687,14 +2658,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   html[data-paper-size="legal"] .supplemental-report-doc .supplemental-child-middle-name-label {
     font-size: 12pt !important;
   }
-  /* Supplemental affidavit: top margin on header only (print PDF; all paper sizes) */
-  html[data-paper-size="a4"] .supplemental-report-doc.print-doc .supplemental-report-top-header,
-  html[data-paper-size="short"] .supplemental-report-doc.print-doc .supplemental-report-top-header,
-  html[data-paper-size="long"] .supplemental-report-doc.print-doc .supplemental-report-top-header,
-  html[data-paper-size="legal"] .supplemental-report-doc.print-doc .supplemental-report-top-header,
-  #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-report-doc.print-doc .supplemental-report-top-header {
-    margin-top: 0.3in !important;
-  }
+  /* Supplemental affidavit zone margins: supplementalAffidavitPrintLayout.css */
   html[data-paper-size="a4"] .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory,
   html[data-paper-size="short"] .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory,
   html[data-paper-size="long"] .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory,
@@ -2784,10 +2748,10 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .print-doc-header {
     flex-shrink: 0 !important;
   }
-  /* LCR forms (AUSF, Court Decree, Legitimation, Supplemental, MC2010): 0.5" top margin before office header */
+  /* LCR forms (AUSF, Court Decree, Legitimation): 0.3in top margin before office header */
   .court-decree-lcr-form .court-decree-lcr-header,
   .lcr-search-print-header.court-decree-lcr-header {
-    padding-top: 0.5in !important;
+    padding-top: 0.3in !important;
     box-sizing: border-box !important;
   }
   .print-doc-header .text-center > div > p {
@@ -3752,9 +3716,16 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     line-height: 1.25 !important;
   }
   /* A4 only: footer at bottom of page + compact spacing so 1.5 line-height fits one page */
-  html[data-paper-size="a4"] .print-doc {
+  html[data-paper-size="a4"] .print-doc:not(.supplemental-report-doc):not(.supplemental-transmittal-doc) {
     min-height: 297mm !important;
     padding: 0.25in 0.5in 0.15in !important;
+  }
+  html[data-paper-size="a4"] .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc) {
+    min-height: 297mm !important;
+    padding-top: 0.25in !important;
+    padding-right: 0.6in !important;
+    padding-bottom: 0.15in !important;
+    padding-left: 0.6in !important;
   }
   html[data-paper-size="a4"] .registrar-signature-zone {
     margin-top: auto !important;
@@ -3839,14 +3810,31 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     margin-top: 0.04in !important;
   }
   /* Long bond: transmittal (and all print-doc) – one-page layout, footer at bottom, visible */
-  html[data-paper-size="long"] .print-doc, html[data-paper-size="legal"] .print-doc
-  html[data-paper-size="long"] .print-doc-transmittal , html[data-paper-size="legal"] .print-doc-transmittal {
+  html[data-paper-size="long"] .print-doc:not(.supplemental-report-doc):not(.supplemental-transmittal-doc),
+  html[data-paper-size="legal"] .print-doc:not(.supplemental-report-doc):not(.supplemental-transmittal-doc)
+  html[data-paper-size="long"] .print-doc-transmittal:not(.mc2010-transmittal-doc),
+  html[data-paper-size="legal"] .print-doc-transmittal:not(.mc2010-transmittal-doc) {
     display: flex !important;
     flex-direction: column !important;
     min-height: 13in !important;
     height: 13in !important;
     max-height: 13in !important;
     padding: 0.35in 0.5in 0.25in !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+  }
+  /* Long bond: AUSF / Court Decree / Legitimation transmittal — 0.6in side margins, one-page layout */
+  html[data-paper-size="long"] .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc):not(.mc2010-transmittal-doc),
+  html[data-paper-size="legal"] .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc):not(.mc2010-transmittal-doc) {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 13in !important;
+    height: 13in !important;
+    max-height: 13in !important;
+    padding-top: 0.35in !important;
+    padding-right: 0.6in !important;
+    padding-bottom: 0.25in !important;
+    padding-left: 0.6in !important;
     box-sizing: border-box !important;
     overflow: visible !important;
   }
@@ -4368,7 +4356,13 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     page-break-after: avoid !important;
   }
   .print-doc-transmittal .print-doc-body {
-    flex: 1 1 0% !important;
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+  }
+  .print-doc-transmittal .print-doc-body > div.flex-1[aria-hidden="true"] {
+    display: none !important;
+    flex: 0 0 0 !important;
+    height: 0 !important;
     min-height: 0 !important;
   }
   .print-doc-transmittal .print-doc-footer-wrap {
@@ -4833,7 +4827,7 @@ html[data-paper-size="short"] .print-doc-footer p {
   html[data-paper-size="a4"] .ausf-07-17-doc {
     font-size: 15.2px !important;
     line-height: 1.3 !important;
-    padding: 0.2in 0.4in 0.15in !important;
+    padding: 0.2in 0.6in 0.15in !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc .print-doc-header {
     margin-bottom: 0.04in !important;
@@ -4907,7 +4901,7 @@ html[data-paper-size="short"] .print-doc-footer p {
   html[data-paper-size="long"] .ausf-07-17-doc , html[data-paper-size="legal"] .ausf-07-17-doc {
     font-size: 14.9px !important;
     line-height: 1.35 !important;
-    padding: 0.22in 0.4in 0.18in !important;
+    padding: 0.22in 0.6in 0.18in !important;
   }
   /* AUSF 07-17: 2-line gap between Registry Number and AUSF title */
   html[data-paper-size="long"] .ausf-07-17-doc .print-doc-header , html[data-paper-size="legal"] .ausf-07-17-doc .print-doc-header {
@@ -6604,20 +6598,20 @@ body.pdf-capture .supplemental-report-doc h2 {
     margin-top: 0.25em !important;
     padding-top: 0 !important;
   }
-  /* Supplemental affidavit print/PDF: body text ~6 spaces right (not header/footer/title) */
-  #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-affidavit-body > :not(h2) {
-    margin-left: 3em !important;
+  /* Body aligns with header jurisdiction — supplementalAffidavitPrintLayout.css */
+  #supplemental-print-affidavit .supplemental-affidavit-body-zone.print-doc-body > :not(h2) {
+    margin-left: 0 !important;
     padding-left: 0 !important;
-    box-sizing: border-box !important;
+  }
+  #supplemental-print-affidavit .supplemental-numbered-items {
+    margin-left: 0 !important;
+    padding-left: 1.35em !important;
   }
 }
 
-body.pdf-capture .supplemental-report-doc.print-doc,
-body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc {
-  padding-left: 0.5in !important;
-  padding-right: 0.5in !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+body.pdf-capture .supplemental-report-doc.supplemental-affidavit-print-layout.print-doc,
+body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.supplemental-affidavit-print-layout.print-doc {
+  padding: 0 !important;
   box-sizing: border-box !important;
 }
 body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc {
@@ -6635,18 +6629,23 @@ body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-body {
   min-height: 0 !important;
   overflow: visible !important;
 }
-body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-affidavit-body > :not(h2) {
-  margin-left: 3em !important;
+body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-body-zone.print-doc-body > :not(h2) {
+  margin-left: 0 !important;
   padding-left: 0 !important;
   box-sizing: border-box !important;
 }
-body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory {
+body.pdf-capture #supplemental-print-affidavit .supplemental-numbered-items {
+  margin-left: 0 !important;
+  padding-left: 1.35em !important;
+}
+body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-body-zone .supplemental-affidavit-registrar-signatory {
   display: flex !important;
   visibility: visible !important;
   flex-shrink: 0 !important;
   page-break-inside: avoid !important;
   break-inside: avoid !important;
-  margin-top: 3em !important;
+  margin-top: 2.5em !important;
+  transform: none !important;
   padding-right: 0.1in !important;
 }
 body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-registrar-signatory .supplemental-affidavit-ccr-name,
@@ -6670,8 +6669,9 @@ body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-do
   margin-top: 0.3in !important;
 }
 body.pdf-capture .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory,
-body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-affidavit-registrar-signatory {
-  margin-top: 3em !important;
+body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-body-zone .supplemental-affidavit-registrar-signatory {
+  margin-top: 2.5em !important;
+  transform: none !important;
   padding-right: 0.1in !important;
 }
 body.pdf-capture #supplemental-print-affidavit[data-supplement-mn="1"] .supplemental-affidavit-middle-body > h2,
@@ -8851,18 +8851,18 @@ html[data-paper-size] body.pdf-capture .print-doc .lcr-remarks-print-body {
   filter: brightness(1.05);
 }
 
-/* Geographical supplemental (long bond): CCR signatory — one line up (print + PDF capture) */
+/* Geographical supplemental (long bond): CCR signatory spacing below subscribed block */
 @media print {
-  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory,
-  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"][data-supplement-mn="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory {
-    margin-top: 0 !important;
-    transform: translateY(-1em) !important;
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-body-zone .supplemental-affidavit-registrar-signatory,
+  html[data-paper-size="long"] #supplemental-print-affidavit[data-supplement-geographical="1"][data-supplement-mn="1"] .supplemental-affidavit-body-zone .supplemental-affidavit-registrar-signatory {
+    margin-top: 2.5em !important;
+    transform: none !important;
   }
 }
-body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory,
-body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"][data-supplement-mn="1"] .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory {
-  margin-top: 0 !important;
-  transform: translateY(-1em) !important;
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"] .supplemental-affidavit-body-zone .supplemental-affidavit-registrar-signatory,
+body.pdf-capture #supplemental-print-affidavit[data-supplement-geographical="1"][data-supplement-mn="1"] .supplemental-affidavit-body-zone .supplemental-affidavit-registrar-signatory {
+  margin-top: 2.5em !important;
+  transform: none !important;
 }
 
 /* Court Decree transmittal (local + OOT): nudge Iligan contact footer slightly toward page bottom — print/PDF only */
@@ -9037,33 +9037,43 @@ body.pdf-capture .supplemental-transmittal-doc.print-doc .supplemental-transmitt
   margin-top: 0 !important;
 }
 
-/* Supplemental + MC2010-04 transmittal: 0.4in left margin, 0.2in header top (print/PDF + preview) */
-#supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc,
-#supplemental-print-page #supplemental-print-transmittal .mc2010-transmittal-doc.print-doc {
+/* Supplemental transmittal: preview margins (supplementalTransmittalLayout.css) */
+#supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc {
   padding-top: 0 !important;
   padding-left: 0.4in !important;
   padding-right: 0.4in !important;
   box-sizing: border-box !important;
 }
-#supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc .print-doc-header,
-#supplemental-print-page #supplemental-print-transmittal .mc2010-transmittal-doc.print-doc .print-doc-header {
+#supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc .print-doc-header {
   margin-top: 0.2in !important;
 }
-#supplemental-print-page #supplemental-print-transmittal .mc2010-transmittal-doc .print-doc-body > div {
-  padding-left: 0 !important;
-  margin-left: 0 !important;
+/* MC2010-04 transmittal: zone layout (mc2010TransmittalLayout.css) */
+#supplemental-print-page #supplemental-print-transmittal .mc2010-transmittal-doc.print-doc {
+  padding: 0 !important;
+  box-sizing: border-box !important;
 }
 @media print {
-  #supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc,
-  #supplemental-print-page #supplemental-print-transmittal .mc2010-transmittal-doc.print-doc {
+  #supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc {
     padding-top: 0 !important;
     padding-left: 0.4in !important;
     padding-right: 0.4in !important;
     box-sizing: border-box !important;
   }
-  #supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc .print-doc-header,
-  #supplemental-print-page #supplemental-print-transmittal .mc2010-transmittal-doc.print-doc .print-doc-header {
+  #supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc .print-doc-header {
     margin-top: 0.2in !important;
+  }
+  #supplemental-print-page #supplemental-print-transmittal .mc2010-transmittal-doc.print-doc {
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+  #supplemental-print-page #supplemental-print-transmittal .mc2010-transmittal-doc.print-doc .mc2010-transmittal-body-spacer {
+    display: none !important;
+    flex: 0 0 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
   }
   #supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc .supplemental-transmittal-body-spacer {
     display: none !important;

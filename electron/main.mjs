@@ -279,6 +279,7 @@ ipcMain.handle('pdf:save-current-window', async (event, suggestedFileName = 'doc
   const pdfData = await win.webContents.printToPDF({
     printBackground: true,
     preferCSSPageSize: true,
+    margins: { top: 0, bottom: 0, left: 0, right: 0 },
   })
 
   const { writeFile } = await import('fs/promises')
@@ -340,6 +341,7 @@ ipcMain.handle('pdf:preview-current-window', async (event, suggestedFileName = '
   const pdfData = await win.webContents.printToPDF({
     printBackground: true,
     preferCSSPageSize: true,
+    margins: { top: 0, bottom: 0, left: 0, right: 0 },
   })
 
   const { writeFile } = await import('fs/promises')
@@ -360,6 +362,7 @@ ipcMain.handle('pdf:get-current-window-base64', async (event) => {
   const pdfData = await win.webContents.printToPDF({
     printBackground: true,
     preferCSSPageSize: true,
+    margins: { top: 0, bottom: 0, left: 0, right: 0 },
   })
 
   return { ok: true, base64: pdfData.toString('base64') }

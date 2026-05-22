@@ -1,4 +1,5 @@
 import React from 'react'
+import '../../legalInstrument/print/supplementalAffidavitPrintLayout.css'
 import { DocumentFooter } from '../../../components/print'
 import { formatDateCert, tryIsoFromDmyStrings } from '../../../lib/printUtils'
 import {
@@ -119,7 +120,7 @@ export default function SupplementalReportAffidavit({
   return (
     <div
       lang="en"
-      className="ausf-doc print-doc supplemental-report-doc bg-white text-black mx-auto px-[0.3in] py-5 print:px-[0.5in] print:py-0 box-border leading-relaxed flex flex-col"
+      className="ausf-doc print-doc supplemental-report-doc supplemental-affidavit-print-layout bg-white text-black mx-auto px-[0.3in] py-5 print:mx-0 print:px-0 print:py-0 print:w-full box-border leading-relaxed flex flex-col"
       style={{
         fontFamily: 'Arial, sans-serif',
         width: paperWidth,
@@ -127,7 +128,7 @@ export default function SupplementalReportAffidavit({
         boxSizing: 'border-box',
       }}
     >
-      <div className="supplemental-report-top-header mb-4">
+      <header className="supplemental-affidavit-header-zone print-doc-header supplemental-report-top-header mb-4 print:mb-0">
         <div className="grid grid-cols-[100px_1fr_100px] items-center gap-3">
           <img
             src="/iligan%20official%20seal.jpg"
@@ -167,9 +168,9 @@ export default function SupplementalReportAffidavit({
           </div>
           <p className="font-bold text-right shrink-0 m-0">REG. NO. {regNo || ' '}</p>
         </div>
-      </div>
+      </header>
 
-      <div className="flex-1 flex flex-col min-h-0 w-full supplemental-affidavit-body">
+      <div className="supplemental-affidavit-body-zone print-doc-body flex-1 flex flex-col min-h-0 w-full supplemental-affidavit-body">
         <h2 className="text-center font-bold text-[16px] uppercase mb-4 leading-tight">
           AFFIDAVIT FOR SUPPLEMENTAL REPORT
           <span className="block normal-case font-normal">(for COLB)</span>
@@ -183,7 +184,7 @@ export default function SupplementalReportAffidavit({
             <span className={fillFieldClass(!!residenceAddress.trim(), 'min-w-[28ch]', true)}>{residenceAddress || ' '}</span>,
             after having been duly sworn in accordance with law, hereby depose and say THAT:
           </p>
-          <ol className="supplemental-numbered-items list-decimal ml-8 space-y-3 text-justify">
+          <ol className="supplemental-numbered-items list-decimal ml-8 print:ml-0 space-y-3 text-justify">
             <li className="text-justify">
               {supplementType === 'geographical' ? (
                 <>
@@ -366,27 +367,27 @@ export default function SupplementalReportAffidavit({
           <span className={fillFieldClass(false, 'min-w-[10ch]', false)} />, Philippines. I certify that I personally examined the affiant and that he/she voluntarily
           executed the foregoing affidavit and understood the contents thereof.
         </p>
-      </div>
-      {showCcrSignatory ? (
-        <div className="supplemental-affidavit-registrar-signatory mt-14 mb-1 shrink-0 w-full flex justify-end pr-2">
-          <div className="inline-block text-center">
-            <p className="font-bold uppercase text-[13px] leading-tight m-0 tracking-tight supplemental-affidavit-ccr-name">
-              {ccrSignatory.name}
-            </p>
-            <p className="uppercase text-[12px] leading-tight m-0 font-normal supplemental-affidavit-ccr-title">
-              {ccrSignatory.title}
-            </p>
+        {showCcrSignatory ? (
+          <div className="supplemental-affidavit-registrar-signatory mt-14 print:mt-0 mb-1 shrink-0 w-full flex justify-end pr-2">
+            <div className="inline-block text-center">
+              <p className="font-bold uppercase text-[13px] leading-tight m-0 tracking-tight supplemental-affidavit-ccr-name">
+                {ccrSignatory.name}
+              </p>
+              <p className="uppercase text-[12px] leading-tight m-0 font-normal supplemental-affidavit-ccr-title">
+                {ccrSignatory.title}
+              </p>
+            </div>
           </div>
-        </div>
-      ) : null}
-      <div className="supplemental-bottom-wrap shrink-0 w-full mt-auto mb-[1em]">
+        ) : null}
+      </div>
+      <footer className="supplemental-affidavit-footer-zone print-doc-footer-wrap supplemental-bottom-wrap shrink-0 w-full mt-auto mb-[1em] print:mb-0">
         <DocumentFooter
           sloganBlue
           contactPhone="(063) 227 - 2806"
           contactEmail="civilregistrar.iligan@gmail.com"
           contentClassName="text-[14px] leading-snug"
         />
-      </div>
+      </footer>
     </div>
   )
 }

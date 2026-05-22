@@ -238,6 +238,9 @@ export default function AUSFPrint() {
         !AUSF_JURAT_PRINT_TYPES.has(opt.type) || opt.type === derivedJurat
     );
     const oot = data?.ausfTransmittalIsOutOfTown === true;
+    if (oot) {
+      base = base.filter((opt) => !isAusfLcrPrintType(opt.type));
+    }
     if (acknowledged === "NO") {
       base = base.filter((opt) => {
         if (opt.type === "child-not-ack-transmittal" && oot) return false;
@@ -325,6 +328,16 @@ export default function AUSFPrint() {
     displayType,
     data?.formType,
   ]);
+
+  /** Out-of-town: no LCR in print output — leave LCR tab if it was active */
+  useEffect(() => {
+    if (!data || data.ausfTransmittalIsOutOfTown !== true) return;
+    const cur = displayType ?? data.formType;
+    if (!isAusfLcrPrintType(cur)) return;
+    const fallback =
+      data.childAlreadyAcknowledged === "NO" ? "out-of-town" : "ausf-only";
+    setDisplayType(fallback);
+  }, [data?.ausfTransmittalIsOutOfTown, data?.childAlreadyAcknowledged, displayType, data?.formType]);
 
   useEffect(() => {
     if (!activePrintType) return;
