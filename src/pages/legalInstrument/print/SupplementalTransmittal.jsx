@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
-import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
+import './supplementalTransmittalLayout.css'
+import { PrintHeaderRow, TransmittalDocumentTitle, DocumentFooter } from '../../../components/print'
 import { formatTransmittalDateLong, formatDobDayMonthYearUpper } from '../../../lib/printUtils'
 import {
   SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS,
@@ -79,199 +80,202 @@ export default function SupplementalTransmittal({
 
   return (
     <div
-      className="ausf-doc print-doc print-doc-transmittal supplemental-transmittal-doc bg-white text-black mx-auto px-7 py-5 leading-snug flex flex-col"
+      className="ausf-doc print-doc print-doc-transmittal supplemental-transmittal-doc bg-white text-black mx-auto leading-snug flex flex-col"
       style={{ fontFamily: 'Arial, sans-serif', width: paperWidth, minHeight: paperHeight }}
     >
-      <div className="print-doc-header shrink-0">
+      <header className="supplemental-transmittal-header-zone print-doc-header">
         <PrintHeaderRow headerImageClassName="w-28 h-28 object-contain shrink-0" singleLineAddress />
         <hr className="border-black my-2" />
+        <TransmittalDocumentTitle />
+      </header>
+
+      <div className="supplemental-transmittal-body-zone print-doc-body">
+        <div className="supplemental-transmittal-letter-body">
+          {/* Print + preview: letter body (date through sign-off) */}
+          <p className="supplemental-transmittal-date-line font-bold text-sm mb-6">
+            {dateLine || '\u00a0'}
+          </p>
+
+          <div className="mb-6 space-y-1 text-sm">
+            <p className="font-bold uppercase">{toLines[0]}</p>
+            {toLines.slice(1).map((line, i) => (
+              <p key={`rec-psa-${i}`} className="uppercase">
+                {line}
+              </p>
+            ))}
+          </div>
+
+          <div className="supplemental-transmittal-attn-block mb-6 text-sm ml-10 md:ml-16 space-y-0.5">
+            <p>
+              <span className="font-bold">{thruBlock.prefix}</span>{' '}
+              <span className="font-bold uppercase">{thruBlock.lines[0]}</span>
+            </p>
+            {thruBlock.lines.slice(1).map((line, i) => (
+              <p key={`thru-title-${i}`} className="uppercase leading-snug">
+                {line}
+              </p>
+            ))}
+          </div>
+
+          <div className="text-sm space-y-4 mb-4 text-left">
+            <p>
+              <span className="font-bold">{(data.transmittalSalutation || 'Sir:').trim()}</span>{' '}
+              We are transmitting the Civil Registry Document of: {emph(data.transmittalColbName)}
+            </p>
+            <ul className="list-none space-y-2 pl-0">
+              <li>
+                <span className="select-none" aria-hidden>
+                  •{' '}
+                </span>
+                <span className="font-bold">Registry No:</span> {emph(data.transmittalRegistryNo)}
+              </li>
+              <li>
+                <span className="select-none" aria-hidden>
+                  •{' '}
+                </span>
+                <span className="font-bold">Date of Birth:</span> {emph(dobLine)}
+              </li>
+              <li>
+                <span className="select-none" aria-hidden>
+                  •{' '}
+                </span>
+                <span className="font-bold">Name of Father:</span> {emph(data.transmittalFather)}
+              </li>
+              <li>
+                <span className="select-none" aria-hidden>
+                  •{' '}
+                </span>
+                <span className="font-bold">Name of Mother:</span> {emph(data.transmittalMother)}
+              </li>
+            </ul>
+          </div>
+
+          {/* Screen: show all rows. Print/PDF: show only selected rows (see print-only grid below). */}
+          <div className="supplemental-transmittal-checklist-grid no-print mb-4 grid grid-cols-2 gap-x-6 gap-y-5 items-start text-[14px]">
+            <div className="col-start-1 row-start-1 min-w-0">
+              <p className="font-bold text-sm mb-1 uppercase tracking-tight">Type of Document</p>
+              <table className={tableCls}>
+                <tbody>
+                  {SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS.map((row) => (
+                    <tr key={row.id}>
+                      <td className={tdBoxCls}>{docType === row.id ? filledBox() : emptyBox()}</td>
+                      <td className={tdLblCls}>{row.label}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="col-start-2 row-start-1 row-span-2 self-start min-w-0">
+              <p className="font-bold text-sm mb-1 uppercase tracking-tight">Request for Endorsement</p>
+              <table className={tableCls}>
+                <tbody>
+                  {getVisibleTransmittalEndorsementRows(data).map((row, i) => (
+                    <tr key={row.id}>
+                      <td className={tdBoxCls}>
+                        {endorsementIds.includes(row.id) ? filledBox() : emptyBox()}
+                      </td>
+                      <td className={tdLblCls}>
+                        {i + 1}. {row.label || '\u00a0'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="col-start-1 row-start-2 min-w-0">
+              <p className="font-bold text-sm mb-1 uppercase tracking-tight">Attachments</p>
+              <table className={tableCls}>
+                <tbody>
+                  {getVisibleTransmittalAttachmentRows(data).map((row, i) => (
+                    <tr key={row.id}>
+                      <td className={tdBoxCls}>
+                        {attachmentIds.includes(row.id) ? filledBox() : emptyBox()}
+                      </td>
+                      <td className={tdLblCls}>
+                        {i + 1}. {row.label || '\u00a0'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {hasAnyChecklistForPrint ? (
+            <div className="supplemental-transmittal-checklist-grid supplemental-transmittal-checklist-print-only mb-4 hidden print:grid grid-cols-2 gap-x-6 gap-y-5 items-start text-[14px]">
+              {docTypeRowsPrint.length > 0 ? (
+                <div className="col-start-1 row-start-1 min-w-0">
+                  <p className="font-bold text-sm mb-1 uppercase tracking-tight">Type of Document</p>
+                  <table className={tablePrintCls}>
+                    <tbody>
+                      {docTypeRowsPrint.map((row) => (
+                        <tr key={row.id}>
+                          <td className={tdBoxCls}>{filledBox()}</td>
+                          <td className={tdLblCls}>{row.label}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+
+              {endorsementRowsPrint.length > 0 ? (
+                <div className="col-start-2 row-start-1 row-span-2 self-start min-w-0">
+                  <p className="font-bold text-sm mb-1 uppercase tracking-tight">Request for Endorsement</p>
+                  <table className={tablePrintCls}>
+                    <tbody>
+                      {endorsementRowsPrint.map((row, i) => (
+                        <tr key={row.id}>
+                          <td className={tdBoxCls}>{filledBox()}</td>
+                          <td className={tdLblCls}>
+                            {i + 1}. {row.label}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+
+              {attachmentRowsPrint.length > 0 ? (
+                <div className="supplemental-transmittal-print-attachments col-start-1 row-start-2 min-w-0">
+                  <p className="font-bold text-sm mb-1 uppercase tracking-tight">Attachments</p>
+                  <table className={tablePrintCls}>
+                    <tbody>
+                      {attachmentRowsPrint.map((row, i) => (
+                        <tr key={row.id}>
+                          <td className={tdBoxCls}>{filledBox()}</td>
+                          <td className={tdLblCls}>
+                            {i + 1}. {row.label}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <p className="hidden print:block text-sm italic text-gray-800 mb-4">
+              No document type or checklist items were selected for this transmittal.
+            </p>
+          )}
+
+          <div className="supplemental-transmittal-body-spacer flex-1 min-h-0 min-w-0" aria-hidden />
+          <div className="supplemental-transmittal-closing-block transmittal-closing-block text-left text-sm shrink-0">
+            <p className="supplemental-transmittal-for-action transmittal-closing-action-line m-0 p-0">
+              For appropriate action.
+            </p>
+            <p className="supplemental-transmittal-respectfully transmittal-closing-respectfully-line m-0 p-0">
+              Respectfully yours,
+            </p>
+            <p className="font-bold uppercase leading-none m-0 p-0">{signatory.name}</p>
+            <p className="leading-none m-0 p-0">{signatory.title}</p>
+          </div>
+        </div>
       </div>
 
-      <div className="print-doc-body flex flex-col flex-1 min-h-0">
-        <h1 className="supplemental-transmittal-title text-center text-2xl font-bold tracking-[0.14em] mb-5">
-          TRANSMITTAL
-        </h1>
-        <div className="supplemental-transmittal-letter-body ml-2 pl-6 flex flex-col flex-1 min-h-0 min-w-0">
-        {/* Print + preview: letter body (date through sign-off) */}
-        <p className="supplemental-transmittal-date-line font-bold text-sm mb-6">
-          {dateLine || '\u00a0'}
-        </p>
-
-        <div className="mb-6 space-y-1 text-sm">
-          <p className="font-bold uppercase">{toLines[0]}</p>
-          {toLines.slice(1).map((line, i) => (
-            <p key={`rec-psa-${i}`} className="uppercase">
-              {line}
-            </p>
-          ))}
-        </div>
-
-        <div className="supplemental-transmittal-attn-block mb-6 text-sm ml-10 md:ml-16 space-y-0.5">
-          <p>
-            <span className="font-bold">{thruBlock.prefix}</span>{' '}
-            <span className="font-bold uppercase">{thruBlock.lines[0]}</span>
-          </p>
-          {thruBlock.lines.slice(1).map((line, i) => (
-            <p key={`thru-title-${i}`} className="uppercase leading-snug">
-              {line}
-            </p>
-          ))}
-        </div>
-
-        <div className="text-sm space-y-4 mb-4 text-left">
-          <p>
-            <span className="font-bold">{(data.transmittalSalutation || 'Sir:').trim()}</span>{' '}
-            We are transmitting the Civil Registry Document of: {emph(data.transmittalColbName)}
-          </p>
-          <ul className="list-none space-y-2 pl-0">
-            <li>
-              <span className="select-none" aria-hidden>
-                •{' '}
-              </span>
-              <span className="font-bold">Registry No:</span> {emph(data.transmittalRegistryNo)}
-            </li>
-            <li>
-              <span className="select-none" aria-hidden>
-                •{' '}
-              </span>
-              <span className="font-bold">Date of Birth:</span> {emph(dobLine)}
-            </li>
-            <li>
-              <span className="select-none" aria-hidden>
-                •{' '}
-              </span>
-              <span className="font-bold">Name of Father:</span> {emph(data.transmittalFather)}
-            </li>
-            <li>
-              <span className="select-none" aria-hidden>
-                •{' '}
-              </span>
-              <span className="font-bold">Name of Mother:</span> {emph(data.transmittalMother)}
-            </li>
-          </ul>
-        </div>
-
-        {/* Screen: show all rows. Print/PDF: show only selected rows (see print-only grid below). */}
-        <div className="supplemental-transmittal-checklist-grid no-print mb-4 grid grid-cols-2 gap-x-6 gap-y-5 items-start text-[14px]">
-          <div className="col-start-1 row-start-1 min-w-0">
-            <p className="font-bold text-sm mb-1 uppercase tracking-tight">Type of Document</p>
-            <table className={tableCls}>
-              <tbody>
-                {SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS.map((row) => (
-                  <tr key={row.id}>
-                    <td className={tdBoxCls}>{docType === row.id ? filledBox() : emptyBox()}</td>
-                    <td className={tdLblCls}>{row.label}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="col-start-2 row-start-1 row-span-2 self-start min-w-0">
-            <p className="font-bold text-sm mb-1 uppercase tracking-tight">Request for Endorsement</p>
-            <table className={tableCls}>
-              <tbody>
-                {getVisibleTransmittalEndorsementRows(data).map((row, i) => (
-                  <tr key={row.id}>
-                    <td className={tdBoxCls}>
-                      {endorsementIds.includes(row.id) ? filledBox() : emptyBox()}
-                    </td>
-                    <td className={tdLblCls}>
-                      {i + 1}. {row.label || '\u00a0'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="col-start-1 row-start-2 min-w-0">
-            <p className="font-bold text-sm mb-1 uppercase tracking-tight">Attachments</p>
-            <table className={tableCls}>
-              <tbody>
-                {getVisibleTransmittalAttachmentRows(data).map((row, i) => (
-                  <tr key={row.id}>
-                    <td className={tdBoxCls}>
-                      {attachmentIds.includes(row.id) ? filledBox() : emptyBox()}
-                    </td>
-                    <td className={tdLblCls}>
-                      {i + 1}. {row.label || '\u00a0'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {hasAnyChecklistForPrint ? (
-          <div className="supplemental-transmittal-checklist-grid supplemental-transmittal-checklist-print-only mb-4 hidden print:grid grid-cols-2 gap-x-6 gap-y-5 items-start text-[14px]">
-            {docTypeRowsPrint.length > 0 ? (
-              <div className="col-start-1 row-start-1 min-w-0">
-                <p className="font-bold text-sm mb-1 uppercase tracking-tight">Type of Document</p>
-                <table className={tablePrintCls}>
-                  <tbody>
-                    {docTypeRowsPrint.map((row) => (
-                      <tr key={row.id}>
-                        <td className={tdBoxCls}>{filledBox()}</td>
-                        <td className={tdLblCls}>{row.label}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : null}
-
-            {endorsementRowsPrint.length > 0 ? (
-              <div className="col-start-2 row-start-1 row-span-2 self-start min-w-0">
-                <p className="font-bold text-sm mb-1 uppercase tracking-tight">Request for Endorsement</p>
-                <table className={tablePrintCls}>
-                  <tbody>
-                    {endorsementRowsPrint.map((row, i) => (
-                      <tr key={row.id}>
-                        <td className={tdBoxCls}>{filledBox()}</td>
-                        <td className={tdLblCls}>
-                          {i + 1}. {row.label}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : null}
-
-            {attachmentRowsPrint.length > 0 ? (
-              <div className="supplemental-transmittal-print-attachments col-start-1 row-start-2 min-w-0">
-                <p className="font-bold text-sm mb-1 uppercase tracking-tight">Attachments</p>
-                <table className={tablePrintCls}>
-                  <tbody>
-                    {attachmentRowsPrint.map((row, i) => (
-                      <tr key={row.id}>
-                        <td className={tdBoxCls}>{filledBox()}</td>
-                        <td className={tdLblCls}>
-                          {i + 1}. {row.label}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : null}
-          </div>
-        ) : (
-          <p className="hidden print:block text-sm italic text-gray-800 mb-4">
-            No document type or checklist items were selected for this transmittal.
-          </p>
-        )}
-
-        <div className="supplemental-transmittal-body-spacer flex-1 min-h-0 min-w-0" aria-hidden />
-        <div className="supplemental-transmittal-sign-off flex flex-col gap-0 pt-0 text-sm print:pb-0 shrink-0">
-          <p className="mb-1.5">Respectfully yours,</p>
-          <p className="font-bold uppercase leading-none">{signatory.name}</p>
-          <p className="leading-none">{signatory.title}</p>
-        </div>
-        </div>
-      </div>
-
-      <footer className="print-doc-footer-wrap mt-auto pt-1 print:pt-0 shrink-0" role="contentinfo">
+      <footer className="supplemental-transmittal-footer-zone print-doc-footer-wrap pt-1 print:pt-0" role="contentinfo">
         <DocumentFooter
           sloganBlue
           contactPhone="(063) 227 - 2806"

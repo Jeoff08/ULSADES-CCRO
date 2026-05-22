@@ -47,12 +47,20 @@ export const TRANSMITTAL_ATTACHMENTS_LOCAL = [
   'CERTIFICATE OF REGISTRATION OF ACKNOWLEDGEMENT',
 ]
 
-/** AUSF Out-of-Town Transmittal: 11 items per office checklist */
+/** AUSF Out-of-Town Transmittal: 8 items (5–8 use attachment dropdown in print UI) */
 export const TRANSMITTAL_ATTACHMENTS_PSA = [
   'CERTIFICATE OF LIVE BIRTH OF CHILD',
   'AFFIDAVIT TO USE SURNAME OF THE FATHER',
   'CERTIFICATE OF LIVE BIRTH OF PARENTS',
   'AFFIDAVIT OF GUARDIANSHIP',
+  'AFFIDAVIT OF ACKNOWLEDGEMENT',
+  'DEATH CERTIFICATE',
+  'BAPTISMAL',
+  'MEDICAL RECORDS',
+]
+
+/** AUSF Out-of-Town transmittal: dropdown options for attachment items 5–8 */
+export const AUSF_OOT_ATTACHMENT_DROPDOWN = [
   'AFFIDAVIT OF ACKNOWLEDGEMENT',
   'DEATH CERTIFICATE',
   'BAPTISMAL',

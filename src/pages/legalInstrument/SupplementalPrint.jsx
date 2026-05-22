@@ -405,6 +405,7 @@ export default function SupplementalPrint() {
   }, [showAffidavitOutput, showForm1a, showTransmittalOutput, activePanel])
 
   const PDF_EXPORT_CLASS = {
+    affidavit: 'supplemental-pdf-export--affidavit-only',
     bundle: 'supplemental-pdf-export--bundle-only',
     transmittal: 'supplemental-pdf-export--transmittal-only',
     lcr: 'supplemental-pdf-export--lcr-only',
@@ -413,10 +414,27 @@ export default function SupplementalPrint() {
   /** Affidavit bundle and/or LCR block — hide transmittal unless exporting transmittal only */
   const showBundleForRender =
     (showAffidavitOutput || showForm1a) && exportMode !== 'transmittal'
-  const showTransmittalForRender = showTransmittalOutput && exportMode !== 'bundle' && exportMode !== 'lcr'
+  const showTransmittalForRender =
+    showTransmittalOutput && exportMode !== 'affidavit' && exportMode !== 'bundle' && exportMode !== 'lcr'
+
+  useEffect(() => {
+    const onBeforePrint = () => {
+      document.documentElement.dataset.supplementalPrintPanel = activePanel
+    }
+    const onAfterPrint = () => {
+      delete document.documentElement.dataset.supplementalPrintPanel
+    }
+    window.addEventListener('beforeprint', onBeforePrint)
+    window.addEventListener('afterprint', onAfterPrint)
+    return () => {
+      window.removeEventListener('beforeprint', onBeforePrint)
+      window.removeEventListener('afterprint', onAfterPrint)
+      delete document.documentElement.dataset.supplementalPrintPanel
+    }
+  }, [activePanel])
 
   const savePdfWithExportMode = async (mode, suggestedBaseName) => {
-    if (mode === 'bundle' && !showAffidavitOutput) {
+    if ((mode === 'affidavit' || mode === 'bundle') && !showAffidavitOutput) {
       window.alert('No supplemental affidavit data yet. Fill the Supplemental form first, or use Save transmittal PDF.')
       return
     }
@@ -482,7 +500,7 @@ export default function SupplementalPrint() {
   const getExportModeForActivePanel = () => {
     if (activePanel === 'transmittal' && showTransmittalOutput) return 'transmittal'
     if (activePanel === 'form1a' && showForm1a) return 'lcr'
-    return 'bundle'
+    return 'affidavit'
   }
 
   const handlePreviewPdfModal = async () => {
@@ -567,6 +585,40 @@ export default function SupplementalPrint() {
   #supplemental-print-page #supplemental-print-affidavit .supplemental-report-doc * {
     font-size: 12pt !important;
   }
+  #supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc .supplemental-transmittal-body-spacer {
+    display: none !important;
+    flex: 0 0 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+  #supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc .supplemental-transmittal-checklist-print-only {
+    margin-bottom: 0 !important;
+  }
+  #supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc .supplemental-transmittal-closing-block {
+    margin-top: 1em !important;
+    margin-bottom: 2em !important;
+  }
+  #supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc .supplemental-transmittal-for-action,
+  #supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc .transmittal-closing-action-line {
+    margin-top: 0 !important;
+    margin-bottom: 4em !important;
+    padding: 0 !important;
+  }
+  #supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc .supplemental-transmittal-respectfully,
+  #supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc .transmittal-closing-respectfully-line {
+    margin-top: 0 !important;
+    margin-bottom: 2em !important;
+    padding: 0 !important;
+  }
+  #supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc .supplemental-transmittal-closing-block > p:nth-child(3),
+  #supplemental-print-page #supplemental-print-transmittal .supplemental-transmittal-doc.print-doc .supplemental-transmittal-closing-block > p:nth-child(4) {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    line-height: 1.05 !important;
+  }
 }
 body.pdf-capture #supplemental-print-page #supplemental-print-bundle,
 body.pdf-capture #supplemental-print-page #supplemental-print-bundle * {
@@ -613,6 +665,11 @@ body.pdf-capture #supplemental-print-page #supplemental-print-affidavit .supplem
     min-height: 0 !important;
     overflow: visible !important;
   }
+  #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-affidavit-body > :not(h2) {
+    margin-left: 3em !important;
+    padding-left: 0 !important;
+    box-sizing: border-box !important;
+  }
   #supplemental-print-affidavit .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory {
     display: flex !important;
     visibility: visible !important;
@@ -657,6 +714,11 @@ body.pdf-capture #supplemental-print-affidavit .supplemental-affidavit-body {
   flex-direction: column !important;
   min-height: 0 !important;
   overflow: visible !important;
+}
+body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc .supplemental-affidavit-body > :not(h2) {
+  margin-left: 3em !important;
+  padding-left: 0 !important;
+  box-sizing: border-box !important;
 }
 body.pdf-capture #supplemental-print-affidavit .supplemental-report-doc.print-doc > .supplemental-affidavit-registrar-signatory {
   display: flex !important;
@@ -902,12 +964,12 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex-affidavit
           ) : activePanel !== 'transmittal' ? (
             <button
               type="button"
-              onClick={() => savePdfWithExportMode('bundle', 'Supplemental-Report')}
+              onClick={() => savePdfWithExportMode('affidavit', 'Supplemental-Report')}
               disabled={savingPdf || !showAffidavitOutput}
               className="px-3 py-1.5 rounded-md bg-[var(--primary-blue)] text-white text-sm font-medium hover:bg-[var(--primary-blue-light)] disabled:opacity-60"
               title={
                 showAffidavitOutput
-                  ? `Affidavit${showForm1a ? ` + ${lcrIncludedList.length > 1 ? `${lcrExportTitle}` : `LCR Form ${lcrExportSlug}`}` : ''} (no transmittal pages)`
+                  ? 'Supplemental affidavit only (no LCR or transmittal pages)'
                   : 'No supplemental affidavit data yet'
               }
             >
@@ -934,7 +996,7 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex-affidavit
                 ? `Preview ${lcrExportTitle} PDF (all included LCR pages)`
                 : activePanel === 'transmittal'
                   ? 'Preview transmittal letter PDF'
-                  : 'Preview affidavit PDF (and LCR pages if included)'
+                  : 'Preview supplemental affidavit PDF only'
             }
           >
             Preview PDF
@@ -1108,7 +1170,7 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex-affidavit
                   }
                   : {})}
                 className={
-                  `${activePanel === 'affidavit' ? 'block' : 'hidden print:block print:[page-break-before:avoid]'} ${isMiddleNameAffidavit || isColbCompactPrintAffidavit ? 'mx-auto' : ''
+                  `${activePanel === 'affidavit' ? 'block' : 'hidden'} ${isMiddleNameAffidavit || isColbCompactPrintAffidavit ? 'mx-auto' : ''
                     }`.trim()
                 }
               >
@@ -1125,11 +1187,7 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex-affidavit
               {showForm1a ? (
                 <div
                   id="supplemental-print-lcr"
-                  className={
-                    activePanel === 'form1a'
-                      ? 'block mt-0'
-                      : 'hidden print:block print:mt-0 print:[page-break-before:always]'
-                  }
+                  className={activePanel === 'form1a' ? 'block mt-0' : 'hidden'}
                 >
                   <div className="no-print mb-3 max-w-[210mm] mx-auto rounded-lg border border-emerald-200 bg-emerald-50/90 px-3 py-2 text-[11px] text-emerald-900 leading-snug">
                     <span className="font-semibold">{lcrExportTitle}</span>
@@ -1206,11 +1264,7 @@ body.pdf-capture #supplemental-print-affidavit[data-supplement-geo-sex-affidavit
           {showTransmittalForRender ? (
             <div
               id="supplemental-print-transmittal"
-              className={
-                activePanel === 'transmittal'
-                  ? `block mt-0 ${showBundleForRender ? 'print:[page-break-before:always]' : ''}`
-                  : `hidden print:block print:mt-0 ${showBundleForRender ? 'print:[page-break-before:always]' : ''}`
-              }
+              className={activePanel === 'transmittal' ? 'block mt-0' : 'hidden'}
             >
               <SupplementalTransmittal
                 data={data}

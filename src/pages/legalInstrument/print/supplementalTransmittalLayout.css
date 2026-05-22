@@ -1,0 +1,136 @@
+/**
+ * Supplemental transmittal — header / body / footer zones (independent layout).
+ *
+ * - Move Iligan header + TRANSMITTAL title only → adjust --supp-tx-header-*
+ * - Move letter body (date through sign-off) only → adjust --supp-tx-body-* and --supp-tx-body-letter-inset-left
+ * - Move contact footer only → adjust --supp-tx-footer-*
+ *
+ * Root `.supplemental-transmittal-doc` has no side padding; each zone applies its own.
+ */
+
+.supplemental-transmittal-doc {
+  --supp-tx-header-pad-x: 0.4in;
+  --supp-tx-header-pad-top: 0;
+  --supp-tx-header-margin-top: 0.2in;
+  --supp-tx-body-pad-x: 0.4in;
+  --supp-tx-body-margin-left: 0;
+  --supp-tx-body-margin-right: 0;
+  --supp-tx-body-letter-inset-left: 0.25in;
+  --supp-tx-body-letter-inset-left-print: 1in;
+  --supp-tx-footer-pad-x: 0.4in;
+  --supp-tx-footer-pad-bottom: 0;
+  box-sizing: border-box;
+  padding: 0;
+}
+
+.supplemental-transmittal-header-zone {
+  flex-shrink: 0;
+  padding-left: var(--supp-tx-header-pad-x);
+  padding-right: var(--supp-tx-header-pad-x);
+  padding-top: var(--supp-tx-header-pad-top);
+  margin-top: var(--supp-tx-header-margin-top);
+}
+
+.supplemental-transmittal-body-zone {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding-left: var(--supp-tx-body-pad-x);
+  padding-right: var(--supp-tx-body-pad-x);
+  margin-left: var(--supp-tx-body-margin-left);
+  margin-right: var(--supp-tx-body-margin-right);
+}
+
+.supplemental-transmittal-letter-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  margin-left: var(--supp-tx-body-letter-inset-left);
+}
+
+.supplemental-transmittal-footer-zone {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding-left: var(--supp-tx-footer-pad-x);
+  padding-right: var(--supp-tx-footer-pad-x);
+  padding-bottom: var(--supp-tx-footer-pad-bottom);
+}
+
+@media print {
+  .supplemental-transmittal-doc {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-header-zone.print-doc-header {
+    margin-top: var(--supp-tx-header-margin-top) !important;
+    padding-top: var(--supp-tx-header-pad-top) !important;
+  }
+
+  .supplemental-transmittal-doc .supplemental-transmittal-body-zone.print-doc-body {
+    padding-top: 0 !important;
+  }
+
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-body-zone .supplemental-transmittal-letter-body {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: var(--supp-tx-body-letter-inset-left-print) !important;
+  }
+
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-body-spacer {
+    display: none !important;
+    flex: 0 0 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+  }
+
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-checklist-print-only {
+    margin-bottom: 0 !important;
+  }
+
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-closing-block {
+    margin-top: 1em !important;
+    margin-bottom: 2em !important;
+    padding-top: 0 !important;
+  }
+
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-for-action,
+  .supplemental-transmittal-doc.print-doc .transmittal-closing-action-line {
+    margin-top: 0 !important;
+    margin-bottom: 4em !important;
+    padding: 0 !important;
+  }
+
+  .supplemental-transmittal-doc.print-doc .supplemental-transmittal-respectfully,
+  .supplemental-transmittal-doc.print-doc .transmittal-closing-respectfully-line {
+    margin-top: 0 !important;
+    margin-bottom: 2em !important;
+    padding: 0 !important;
+  }
+}
+
+body.pdf-capture .supplemental-transmittal-doc {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+}
+
+body.pdf-capture .supplemental-transmittal-doc.print-doc .supplemental-transmittal-header-zone.print-doc-header {
+  margin-top: var(--supp-tx-header-margin-top) !important;
+  padding-top: var(--supp-tx-header-pad-top) !important;
+}
+
+body.pdf-capture .supplemental-transmittal-doc.print-doc .supplemental-transmittal-body-zone .supplemental-transmittal-letter-body {
+  padding-left: 0 !important;
+  margin-left: var(--supp-tx-body-letter-inset-left-print) !important;
+}

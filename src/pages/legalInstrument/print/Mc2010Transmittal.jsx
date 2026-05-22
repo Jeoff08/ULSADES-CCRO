@@ -1,5 +1,5 @@
 import React from 'react'
-import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
+import { PrintHeaderRow, TransmittalDocumentTitle, DocumentFooter } from '../../../components/print'
 import { formatTransmittalDateLong, formatDobDayMonthYearUpper } from '../../../lib/printUtils'
 import {
   SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS,
@@ -67,10 +67,10 @@ export default function Mc2010Transmittal({
       <div className="print-doc-header shrink-0">
         <PrintHeaderRow headerImageClassName="w-24 h-24 print:w-20 print:h-20 object-contain shrink-0" singleLineAddress />
         <hr className="border-black my-2" />
+        <TransmittalDocumentTitle />
       </div>
 
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
-        <h1 className="text-center text-[16px] print:text-[12pt] font-bold tracking-[0.14em] mb-4">TRANSMITTAL</h1>
         <div className="ml-2 pl-6 pr-2 flex flex-col flex-1 min-h-0 min-w-0 text-[16px] print:text-[12pt] leading-[1.2]">
           {/* Single paragraph + <br /> so print/PDF has no sibling-p gap */}
           <p className="mc2010-stack-tight-p mc2010-date-block">

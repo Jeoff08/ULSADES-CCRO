@@ -1,7 +1,14 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import ConfirmRemoveRowModal from '../../../components/ConfirmRemoveRowModal'
 import { formatDateCert, fullName } from '../../../lib/printUtils'
-import { PrintHeaderRow, DocumentFooter, TRANSMITTAL_ATTACHMENTS_LOCAL, TRANSMITTAL_ATTACHMENTS_PSA } from '../../../components/print'
+import {
+  PrintHeaderRow,
+  TransmittalDocumentTitle,
+  DocumentFooter,
+  TRANSMITTAL_ATTACHMENTS_LOCAL,
+  TRANSMITTAL_ATTACHMENTS_PSA,
+  AUSF_OOT_ATTACHMENT_DROPDOWN,
+} from '../../../components/print'
 import {
   LOCAL_TRANSMITTAL_ATTN_LINES,
   LOCAL_TRANSMITTAL_ATTN_PREFIX,
@@ -457,7 +464,7 @@ export default function TransmittalDoc({
   const transmittalDate = formatDateCert(safe.transmittalDate) || formatDateCert(safe.certificateIssuanceDate) || formatDateCert(new Date())
   const recipientAgency = (safe.recipientAgency || '').toUpperCase()
   const salutation = safe.transmittalSalutation || (isPsaLetter ? "Ma'am:" : "Sir/Ma'am:")
-  // Local transmittal (AUSF): 7-item list; out-of-town: 11-item list; Court Decree local: 7 items (see print/constants)
+  // Local transmittal (AUSF): 7-item list; out-of-town: 8-item list; Court Decree local: 7 items (see print/constants)
   const defaultAttachments = isOutOfTown ? TRANSMITTAL_ATTACHMENTS_PSA : TRANSMITTAL_ATTACHMENTS_LOCAL
   const attachments = Array.isArray(attachmentsProp)
     ? attachmentsProp
@@ -532,11 +539,16 @@ export default function TransmittalDoc({
     checklistItems
       ?.filter((i) => i.completed && String(i.label || '').trim())
       .map((i) => String(i.label).trim()) || []
+  const listId = String(checklistConfig?.listId || '').trim()
   const isCourtDecreeLocalChecklist =
     checklistConfig?.listId === 'court-decree-local' || checklistConfig?.listId === 'court-decree-local-v2'
   const isCourtDecreeOutOfTownChecklist = checklistConfig?.listId === 'court-decree-out-of-town'
   const isLegitimationOutOfTownChecklist = checklistConfig?.listId === 'legitimation-out-of-town'
   const getCourtDecreeDropdownOptionsByIndex = useCallback((zeroBasedIndex) => {
+    const isAusfOotChecklist = !listId && isOutOfTown
+    if (isAusfOotChecklist && zeroBasedIndex >= 4 && zeroBasedIndex <= 7) {
+      return AUSF_OOT_ATTACHMENT_DROPDOWN
+    }
     if (isCourtDecreeLocalChecklist) {
       if (zeroBasedIndex === 2) return COURT_DECREE_DROPDOWN_3
       if (zeroBasedIndex === 3) return COURT_DECREE_DROPDOWN_4
@@ -556,8 +568,7 @@ export default function TransmittalDoc({
       return null
     }
     return null
-  }, [isCourtDecreeLocalChecklist, isCourtDecreeOutOfTownChecklist, isLegitimationOutOfTownChecklist])
-  const listId = String(checklistConfig?.listId || '').trim()
+  }, [isCourtDecreeLocalChecklist, isCourtDecreeOutOfTownChecklist, isLegitimationOutOfTownChecklist, listId, isOutOfTown])
   const isAusfTransmittal = !listId
   const isLegitimationTransmittal = Boolean(checklistConfig?.listId?.includes('legitimation'))
   const isCourtDecreeTransmittal = Boolean(checklistConfig?.listId?.includes('court-decree'))
@@ -779,11 +790,11 @@ export default function TransmittalDoc({
 
   const attnPrint = isOutOfTown
     ? resolveOotAttnForPrint(attnPrefixDraft, attnDetailDraft, {
-        uppercasePrefix: isLegitimationTransmittal,
-      })
+      uppercasePrefix: isLegitimationTransmittal,
+    })
     : resolveAttnPrintBlock(attnPrefixDraft, attnDetailDraft, {
-        uppercasePrefix: isLegitimationTransmittal,
-      })
+      uppercasePrefix: isLegitimationTransmittal,
+    })
   const attnPrefixPrint = attnPrint.prefix
   const attnDetailPrintLines = attnPrint.detailLines
 
@@ -801,6 +812,7 @@ export default function TransmittalDoc({
         'ausf-doc print-doc print-doc-transmittal print-doc-transmittal-elderly bg-white text-black max-w-[210mm] mx-auto px-6 py-4 leading-normal flex flex-col min-h-[297mm] text-base',
         isLegitimationTransmittal ? 'legitimation-transmittal-doc' : '',
         isCourtDecreeTransmittal ? 'court-decree-transmittal-doc' : '',
+        showCourtDecreeOot ? 'court-decree-oot-transmittal-doc' : '',
         isAusfTransmittal ? 'ausf-transmittal-doc' : '',
       ]
         .filter(Boolean)
@@ -810,6 +822,7 @@ export default function TransmittalDoc({
         <PrintHeaderRow />
         {!hideLineBelowDate && <hr className={headerRuleClass} />}
         {showLineAboveDate && <hr className={headerRuleClass} />}
+        <TransmittalDocumentTitle />
         {isCourtDecreeTransmittal ? (
           <p className="court-decree-transmittal-date font-bold text-sm text-left mt-2 mb-3 m-0">{transmittalDate}</p>
         ) : null}
