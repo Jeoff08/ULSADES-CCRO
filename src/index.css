@@ -1004,15 +1004,30 @@ html[data-paper-size='legal'] .print-doc-transmittal-elderly p.ausf-transmittal-
 .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-block,
 .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-block span {
   font-size: 12pt !important;
-  line-height: 1.5 !important;
+  line-height: 1.15 !important;
+}
+.print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-block .ausf-transmittal-psa-name,
+.print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-block .transmittal-psa-to-line-0 {
   text-transform: uppercase !important;
+  font-weight: 700 !important;
+}
+.print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-block .ausf-transmittal-psa-line,
+.print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-block .transmittal-psa-to-line-body {
+  text-transform: none !important;
+  font-weight: normal !important;
 }
 body:not(.pdf-capture) .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-header input {
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
   font-size: 12pt !important;
-  line-height: 1.5 !important;
-  text-transform: uppercase !important;
+  line-height: 1.15 !important;
   color: #000 !important;
+}
+body:not(.pdf-capture) .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-header input.ausf-transmittal-psa-name,
+body:not(.pdf-capture) .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-header input.transmittal-psa-to-line-0 {
+  text-transform: uppercase !important;
+}
+body:not(.pdf-capture) .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-header input:not(.ausf-transmittal-psa-name) {
+  text-transform: none !important;
 }
 body:not(.pdf-capture) .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-header input::placeholder {
   color: #444 !important;
@@ -1025,30 +1040,127 @@ body:not(.pdf-capture) .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf
   font-weight: 700 !important;
 }
 @media print {
+  .transmittal-subject-hanging {
+    display: grid !important;
+    grid-template-columns: max-content minmax(0, 1fr) !important;
+    column-gap: 0.25em !important;
+    line-height: 1.15 !important;
+    font-size: 12pt !important;
+    text-transform: uppercase !important;
+    text-align: left !important;
+  }
+  .transmittal-subject-hanging .transmittal-subject-label {
+    font-weight: 700 !important;
+  }
+  .transmittal-subject-hanging .transmittal-subject-body {
+    font-weight: normal !important;
+    text-transform: uppercase !important;
+  }
+  .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-subject-hanging {
+    margin-top: -0.45rem !important;
+  }
+  .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-subject-hanging {
+    margin-bottom: 2.75em !important;
+  }
+  .print-doc-transmittal-elderly .court-decree-transmittal-subject-hanging {
+    margin-bottom: 2em !important;
+  }
+  .transmittal-psa-to-block,
+  .ausf-transmittal-psa-block,
+  .court-decree-transmittal-psa-block,
+  .legitimation-transmittal-psa-header .transmittal-psa-to-block {
+    line-height: 1.15 !important;
+  }
+  .transmittal-psa-to-line-0,
+  .ausf-transmittal-psa-name,
+  .court-decree-transmittal-psa-name {
+    text-transform: uppercase !important;
+    font-weight: 700 !important;
+  }
+  .transmittal-psa-to-line-body,
+  .ausf-transmittal-psa-line {
+    text-transform: none !important;
+    font-weight: normal !important;
+  }
   .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-block,
   .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-block span {
     font-family: 'Times New Roman', Times, serif !important;
     font-size: 12pt !important;
-    line-height: 1.5 !important;
-    text-transform: uppercase !important;
+    line-height: 1.15 !important;
     color: #000 !important;
   }
   .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-block .ausf-transmittal-psa-name {
     color: #000 !important;
     font-weight: 700 !important;
+    text-transform: uppercase !important;
   }
+  .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-block .ausf-transmittal-psa-line {
+    text-transform: none !important;
+    font-weight: normal !important;
+  }
+  html[data-paper-size="a4"] .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-psa-header .transmittal-psa-to-block,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-psa-header .transmittal-psa-to-block,
+  html[data-paper-size="long"] .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-psa-header .transmittal-psa-to-block,
+  html[data-paper-size="legal"] .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-psa-header .transmittal-psa-to-block {
+    line-height: 1.15 !important;
+  }
+}
+body.pdf-capture .transmittal-subject-hanging {
+  display: grid !important;
+  grid-template-columns: max-content minmax(0, 1fr) !important;
+  column-gap: 0.25em !important;
+  line-height: 1.15 !important;
+  font-size: 12pt !important;
+  text-transform: uppercase !important;
+  text-align: left !important;
+}
+body.pdf-capture .transmittal-subject-hanging .transmittal-subject-label {
+  font-weight: 700 !important;
+}
+body.pdf-capture .transmittal-subject-hanging .transmittal-subject-body {
+  font-weight: normal !important;
+  text-transform: uppercase !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-subject-hanging {
+  margin-top: -0.45rem !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-subject-hanging {
+  margin-bottom: 2.75em !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly .court-decree-transmittal-subject-hanging {
+  margin-bottom: 2em !important;
+}
+body.pdf-capture .transmittal-psa-to-block,
+body.pdf-capture .ausf-transmittal-psa-block,
+body.pdf-capture .court-decree-transmittal-psa-block {
+  line-height: 1.15 !important;
+}
+body.pdf-capture .transmittal-psa-to-line-0,
+body.pdf-capture .ausf-transmittal-psa-name,
+body.pdf-capture .court-decree-transmittal-psa-name {
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+}
+body.pdf-capture .transmittal-psa-to-line-body,
+body.pdf-capture .ausf-transmittal-psa-line {
+  text-transform: none !important;
+  font-weight: normal !important;
 }
 body.pdf-capture .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-block,
 body.pdf-capture .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-block span {
   font-family: 'Times New Roman', Times, serif !important;
   font-size: 12pt !important;
-  line-height: 1.5 !important;
-  text-transform: uppercase !important;
+  line-height: 1.15 !important;
   color: #000 !important;
 }
 body.pdf-capture .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-block .ausf-transmittal-psa-name {
   color: #000 !important;
   font-weight: 700 !important;
+  text-transform: uppercase !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-block .ausf-transmittal-psa-line {
+  text-transform: none !important;
+  font-weight: normal !important;
 }
 
 /* Transmittal ATTN: ~6 spaces right of PSA addressee (screen + print/PDF) */
@@ -1310,6 +1422,7 @@ html[data-paper-size="legal"] .mc2010-transmittal-doc {
   .mc2010-transmittal-doc .print-header-address {
     font-size: 12pt !important;
     line-height: 1.0 !important;
+    font-family: 'Times New Roman', Times, serif !important;
   }
   .mc2010-transmittal-doc p {
     margin: 0 !important;
@@ -1440,6 +1553,7 @@ body.pdf-capture .mc2010-transmittal-doc textarea,
 body.pdf-capture .mc2010-transmittal-doc .print-doc-header p,
 body.pdf-capture .mc2010-transmittal-doc .print-header-address {
   font-size: 12pt !important;
+  font-family: 'Times New Roman', Times, serif !important;
 }
 body.pdf-capture .mc2010-transmittal-doc p.mc2010-stack-tight-p {
   margin-top: 0 !important;
@@ -1913,6 +2027,17 @@ body.pdf-capture .print-doc-transmittal-elderly .ausf-transmittal-attachments-pr
 body.pdf-capture .print-doc-transmittal-elderly.legitimation-transmittal-doc .legitimation-transmittal-attachments-print li {
   font-size: 12pt !important;
   line-height: 1.35 !important;
+}
+
+/* AUSF / Court Decree / Legitimation / Supplemental / MC2010 transmittal: 12pt Times New Roman (PDF capture only) */
+body.pdf-capture .print-doc-transmittal-elderly,
+body.pdf-capture .print-doc-transmittal-elderly *,
+body.pdf-capture .supplemental-transmittal-doc.print-doc,
+body.pdf-capture .supplemental-transmittal-doc.print-doc *,
+body.pdf-capture .mc2010-transmittal-doc,
+body.pdf-capture .mc2010-transmittal-doc * {
+  font-family: 'Times New Roman', Times, serif !important;
+  font-size: 12pt !important;
 }
 body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer p,
 body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
@@ -4448,6 +4573,17 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     page-break-inside: avoid !important;
   }
 
+  /* AUSF / Court Decree / Legitimation / Supplemental / MC2010 transmittal: 12pt Times New Roman (print only) */
+  .print-doc-transmittal-elderly,
+  .print-doc-transmittal-elderly *,
+  .supplemental-transmittal-doc.print-doc,
+  .supplemental-transmittal-doc.print-doc *,
+  .mc2010-transmittal-doc.print-doc,
+  .mc2010-transmittal-doc.print-doc * {
+    font-family: 'Times New Roman', Times, serif !important;
+    font-size: 12pt !important;
+  }
+
   /* Certificate of Authenticity: 2-space gap inside content (between blocks) in print/PDF */
   .print-doc-cert-auth .cert-auth-body {
     line-height: 1.8 !important;
@@ -4658,6 +4794,124 @@ html[data-paper-size="short"] .print-doc-footer p {
   html[data-paper-size="short"] .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     font-size: 10pt !important;
   }
+
+  /* Transmittal print: 12pt Times New Roman (AUSF, Court Decree, Legitimation, Supplemental, MC2010) */
+  html[data-paper-size="a4"] .print-doc-transmittal-elderly,
+  html[data-paper-size="a4"] .print-doc-transmittal-elderly p,
+  html[data-paper-size="a4"] .print-doc-transmittal-elderly div,
+  html[data-paper-size="a4"] .print-doc-transmittal-elderly span,
+  html[data-paper-size="a4"] .print-doc-transmittal-elderly li,
+  html[data-paper-size="a4"] .print-doc-transmittal-elderly ol li,
+  html[data-paper-size="a4"] .print-doc-transmittal-elderly.ausf-doc,
+  html[data-paper-size="a4"] .print-doc-transmittal-elderly.ausf-doc p,
+  html[data-paper-size="a4"] .print-doc-transmittal-elderly .print-doc-footer p,
+  html[data-paper-size="a4"] .print-doc-transmittal-elderly .print-doc-footer .text-xs,
+  html[data-paper-size="a4"] .print-doc-transmittal-elderly.ausf-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="a4"] .print-doc-transmittal-elderly.ausf-doc.print-doc .print-doc-footer .text-xs,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly p,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly div,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly span,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly li,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly ol li,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly.ausf-doc,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly.ausf-doc p,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly .print-doc-footer p,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly .print-doc-footer .text-xs,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly.ausf-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="short"] .print-doc-transmittal-elderly.ausf-doc.print-doc .print-doc-footer .text-xs,
+  html[data-paper-size="long"] .print-doc-transmittal-elderly,
+  html[data-paper-size="long"] .print-doc-transmittal-elderly p,
+  html[data-paper-size="long"] .print-doc-transmittal-elderly div,
+  html[data-paper-size="long"] .print-doc-transmittal-elderly span,
+  html[data-paper-size="long"] .print-doc-transmittal-elderly li,
+  html[data-paper-size="long"] .print-doc-transmittal-elderly ol li,
+  html[data-paper-size="long"] .print-doc-transmittal-elderly.ausf-doc,
+  html[data-paper-size="long"] .print-doc-transmittal-elderly.ausf-doc p,
+  html[data-paper-size="long"] .print-doc-transmittal-elderly .print-doc-footer p,
+  html[data-paper-size="long"] .print-doc-transmittal-elderly .print-doc-footer .text-xs,
+  html[data-paper-size="long"] .print-doc-transmittal-elderly.ausf-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="long"] .print-doc-transmittal-elderly.ausf-doc.print-doc .print-doc-footer .text-xs,
+  html[data-paper-size="legal"] .print-doc-transmittal-elderly,
+  html[data-paper-size="legal"] .print-doc-transmittal-elderly p,
+  html[data-paper-size="legal"] .print-doc-transmittal-elderly div,
+  html[data-paper-size="legal"] .print-doc-transmittal-elderly span,
+  html[data-paper-size="legal"] .print-doc-transmittal-elderly li,
+  html[data-paper-size="legal"] .print-doc-transmittal-elderly ol li,
+  html[data-paper-size="legal"] .print-doc-transmittal-elderly.ausf-doc,
+  html[data-paper-size="legal"] .print-doc-transmittal-elderly.ausf-doc p,
+  html[data-paper-size="legal"] .print-doc-transmittal-elderly .print-doc-footer p,
+  html[data-paper-size="legal"] .print-doc-transmittal-elderly .print-doc-footer .text-xs,
+  html[data-paper-size="legal"] .print-doc-transmittal-elderly.ausf-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="legal"] .print-doc-transmittal-elderly.ausf-doc.print-doc .print-doc-footer .text-xs,
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc,
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc p,
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc div,
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc span,
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc li,
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="a4"] .supplemental-transmittal-doc.print-doc.ausf-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc,
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc p,
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc div,
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc span,
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc li,
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="short"] .supplemental-transmittal-doc.print-doc.ausf-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc,
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc p,
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc div,
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc span,
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc li,
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="long"] .supplemental-transmittal-doc.print-doc.ausf-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="legal"] .supplemental-transmittal-doc.print-doc,
+  html[data-paper-size="legal"] .supplemental-transmittal-doc.print-doc p,
+  html[data-paper-size="legal"] .supplemental-transmittal-doc.print-doc div,
+  html[data-paper-size="legal"] .supplemental-transmittal-doc.print-doc span,
+  html[data-paper-size="legal"] .supplemental-transmittal-doc.print-doc li,
+  html[data-paper-size="legal"] .supplemental-transmittal-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="legal"] .supplemental-transmittal-doc.print-doc.ausf-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="a4"] .mc2010-transmittal-doc,
+  html[data-paper-size="a4"] .mc2010-transmittal-doc p,
+  html[data-paper-size="a4"] .mc2010-transmittal-doc div,
+  html[data-paper-size="a4"] .mc2010-transmittal-doc span,
+  html[data-paper-size="a4"] .mc2010-transmittal-doc li,
+  html[data-paper-size="a4"] .mc2010-transmittal-doc td,
+  html[data-paper-size="a4"] .mc2010-transmittal-doc th,
+  html[data-paper-size="a4"] .mc2010-transmittal-doc .print-doc-footer p,
+  html[data-paper-size="a4"] .mc2010-transmittal-doc.ausf-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="short"] .mc2010-transmittal-doc,
+  html[data-paper-size="short"] .mc2010-transmittal-doc p,
+  html[data-paper-size="short"] .mc2010-transmittal-doc div,
+  html[data-paper-size="short"] .mc2010-transmittal-doc span,
+  html[data-paper-size="short"] .mc2010-transmittal-doc li,
+  html[data-paper-size="short"] .mc2010-transmittal-doc td,
+  html[data-paper-size="short"] .mc2010-transmittal-doc th,
+  html[data-paper-size="short"] .mc2010-transmittal-doc .print-doc-footer p,
+  html[data-paper-size="short"] .mc2010-transmittal-doc.ausf-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="long"] .mc2010-transmittal-doc,
+  html[data-paper-size="long"] .mc2010-transmittal-doc p,
+  html[data-paper-size="long"] .mc2010-transmittal-doc div,
+  html[data-paper-size="long"] .mc2010-transmittal-doc span,
+  html[data-paper-size="long"] .mc2010-transmittal-doc li,
+  html[data-paper-size="long"] .mc2010-transmittal-doc td,
+  html[data-paper-size="long"] .mc2010-transmittal-doc th,
+  html[data-paper-size="long"] .mc2010-transmittal-doc .print-doc-footer p,
+  html[data-paper-size="long"] .mc2010-transmittal-doc.ausf-doc.print-doc .print-doc-footer p,
+  html[data-paper-size="legal"] .mc2010-transmittal-doc,
+  html[data-paper-size="legal"] .mc2010-transmittal-doc p,
+  html[data-paper-size="legal"] .mc2010-transmittal-doc div,
+  html[data-paper-size="legal"] .mc2010-transmittal-doc span,
+  html[data-paper-size="legal"] .mc2010-transmittal-doc li,
+  html[data-paper-size="legal"] .mc2010-transmittal-doc td,
+  html[data-paper-size="legal"] .mc2010-transmittal-doc th,
+  html[data-paper-size="legal"] .mc2010-transmittal-doc .print-doc-footer p,
+  html[data-paper-size="legal"] .mc2010-transmittal-doc.ausf-doc.print-doc .print-doc-footer p {
+    font-family: 'Times New Roman', Times, serif !important;
+    font-size: 12pt !important;
+  }
+
   html[data-paper-size="short"] .ausf-doc .print-doc-header,
   html[data-paper-size="short"] .ausf-0-6-doc .print-doc-header {
     margin-bottom: 0.28in !important;
@@ -7159,6 +7413,52 @@ body.pdf-capture .ausf-doc.print-doc .print-doc-footer hr {
   line-height: 1.35 !important;
 }
 
+/* Transmittal PDF capture: 12pt Times New Roman (AUSF, Court Decree, Legitimation, Supplemental, MC2010) */
+html[data-paper-size] body.pdf-capture .print-doc-transmittal-elderly,
+html[data-paper-size] body.pdf-capture .print-doc-transmittal-elderly p,
+html[data-paper-size] body.pdf-capture .print-doc-transmittal-elderly div,
+html[data-paper-size] body.pdf-capture .print-doc-transmittal-elderly span,
+html[data-paper-size] body.pdf-capture .print-doc-transmittal-elderly li,
+html[data-paper-size] body.pdf-capture .print-doc-transmittal-elderly ol li,
+html[data-paper-size] body.pdf-capture .print-doc-transmittal-elderly.ausf-doc,
+html[data-paper-size] body.pdf-capture .print-doc-transmittal-elderly.ausf-doc p,
+html[data-paper-size] body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer p,
+html[data-paper-size] body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs,
+html[data-paper-size] body.pdf-capture .print-doc-transmittal-elderly.ausf-doc.print-doc .print-doc-footer p,
+html[data-paper-size] body.pdf-capture .print-doc-transmittal-elderly.ausf-doc.print-doc .print-doc-footer .text-xs,
+html[data-paper-size] body.pdf-capture .supplemental-transmittal-doc.print-doc,
+html[data-paper-size] body.pdf-capture .supplemental-transmittal-doc.print-doc p,
+html[data-paper-size] body.pdf-capture .supplemental-transmittal-doc.print-doc div,
+html[data-paper-size] body.pdf-capture .supplemental-transmittal-doc.print-doc span,
+html[data-paper-size] body.pdf-capture .supplemental-transmittal-doc.print-doc li,
+html[data-paper-size] body.pdf-capture .supplemental-transmittal-doc.print-doc .print-doc-footer p,
+html[data-paper-size] body.pdf-capture .supplemental-transmittal-doc.print-doc.ausf-doc.print-doc .print-doc-footer p,
+html[data-paper-size] body.pdf-capture .mc2010-transmittal-doc,
+html[data-paper-size] body.pdf-capture .mc2010-transmittal-doc p,
+html[data-paper-size] body.pdf-capture .mc2010-transmittal-doc div,
+html[data-paper-size] body.pdf-capture .mc2010-transmittal-doc span,
+html[data-paper-size] body.pdf-capture .mc2010-transmittal-doc li,
+html[data-paper-size] body.pdf-capture .mc2010-transmittal-doc td,
+html[data-paper-size] body.pdf-capture .mc2010-transmittal-doc th,
+html[data-paper-size] body.pdf-capture .mc2010-transmittal-doc .print-doc-footer p,
+html[data-paper-size] body.pdf-capture .mc2010-transmittal-doc.ausf-doc.print-doc .print-doc-footer p {
+  font-family: 'Times New Roman', Times, serif !important;
+  font-size: 12pt !important;
+}
+
+@media print {
+  html[data-paper-size] .print-doc-transmittal-elderly.ausf-doc.print-doc .print-doc-footer,
+  html[data-paper-size] .print-doc-transmittal-elderly.ausf-doc.print-doc .print-doc-footer p,
+  html[data-paper-size] .print-doc-transmittal-elderly.ausf-doc.print-doc .print-doc-footer .text-xs,
+  html[data-paper-size] .supplemental-transmittal-doc.print-doc.ausf-doc.print-doc .print-doc-footer,
+  html[data-paper-size] .supplemental-transmittal-doc.print-doc.ausf-doc.print-doc .print-doc-footer p,
+  html[data-paper-size] .mc2010-transmittal-doc.ausf-doc.print-doc .print-doc-footer,
+  html[data-paper-size] .mc2010-transmittal-doc.ausf-doc.print-doc .print-doc-footer p {
+    font-family: 'Times New Roman', Times, serif !important;
+    font-size: 12pt !important;
+  }
+}
+
 /* AUSF Only (long bond): screen preview — unchanged placement */
 html[data-paper-size="a4"] .ausf-only-doc .registrar-signature-zone,
 html[data-paper-size="short"] .ausf-only-doc .registrar-signature-zone,
@@ -7923,6 +8223,14 @@ html[data-paper-size="legal"] body.pdf-capture .print-doc-transmittal-elderly.le
   html[data-paper-size="legal"] .print-doc-transmittal-elderly.ausf-transmittal-doc .transmittal-closing-respectfully-line {
     margin-bottom: 2em !important;
   }
+  /* Date → first addressee line: 2 line gaps (print only) */
+  .print-doc-transmittal-elderly.ausf-transmittal-doc p.ausf-transmittal-print-date {
+    margin-bottom: 2em !important;
+  }
+  .print-doc-transmittal-elderly.ausf-transmittal-doc .print-doc-body > .ausf-transmittal-psa-header,
+  .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-header {
+    margin-top: 0 !important;
+  }
 }
 html[data-paper-size="a4"] body.pdf-capture .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-attachments-print,
 html[data-paper-size="short"] body.pdf-capture .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-attachments-print,
@@ -7952,6 +8260,13 @@ html[data-paper-size="short"] body.pdf-capture .print-doc-transmittal-elderly.au
 html[data-paper-size="long"] body.pdf-capture .print-doc-transmittal-elderly.ausf-transmittal-doc .transmittal-closing-respectfully-line,
 html[data-paper-size="legal"] body.pdf-capture .print-doc-transmittal-elderly.ausf-transmittal-doc .transmittal-closing-respectfully-line {
   margin-bottom: 2em !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly.ausf-transmittal-doc p.ausf-transmittal-print-date {
+  margin-bottom: 2em !important;
+}
+body.pdf-capture .print-doc-transmittal-elderly.ausf-transmittal-doc .print-doc-body > .ausf-transmittal-psa-header,
+body.pdf-capture .print-doc-transmittal-elderly.ausf-transmittal-doc .ausf-transmittal-psa-header {
+  margin-top: 0 !important;
 }
 
 @media print {

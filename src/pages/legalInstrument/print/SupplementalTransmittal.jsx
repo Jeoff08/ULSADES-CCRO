@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import './supplementalTransmittalLayout.css'
 import { PrintHeaderRow, TransmittalDocumentTitle, DocumentFooter } from '../../../components/print'
 import { formatTransmittalDateLong, formatDobDayMonthYearUpper } from '../../../lib/printUtils'
+import { formatTransmittalPsaLineForPrint } from '../../../lib/transmittalLocalAddressee'
 import {
   SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS,
   ccrTransmittalThruBlockForPrint,
@@ -96,11 +97,15 @@ export default function SupplementalTransmittal({
             {dateLine || '\u00a0'}
           </p>
 
-          <div className="mb-6 space-y-1 text-sm">
-            <p className="font-bold uppercase">{toLines[0]}</p>
+          <div className="transmittal-psa-to-block mb-6 space-y-0 text-sm leading-[1.15]">
+            <p className="m-0 p-0">
+              <span className="font-bold transmittal-psa-to-line-0">
+                {formatTransmittalPsaLineForPrint(toLines[0], 0)}
+              </span>
+            </p>
             {toLines.slice(1).map((line, i) => (
-              <p key={`rec-psa-${i}`} className="uppercase">
-                {line}
+              <p key={`rec-psa-${i}`} className="m-0 p-0 font-normal normal-case">
+                {formatTransmittalPsaLineForPrint(line, i + 1)}
               </p>
             ))}
           </div>

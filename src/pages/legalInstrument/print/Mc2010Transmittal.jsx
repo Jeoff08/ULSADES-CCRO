@@ -2,6 +2,7 @@ import React from 'react'
 import './mc2010TransmittalLayout.css'
 import { PrintHeaderRow, TransmittalDocumentTitle, DocumentFooter } from '../../../components/print'
 import { formatTransmittalDateLong, formatDobDayMonthYearUpper } from '../../../lib/printUtils'
+import { formatTransmittalPsaLineForPrint } from '../../../lib/transmittalLocalAddressee'
 import {
   SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS,
   ccrTransmittalThruBlockForPrint,
@@ -81,12 +82,16 @@ export default function Mc2010Transmittal({
           </p>
           <Mc2010LetterGap />
 
-          <p className="mc2010-stack-tight-p mc2010-recipient-block uppercase">
-            <span className="font-bold">{toLines[0]}</span>
+          <p className="mc2010-stack-tight-p mc2010-recipient-block transmittal-psa-to-block leading-[1.15]">
+            <span className="font-bold transmittal-psa-to-line-0">
+              {formatTransmittalPsaLineForPrint(toLines[0], 0)}
+            </span>
             {toLines.slice(1).map((line, i) => (
               <React.Fragment key={`rec-psa-${i}`}>
                 <br />
-                {line}
+                <span className="transmittal-psa-to-line-body font-normal">
+                  {formatTransmittalPsaLineForPrint(line, i + 1)}
+                </span>
               </React.Fragment>
             ))}
           </p>

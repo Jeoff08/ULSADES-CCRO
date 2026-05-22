@@ -13,8 +13,10 @@ import {
   LOCAL_TRANSMITTAL_ATTN_LINES,
   LOCAL_TRANSMITTAL_ATTN_PREFIX,
   LOCAL_TRANSMITTAL_TO_PSA_LINES,
+  formatTransmittalPsaLineForPrint,
   resolveOotAttnForPrint,
   resolveOotPsaPrintLines,
+  splitTransmittalSubjectLine,
 } from '../../../lib/transmittalLocalAddressee'
 import {
   AUSF_TRANSMITTAL_ADDRESSEE_EXAMPLE_LINES,
@@ -71,14 +73,13 @@ function TransmittalAttnGhostField({ value, onChange, example, inputClassName, a
   )
 }
 
-function TransmittalLocalToPsaBlock({ className = '', uppercase = false, courtDecreeStyle = false }) {
+function TransmittalLocalToPsaBlock({ className = '', courtDecreeStyle = false }) {
   return (
     <div className={className}>
       <p
         className={[
-          'm-0 p-0 text-left',
-          courtDecreeStyle ? 'leading-none normal-case' : 'leading-tight',
-          uppercase ? 'uppercase' : '',
+          'transmittal-psa-to-block m-0 p-0 text-left leading-[1.15]',
+          courtDecreeStyle ? 'court-decree-transmittal-psa-block normal-case' : 'ausf-transmittal-psa-block',
         ]
           .filter(Boolean)
           .join(' ')}
@@ -90,14 +91,14 @@ function TransmittalLocalToPsaBlock({ className = '', uppercase = false, courtDe
               className={
                 printIdx === 0
                   ? courtDecreeStyle
-                    ? 'court-decree-transmittal-psa-name font-bold'
-                    : 'ausf-transmittal-psa-name font-bold'
+                    ? 'court-decree-transmittal-psa-name transmittal-psa-to-line-0 font-bold'
+                    : 'ausf-transmittal-psa-name transmittal-psa-to-line-0 font-bold'
                   : courtDecreeStyle
-                    ? ''
-                    : 'ausf-transmittal-psa-line'
+                    ? 'transmittal-psa-to-line-body'
+                    : 'ausf-transmittal-psa-line transmittal-psa-to-line-body'
               }
             >
-              {uppercase ? line.toUpperCase() : line}
+              {formatTransmittalPsaLineForPrint(line, printIdx)}
             </span>
           </React.Fragment>
         ))}
@@ -106,12 +107,12 @@ function TransmittalLocalToPsaBlock({ className = '', uppercase = false, courtDe
   )
 }
 
-function localPsaPrintLinesFromDraft(psaDraft, { uppercase = false } = {}) {
-  const filled = filledAddresseePrintLines(psaDraft, { uppercase })
+function localPsaPrintLinesFromDraft(psaDraft) {
+  const filled = filledAddresseePrintLines(psaDraft)
   if (filled.length > 0) return filled
   return LOCAL_TRANSMITTAL_TO_PSA_LINES.map((line, i) => ({
     i,
-    text: uppercase ? line.toUpperCase() : line,
+    text: formatTransmittalPsaLineForPrint(line, i),
   }))
 }
 
@@ -124,20 +125,18 @@ function EditableLocalPsaAddresseeBlock({
   onPersistDraft,
   savePsaFields,
   courtDecreeStyle = false,
-  uppercase = false,
 }) {
-  const printLines = localPsaPrintLinesFromDraft(psaDraft, { uppercase })
+  const printLines = localPsaPrintLinesFromDraft(psaDraft)
   const firstLineClass = courtDecreeStyle
-    ? 'court-decree-transmittal-psa-name font-bold'
-    : 'ausf-transmittal-psa-name font-bold'
+    ? 'court-decree-transmittal-psa-name transmittal-psa-to-line-0 font-bold'
+    : 'ausf-transmittal-psa-name transmittal-psa-to-line-0 font-bold'
 
   return (
     <div className={className}>
       <p
         className={[
-          'print-only m-0 p-0 text-left',
-          courtDecreeStyle ? 'court-decree-transmittal-psa-block leading-none normal-case' : 'leading-tight',
-          uppercase ? 'uppercase' : '',
+          'transmittal-psa-to-block print-only m-0 p-0 text-left leading-[1.15]',
+          courtDecreeStyle ? 'court-decree-transmittal-psa-block normal-case' : 'ausf-transmittal-psa-block',
         ]
           .filter(Boolean)
           .join(' ')}
@@ -147,13 +146,11 @@ function EditableLocalPsaAddresseeBlock({
             {printIdx > 0 ? <br /> : null}
             <span
               className={
-                printIdx === 0
+                i === 0
                   ? firstLineClass
                   : courtDecreeStyle
-                    ? ''
-                    : uppercase
-                      ? 'ausf-transmittal-psa-line'
-                      : 'ausf-transmittal-psa-line'
+                    ? 'transmittal-psa-to-line-body'
+                    : 'ausf-transmittal-psa-line transmittal-psa-to-line-body'
               }
             >
               {text}
@@ -172,7 +169,7 @@ function EditableLocalPsaAddresseeBlock({
                 inlineAddrInput,
                 courtDecreeStyle ? 'normal-case placeholder:normal-case text-[12pt]' : '',
                 i === 0 ? `${firstLineClass} ${courtDecreeStyle ? 'text-[12pt]' : ''}` : courtDecreeStyle ? 'text-[12pt]' : '',
-                uppercase ? 'uppercase tracking-wide' : '',
+                i === 0 ? 'uppercase tracking-wide' : 'normal-case',
               ]
                 .filter(Boolean)
                 .join(' ')}
@@ -334,13 +331,34 @@ function readAttnBlockDraftFrom(src) {
   }
 }
 
-/** Split â€œSUBJECT: â€¦â€ for hanging layout (bold label + wrapped body). */
-function splitLegitimationSubjectLine(subjectText) {
-  const s = String(subjectText ?? '')
-  const m = s.match(/^\s*(SUBJECT\s*:\s*)([\s\S]*)$/i)
-  if (m) return { label: 'SUBJECT:', body: (m[2] ?? '').trim() }
-  return { label: 'SUBJECT:', body: s.trim() }
+/** Hanging SUBJECT (print/PDF): line 2+ align under text after “SUBJECT:”. */
+function TransmittalSubjectHangingBlock({ subjectText, className = '', marginClass = '' }) {
+  const { label, body } = splitTransmittalSubjectLine(subjectText)
+  const bodyLines = body.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
+  return (
+    <div
+      className={[
+        'transmittal-subject-hanging grid grid-cols-[max-content_minmax(0,1fr)] gap-x-1 items-start text-left uppercase leading-[1.15] text-[12pt]',
+        className,
+        marginClass,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <span className="transmittal-subject-label col-start-1 row-start-1 shrink-0 font-bold whitespace-nowrap">
+        {label}
+      </span>
+      <div className="transmittal-subject-body col-start-2 row-start-1 min-w-0 font-normal">
+        {bodyLines.map((line, i) => (
+          <span key={`subject-body-${i}`} className={i > 0 ? 'block' : undefined}>
+            {line}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
 }
+
 /** Example addressee for AUSF inputs (placeholder) and Court Decree OOT defaults */
 const DEFAULT_AUSF_CD_TRANSMITTAL_ADDRESSEE_LINES = AUSF_TRANSMITTAL_ADDRESSEE_EXAMPLE_LINES
 
@@ -366,13 +384,13 @@ function stripAusfExamplePlaceholderRows(rows) {
 }
 
 /** Print/PDF: only non-empty addressee lines (first printed line gets emphasis). */
-function filledAddresseePrintLines(rows, { uppercase = false } = {}) {
+function filledAddresseePrintLines(rows) {
   return rows
     .map((line, i) => ({ i, text: String(line ?? '').trim() }))
     .filter(({ text }) => text.length > 0)
     .map(({ i, text }) => ({
       i,
-      text: uppercase ? text.toUpperCase() : text,
+      text: formatTransmittalPsaLineForPrint(text, i),
     }))
 }
 const COURT_DECREE_DROPDOWN_3 = [
@@ -675,12 +693,9 @@ export default function TransmittalDoc({
   ])
 
   const courtDecreePsaPrintLines = filledAddresseePrintLines(psaDraft)
-  const ausfPsaPrintLines = filledAddresseePrintLines(
-    stripAusfExamplePlaceholderRows(ausfCdRecipientLines),
-    { uppercase: true },
-  )
+  const ausfPsaPrintLines = filledAddresseePrintLines(stripAusfExamplePlaceholderRows(ausfCdRecipientLines))
   const courtDecreeOotPsaPrintLines = resolveOotPsaPrintLines(ausfCdRecipientLines)
-  const legOotPsaPrintLines = resolveOotPsaPrintLines(legOotLines, { uppercase: true })
+  const legOotPsaPrintLines = resolveOotPsaPrintLines(legOotLines)
 
   const savePsaFields = useCallback(() => {
     if (typeof onPersistDraft !== 'function') return
@@ -804,8 +819,6 @@ export default function TransmittalDoc({
       ? 'mb-6'
       : courtDecreeHeaderAboveSubjectGapClass
 
-  const legitimationSubjectParts = isLegitimationTransmittal ? splitLegitimationSubjectLine(subject) : null
-
   return (
     <div
       className={[
@@ -853,7 +866,6 @@ export default function TransmittalDoc({
             inlineAddrInput={inlineAddrInput}
             onPersistDraft={onPersistDraft}
             savePsaFields={savePsaFields}
-            uppercase
           />
         ) : showStyledOotAddressee && isLegOot ? (
           <div
@@ -864,11 +876,19 @@ export default function TransmittalDoc({
               .filter(Boolean)
               .join(' ')}
           >
-            <p className="print-only m-0 p-0 text-left uppercase tracking-wide leading-snug">
+            <p className="transmittal-psa-to-block print-only m-0 p-0 text-left leading-[1.15]">
               {legOotPsaPrintLines.map(({ i, text }, printIdx) => (
                 <React.Fragment key={`leg-oot-psa-print-${i}`}>
                   {printIdx > 0 ? <br /> : null}
-                  <span className={printIdx === 0 ? 'font-bold' : 'font-normal'}>{text}</span>
+                  <span
+                    className={
+                      i === 0
+                        ? 'transmittal-psa-to-line-0 font-bold'
+                        : 'transmittal-psa-to-line-body font-normal'
+                    }
+                  >
+                    {text}
+                  </span>
                 </React.Fragment>
               ))}
             </p>
@@ -907,23 +927,28 @@ export default function TransmittalDoc({
           </div>
         ) : usesAusfCdSixLineRecipient && isAusfTransmittal ? (
           <EditableLocalPsaAddresseeBlock
-            className={`ausf-transmittal-psa-header mt-4 pl-0 pr-0 text-left text-[12pt] uppercase ${psaBlockBottomClass}`}
+            className={`ausf-transmittal-psa-header mt-4 pl-0 pr-0 text-left text-[12pt] ${psaBlockBottomClass}`}
             psaDraft={psaDraft}
             setPsaDraft={setPsaDraft}
             inlineAddrInput={inlineAddrInput}
             onPersistDraft={onPersistDraft}
             savePsaFields={savePsaFields}
-            uppercase
           />
         ) : usesAusfCdSixLineRecipient ? (
           <div
             className={`court-decree-transmittal-psa-header mt-4 pl-0 pr-0 text-left text-[12pt] leading-none normal-case ${psaBlockBottomClass}`}
           >
-            <p className="print-only court-decree-transmittal-psa-block m-0 p-0 text-left leading-none normal-case">
+            <p className="transmittal-psa-to-block print-only court-decree-transmittal-psa-block m-0 p-0 text-left leading-[1.15] normal-case">
               {courtDecreeOotPsaPrintLines.map(({ i, text }, printIdx) => (
                 <React.Fragment key={`court-decree-oot-psa-print-${i}`}>
                   {printIdx > 0 ? <br /> : null}
-                  <span className={printIdx === 0 ? 'court-decree-transmittal-psa-name font-bold' : ''}>
+                  <span
+                    className={
+                      i === 0
+                        ? 'court-decree-transmittal-psa-name transmittal-psa-to-line-0 font-bold'
+                        : 'transmittal-psa-to-line-body'
+                    }
+                  >
                     {text}
                   </span>
                 </React.Fragment>
@@ -989,26 +1014,19 @@ export default function TransmittalDoc({
           />
         ) : null}
 
-        {isLegitimationTransmittal ? (
-          <div className="legitimation-transmittal-subject-hanging text-left text-[12pt] font-sans uppercase leading-snug">
-            <span className="legitimation-transmittal-subject-label col-start-1 row-start-1 shrink-0 font-bold whitespace-nowrap">
-              {legitimationSubjectParts.label}
-            </span>
-            <span className="legitimation-transmittal-subject-body col-start-2 row-start-1 min-w-0 font-normal whitespace-normal break-words">
-              {legitimationSubjectParts.body}
-            </span>
-          </div>
-        ) : (
-          <p
-            className={
-              isCourtDecreeTransmittal
-                ? 'court-decree-transmittal-subject-line font-bold uppercase text-[12pt] mb-[2em]'
-                : 'ausf-transmittal-subject-line font-bold uppercase whitespace-pre-line mb-0'
-            }
-          >
-            {subject}
-          </p>
-        )}
+        <TransmittalSubjectHangingBlock
+          subjectText={subject}
+          className={
+            isLegitimationTransmittal
+              ? 'legitimation-transmittal-subject-hanging font-sans'
+              : isCourtDecreeTransmittal
+                ? 'court-decree-transmittal-subject-hanging'
+                : 'ausf-transmittal-subject-hanging'
+          }
+          marginClass={
+            isCourtDecreeTransmittal ? 'mb-[2em]' : isLegitimationTransmittal ? 'mb-[2.75em]' : 'mb-0'
+          }
+        />
 
         <p
           className={
