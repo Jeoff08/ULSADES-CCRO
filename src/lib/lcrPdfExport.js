@@ -90,6 +90,40 @@ function injectLcrTriplePdfPrintStyles() {
     min-height: 330.2mm !important;
     height: 330.2mm !important;
   }
+  html.${SUPPLEMENTAL_LCR_ONLY_EXPORT_CLASS} #supplemental-print-page:not(.mc2010-print-root) .${LCR_TRIPLE_PDF_PAGE_CLASS} .court-decree-lcr-form {
+    padding-left: 0.4in !important;
+    padding-right: 0.4in !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  html.${SUPPLEMENTAL_LCR_ONLY_EXPORT_CLASS} #supplemental-print-page.mc2010-print-root .${LCR_TRIPLE_PDF_PAGE_CLASS} .court-decree-lcr-form {
+    padding-left: 0.4in !important;
+    padding-right: 0.4in !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+body.lcr-triple-pdf-export.pdf-capture #supplemental-print-page:not(.mc2010-print-root) #supplemental-print-lcr .court-decree-lcr-form,
+html.${SUPPLEMENTAL_LCR_ONLY_EXPORT_CLASS} #supplemental-print-page:not(.mc2010-print-root) .court-decree-lcr-form {
+  padding-left: 0.4in !important;
+  padding-right: 0.4in !important;
+  box-sizing: border-box !important;
+  max-width: none !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+body.lcr-triple-pdf-export.pdf-capture #supplemental-print-page.mc2010-print-root #supplemental-print-lcr .court-decree-lcr-form,
+html.${SUPPLEMENTAL_LCR_ONLY_EXPORT_CLASS} #supplemental-print-page.mc2010-print-root .court-decree-lcr-form {
+  padding-left: 0.4in !important;
+  padding-right: 0.4in !important;
+  box-sizing: border-box !important;
+  max-width: none !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 `
 }

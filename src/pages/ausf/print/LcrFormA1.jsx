@@ -3,11 +3,12 @@ import {
   formatDateCert,
   formatDateLong,
   fullName,
-  joinCommaParts
+  joinCommaParts,
+  splitTextForBoldUnderline,
 } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
-import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
 import LcrCertificationRequestLine from '../../../components/lcr/LcrCertificationRequestLine'
+import LcrRemarksEditor from '../../../components/lcr/LcrRemarksEditor'
 
 /** AUSF print type for LCR Form A1. */
 export const AUSF_LCR_A1_PRINT_TYPE = 'child-not-ack-lcr'
@@ -181,6 +182,25 @@ export default function LcrFormA1({ data, onDataChange }) {
   // Specific remarks for A1 form
   const ackDate = formatDateLong(data.colbDateOfRegistration)?.toUpperCase() || '—'
 
+  const defaultRemarks = `Acknowledged by ${fatherFull || '—'} on ${ackDate} under Registry Number ${registryNo}. The child shall be known as ${childFull?.toUpperCase() || '—'}`
+  const savedRemarks = data?.remarks ?? defaultRemarks
+  const remarksBoldParts = [
+    fatherFull || '—',
+    ackDate,
+    registryNo,
+    childFull?.toUpperCase() || '—',
+    childFull,
+  ].filter(Boolean)
+
+  const renderRemarksPrint = (draft) =>
+    splitTextForBoldUnderline(draft, remarksBoldParts).map((seg, i) =>
+      seg.bold ? (
+        <span key={i} className="font-bold underline">{seg.text}</span>
+      ) : (
+        seg.text
+      )
+    )
+
 
   const tableData = [
     { label: 'LCR Registry Number', val: registryNo },
@@ -250,15 +270,14 @@ export default function LcrFormA1({ data, onDataChange }) {
                 style={{ fontSize: '16px', lineHeight: 1.3 }}
               />
 
-              <div className="mt-10 mb-4 court-decree-lcr-body ausf-lcr-remarks-block">
-                <p className="font-bold text-sm mb-1 uppercase">REMARKS:</p>
-                <p
-                  className={withLcrRemarksPrintClass('text-justify break-words [overflow-wrap:anywhere]')}
-                  style={lcrRemarksBodyStyle(data)}
-                >
-                  Acknowledged by <span className="font-bold underline">{fatherFull || '—'}</span> on <span className="font-bold underline">{ackDate}</span> under Registry Number <span className="font-bold underline">{registryNo}</span>. The child shall be known as <span className="font-bold underline">{childFull?.toUpperCase() || '—'}</span>
-                </p>
-              </div>
+              <LcrRemarksEditor
+                data={data}
+                value={savedRemarks}
+                onSave={onDataChange ? (v) => onDataChange({ ...data, remarks: v }) : undefined}
+                blockClassName="mt-10 mb-4 court-decree-lcr-body ausf-lcr-remarks-block"
+                labelClassName="font-bold text-sm mb-1 uppercase"
+                printContent={renderRemarksPrint}
+              />
 
               <div className="mt-10 mb-4 court-decree-lcr-body ausf-lcr-verified-block">
                 <div className="flex justify-between items-end gap-4">

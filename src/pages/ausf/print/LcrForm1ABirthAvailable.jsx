@@ -3,11 +3,12 @@ import {
   formatDateCert,
   formatDateLong,
   fullName,
-  joinCommaParts
+  joinCommaParts,
+  splitTextForBoldUnderline,
 } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
-import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
 import LcrCertificationRequestLine from '../../../components/lcr/LcrCertificationRequestLine'
+import LcrRemarksEditor from '../../../components/lcr/LcrRemarksEditor'
 
 /** AUSF print type for LCR Form 1A (Birth-Available). */
 export const AUSF_LCR_1A_BIRTH_PRINT_TYPE = 'child-ack-lcr'
@@ -193,6 +194,19 @@ export default function LcrForm1ABirthAvailable({ data, onDataChange }) {
   const registryNo = data.colbRegistryNo || '—'
   const verifiedByLabel = 'Verified by:'
 
+  const defaultRemarks = `"The child shall be known as ${childFull || '—'} pursuant to RA 9255."`
+  const savedRemarks = data?.remarks ?? defaultRemarks
+  const remarksBoldParts = [childFull || '—', childFull?.toUpperCase()].filter(Boolean)
+
+  const renderRemarksPrint = (draft) =>
+    splitTextForBoldUnderline(draft, remarksBoldParts).map((seg, i) =>
+      seg.bold ? (
+        <span key={i} className="font-bold underline">{seg.text}</span>
+      ) : (
+        seg.text
+      )
+    )
+
 
   const tableData = [
     { label: 'LCR Registry Number', val: registryNo },
@@ -262,15 +276,14 @@ export default function LcrForm1ABirthAvailable({ data, onDataChange }) {
                 style={{ fontSize: '16px', lineHeight: 1.3 }}
               />
 
-              <div className="mt-10 mb-4 court-decree-lcr-body ausf-lcr-remarks-block">
-                <p className="font-bold text-sm mb-1 uppercase">REMARKS:</p>
-                <p
-                  className={withLcrRemarksPrintClass('text-justify break-words [overflow-wrap:anywhere]')}
-                  style={lcrRemarksBodyStyle(data)}
-                >
-                  &quot;The child shall be known as <span className="font-bold underline">{childFull || '—'}</span> pursuant to RA 9255.&quot;
-                </p>
-              </div>
+              <LcrRemarksEditor
+                data={data}
+                value={savedRemarks}
+                onSave={onDataChange ? (v) => onDataChange({ ...data, remarks: v }) : undefined}
+                blockClassName="mt-10 mb-4 court-decree-lcr-body ausf-lcr-remarks-block"
+                labelClassName="font-bold text-sm mb-1 uppercase"
+                printContent={renderRemarksPrint}
+              />
 
               <div className="mt-10 mb-4 court-decree-lcr-body ausf-lcr-verified-block">
                 <div className="flex justify-between items-end gap-4">

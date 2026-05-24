@@ -9425,3 +9425,247 @@ body.pdf-capture .supplemental-transmittal-doc.print-doc .supplemental-transmitt
     line-height: 1.05 !important;
   }
 }
+
+/* LCR Forms 1A/2A/3A — unified 12pt (AUSF, Court Decree, Legitimation, Supplemental, MC2010-04) */
+.court-decree-lcr-form,
+.court-decree-lcr-form-outer .court-decree-lcr-form,
+.legitimation-lcr1a-doc.court-decree-lcr-form,
+.ausf-lcr-1a-birth-available.court-decree-lcr-form,
+.ausf-lcr-a1-form.court-decree-lcr-form,
+.lcr-form-1a-table-only,
+.lcr-form-2a-table-only,
+.lcr-form-3a-table-only,
+#supplemental-print-lcr .court-decree-lcr-form,
+body .mc2010-print-root .court-decree-lcr-form,
+body .mc2010-print-root .court-decree-lcr-form-outer {
+  font-size: 12pt !important;
+  line-height: 1.3 !important;
+}
+
+.court-decree-lcr-form .court-decree-lcr-body,
+.court-decree-lcr-form .court-decree-lcr-table,
+.court-decree-lcr-form .court-decree-lcr-table td,
+.court-decree-lcr-form .court-decree-lcr-table th,
+.court-decree-lcr-form p,
+.court-decree-lcr-form .text-sm,
+.court-decree-lcr-form .text-xs,
+.court-decree-lcr-form li,
+.court-decree-lcr-form label,
+.court-decree-lcr-form input,
+.court-decree-lcr-form textarea,
+.court-decree-lcr-form .lcr-form-bottom-content,
+.court-decree-lcr-form .lcr-form-bottom-content p,
+.court-decree-lcr-form .lcr-form-bottom-content .text-sm,
+.court-decree-lcr-form .print-doc-header p,
+.court-decree-lcr-form .print-header-address,
+.court-decree-lcr-form .print-doc-footer p,
+.court-decree-lcr-form .print-doc-footer .text-xs,
+.court-decree-lcr-form .court-decree-lcr-body-wrap p,
+.court-decree-lcr-form .court-decree-lcr-body-wrap td,
+.court-decree-lcr-form .court-decree-lcr-body-wrap div,
+.legitimation-lcr1a-doc .court-decree-lcr-table td,
+.legitimation-lcr1a-doc p,
+.ausf-lcr-a1-form .ausf-lcr-cert-line,
+.lcr-form-1a-table-only .court-decree-lcr-table td,
+.lcr-form-2a-table-only .court-decree-lcr-table td,
+.lcr-form-3a-table-only .court-decree-lcr-table td,
+body .mc2010-print-root .court-decree-lcr-form .court-decree-lcr-body,
+body .mc2010-print-root .court-decree-lcr-form .court-decree-lcr-table td,
+body .mc2010-print-root .court-decree-lcr-form p,
+body .mc2010-print-root .court-decree-lcr-form .text-sm {
+  font-size: 12pt !important;
+  line-height: 1.3 !important;
+}
+
+html[data-paper-size] .court-decree-lcr-form .court-decree-lcr-body,
+html[data-paper-size] .court-decree-lcr-form .court-decree-lcr-table,
+html[data-paper-size] .court-decree-lcr-form .court-decree-lcr-table td,
+html[data-paper-size] .court-decree-lcr-form .court-decree-lcr-table th,
+html[data-paper-size] .court-decree-lcr-form p,
+html[data-paper-size] .court-decree-lcr-form .text-sm,
+html[data-paper-size] .court-decree-lcr-form .lcr-form-bottom-content p,
+html[data-paper-size] .court-decree-lcr-form .lcr-form-bottom-content .text-sm,
+html[data-paper-size] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-body,
+html[data-paper-size] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table,
+html[data-paper-size] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table td,
+html[data-paper-size] .court-decree-lcr-form.print-doc-lcr-2a p,
+html[data-paper-size] .court-decree-lcr-form.print-doc-lcr-2a .text-sm,
+html[data-paper-size] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-body,
+html[data-paper-size] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table,
+html[data-paper-size] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table td,
+html[data-paper-size] .court-decree-lcr-form.print-doc-lcr-3a p,
+html[data-paper-size] .court-decree-lcr-form.print-doc-lcr-3a .text-sm,
+html[data-paper-size] .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table,
+html[data-paper-size] .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table td,
+html[data-paper-size] .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table th,
+html[data-paper-size] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table,
+html[data-paper-size] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table td,
+html[data-paper-size] body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-table th {
+  font-size: 12pt !important;
+  line-height: 1.3 !important;
+}
+
+@media print {
+  .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .court-decree-lcr-body,
+  .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .court-decree-lcr-table,
+  .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .court-decree-lcr-table td,
+  .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) p,
+  .court-decree-lcr-form:not(.ausf-lcr-1a-birth-available) .text-sm,
+  .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-body,
+  .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table,
+  .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table td,
+  .court-decree-lcr-form.print-doc-lcr-2a p,
+  .court-decree-lcr-form.print-doc-lcr-2a .text-sm,
+  .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-body,
+  .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table,
+  .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table td,
+  .court-decree-lcr-form.print-doc-lcr-3a p,
+  .court-decree-lcr-form.print-doc-lcr-3a .text-sm,
+  html[data-paper-size] .court-decree-lcr-form .court-decree-lcr-body,
+  html[data-paper-size] .court-decree-lcr-form .court-decree-lcr-table td,
+  html[data-paper-size] .court-decree-lcr-form p,
+  html[data-paper-size] .court-decree-lcr-form .text-sm,
+  html[data-paper-size] .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table td,
+  html[data-paper-size] .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table td,
+  html[data-paper-size] .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table,
+  html[data-paper-size] .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table td {
+    font-size: 12pt !important;
+    line-height: 1.3 !important;
+  }
+}
+
+body.pdf-capture .court-decree-lcr-form .court-decree-lcr-body,
+body.pdf-capture .court-decree-lcr-form .court-decree-lcr-table,
+body.pdf-capture .court-decree-lcr-form .court-decree-lcr-table td,
+body.pdf-capture .court-decree-lcr-form p,
+body.pdf-capture .court-decree-lcr-form .text-sm,
+body.pdf-capture .court-decree-lcr-form.print-doc-lcr-2a .court-decree-lcr-table td,
+body.pdf-capture .court-decree-lcr-form.print-doc-lcr-3a .court-decree-lcr-table td,
+body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table,
+body.pdf-capture .court-decree-lcr-form-outer .court-decree-lcr-body-scaled .court-decree-lcr-table td,
+body.pdf-capture .legitimation-lcr1a-doc .court-decree-lcr-table td,
+body.pdf-capture .ausf-lcr-a1-form .ausf-lcr-cert-line {
+  font-size: 12pt !important;
+  line-height: 1.3 !important;
+}
+
+/* LCR table label column: vertically center when value wraps (e.g. Place of Birth) */
+.court-decree-lcr-form .court-decree-lcr-table tbody tr > td:first-child,
+.court-decree-lcr-form-outer .court-decree-lcr-table tbody tr > td:first-child,
+.legitimation-lcr1a-doc .court-decree-lcr-table tbody tr > td:first-child,
+.lcr-form-1a-table-only .court-decree-lcr-table tbody tr > td:first-child,
+.lcr-form-2a-table-only .court-decree-lcr-table tbody tr > td:first-child,
+.lcr-form-3a-table-only .court-decree-lcr-table tbody tr > td:first-child {
+  vertical-align: middle !important;
+}
+
+/* Supplemental LCR only: 0.4in left/right margins in print + PDF (not MC2010-04) */
+@media print {
+  #supplemental-print-page:not(.mc2010-print-root) #supplemental-print-lcr .court-decree-lcr-form,
+  body.lcr-triple-pdf-export #supplemental-print-page:not(.mc2010-print-root) #supplemental-print-lcr .court-decree-lcr-form,
+  html.supplemental-pdf-export--lcr-only #supplemental-print-page:not(.mc2010-print-root) .court-decree-lcr-form {
+    padding-left: 0.4in !important;
+    padding-right: 0.4in !important;
+    box-sizing: border-box !important;
+    max-width: none !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  #supplemental-print-page:not(.mc2010-print-root) #supplemental-print-lcr .max-w-\[210mm\] {
+    max-width: none !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+body.lcr-triple-pdf-export.pdf-capture #supplemental-print-page:not(.mc2010-print-root) #supplemental-print-lcr .court-decree-lcr-form,
+html.supplemental-pdf-export--lcr-only #supplemental-print-page:not(.mc2010-print-root) .court-decree-lcr-form {
+  padding-left: 0.4in !important;
+  padding-right: 0.4in !important;
+  box-sizing: border-box !important;
+  max-width: none !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+body.lcr-triple-pdf-export.pdf-capture #supplemental-print-page:not(.mc2010-print-root) #supplemental-print-lcr .max-w-\[210mm\] {
+  max-width: none !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* MC2010-04 LCR only: 0.4in left/right margins in print + PDF */
+@media print {
+  #supplemental-print-page.mc2010-print-root #supplemental-print-lcr .court-decree-lcr-form,
+  body.lcr-triple-pdf-export #supplemental-print-page.mc2010-print-root #supplemental-print-lcr .court-decree-lcr-form,
+  html.supplemental-pdf-export--lcr-only #supplemental-print-page.mc2010-print-root .court-decree-lcr-form {
+    padding-left: 0.4in !important;
+    padding-right: 0.4in !important;
+    box-sizing: border-box !important;
+    max-width: none !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  #supplemental-print-page.mc2010-print-root #supplemental-print-lcr .max-w-\[210mm\] {
+    max-width: none !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+body.lcr-triple-pdf-export.pdf-capture #supplemental-print-page.mc2010-print-root #supplemental-print-lcr .court-decree-lcr-form,
+html.supplemental-pdf-export--lcr-only #supplemental-print-page.mc2010-print-root .court-decree-lcr-form {
+  padding-left: 0.4in !important;
+  padding-right: 0.4in !important;
+  box-sizing: border-box !important;
+  max-width: none !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+body.lcr-triple-pdf-export.pdf-capture #supplemental-print-page.mc2010-print-root #supplemental-print-lcr .max-w-\[210mm\] {
+  max-width: none !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* MC2010-04 transmittal only: 0.4in left/right margins in print + PDF */
+@media print {
+  .mc2010-transmittal-doc.print-doc {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .mc2010-transmittal-doc.print-doc .mc2010-transmittal-header-zone,
+  .mc2010-transmittal-doc.print-doc .mc2010-transmittal-body-zone,
+  .mc2010-transmittal-doc.print-doc .mc2010-transmittal-footer-zone {
+    padding-left: 0.4in !important;
+    padding-right: 0.4in !important;
+    box-sizing: border-box !important;
+  }
+}
+body.pdf-capture .mc2010-transmittal-doc.print-doc,
+html.supplemental-pdf-export--transmittal-only .mc2010-transmittal-doc.print-doc {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box !important;
+}
+body.pdf-capture .mc2010-transmittal-doc.print-doc .mc2010-transmittal-header-zone,
+body.pdf-capture .mc2010-transmittal-doc.print-doc .mc2010-transmittal-body-zone,
+body.pdf-capture .mc2010-transmittal-doc.print-doc .mc2010-transmittal-footer-zone,
+html.supplemental-pdf-export--transmittal-only .mc2010-transmittal-doc.print-doc .mc2010-transmittal-header-zone,
+html.supplemental-pdf-export--transmittal-only .mc2010-transmittal-doc.print-doc .mc2010-transmittal-body-zone,
+html.supplemental-pdf-export--transmittal-only .mc2010-transmittal-doc.print-doc .mc2010-transmittal-footer-zone {
+  padding-left: 0.4in !important;
+  padding-right: 0.4in !important;
+  box-sizing: border-box !important;
+}

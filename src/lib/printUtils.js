@@ -515,3 +515,18 @@ export function normalizeLcroStaffTitle(title) {
 export function lcroStaffTitleForPrint(title) {
   return normalizeLcroStaffTitle(title) || DEFAULT_LCRO_STAFF_TITLE
 }
+
+/** Split remark text into segments for bold+underline rendering of known values. */
+export function splitTextForBoldUnderline(text, boldParts = []) {
+  const t = String(text ?? '')
+  if (!t) return [{ bold: false, text: '—' }]
+  const parts = [...new Set(boldParts.map((s) => String(s ?? '').trim()).filter(Boolean))]
+    .sort((a, b) => b.length - a.length)
+  if (parts.length === 0) return [{ bold: false, text: t }]
+  const escaped = parts.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  const re = new RegExp(`(${escaped.join('|')})`, 'g')
+  return t.split(re).filter((seg) => seg.length > 0).map((seg) => ({
+    bold: parts.includes(seg),
+    text: seg,
+  }))
+}

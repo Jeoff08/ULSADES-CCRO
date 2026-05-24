@@ -144,9 +144,9 @@ export function loadTransmittalProfiles() {
     const raw = localStorage.getItem(PROFILES_STORAGE_KEY)
     if (!raw) return ensureDefaultTransmittalProfiles()
     const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed) || parsed.length === 0) return ensureDefaultTransmittalProfiles()
-    const migrated = migrateLegacyAttnOnProfiles(parsed)
-    return restoreMissingPsaDefaultTransmittalProfiles(migrated).profiles
+    if (!Array.isArray(parsed)) return ensureDefaultTransmittalProfiles()
+    if (parsed.length === 0) return []
+    return migrateLegacyAttnOnProfiles(parsed)
   } catch {
     return ensureDefaultTransmittalProfiles()
   }

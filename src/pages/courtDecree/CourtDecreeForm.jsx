@@ -10,7 +10,7 @@ import { isLcr1aTableComplete, isLcr2aTableComplete, isLcr3aTableComplete } from
 import { commitFirstLetterUpperFromInput } from '../../lib/sentenceCase'
 import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
 import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShortcuts'
-import TransmittalProfilesSidebarButton from '../../components/transmittal/TransmittalProfilesSidebarButton'
+import { useTransmittalProfileAutoApply } from '../../components/transmittal/TransmittalProfilesSidebarButton'
 import { TRANSMITTAL_PROFILE_VARIANT } from '../../lib/transmittalProfileStorage'
 import {
   parseDdMmYyyyToDate,
@@ -445,6 +445,12 @@ export default function CourtDecreeForm() {
       saveCourtDecreeDraft(next)
       return next
     })
+  useTransmittalProfileAutoApply({
+    moduleKey: 'courtDecree',
+    variant: TRANSMITTAL_PROFILE_VARIANT.STANDARD,
+    form,
+    onApply: applyTransmittalProfile,
+  })
   const updateAndPersistDraft = (key, value) =>
     setForm((prev) => {
       const next = { ...prev, [key]: value }
@@ -1439,14 +1445,6 @@ export default function CourtDecreeForm() {
 
               <div className="court-decree-form-page__section" style={sectionDelay(sectionIndex++)}>
                 <CourtDecreeSection number="5" title="Transmittal letter (local or out of town)">
-                  <div className="mb-4 max-w-xs">
-                    <TransmittalProfilesSidebarButton
-                      moduleKey="courtDecree"
-                      variant={TRANSMITTAL_PROFILE_VARIANT.STANDARD}
-                      form={form}
-                      onApply={applyTransmittalProfile}
-                    />
-                  </div>
                   <p className="text-sm text-gray-600 mb-3 max-w-2xl">
                     Only one transmittal output is shown when you print: local Transmittal to PSA, or Out-of-Town
                     Transmittal — not both. This does not change certificates, LCR forms, or annotations.

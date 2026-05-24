@@ -29,7 +29,7 @@ import {
   supplementalLcrSliceHasFilledFields,
 } from './lib/supplementalLcrFormsState'
 import SupplementalTransmittalFieldsEditor from './SupplementalTransmittalFieldsEditor'
-import TransmittalProfilesSidebarButton from '../../components/transmittal/TransmittalProfilesSidebarButton'
+import { useTransmittalProfileAutoApply } from '../../components/transmittal/TransmittalProfilesSidebarButton'
 import { TRANSMITTAL_PROFILE_VARIANT } from '../../lib/transmittalProfileStorage'
 import SupplementalLcrFooterSignatoryPickers from './SupplementalLcrFooterSignatoryPickers'
 import LcrForm1ABirthAvailable from '../courtDecree/print/LcrForm1ABirthAvailable'
@@ -316,6 +316,12 @@ export default function SupplementalForm() {
       return next
     })
   }
+  useTransmittalProfileAutoApply({
+    moduleKey: 'supplemental',
+    variant: TRANSMITTAL_PROFILE_VARIANT.CCR,
+    form,
+    onApply: updateTransmittalPatch,
+  })
 
   const setColbSubject = (value) => {
     setForm((prev) => {
@@ -644,13 +650,6 @@ export default function SupplementalForm() {
                     </div>
                   </>
                 ) : null}
-
-                <TransmittalProfilesSidebarButton
-                  moduleKey="supplemental"
-                  variant={TRANSMITTAL_PROFILE_VARIANT.CCR}
-                  form={form}
-                  onApply={updateTransmittalPatch}
-                />
 
                 <button
                   type="button"
@@ -1076,7 +1075,6 @@ export default function SupplementalForm() {
                       data={form}
                       onPatch={updateTransmittalPatch}
                       inputClass={inputClass}
-                      transmittalProfileModuleKey="supplemental"
                     />
                     <div className="mt-8 p-4 rounded-xl bg-amber-50 border border-amber-200 text-center flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                       <button

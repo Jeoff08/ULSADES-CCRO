@@ -1,8 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import ConfirmRemoveRowModal from '../../components/ConfirmRemoveRowModal'
 import FlexibleFormDateInput from '../../components/forms/FlexibleFormDateInput'
-import TransmittalProfilesSidebarButton from '../../components/transmittal/TransmittalProfilesSidebarButton'
-import { TRANSMITTAL_PROFILE_VARIANT } from '../../lib/transmittalProfileStorage'
 import {
   SUPPLEMENTAL_TRANSMITTAL_DOC_TYPE_OPTIONS,
   SUPPLEMENTAL_TRANSMITTAL_SALUTATION_PRESETS,
@@ -28,9 +26,6 @@ export default function SupplementalTransmittalFieldsEditor({
   inputClass,
   showRecipientCity = true,
   signatoryDropdownPlacement = 'letter',
-  /** When set, shows “Manage transmittal addressee” (saved presets modal). */
-  transmittalProfileModuleKey,
-  transmittalProfileVariant = TRANSMITTAL_PROFILE_VARIANT.CCR,
 }) {
   const docType = data.transmittalDocType || ''
   const endorsementIds = Array.isArray(data.transmittalEndorsementIds) ? data.transmittalEndorsementIds : []
@@ -151,17 +146,6 @@ export default function SupplementalTransmittalFieldsEditor({
         <p className="text-xs text-gray-600 mt-1 leading-snug">
           Each line of the letter uses its own field (date, dropdown salutation, separate lines for To / Thru, then subject details). On screen you can review the full checklist tables; the printed PDF includes only the checked / selected rows.
         </p>
-        {transmittalProfileModuleKey ? (
-          <div className="mt-3 max-w-md">
-            <TransmittalProfilesSidebarButton
-              moduleKey={transmittalProfileModuleKey}
-              variant={transmittalProfileVariant}
-              form={data}
-              onApply={onPatch}
-              showRecipientCity={showRecipientCity}
-            />
-          </div>
-        ) : null}
       </div>
 
       <div className="rounded-lg border border-gray-200 bg-white p-3 space-y-4 text-sm">

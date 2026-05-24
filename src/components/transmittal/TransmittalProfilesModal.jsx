@@ -293,14 +293,13 @@ export default function TransmittalProfilesModal({
     }
 
     const next = profiles.filter((p) => p.id !== draft.id)
-    const { profiles: listAfter } = restoreMissingPsaDefaultTransmittalProfiles(next)
-    persistProfiles(listAfter)
+    persistProfiles(next)
 
     undoDeleteRef.current = snapshot
 
-    const remaining = listProfilesForVariant(listAfter, variant)
+    const remaining = listProfilesForVariant(next, variant)
     const nextId = remaining[0]?.id || ''
-    selectProfile(nextId, listAfter)
+    selectProfile(nextId, next)
     if (!nextId) setDraft(null)
 
     setDeleteConfirmOpen(false)

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import UnsavedNavigationBlocker from './UnsavedNavigationBlocker'
 import UserManualModal, { UserManualSidebarButton } from './userManual/UserManualModal'
+import { TransmittalAddresseeLayoutSidebarButton } from './transmittal/TransmittalProfilesSidebarButton'
 import { useAuth } from '../context/AuthContext'
 import { clearSupplementalActive, clearSupplementalDraft } from '../pages/legalInstrument/lib/supplementalSavedStorage'
 import { clearMc2010Active, clearMc2010Draft } from '../pages/legalInstrument/lib/mc2010SavedStorage'
@@ -282,6 +283,8 @@ export default function Layout() {
           <hr className="my-2 border-0 border-t border-white/15" aria-hidden="true" />
 
           <UserManualSidebarButton onClick={() => setUserManualOpen(true)} />
+
+          <TransmittalAddresseeLayoutSidebarButton />
 
           <NavLink
             to="/system-data"

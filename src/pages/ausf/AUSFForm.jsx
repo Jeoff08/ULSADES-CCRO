@@ -28,7 +28,7 @@ import { useDebouncedSuccessToast } from '../../hooks/useDebouncedSuccessToast'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
 import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
 import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShortcuts'
-import TransmittalProfilesSidebarButton from '../../components/transmittal/TransmittalProfilesSidebarButton'
+import { useTransmittalProfileAutoApply } from '../../components/transmittal/TransmittalProfilesSidebarButton'
 import { TRANSMITTAL_PROFILE_VARIANT } from '../../lib/transmittalProfileStorage'
 import { CITIZENSHIP_SUGGESTIONS } from '../../lib/data_citizenship'
 
@@ -194,6 +194,12 @@ export default function AUSFForm() {
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
   const applyTransmittalProfile = (patch) => setForm((prev) => ({ ...prev, ...patch }))
+  useTransmittalProfileAutoApply({
+    moduleKey: 'ausf',
+    variant: TRANSMITTAL_PROFILE_VARIANT.STANDARD,
+    form,
+    onApply: applyTransmittalProfile,
+  })
 
   useEffect(() => {
     const type = searchParams.get('type') || 'ausf'
@@ -482,14 +488,6 @@ export default function AUSFForm() {
               {showAusfTransmittalLetterOptions && (
                 <div className="ausf-form-page__section" style={sectionDelay(sectionIndex++)}>
                   <FormSection noNumber title="TRANSMITTAL TYPE (LOCAL OR OUT-OF-TOWN)">
-                    <div className="mb-4 max-w-md">
-                      <TransmittalProfilesSidebarButton
-                        moduleKey="ausf"
-                        variant={TRANSMITTAL_PROFILE_VARIANT.STANDARD}
-                        form={form}
-                        onApply={applyTransmittalProfile}
-                      />
-                    </div>
                     <p className="text-sm text-gray-600 mb-3 max-w-2xl">
                       Only one transmittal letter appears on the print page: choose local (Iligan) transmittal or the out-of-town transmittal. This does not change LCR views.
                     </p>

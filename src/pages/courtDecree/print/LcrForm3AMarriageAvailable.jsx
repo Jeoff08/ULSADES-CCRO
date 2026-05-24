@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { formatDateCert, computeAgeFullYears, lcroStaffTitleForPrint, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
-import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
 import LcrCertificationRequestLine from '../../../components/lcr/LcrCertificationRequestLine'
+import LcrRemarksEditor from '../../../components/lcr/LcrRemarksEditor'
 import { buildLcr3aTableDisplay } from '../lib/lcr3aTable'
 import { resolveCourtDecreeLcrPrintCcr } from '../lib/courtDecreePrintCcr'
 import { courtDecreeColbPage, courtDecreeColbBook } from '../lib/courtDecreeColbPrintStyle'
@@ -109,15 +109,11 @@ const LCR_3A_EDITABLE_FULL = [
 /** LCR Form No. 3A (Marriage-Available). Full print; table via buildLcr3aTableDisplay. */
 export default function LcrForm3AMarriageAvailable({ data, editableTable = false, onDataChange }) {
   const t = buildLcr3aTableDisplay(data)
-  const [editableRemarks, setEditableRemarks] = useState(data?.remarks || '')
 
   const patchData = (partial) => {
     onDataChange?.({ ...data, ...partial })
   }
 
-  useEffect(() => {
-    setEditableRemarks(data?.remarks || '')
-  }, [data?.remarks])
   const colbPage = courtDecreeColbPage(data, '3a')
   const colbBook = courtDecreeColbBook(data, '3a')
   const formDate = (() => {
@@ -458,29 +454,13 @@ export default function LcrForm3AMarriageAvailable({ data, editableTable = false
             onPartyChange={onDataChange && !editableTable ? patchData : undefined}
             className="mb-2 text-sm court-decree-lcr-body court-decree-lcr-cert-after-table"
           />
-          <div className="mb-2 court-decree-lcr-body court-decree-lcr-3a-remarks-block">
-            <p className="font-bold text-sm mb-0.5">REMARKS:</p>
-            <div className="no-print mb-1">
-              <textarea
-                value={editableRemarks}
-                onChange={(e) => {
-                  const v = e.target.value
-                  setEditableRemarks(v)
-                  onDataChange?.({ ...data, remarks: v })
-                }}
-                rows={3}
-                className={withLcrRemarksPrintClass('w-full border border-gray-300 rounded px-2 py-1')}
-                style={lcrRemarksBodyStyle(data)}
-                placeholder="Type or edit remarks here..."
-              />
-            </div>
-            <p
-              className={withLcrRemarksPrintClass('text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] min-h-[1.5rem]')}
-              style={lcrRemarksBodyStyle(data)}
-            >
-              {editableRemarks}
-            </p>
-          </div>
+          <LcrRemarksEditor
+            data={data}
+            value={data?.remarks ?? ''}
+            onSave={onDataChange ? (v) => onDataChange({ ...data, remarks: v }) : undefined}
+            blockClassName="mb-2 court-decree-lcr-body court-decree-lcr-3a-remarks-block"
+            printClassName="text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] min-h-[1.5rem]"
+          />
         </div>
       </div>
       <div className="court-decree-lcr-footer mt-auto shrink-0 flex flex-col">

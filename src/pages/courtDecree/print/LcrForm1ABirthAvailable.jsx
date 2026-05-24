@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { formatDateCert, lcroStaffTitleForPrint, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
-import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
 import LcrCertificationRequestLine from '../../../components/lcr/LcrCertificationRequestLine'
+import LcrRemarksEditor from '../../../components/lcr/LcrRemarksEditor'
 import { buildLcr1aTableDisplay } from '../lib/lcr1aTable'
 import { resolveCourtDecreeLcrPrintCcr } from '../lib/courtDecreePrintCcr'
 import { courtDecreeColbInputStyle, courtDecreeColbPage, courtDecreeColbBook } from '../lib/courtDecreeColbPrintStyle'
@@ -102,11 +102,6 @@ export default function LcrForm1ABirthAvailable({
   onDataChange,
 }) {
   const table = buildLcr1aTableDisplay(data)
-  const [editableRemarks, setEditableRemarks] = useState(data?.remarks || '')
-
-  useEffect(() => {
-    setEditableRemarks(data?.remarks || '')
-  }, [data?.remarks])
 
   const patchData = (partial) => {
     onDataChange?.({ ...data, ...partial })
@@ -347,29 +342,13 @@ export default function LcrForm1ABirthAvailable({
               onPartyChange={onDataChange && !editableTable ? patchData : undefined}
               className="mb-2 text-sm court-decree-lcr-body court-decree-lcr-cert-after-table"
             />
-            <div className="mb-2 court-decree-lcr-body court-decree-lcr-1a-remarks-block">
-              <p className="font-bold text-sm mb-0.5">REMARKS:</p>
-              <div className="no-print mb-1">
-                <textarea
-                  value={editableRemarks}
-                  onChange={(e) => {
-                    const v = e.target.value
-                    setEditableRemarks(v)
-                    onDataChange?.({ ...data, remarks: v })
-                  }}
-                  rows={3}
-                  className={withLcrRemarksPrintClass('w-full border border-gray-300 rounded px-2 py-1')}
-                  style={lcrRemarksBodyStyle(data)}
-                  placeholder="Type or edit remarks here..."
-                />
-              </div>
-              <p
-                className={withLcrRemarksPrintClass('text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere]')}
-                style={lcrRemarksBodyStyle(data)}
-              >
-                {editableRemarks}
-              </p>
-            </div>
+            <LcrRemarksEditor
+              data={data}
+              value={data?.remarks ?? ''}
+              onSave={onDataChange ? (v) => onDataChange({ ...data, remarks: v }) : undefined}
+              blockClassName="mb-2 court-decree-lcr-body court-decree-lcr-1a-remarks-block"
+              printClassName="text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+            />
           </div>
         </div>
       </div>

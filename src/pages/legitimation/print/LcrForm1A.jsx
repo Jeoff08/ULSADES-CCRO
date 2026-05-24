@@ -9,6 +9,7 @@ import {
 import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
 import { courtDecreeColbInputStyle } from '../../courtDecree/lib/courtDecreeColbPrintStyle'
 import LcrCertificationRequestLine from '../../../components/lcr/LcrCertificationRequestLine'
+import LcrRemarksEditor from '../../../components/lcr/LcrRemarksEditor'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { legitimationAffidavitCcrDisplayRow } from './legitimationAffidavitCcr'
 import LcroStaffVerifiedByFields from '../../../components/lcr/LcroStaffVerifiedByFields'
@@ -372,29 +373,21 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
               style={{ fontSize: '16px', lineHeight: 1.3, textAlign: 'left' }}
             />
 
-            <div className="mt-10 mb-2 court-decree-lcr-body legitimation-lcr1a-remarks-block">
-              <p className="font-bold text-sm mb-0.5">REMARKS:</p>
-              <div className="no-print mb-1">
-                <textarea
-                  value={editableRemarks}
-                  onChange={(e) => {
-                    const v = e.target.value
-                    setEditableRemarks(v)
-                    onDataChange?.({ ...data, remarks: v })
-                  }}
-                  rows={3}
-                  className={withLcrRemarksPrintClass('w-full border border-gray-300 rounded px-2 py-1')}
-                  style={lcrRemarksBodyStyle(data)}
-                  placeholder="Type or edit remarks here..."
-                />
-              </div>
-              <p
-                className={withLcrRemarksPrintClass('text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] font-bold italic')}
-                style={lcrRemarksBodyStyle(data)}
-              >
-                &quot;{editableRemarks}&quot;
-              </p>
-            </div>
+            <LcrRemarksEditor
+              data={data}
+              value={data?.remarks ?? editableRemarks}
+              onSave={
+                onDataChange
+                  ? (v) => {
+                      setEditableRemarks(v)
+                      patchData({ remarks: v })
+                    }
+                  : undefined
+              }
+              blockClassName="mt-10 mb-2 court-decree-lcr-body legitimation-lcr1a-remarks-block"
+              printClassName="text-justify whitespace-pre-wrap break-words [overflow-wrap:anywhere] font-bold italic"
+              printContent={(draft) => <>&quot;{draft}&quot;</>}
+            />
           </div>
         </div>
       </div>
