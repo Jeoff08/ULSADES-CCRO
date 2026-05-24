@@ -1,4 +1,5 @@
 import { splitFieldLines } from '../../../lib/printUtils'
+import { formatSignatoryTitleForDisplay } from '../../../lib/printUtils'
 import {
   LOCAL_TRANSMITTAL_ATTN_LINES,
   LOCAL_TRANSMITTAL_ATTN_PREFIX,
@@ -233,7 +234,7 @@ export const SUPPLEMENTAL_TRANSMITTAL_SALUTATION_PRESETS = [
 /** Default signatory on all transmittal letters (AUSF, Court Decree, Legitimation, Supplemental, MC2010). */
 export const DEFAULT_TRANSMITTAL_SIGNATORY = {
   name: 'LORELIE L. CANTO',
-  title: 'REGISTRATION OFFICER IV',
+  title: 'Registration Officer IV',
 }
 
 /** Normalize roster name for preset matching (optional trailing ", REB"). */
@@ -247,10 +248,10 @@ export function normReceivedByNameForMatch(raw) {
 
 /** Signatory block after “Respectfully yours,” on supplemental transmittal (CCR letter). */
 export const RECEIVED_BY_OPTIONS = [
-  { name: 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB', title: 'CITY CIVIL REGISTRAR' },
+  { name: 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB', title: 'City Civil Registrar' },
   { name: DEFAULT_TRANSMITTAL_SIGNATORY.name, title: DEFAULT_TRANSMITTAL_SIGNATORY.title },
-  { name: 'PHOEBE L. BENIGA', title: 'REGISTRATION OFFICER II' },
-  { name: 'JAN FLAURENCE A. OBLENDA', title: 'REGISTRATION OFFICER II' },
+  { name: 'PHOEBE L. BENIGA', title: 'Registration Officer II' },
+  { name: 'JAN FLAURENCE A. OBLENDA', title: 'Registration Officer II' },
 ]
 
 export const DEFAULT_TRANSMITTAL_SIGNATORY_INDEX = RECEIVED_BY_OPTIONS.findIndex(
@@ -261,7 +262,8 @@ export const DEFAULT_TRANSMITTAL_SIGNATORY_INDEX = RECEIVED_BY_OPTIONS.findIndex
 
 export function resolveTransmittalSignatory(data) {
   const idx = clampTransmittalSignatoryIndex(data?.transmittalSignatoryOptionIndex)
-  return RECEIVED_BY_OPTIONS[idx] || DEFAULT_TRANSMITTAL_SIGNATORY
+  const row = RECEIVED_BY_OPTIONS[idx] || DEFAULT_TRANSMITTAL_SIGNATORY
+  return { ...row, title: formatSignatoryTitleForDisplay(row.title) }
 }
 
 export function clampTransmittalSignatoryIndex(raw) {

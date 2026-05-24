@@ -1,3 +1,4 @@
+import { formatSignatoryTitleForDisplay } from '../../../lib/printUtils'
 import {
   RECEIVED_BY_OPTIONS,
   matchReceivedByPresetIndex,
@@ -15,8 +16,14 @@ function resolveRowFromStoredNameTitle(name, title) {
   const t0 = String(title ?? '').trim()
   if (!n0 && !t0) return null
   const idx = matchReceivedByPresetIndex(name, title)
-  if (idx >= 0) return RECEIVED_BY_OPTIONS[idx]
-  return { name: n0 || RECEIVED_BY_OPTIONS[0].name, title: t0 || 'CITY CIVIL REGISTRAR' }
+  if (idx >= 0) {
+    const row = RECEIVED_BY_OPTIONS[idx]
+    return { ...row, title: formatSignatoryTitleForDisplay(row.title) }
+  }
+  return {
+    name: n0 || RECEIVED_BY_OPTIONS[0].name,
+    title: formatSignatoryTitleForDisplay(t0 || 'City Civil Registrar'),
+  }
 }
 
 function selectValueFromStoredNameTitle(name, title) {

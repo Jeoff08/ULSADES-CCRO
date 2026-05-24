@@ -1,5 +1,5 @@
 import React from 'react'
-import { fullName, formatDateLong, parseBirthToDate } from '../../../lib/printUtils'
+import { formatSignatoryTitleForDisplay, fullName, formatDateLong, parseBirthToDate } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter, FILL_BOLD } from '../../../components/print'
 import { legitimationAffidavitCcrDisplayRow } from './legitimationAffidavitCcr'
 
@@ -165,7 +165,7 @@ export default function JointAffidavitLegitimation({ data }) {
         <div className="registrar-signature-zone mt-auto pt-4 flex min-h-[4rem] flex-col justify-end items-end">
           <div className="text-right city-registrar-signature">
             <p className="font-bold text-right">{ccrRow.name}</p>
-            <p className="text-sm text-right">{ccrRow.title}</p>
+            <p className="text-sm text-right">{formatSignatoryTitleForDisplay(ccrRow.title)}</p>
           </div>
         </div>
       </div>

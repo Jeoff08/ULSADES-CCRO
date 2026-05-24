@@ -1,7 +1,7 @@
 import React from 'react'
 import '../../legalInstrument/print/supplementalAffidavitPrintLayout.css'
 import { DocumentFooter } from '../../../components/print'
-import { formatDateCert, tryIsoFromDmyStrings } from '../../../lib/printUtils'
+import { formatDateCert, formatSignatoryTitleForDisplay, tryIsoFromDmyStrings } from '../../../lib/printUtils'
 import {
   buildSupplementalAffidavitItemDefault,
   resolveSupplementalAffidavitType,
@@ -373,8 +373,8 @@ export default function SupplementalReportAffidavit({
               <p className="font-bold uppercase text-[13px] leading-tight m-0 tracking-tight supplemental-affidavit-ccr-name">
                 {ccrSignatory.name}
               </p>
-              <p className="uppercase text-[12px] leading-tight m-0 font-normal supplemental-affidavit-ccr-title">
-                {ccrSignatory.title}
+              <p className="text-[12px] leading-tight m-0 font-normal supplemental-affidavit-ccr-title">
+                {formatSignatoryTitleForDisplay(ccrSignatory.title)}
               </p>
             </div>
           </div>

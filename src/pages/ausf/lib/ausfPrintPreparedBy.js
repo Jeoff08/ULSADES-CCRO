@@ -1,3 +1,4 @@
+import { formatSignatoryTitleForDisplay } from '../../../lib/printUtils'
 import {
   RECEIVED_BY_OPTIONS,
   DEFAULT_TRANSMITTAL_SIGNATORY,
@@ -38,39 +39,39 @@ export function getResolvedPreparedByForPrintType(data, printType) {
       const title = String(
         d.regAusfSignatoryTitle || d.certificateSignatoryTitle || 'Registration Officer IV',
       ).trim()
-      return { name, title }
+      return { name, title: formatSignatoryTitleForDisplay(title) }
     }
     case 'reg-ack': {
       const name = String(d.regAckSignatoryName || d.certificateSignatoryName || 'LORELIE L. CANTO').trim()
       const title = String(
         d.regAckSignatoryTitle || d.certificateSignatoryTitle || 'Registration Officer IV',
       ).trim()
-      return { name, title }
+      return { name, title: formatSignatoryTitleForDisplay(title) }
     }
     case 'child-not-ack-transmittal': {
       const rawName = String(d.transmittalLocalSignatoryName || d.transmittalSignatoryName || '').trim()
       const rawTitle = String(d.transmittalLocalSignatoryTitle || d.transmittalSignatoryTitle || '').trim()
       // Align with TransmittalDoc defaults so the roster index matches what prints when fields are blank.
       const name = rawName || DEFAULT_TRANSMITTAL_SIGNATORY.name
-      const title = rawTitle || DEFAULT_TRANSMITTAL_SIGNATORY.title
+      const title = formatSignatoryTitleForDisplay(rawTitle || DEFAULT_TRANSMITTAL_SIGNATORY.title)
       return { name, title }
     }
     case 'out-of-town': {
       const rawName = String(d.transmittalOotSignatoryName || d.transmittalSignatoryName || '').trim()
       const rawTitle = String(d.transmittalOotSignatoryTitle || d.transmittalSignatoryTitle || '').trim()
       const name = rawName || DEFAULT_TRANSMITTAL_SIGNATORY.name
-      const title = rawTitle || DEFAULT_TRANSMITTAL_SIGNATORY.title
+      const title = formatSignatoryTitleForDisplay(rawTitle || DEFAULT_TRANSMITTAL_SIGNATORY.title)
       return { name, title }
     }
     case 'child-ack-lcr': {
       const name = String(d.lcrAckSignatoryName || d.certificateSignatoryName || 'LORELIE L. CANTO').trim()
       const title = String(d.lcrAckSignatoryTitle || 'Registration Officer IV').trim()
-      return { name, title }
+      return { name, title: formatSignatoryTitleForDisplay(title) }
     }
     case 'child-not-ack-lcr': {
       const name = String(d.lcrNotAckSignatoryName || d.certificateSignatoryName || 'LORELIE L. CANTO').trim()
       const title = String(d.lcrNotAckSignatoryTitle || 'Registration Officer IV').trim()
-      return { name, title }
+      return { name, title: formatSignatoryTitleForDisplay(title) }
     }
     default:
       return { name: '', title: '' }

@@ -9,7 +9,7 @@
   --card-bg: #ffffff;
   --sidebar-bg: #1e3a5f;
   --ulsades-font: 'Montserrat', sans-serif;
-  /* AUSF / Court Decree / Legitimation: screen default; print/PDF uses 0.6in via @media print and body.pdf-capture */
+  /* AUSF / Court Decree / Legitimation: screen default; print/PDF uses 0.8in via @media print and body.pdf-capture */
   --print-legal-margin-x: 1in;
 }
 
@@ -58,7 +58,7 @@ body.pdf-capture .layout-main,
 body:has(.print-doc) .layout-root,
 body:has(.print-doc) .layout-main {
   background: #fff !important;
-  --print-legal-margin-x: 0.6in;
+  --print-legal-margin-x: 0.8in;
 }
 
 /* LCR Form Width Management (Screen & Print PDF) */
@@ -2242,7 +2242,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .no-print { display: none !important; }
   .print-only { display: block !important; }
   :root {
-    --print-legal-margin-x: 0.6in;
+    --print-legal-margin-x: 0.8in;
   }
   /* Ensure print page content is visible and uses full width */
   main .flex.gap-6 { display: block !important; }
@@ -2630,7 +2630,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   .print-doc:not(.supplemental-report-doc):not(.supplemental-transmittal-doc) {
     max-width: 100% !important;
     box-shadow: none !important;
-    padding: 0.3in 0.5in !important;
+    padding: 0.3in 0.8in !important;
     page-break-inside: avoid;
     display: flex !important;
     flex-direction: column !important;
@@ -3472,7 +3472,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     height: 100% !important;
     transform: none !important;
     transform-origin: initial !important;
-    padding: 0.2in 0.5in 0 !important;
+    padding: 0.2in 0.8in 0 !important;
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
@@ -3494,7 +3494,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     height: 100% !important;
     transform: none !important;
     transform-origin: initial !important;
-    padding: 0.2in 0.5in 0 !important;
+    padding: 0.2in 0.8in 0 !important;
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
@@ -3517,7 +3517,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     height: 100% !important;
     transform: none !important;
     transform-origin: initial !important;
-    padding: 0.2in 0.5in 0 !important;
+    padding: 0.2in 0.8in 0 !important;
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
@@ -3540,7 +3540,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     height: 100% !important;
     transform: none !important;
     transform-origin: initial !important;
-    padding: 0.2in 0.5in 0 !important;
+    padding: 0.2in 0.8in 0 !important;
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
@@ -3563,7 +3563,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     flex: 1 1 0% !important;
     min-height: 0 !important;
     height: 100% !important;
-    padding: 0.06in 0.28in 0.06in !important;
+    padding: 0.06in 0.8in 0.06in !important;
     margin: 0 !important;
     box-sizing: border-box !important;
   }
@@ -3630,7 +3630,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     min-height: 0 !important;
     height: 100% !important;
     box-sizing: border-box !important;
-    padding: 0.18in 0.4in 0.18in !important;
+    padding: 0.18in 0.8in 0.18in !important;
     margin: 0 !important;
   }
   html[data-paper-size="short"] .lcr-1a-birthavail-root .lcr-1a-birthavail-sheet {
@@ -3843,14 +3843,14 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
   /* A4 only: footer at bottom of page + compact spacing so 1.5 line-height fits one page */
   html[data-paper-size="a4"] .print-doc:not(.supplemental-report-doc):not(.supplemental-transmittal-doc) {
     min-height: 297mm !important;
-    padding: 0.25in 0.5in 0.15in !important;
+    padding: 0.25in 0.8in 0.15in !important;
   }
   html[data-paper-size="a4"] .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc) {
     min-height: 297mm !important;
     padding-top: 0.25in !important;
-    padding-right: 0.6in !important;
+    padding-right: 0.8in !important;
     padding-bottom: 0.15in !important;
-    padding-left: 0.6in !important;
+    padding-left: 0.8in !important;
   }
   html[data-paper-size="a4"] .registrar-signature-zone {
     margin-top: auto !important;
@@ -3944,11 +3944,11 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     min-height: 13in !important;
     height: 13in !important;
     max-height: 13in !important;
-    padding: 0.35in 0.5in 0.25in !important;
+    padding: 0.35in 0.8in 0.25in !important;
     box-sizing: border-box !important;
     overflow: visible !important;
   }
-  /* Long bond: AUSF / Court Decree / Legitimation transmittal — 0.6in side margins, one-page layout */
+  /* Long bond: AUSF / Court Decree / Legitimation transmittal — 0.8in side margins, one-page layout */
   html[data-paper-size="long"] .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc):not(.mc2010-transmittal-doc),
   html[data-paper-size="legal"] .ausf-doc.print-doc:not(.supplemental-transmittal-doc):not(.supplemental-report-doc):not(.mc2010-transmittal-doc) {
     display: flex !important;
@@ -3957,9 +3957,9 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     height: 13in !important;
     max-height: 13in !important;
     padding-top: 0.35in !important;
-    padding-right: 0.6in !important;
+    padding-right: 0.8in !important;
     padding-bottom: 0.25in !important;
-    padding-left: 0.6in !important;
+    padding-left: 0.8in !important;
     box-sizing: border-box !important;
     overflow: visible !important;
   }
@@ -4073,7 +4073,7 @@ body.pdf-capture .print-doc-transmittal-elderly .print-doc-footer .text-xs {
     flex-shrink: 0 !important;
   }
   .court-decree-lcr-form {
-    padding: 0.12in 0.4in 0.1in !important;
+    padding: 0.12in 0.8in 0.1in !important;
     page-break-inside: avoid !important;
   }
   /* Court Decree LCR 3A: keep page edge white (no blue/gray halo) */
@@ -5081,7 +5081,7 @@ html[data-paper-size="short"] .print-doc-footer p {
   html[data-paper-size="a4"] .ausf-07-17-doc {
     font-size: 15.2px !important;
     line-height: 1.3 !important;
-    padding: 0.2in 0.6in 0.15in !important;
+    padding: 0.2in 0.8in 0.15in !important;
   }
   html[data-paper-size="a4"] .ausf-07-17-doc .print-doc-header {
     margin-bottom: 0.04in !important;
@@ -5155,7 +5155,7 @@ html[data-paper-size="short"] .print-doc-footer p {
   html[data-paper-size="long"] .ausf-07-17-doc , html[data-paper-size="legal"] .ausf-07-17-doc {
     font-size: 14.9px !important;
     line-height: 1.35 !important;
-    padding: 0.22in 0.6in 0.18in !important;
+    padding: 0.22in 0.8in 0.18in !important;
   }
   /* AUSF 07-17: 2-line gap between Registry Number and AUSF title */
   html[data-paper-size="long"] .ausf-07-17-doc .print-doc-header , html[data-paper-size="legal"] .ausf-07-17-doc .print-doc-header {

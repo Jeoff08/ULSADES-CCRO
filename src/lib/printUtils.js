@@ -505,6 +505,37 @@ export function splitFieldLines(value) {
 /** Default LCR “Verified by” title on printed LCR forms. */
 export const DEFAULT_LCRO_STAFF_TITLE = 'LCRO Staff'
 
+const KNOWN_SIGNATORY_TITLES = {
+  'city civil registrar': 'City Civil Registrar',
+  'registration officer i': 'Registration Officer I',
+  'registration officer ii': 'Registration Officer II',
+  'registration officer iii': 'Registration Officer III',
+  'registration officer iv': 'Registration Officer IV',
+  'lcro staff': 'LCRO Staff',
+}
+
+/** Job titles in print/output: title case (not ALL CAPS). Names are unchanged. */
+export function formatSignatoryTitleForDisplay(title) {
+  const s = normalizeLcroStaffTitle(title)
+  if (!s) return s
+  const known = KNOWN_SIGNATORY_TITLES[s.toLowerCase()]
+  if (known) return known
+  const letters = s.replace(/[^A-Za-z]/g, '')
+  if (letters && s === s.toUpperCase()) {
+    return s
+      .split(/\s+/)
+      .map((word) => {
+        const core = word.replace(/[,.'"]/g, '')
+        if (/^(I{1,3}|IV|VI{0,3}|IX|X{0,3}|XI{0,3})$/i.test(core)) return word.toUpperCase()
+        if (word.toUpperCase() === 'LCRO') return 'LCRO'
+        if (word.toUpperCase() === 'REB') return word
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      })
+      .join(' ')
+  }
+  return s
+}
+
 /** Strip hyphen from legacy “LCRO - Staff” titles (print + forms). */
 export function normalizeLcroStaffTitle(title) {
   const s = String(title ?? '').trim()
@@ -513,7 +544,7 @@ export function normalizeLcroStaffTitle(title) {
 }
 
 export function lcroStaffTitleForPrint(title) {
-  return normalizeLcroStaffTitle(title) || DEFAULT_LCRO_STAFF_TITLE
+  return formatSignatoryTitleForDisplay(normalizeLcroStaffTitle(title)) || DEFAULT_LCRO_STAFF_TITLE
 }
 
 /** Split remark text into segments for bold+underline rendering of known values. */

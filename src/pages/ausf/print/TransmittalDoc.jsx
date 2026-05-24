@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import ConfirmRemoveRowModal from '../../../components/ConfirmRemoveRowModal'
-import { formatDateCert, fullName } from '../../../lib/printUtils'
+import { formatDateCert, formatSignatoryTitleForDisplay, fullName } from '../../../lib/printUtils'
 import {
   PrintHeaderRow,
   TransmittalDocumentTitle,
@@ -594,9 +594,9 @@ export default function TransmittalDoc({
     safe.transmittalSignatoryName
     || DEFAULT_TRANSMITTAL_SIGNATORY.name
   ).toUpperCase()
-  const signatoryTitle =
-    safe.transmittalSignatoryTitle
-    || DEFAULT_TRANSMITTAL_SIGNATORY.title
+  const signatoryTitle = formatSignatoryTitleForDisplay(
+    safe.transmittalSignatoryTitle || DEFAULT_TRANSMITTAL_SIGNATORY.title,
+  )
   const useAdjustedTransmittalLines = isAusfTransmittal || isLegitimationTransmittal || isCourtDecreeTransmittal
   const subject =
     subjectLine != null && subjectLine !== ''

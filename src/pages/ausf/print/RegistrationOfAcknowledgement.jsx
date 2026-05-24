@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatDateLong, fullName } from '../../../lib/printUtils'
+import { formatDateLong, fullName, lcroStaffTitleForPrint } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 
 export default function RegistrationOfAcknowledgement({ data }) {
@@ -9,7 +9,9 @@ export default function RegistrationOfAcknowledgement({ data }) {
   const issuedDate = formatDateLong(data.certificateIssuanceDate) || formatDateLong(new Date())
   const affidavitLabel = 'Affidavit of Acknowledgement'
   const signatoryName = data.regAckSignatoryName || data.certificateSignatoryName || 'LORELIE L. CANTO'
-  const signatoryTitle = data.regAckSignatoryTitle || data.certificateSignatoryTitle || 'Registration Officer IV'
+  const signatoryTitle = lcroStaffTitleForPrint(
+    data.regAckSignatoryTitle || data.certificateSignatoryTitle || 'Registration Officer IV',
+  )
 
   return (
     <div className="ausf-doc print-doc court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-16 pt-4 pb-0 flex flex-col min-h-0 h-full">

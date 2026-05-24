@@ -1,8 +1,9 @@
 import React from 'react'
-import { formatDateCert, lcroStaffTitleForPrint, parseDdMmYyyyToDate } from '../../../lib/printUtils'
+import { formatDateCert, formatSignatoryTitleForDisplay, lcroStaffTitleForPrint, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import LcrCertificationRequestLine from '../../../components/lcr/LcrCertificationRequestLine'
 import LcrRemarksEditor from '../../../components/lcr/LcrRemarksEditor'
+import LcrVerifiedByEditor from '../../../components/lcr/LcrVerifiedByEditor'
 import { buildLcr1aTableDisplay } from '../lib/lcr1aTable'
 import { resolveCourtDecreeLcrPrintCcr } from '../lib/courtDecreePrintCcr'
 import { courtDecreeColbInputStyle, courtDecreeColbPage, courtDecreeColbBook } from '../lib/courtDecreeColbPrintStyle'
@@ -120,7 +121,7 @@ export default function LcrForm1ABirthAvailable({
   const regOfficerTitle = lcroStaffTitleForPrint(data.certificateSignatoryTitle)
   const { row: ccrRow } = resolveCourtDecreeLcrPrintCcr(data, 'lcr-form-1a')
   const ccrName = ccrRow.name
-  const ccrTitle = ccrRow.title
+  const ccrTitle = formatSignatoryTitleForDisplay(ccrRow.title)
 
   return (
     <div className="ausf-doc print-doc print-doc-lcr-1a court-decree-lcr-form bg-white text-black text-sm max-w-[210mm] mx-auto px-6 py-2 flex flex-col">
@@ -355,11 +356,17 @@ export default function LcrForm1ABirthAvailable({
       <div className="court-decree-lcr-footer mt-auto shrink-0 flex flex-col">
         <div className="court-decree-lcr-body mb-1">
           <div className="mb-1 flex flex-col-reverse items-stretch gap-0 court-decree-lcr-1a-signatures">
-            <div className="court-decree-lcr-1a-verified-left flex flex-col items-center text-center self-start gap-0">
-              <p className="font-bold text-sm mb-0.5 self-start">Verified by:</p>
-              <p className="court-decree-lcr-signatory-name font-bold text-sm inline-block m-0 p-0 leading-[1.15]">{regOfficerName}</p>
-              <p className="court-decree-lcr-signatory-title text-xs m-0 p-0 leading-[1.15]">{regOfficerTitle}</p>
-            </div>
+            <LcrVerifiedByEditor
+              name={data.certificateSignatoryName}
+              title={data.certificateSignatoryTitle}
+              defaultName={regOfficerName}
+              onSave={
+                onDataChange
+                  ? (patch) => onDataChange({ ...data, ...patch })
+                  : undefined
+              }
+              blockClassName="court-decree-lcr-1a-verified-left flex flex-col items-center text-center gap-0"
+            />
             <div className="court-decree-lcr-1a-ccr-right flex flex-col items-center text-center self-end gap-0">
               <p className="court-decree-lcr-signatory-name font-bold text-sm inline-block m-0 p-0 leading-[1.15]">{ccrName}</p>
               <p className="court-decree-lcr-signatory-title text-xs m-0 p-0 leading-[1.15]">{ccrTitle}</p>

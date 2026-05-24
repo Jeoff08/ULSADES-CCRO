@@ -1,8 +1,9 @@
 import React from 'react'
-import { formatDateCert, lcroStaffTitleForPrint, parseDdMmYyyyToDate } from '../../../lib/printUtils'
+import { formatDateCert, formatSignatoryTitleForDisplay, lcroStaffTitleForPrint, parseDdMmYyyyToDate } from '../../../lib/printUtils'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import LcrCertificationRequestLine from '../../../components/lcr/LcrCertificationRequestLine'
 import LcrRemarksEditor from '../../../components/lcr/LcrRemarksEditor'
+import LcrVerifiedByEditor from '../../../components/lcr/LcrVerifiedByEditor'
 import { buildLcr2aTableDisplay } from '../lib/lcr2aTable'
 import { resolveCourtDecreeLcrPrintCcr } from '../lib/courtDecreePrintCcr'
 import { courtDecreeColbPage, courtDecreeColbBook } from '../lib/courtDecreeColbPrintStyle'
@@ -117,7 +118,7 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
   const regOfficerTitle = lcroStaffTitleForPrint(data.certificateSignatoryTitle)
   const { row: ccrRow } = resolveCourtDecreeLcrPrintCcr(data, 'lcr-form-2a')
   const ccrName = ccrRow.name
-  const ccrTitle = ccrRow.title
+  const ccrTitle = formatSignatoryTitleForDisplay(ccrRow.title)
   const blankIfDash = (v) => (String(v || '').trim() === '—' ? '' : v)
   const causeText = blankIfDash(t.causeOfDeath)
   const labelCell = 'py-0.5 px-2 border border-black align-top leading-tight'
@@ -324,11 +325,19 @@ export default function LcrForm2ADeathAvailable({ data, editableTable = false, o
       <div className="court-decree-lcr-footer mt-auto shrink-0 flex flex-col">
         <div className="court-decree-lcr-body mb-1">
           <div className="mb-1 flex flex-col-reverse items-stretch gap-0 court-decree-lcr-2a-signatures">
-            <div className="court-decree-lcr-2a-verified-left flex flex-col items-center text-center self-start gap-0">
-              <p className="text-sm mb-0.5 self-start">Verified by:</p>
-              <p className="court-decree-lcr-signatory-name font-bold text-sm inline-block uppercase m-0 p-0 leading-[1.15]">{regOfficer}</p>
-              <p className="court-decree-lcr-signatory-title text-xs m-0 p-0 leading-[1.15]">{regOfficerTitle}</p>
-            </div>
+            <LcrVerifiedByEditor
+              name={data.certificateSignatoryName}
+              title={data.certificateSignatoryTitle}
+              defaultName={regOfficer}
+              onSave={
+                onDataChange
+                  ? (patch) => onDataChange({ ...data, ...patch })
+                  : undefined
+              }
+              blockClassName="court-decree-lcr-2a-verified-left flex flex-col items-center text-center gap-0"
+              labelClassName="text-sm mb-0.5 self-start"
+              printNameClassName="court-decree-lcr-signatory-name font-bold text-sm inline-block uppercase m-0 p-0 leading-[1.15]"
+            />
             <div className="court-decree-lcr-2a-ccr-right flex flex-col items-center text-center self-end gap-0">
               <p className="court-decree-lcr-signatory-name font-bold text-sm inline-block uppercase m-0 p-0 leading-[1.15]">{ccrName}</p>
               <p className="court-decree-lcr-signatory-title text-xs italic m-0 p-0 leading-[1.15]">{ccrTitle}</p>

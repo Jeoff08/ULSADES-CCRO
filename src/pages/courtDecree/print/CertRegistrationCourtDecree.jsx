@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatDateMonthDayYearComma } from '../../../lib/printUtils'
+import { formatDateMonthDayYearComma, formatSignatoryTitleForDisplay } from '../../../lib/printUtils'
 import { DocumentHeader, DocumentFooter } from '../../../components/print'
 import { resolveCourtDecreePrintCcr } from '../lib/courtDecreePrintCcr'
 import {
@@ -26,7 +26,7 @@ export default function CertRegistrationCourtDecree({ data }) {
     formatDateMonthDayYearComma(data.certificateIssuanceDate) || formatDateMonthDayYearComma(new Date())
   const { row: ccrRow } = resolveCourtDecreePrintCcr(data)
   const signatory = ccrRow.name.toUpperCase()
-  const signatoryTitle = ccrRow.title
+  const signatoryTitle = formatSignatoryTitleForDisplay(ccrRow.title)
 
   return (
     <div className="ausf-doc print-doc print-doc-cert-registration court-decree-certificate-print bg-white text-black text-base max-w-[210mm] mx-auto px-0 py-4 leading-relaxed flex flex-col min-h-[297mm]">

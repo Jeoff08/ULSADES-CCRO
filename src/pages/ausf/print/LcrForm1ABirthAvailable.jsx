@@ -9,6 +9,7 @@ import {
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import LcrCertificationRequestLine from '../../../components/lcr/LcrCertificationRequestLine'
 import LcrRemarksEditor from '../../../components/lcr/LcrRemarksEditor'
+import LcrVerifiedByEditor from '../../../components/lcr/LcrVerifiedByEditor'
 
 /** AUSF print type for LCR Form 1A (Birth-Available). */
 export const AUSF_LCR_1A_BIRTH_PRINT_TYPE = 'child-ack-lcr'
@@ -152,20 +153,6 @@ body.pdf-capture .ausf-lcr-1a-birth-available.court-decree-lcr-form > footer.pri
 }
 `
 
-function AusfLcr1ABirthVerifiedBySignatory({ label, name, title }) {
-  return (
-    <section className="ausf-lcr-verified-by-region shrink-0" aria-label="Verified by signatory">
-      <div className="court-decree-lcr-body ausf-lcr-verified-by-bottom mb-0">
-        <div className="flex flex-col items-start text-left">
-          <p className="text-sm mb-1">{label}</p>
-          <div className="font-bold uppercase text-sm leading-snug m-0 p-0">{name}</div>
-          <div className="text-sm leading-snug m-0 p-0">{title}</div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
 function AusfLcr1ABirthValidityNote() {
   return (
     <section className="ausf-lcr-validity-note-region shrink-0 w-full print:mt-0" aria-label="Certification validity note">
@@ -188,11 +175,9 @@ export default function LcrForm1ABirthAvailable({ data, onDataChange }) {
   const showFatherName = Boolean(String(fatherFull).trim())
   const placeOfBirth = joinCommaParts(data.placeOfBirthAddress, data.placeOfBirthCity, data.placeOfBirthProvince) || '—'
   const formDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
-  const regOfficerName = (data.lcrAckSignatoryName || data.certificateSignatoryName || 'LORELIE L. CANTO').toUpperCase()
-  const regOfficerTitle = data.lcrAckSignatoryTitle || 'Registration Officer IV'
+  const regOfficerDefaultName = data.lcrAckSignatoryName || data.certificateSignatoryName || 'LORELIE L. CANTO'
   const ccrName = (data.cityCivilRegistrarName || 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB').toUpperCase()
   const registryNo = data.colbRegistryNo || '—'
-  const verifiedByLabel = 'Verified by:'
 
   const defaultRemarks = `"The child shall be known as ${childFull || '—'} pursuant to RA 9255."`
   const savedRemarks = data?.remarks ?? defaultRemarks
@@ -287,10 +272,31 @@ export default function LcrForm1ABirthAvailable({ data, onDataChange }) {
 
               <div className="mt-10 mb-4 court-decree-lcr-body ausf-lcr-verified-block">
                 <div className="flex justify-between items-end gap-4">
-                  <AusfLcr1ABirthVerifiedBySignatory
-                    label={verifiedByLabel}
-                    name={regOfficerName}
-                    title={regOfficerTitle}
+                  <LcrVerifiedByEditor
+                    storageScope="courtDecree"
+                    name={data.lcrAckSignatoryName || data.certificateSignatoryName}
+                    title={data.lcrAckSignatoryTitle || data.certificateSignatoryTitle}
+                    defaultName={regOfficerDefaultName}
+                    defaultTitle="Registration Officer IV"
+                    uppercasePrintName
+                    onSave={
+                      onDataChange
+                        ? (patch) =>
+                            onDataChange({
+                              ...data,
+                              lcrAckSignatoryName: patch.certificateSignatoryName,
+                              lcrAckSignatoryTitle: patch.certificateSignatoryTitle,
+                              certificateSignatoryName: patch.certificateSignatoryName,
+                              certificateSignatoryTitle: patch.certificateSignatoryTitle,
+                              verifiedByName: patch.verifiedByName,
+                              verifiedByTitle: patch.verifiedByTitle,
+                            })
+                        : undefined
+                    }
+                    blockClassName="ausf-lcr-verified-by-region shrink-0 items-start text-left"
+                    labelClassName="text-sm mb-1 self-start"
+                    printNameClassName="font-bold uppercase text-sm leading-snug m-0 p-0 inline-block"
+                    printTitleClassName="text-sm leading-snug m-0 p-0"
                   />
                   <div className="ausf-lcr-ccr-signatory-region text-center flex flex-col items-center shrink-0">
                     <div className="font-bold uppercase text-sm leading-snug m-0 p-0">{ccrName}</div>

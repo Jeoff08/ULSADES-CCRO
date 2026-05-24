@@ -9,6 +9,7 @@ import {
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import LcrCertificationRequestLine from '../../../components/lcr/LcrCertificationRequestLine'
 import LcrRemarksEditor from '../../../components/lcr/LcrRemarksEditor'
+import LcrVerifiedByEditor from '../../../components/lcr/LcrVerifiedByEditor'
 
 /** AUSF print type for LCR Form A1. */
 export const AUSF_LCR_A1_PRINT_TYPE = 'child-not-ack-lcr'
@@ -173,11 +174,9 @@ export default function LcrFormA1({ data, onDataChange }) {
   const showFatherName = Boolean(String(fatherFull).trim())
   const placeOfBirth = joinCommaParts(data.placeOfBirthAddress, data.placeOfBirthCity, data.placeOfBirthProvince) || '—'
   const formDate = formatDateCert(data.certificateIssuanceDate) || formatDateCert(new Date())
-  const regOfficerName = (data.lcrNotAckSignatoryName || data.certificateSignatoryName || 'LORELIE L. CANTO').toUpperCase()
-  const regOfficerTitle = data.lcrNotAckSignatoryTitle || 'Registration Officer IV'
+  const regOfficerDefaultName = data.lcrNotAckSignatoryName || data.certificateSignatoryName || 'LORELIE L. CANTO'
   const ccrName = (data.cityCivilRegistrarName || 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB').toUpperCase()
   const registryNo = data.colbRegistryNo || '—'
-  const verifiedByLabel = 'Verified by:'
 
   // Specific remarks for A1 form
   const ackDate = formatDateLong(data.colbDateOfRegistration)?.toUpperCase() || '—'
@@ -281,11 +280,32 @@ export default function LcrFormA1({ data, onDataChange }) {
 
               <div className="mt-10 mb-4 court-decree-lcr-body ausf-lcr-verified-block">
                 <div className="flex justify-between items-end gap-4">
-                  <div className="ausf-lcr-verified-by-region shrink-0 flex flex-col items-start text-left">
-                    <p className="text-sm mb-1">{verifiedByLabel}</p>
-                    <div className="font-bold uppercase text-sm leading-snug m-0 p-0">{regOfficerName}</div>
-                    <div className="text-sm leading-snug m-0 p-0">{regOfficerTitle}</div>
-                  </div>
+                  <LcrVerifiedByEditor
+                    storageScope="courtDecree"
+                    name={data.lcrNotAckSignatoryName || data.certificateSignatoryName}
+                    title={data.lcrNotAckSignatoryTitle || data.certificateSignatoryTitle}
+                    defaultName={regOfficerDefaultName}
+                    defaultTitle="Registration Officer IV"
+                    uppercasePrintName
+                    onSave={
+                      onDataChange
+                        ? (patch) =>
+                            onDataChange({
+                              ...data,
+                              lcrNotAckSignatoryName: patch.certificateSignatoryName,
+                              lcrNotAckSignatoryTitle: patch.certificateSignatoryTitle,
+                              certificateSignatoryName: patch.certificateSignatoryName,
+                              certificateSignatoryTitle: patch.certificateSignatoryTitle,
+                              verifiedByName: patch.verifiedByName,
+                              verifiedByTitle: patch.verifiedByTitle,
+                            })
+                        : undefined
+                    }
+                    blockClassName="ausf-lcr-verified-by-region shrink-0 items-start text-left"
+                    labelClassName="text-sm mb-1 self-start"
+                    printNameClassName="font-bold uppercase text-sm leading-snug m-0 p-0 inline-block"
+                    printTitleClassName="text-sm leading-snug m-0 p-0"
+                  />
                   <div className="ausf-lcr-ccr-signatory-region text-center flex flex-col items-center shrink-0">
                     <div className="font-bold uppercase text-sm leading-snug m-0 p-0">{ccrName}</div>
                     <div className="italic text-xs leading-snug m-0 p-0">City Civil Registrar</div>

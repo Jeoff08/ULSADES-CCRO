@@ -3,7 +3,7 @@ import {
   formatDateCert,
   fullName,
   formatLcrFormShortDate,
-  lcroStaffTitleForPrint,
+  formatSignatoryTitleForDisplay,
   parseBirthToDate,
 } from '../../../lib/printUtils'
 import { lcrRemarksBodyStyle, withLcrRemarksPrintClass } from '../../../lib/lcrRemarksFontSize'
@@ -12,7 +12,7 @@ import LcrCertificationRequestLine from '../../../components/lcr/LcrCertificatio
 import LcrRemarksEditor from '../../../components/lcr/LcrRemarksEditor'
 import { PrintHeaderRow, DocumentFooter } from '../../../components/print'
 import { legitimationAffidavitCcrDisplayRow } from './legitimationAffidavitCcr'
-import LcroStaffVerifiedByFields from '../../../components/lcr/LcroStaffVerifiedByFields'
+import LcrVerifiedByEditor from '../../../components/lcr/LcrVerifiedByEditor'
 
 /** Long bond only — not laid out for A4 or short (8.5" × 11"). */
 export const LEGITIMATION_LCR_1A_EXCLUDED_PAPER_SIZE_IDS = new Set(['a4', 'short'])
@@ -190,17 +190,7 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
   const ccrVariant = data.bothParentsAlive === 'NO' ? 'sole' : 'joint'
   const ccrRow = legitimationAffidavitCcrDisplayRow(data, ccrVariant)
   const ccrName = (ccrRow?.name || 'ATTY. YUSSIF DON JUSTIN F. MARTIL, REB').toUpperCase()
-  const ccrTitle = ccrRow?.title || 'City Civil Registrar'
-  const verifiedByName = (
-    data.certificateSignatoryName ||
-    data.verifiedByName ||
-    data.lcrStaffName ||
-    'SHIRLY L. DEMECILLO'
-  ).toUpperCase()
-  const regOfficerTitle = data.certificateSignatoryTitle
-    ? lcroStaffTitleForPrint(data.certificateSignatoryTitle)
-    : data.verifiedByTitle || data.lcrStaffTitle || 'Registration Officer II'
-
+  const ccrTitle = formatSignatoryTitleForDisplay(ccrRow?.title || 'City Civil Registrar')
   const [editableRemarks, setEditableRemarks] = useState(data?.remarks || '')
 
   useEffect(() => {
@@ -395,29 +385,18 @@ export default function LcrForm1A({ data, editableTable = false, onDataChange })
       <div className="court-decree-lcr-footer mt-auto shrink-0 flex flex-col">
         <div className="court-decree-lcr-body mb-1">
           <div className="mb-1 flex flex-col-reverse items-stretch gap-0 legitimation-lcr1a-signatures-row">
-            <div className="legitimation-lcr1a-verified-left flex flex-col items-center text-center self-start gap-0">
-              <p className="font-bold text-sm mb-0.5 self-start">Verified by:</p>
-              {onDataChange ? (
-                <div className="no-print self-start w-full max-w-[14rem] mb-1 text-left">
-                  <LcroStaffVerifiedByFields
-                    storageScope="legitimation"
-                    name={data.certificateSignatoryName || data.verifiedByName || data.lcrStaffName || ''}
-                    title={
-                      data.certificateSignatoryTitle || data.verifiedByTitle || data.lcrStaffTitle || ''
-                    }
-                    showHelperText={false}
-                    nameLabel="Name"
-                    titleLabel="Title"
-                    inputClass="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white"
-                    nameInputClassName="font-bold uppercase"
-                    titleInputClassName="text-xs"
-                    onChange={(patch) => onDataChange({ ...data, ...patch })}
-                  />
-                </div>
-              ) : null}
-              <p className="legitimation-lcr1a-signatory-name font-bold text-sm inline-block m-0 p-0 leading-[1.15]">{verifiedByName}</p>
-              <p className="legitimation-lcr1a-signatory-title text-xs m-0 p-0 leading-[1.15]">{regOfficerTitle}</p>
-            </div>
+            <LcrVerifiedByEditor
+              storageScope="legitimation"
+              name={data.certificateSignatoryName || data.verifiedByName || data.lcrStaffName || ''}
+              title={data.certificateSignatoryTitle || data.verifiedByTitle || data.lcrStaffTitle || ''}
+              defaultName="SHIRLY L. DEMECILLO"
+              defaultTitle="Registration Officer II"
+              uppercasePrintName
+              onSave={onDataChange ? (patch) => onDataChange({ ...data, ...patch }) : undefined}
+              blockClassName="legitimation-lcr1a-verified-left flex flex-col items-center text-center gap-0"
+              printNameClassName="legitimation-lcr1a-signatory-name font-bold text-sm inline-block m-0 p-0 leading-[1.15]"
+              printTitleClassName="legitimation-lcr1a-signatory-title text-xs m-0 p-0 leading-[1.15]"
+            />
             <div className="legitimation-lcr1a-ccr-right flex flex-col items-center text-center self-end gap-0">
               <p className="legitimation-lcr1a-signatory-name font-bold text-sm inline-block m-0 p-0 leading-[1.15]">{ccrName}</p>
               <p className="legitimation-lcr1a-signatory-title text-xs m-0 p-0 leading-[1.15]">{ccrTitle}</p>
