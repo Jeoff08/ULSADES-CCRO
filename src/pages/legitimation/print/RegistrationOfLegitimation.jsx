@@ -16,7 +16,7 @@ export default function RegistrationOfLegitimation({ data }) {
       <DocumentHeader />
 
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
-        <h2 className="text-center font-bold text-[30px] uppercase mb-6 tracking-tight">REGISTRATION OF LEGITIMATION</h2>
+        <h2 className="cert-doc-main-title text-center font-bold text-[14pt] uppercase mb-6 tracking-tight">REGISTRATION OF LEGITIMATION</h2>
 
         <p className="font-bold text-[18px] mb-2">TO WHOM IT MAY CONCERN:</p>
 
@@ -57,6 +57,18 @@ export default function RegistrationOfLegitimation({ data }) {
           <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
         </div>
       </div>
+      <style>{`
+        @media print {
+          .legitimation-registrar-footer-print .cert-doc-main-title {
+            font-size: 16pt !important;
+            line-height: 1.2 !important;
+          }
+        }
+        body.pdf-capture .legitimation-registrar-footer-print .cert-doc-main-title {
+          font-size: 16pt !important;
+          line-height: 1.2 !important;
+        }
+      `}</style>
     </div>
   )
 }

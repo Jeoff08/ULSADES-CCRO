@@ -28,6 +28,8 @@ import {
 import { deriveAffectedDocumentsForPrint } from '../courtDecree/lib/courtDecreeAffectedDocuments'
 import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
 import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShortcuts'
+import FormSubmitLoadingOverlay from '../../components/loading/FormSubmitLoadingOverlay'
+import { runWithFormSubmitLoading } from '../../components/loading/formSubmitLoading'
 
 function hasValue(v) {
   return String(v ?? '').trim().length > 0
@@ -130,6 +132,7 @@ export default function Mc2010Form() {
     return { ...loaded, ...pickTransmittalStateFromDraft(loaded) }
   })
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [formSubmitLoading, setFormSubmitLoading] = useState(false)
   const [activeSection, setActiveSection] = useState('transmittal')
   const [lcrSearchQuery, setLcrSearchQuery] = useState('')
   const [lcrSearchFocused, setLcrSearchFocused] = useState(false)
@@ -258,6 +261,15 @@ export default function Mc2010Form() {
     saveOrUpdateMc2010(form)
     acknowledgeSaved()
     setConfirmOpen(true)
+  }
+
+  const handleContinueToPrint = async () => {
+    setConfirmOpen(false)
+    await runWithFormSubmitLoading(setFormSubmitLoading, async () => {
+      saveMc2010Draft(form)
+      saveOrUpdateMc2010(form)
+    })
+    afterUnsavedAcknowledge(acknowledgeSaved, () => navigate('/legal-instrument/mc2010-04/print'))
   }
 
   return (
@@ -602,9 +614,7 @@ export default function Mc2010Form() {
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      afterUnsavedAcknowledge(acknowledgeSaved, () => navigate('/legal-instrument/mc2010-04/print'))
-                    }
+                    onClick={handleContinueToPrint}
                     className="px-3 py-2 rounded-lg text-sm font-medium bg-[var(--primary-blue)] text-white hover:bg-[var(--primary-blue-light)]"
                   >
                     Continue to Print
@@ -616,6 +626,7 @@ export default function Mc2010Form() {
 
         </FormBodyFieldShortcuts>
       </div>
+      <FormSubmitLoadingOverlay open={formSubmitLoading} />
     </div>
   )
 }

@@ -18,6 +18,8 @@ import { parseBirthToDate } from '../../lib/printUtils'
 import LcroStaffVerifiedByFields from '../../components/lcr/LcroStaffVerifiedByFields'
 import { FormPlaceCityProvinceInputs, FormSuggestInput } from '../../components/FormField'
 import { CITIZENSHIP_SUGGESTIONS } from '../../lib/data_citizenship'
+import FormSubmitLoadingOverlay from '../../components/loading/FormSubmitLoadingOverlay'
+import { runWithFormSubmitLoading } from '../../components/loading/formSubmitLoading'
 
 const inputClass = 'legitimation-form-page__input w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-gray-50 transition-colors duration-150'
 
@@ -104,6 +106,7 @@ export default function LegitimationForm() {
   const editId = searchParams.get('id')
   const isEdit = searchParams.get('edit') === '1'
   const [showConfirm, setShowConfirm] = useState(false)
+  const [formSubmitLoading, setFormSubmitLoading] = useState(false)
   const [showValidationModal, setShowValidationModal] = useState(false)
   const [missingFields, setMissingFields] = useState([])
 
@@ -194,9 +197,17 @@ export default function LegitimationForm() {
       const createdId = addSavedLegitimation(formForOutput)
       if (createdId) finalSavedId = String(createdId).trim()
     }
-    const path = finalSavedId
+    return finalSavedId
       ? `/legitimation/print?type=${form.formType}&id=${encodeURIComponent(finalSavedId)}`
       : `/legitimation/print?type=${form.formType}`
+  }
+
+  const handleConfirmProceed = async () => {
+    setShowConfirm(false)
+    let path = '/legitimation/print'
+    await runWithFormSubmitLoading(setFormSubmitLoading, async () => {
+      path = proceedToPrint()
+    })
     afterUnsavedAcknowledge(acknowledgeSaved, () => navigate(path))
   }
 
@@ -641,7 +652,7 @@ export default function LegitimationForm() {
                 </p>
                 <div className="flex justify-end gap-3">
                   <button type="button" onClick={() => setShowConfirm(false)} className="legitimation-form-page__btn legitimation-form-page__btn--secondary">Cancel</button>
-                  <button type="button" onClick={() => { setShowConfirm(false); proceedToPrint() }} className="legitimation-form-page__btn legitimation-form-page__btn--primary">Confirm &amp; Proceed</button>
+                  <button type="button" onClick={handleConfirmProceed} className="legitimation-form-page__btn legitimation-form-page__btn--primary">Confirm &amp; Proceed</button>
                 </div>
               </div>
             </div>
@@ -650,6 +661,7 @@ export default function LegitimationForm() {
           <p className="legitimation-form-page__footer-note no-print">created by: ATTY. YUSSIF DON JUSTINE F. MARTIL</p>
         </FormBodyFieldShortcuts>
       </div>
+      <FormSubmitLoadingOverlay open={formSubmitLoading} />
       <ToastHost toasts={toasts} onDismiss={dismiss} />
     </div>
   )

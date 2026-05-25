@@ -22,7 +22,7 @@ export default function RegistrationOfAusf({ data }) {
       <div className="cert-reg-body-wrap flex-1 flex flex-col min-h-0">
         <div className="cert-reg-body-scaled flex-1 flex flex-col">
           <div>
-            <h2 className="cert-reg-title text-center font-bold text-2xl uppercase tracking-wide mt-12">CERTIFICATE OF REGISTRATION</h2>
+            <h2 className="cert-reg-title text-center font-bold text-[14pt] uppercase tracking-wide mt-12">CERTIFICATE OF REGISTRATION</h2>
             <p className="cert-reg-to-whom font-bold mt-12 text-base uppercase">TO WHOM IT MAY CONCERN:</p>
             <p className="cert-reg-p mt-8 text-justify text-base leading-relaxed">
               THIS IS TO CERTIFY that the {affidavitLabel} executed by <span className="font-bold underline px-1 uppercase">{affiantName}</span> had been registered in this office on <span className="font-bold underline px-1 uppercase">{regDate}</span> under Registry Number <span className="font-bold underline px-1">{registryNo}</span>.
@@ -41,6 +41,18 @@ export default function RegistrationOfAusf({ data }) {
       <div className="shrink-0 mt-auto">
         <DocumentFooter contactPhone={data.contactPhone} contactEmail={data.contactEmail} />
       </div>
+      <style>{`
+        @media print {
+          .ausf-doc.print-doc.court-decree-lcr-form .cert-reg-title {
+            font-size: 16pt !important;
+            line-height: 1.2 !important;
+          }
+        }
+        body.pdf-capture .ausf-doc.print-doc.court-decree-lcr-form .cert-reg-title {
+          font-size: 16pt !important;
+          line-height: 1.2 !important;
+        }
+      `}</style>
     </div>
   )
 }

@@ -28,6 +28,8 @@ import { useDebouncedSuccessToast } from '../../hooks/useDebouncedSuccessToast'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
 import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
 import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShortcuts'
+import FormSubmitLoadingOverlay from '../../components/loading/FormSubmitLoadingOverlay'
+import { runWithFormSubmitLoading } from '../../components/loading/formSubmitLoading'
 import { useTransmittalProfileAutoApply } from '../../components/transmittal/TransmittalProfilesSidebarButton'
 import { TRANSMITTAL_PROFILE_VARIANT } from '../../lib/transmittalProfileStorage'
 import { CITIZENSHIP_SUGGESTIONS } from '../../lib/data_citizenship'
@@ -284,6 +286,7 @@ export default function AUSFForm() {
   const acknowledgeSaved = useWarnIfUnsaved(form, [searchParams.toString(), dirtyBaselineTick])
 
   const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [formSubmitLoading, setFormSubmitLoading] = useState(false)
   const [showValidationModal, setShowValidationModal] = useState(false)
   const [missingFields, setMissingFields] = useState([])
   const [savedPlaceAddresses, setSavedPlaceAddresses] = useState([])
@@ -330,48 +333,51 @@ export default function AUSFForm() {
     setShowConfirmModal(true)
   }
   const handleConfirmDone = async () => {
-    const editId = String(searchParams.get('id') || '').trim()
-    const draftSavedId = String(form?._savedAUSFId || '').trim()
-    const isEdit = searchParams.get('edit') === '1'
-    const effectiveEditId = editId || draftSavedId
-    const draftPayload = { ...form, _savedAUSFId: effectiveEditId || draftSavedId || '' }
-    saveAUSFDraft(draftPayload)
-    let finalSavedId = effectiveEditId
-    try {
-      await saveAUSFDraftToApi(draftPayload)
-      if (isEdit && effectiveEditId) {
-        const nextId = await updateSavedAUSFToApi(effectiveEditId, draftPayload)
-        if (nextId) {
-          finalSavedId = String(nextId).trim()
+    setShowConfirmModal(false)
+    let printPath = '/ausf/print'
+    await runWithFormSubmitLoading(setFormSubmitLoading, async () => {
+      const editId = String(searchParams.get('id') || '').trim()
+      const draftSavedId = String(form?._savedAUSFId || '').trim()
+      const isEdit = searchParams.get('edit') === '1'
+      const effectiveEditId = editId || draftSavedId
+      const draftPayload = { ...form, _savedAUSFId: effectiveEditId || draftSavedId || '' }
+      saveAUSFDraft(draftPayload)
+      let finalSavedId = effectiveEditId
+      try {
+        await saveAUSFDraftToApi(draftPayload)
+        if (isEdit && effectiveEditId) {
+          const nextId = await updateSavedAUSFToApi(effectiveEditId, draftPayload)
+          if (nextId) {
+            finalSavedId = String(nextId).trim()
+          }
+        } else {
+          const createdId = await addSavedAUSFToApi(draftPayload)
+          if (createdId) finalSavedId = String(createdId).trim()
         }
-      } else {
-        const createdId = await addSavedAUSFToApi(draftPayload)
-        if (createdId) finalSavedId = String(createdId).trim()
-      }
-    } catch {
-      if (isEdit && effectiveEditId) {
-        const updated = updateSavedAUSF(effectiveEditId, draftPayload)
-        if (updated) {
-          finalSavedId = effectiveEditId
+      } catch {
+        if (isEdit && effectiveEditId) {
+          const updated = updateSavedAUSF(effectiveEditId, draftPayload)
+          if (updated) {
+            finalSavedId = effectiveEditId
+          } else {
+            const createdId = addSavedAUSF(draftPayload)
+            if (createdId) finalSavedId = String(createdId).trim()
+          }
         } else {
           const createdId = addSavedAUSF(draftPayload)
           if (createdId) finalSavedId = String(createdId).trim()
         }
-      } else {
-        const createdId = addSavedAUSF(draftPayload)
-        if (createdId) finalSavedId = String(createdId).trim()
       }
-    }
-    /** Print uses keys ausf:(record id):(type); uploads before first save use record id "draft". */
-    if (finalSavedId) {
-      if (!isEdit) {
-        migrateRecordUploads('ausf', 'draft', finalSavedId)
-      } else if (effectiveEditId && effectiveEditId !== finalSavedId) {
-        migrateRecordUploads('ausf', effectiveEditId, finalSavedId)
+      /** Print uses keys ausf:(record id):(type); uploads before first save use record id "draft". */
+      if (finalSavedId) {
+        if (!isEdit) {
+          migrateRecordUploads('ausf', 'draft', finalSavedId)
+        } else if (effectiveEditId && effectiveEditId !== finalSavedId) {
+          migrateRecordUploads('ausf', effectiveEditId, finalSavedId)
+        }
       }
-    }
-    setShowConfirmModal(false)
-    const printPath = finalSavedId ? `/ausf/print?id=${encodeURIComponent(finalSavedId)}` : '/ausf/print'
+      printPath = finalSavedId ? `/ausf/print?id=${encodeURIComponent(finalSavedId)}` : '/ausf/print'
+    })
     afterUnsavedAcknowledge(acknowledgeSaved, () => navigate(printPath))
   }
   const handleCancelModal = () => setShowConfirmModal(false)
@@ -765,6 +771,7 @@ export default function AUSFForm() {
           <p className="ausf-form-page__footer-note no-print">created by: ATTY. YUSSIF DON JUSTINE F. MARTIL</p>
         </FormBodyFieldShortcuts>
       </div>
+      <FormSubmitLoadingOverlay open={formSubmitLoading} />
       <ToastHost toasts={toasts} onDismiss={dismiss} />
     </div>
   )

@@ -10,6 +10,8 @@ import { isLcr1aTableComplete, isLcr2aTableComplete, isLcr3aTableComplete } from
 import { commitFirstLetterUpperFromInput } from '../../lib/sentenceCase'
 import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
 import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShortcuts'
+import FormSubmitLoadingOverlay from '../../components/loading/FormSubmitLoadingOverlay'
+import { runWithFormSubmitLoading } from '../../components/loading/formSubmitLoading'
 import { useTransmittalProfileAutoApply } from '../../components/transmittal/TransmittalProfilesSidebarButton'
 import { TRANSMITTAL_PROFILE_VARIANT } from '../../lib/transmittalProfileStorage'
 import {
@@ -377,6 +379,7 @@ export default function CourtDecreeForm() {
   const navigate = useNavigate()
   const typeFromUrl = searchParams.get('type') || 'cert-authenticity'
   const [showConfirm, setShowConfirm] = useState(false)
+  const [formSubmitLoading, setFormSubmitLoading] = useState(false)
   const [showValidationModal, setShowValidationModal] = useState(false)
   const [showContinueDecreeModal, setShowContinueDecreeModal] = useState(false)
   const [showForeignCountryModal, setShowForeignCountryModal] = useState(false)
@@ -724,9 +727,17 @@ export default function CourtDecreeForm() {
       const createdId = addSavedCourtDecree(formForOutput)
       if (createdId) finalSavedId = String(createdId).trim()
     }
-    const path = finalSavedId
+    return finalSavedId
       ? `/court-decree/print?type=${nextPrintType}&id=${encodeURIComponent(finalSavedId)}`
       : `/court-decree/print?type=${nextPrintType}`
+  }
+
+  const handleConfirmProceed = async () => {
+    setShowConfirm(false)
+    let path = '/court-decree/print'
+    await runWithFormSubmitLoading(setFormSubmitLoading, async () => {
+      path = proceedToPrint()
+    })
     afterUnsavedAcknowledge(acknowledgeSaved, () => navigate(path))
   }
 
@@ -1743,7 +1754,7 @@ export default function CourtDecreeForm() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setShowConfirm(false); proceedToPrint() }}
+                    onClick={handleConfirmProceed}
                     className="court-decree-form-page__btn court-decree-form-page__btn--primary"
                   >
                     Confirm &amp; Proceed
@@ -1756,6 +1767,7 @@ export default function CourtDecreeForm() {
           <p className="court-decree-form-page__footer-note no-print">created by: ATTY. YUSSIF DON JUSTINE F. MARTIL</p>
         </FormBodyFieldShortcuts>
       </div>
+      <FormSubmitLoadingOverlay open={formSubmitLoading} />
       <ToastHost toasts={toasts} onDismiss={dismiss} />
     </div>
   )

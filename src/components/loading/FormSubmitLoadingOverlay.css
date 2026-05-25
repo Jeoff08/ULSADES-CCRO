@@ -1,0 +1,193 @@
+.form-submit-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  pointer-events: auto;
+}
+
+.form-submit-loading-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0.72) 100%);
+  backdrop-filter: blur(6px);
+  animation: form-submit-loading-fade-in 0.35s ease-out forwards;
+}
+
+.form-submit-loading-card {
+  position: relative;
+  width: min(100%, 22rem);
+  padding: 2rem 1.75rem 1.65rem;
+  border-radius: 1.25rem;
+  background: linear-gradient(165deg, #ffffff 0%, #f8fafc 55%, #eef2ff 100%);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow:
+    0 24px 48px rgba(15, 23, 42, 0.22),
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+  text-align: center;
+  animation: form-submit-loading-card-rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.form-submit-loading-seal-stage {
+  position: relative;
+  width: 9.5rem;
+  height: 9.5rem;
+  margin: 0 auto 1.15rem;
+}
+
+.form-submit-loading-glow {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.28) 0%, transparent 70%);
+  animation: form-submit-loading-glow-pulse 1.6s ease-in-out infinite;
+}
+
+.form-submit-loading-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid rgba(37, 99, 235, 0.15);
+  border-top-color: var(--primary-blue, #1e3a5f);
+  border-right-color: rgba(37, 99, 235, 0.55);
+  animation: form-submit-loading-ring-spin 1.1s linear infinite;
+}
+
+.form-submit-loading-seal {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.2));
+  animation: form-submit-loading-seal-float 2.2s ease-in-out infinite;
+}
+
+.form-submit-loading-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0f172a;
+}
+
+.form-submit-loading-subtitle {
+  margin: 0.45rem 0 1.1rem;
+  font-size: 0.875rem;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.form-submit-loading-bar {
+  height: 0.35rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.form-submit-loading-bar-fill {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary-blue, #1e3a5f), #3b82f6, var(--primary-blue-light, #2563eb));
+  animation-name: form-submit-loading-bar-progress;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: forwards;
+}
+
+.form-submit-loading-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.85rem;
+}
+
+.form-submit-loading-dots span {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--primary-blue, #1e3a5f);
+  animation: form-submit-loading-dot-bounce 1s ease-in-out infinite;
+}
+
+.form-submit-loading-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.form-submit-loading-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes form-submit-loading-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes form-submit-loading-card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes form-submit-loading-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes form-submit-loading-seal-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes form-submit-loading-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes form-submit-loading-bar-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes form-submit-loading-dot-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  40% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}

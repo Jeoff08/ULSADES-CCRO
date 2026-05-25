@@ -15,7 +15,7 @@ export default function RegistrationOfAcknowledgement({ data }) {
       <DocumentHeader />
 
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
-        <h2 className="text-center font-bold text-[30px] uppercase mb-6 tracking-tight">CERTIFICATE OF REGISTRATION</h2>
+        <h2 className="cert-doc-main-title text-center font-bold text-[14pt] uppercase mb-6 tracking-tight">CERTIFICATE OF REGISTRATION</h2>
 
         <p className="font-bold text-[18px] mb-2">TO WHOM IT MAY CONCERN:</p>
 
@@ -68,6 +68,16 @@ export default function RegistrationOfAcknowledgement({ data }) {
       </div>
 
       <style>{`
+        @media print {
+          .registration-of-ack-doc .cert-doc-main-title {
+            font-size: 16pt !important;
+            line-height: 1.2 !important;
+          }
+        }
+        body.pdf-capture .registration-of-ack-doc .cert-doc-main-title {
+          font-size: 16pt !important;
+          line-height: 1.2 !important;
+        }
         .registration-of-ack-doc .print-doc-footer .text-right p { color: #2563eb; }
         .registration-of-ack-doc .registration-of-ack-input { min-width: 12ch; max-width: 16ch; }
         .registration-of-ack-doc .registration-of-ack-registry { min-width: 8ch; max-width: 12ch; }

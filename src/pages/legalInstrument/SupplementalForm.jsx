@@ -37,6 +37,8 @@ import LcrForm2ADeathAvailable from '../courtDecree/print/LcrForm2ADeathAvailabl
 import LcrForm3AMarriageAvailable from '../courtDecree/print/LcrForm3AMarriageAvailable'
 import LcrRemarksFontSizeSelect from '../../components/lcr/LcrRemarksFontSizeSelect'
 import { FormBodyFieldShortcuts } from '../../components/forms/FormBodyFieldShortcuts'
+import FormSubmitLoadingOverlay from '../../components/loading/FormSubmitLoadingOverlay'
+import { runWithFormSubmitLoading } from '../../components/loading/formSubmitLoading'
 import { mergeLcrRemarksFontSizePt } from '../../lib/lcrRemarksFontSize'
 import { handleEnterFocusNextField } from '../../lib/formEnterFocusNext'
 import { parseFormMonthInputToNumber1to12 } from '../../lib/printUtils'
@@ -108,6 +110,7 @@ export default function SupplementalForm() {
     return { ...loaded, ...pickTransmittalStateFromDraft(loaded) }
   })
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [formSubmitLoading, setFormSubmitLoading] = useState(false)
   const [activeSection, setActiveSection] = useState('affidavit')
   const activeSavedId = getActiveSupplementalId()
   const affiantNameInputRef = useRef(null)
@@ -337,6 +340,15 @@ export default function SupplementalForm() {
     saveOrUpdateSupplemental(form)
     acknowledgeSaved()
     setConfirmOpen(true)
+  }
+
+  const handleContinueToPrint = async () => {
+    setConfirmOpen(false)
+    await runWithFormSubmitLoading(setFormSubmitLoading, async () => {
+      saveSupplementalDraft(form)
+      saveOrUpdateSupplemental(form)
+    })
+    afterUnsavedAcknowledge(acknowledgeSaved, () => navigate('/legal-instrument/supplemental/print'))
   }
 
   const handleEnableLcr = (type) => {
@@ -1155,13 +1167,7 @@ export default function SupplementalForm() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        saveSupplementalDraft(form)
-                        saveOrUpdateSupplemental(form)
-                        afterUnsavedAcknowledge(acknowledgeSaved, () =>
-                          navigate('/legal-instrument/supplemental/print'),
-                        )
-                      }}
+                      onClick={handleContinueToPrint}
                       className="px-3 py-2 rounded-lg text-sm font-medium bg-[var(--primary-blue)] text-white hover:bg-[var(--primary-blue-light)]"
                     >
                       Continue to Print
@@ -1174,6 +1180,7 @@ export default function SupplementalForm() {
 
         </FormBodyFieldShortcuts>
       </div>
+      <FormSubmitLoadingOverlay open={formSubmitLoading} />
     </div>
   )
 }

@@ -70,6 +70,20 @@ import {
   withLcrTriplePdfCapture,
 } from "../../lib/lcrPdfExport";
 
+const REGISTRATION_CERT_PRINT_TYPES = new Set(["reg-ack", "reg-ausf"]);
+
+async function withRegistrationCertPdfCapture(fn) {
+  document.body.classList.add("pdf-capture");
+  await new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+  try {
+    return await fn();
+  } finally {
+    document.body.classList.remove("pdf-capture");
+  }
+}
+
 const VIEW_PRINT_OPTIONS = [
   { label: "AUSF only", type: "ausf-only" },
   { label: "AUSF 0-6", type: "ausf-0-6" },
@@ -396,7 +410,9 @@ export default function AUSFPrint() {
       const savePdf = () => saveCurrentViewAsPdf(`AUSF-${type}`);
       const result = isAusfLcrPrintType(type)
         ? await withLcrTriplePdfCapture({}, savePdf)
-        : await savePdf();
+        : REGISTRATION_CERT_PRINT_TYPES.has(type)
+          ? await withRegistrationCertPdfCapture(savePdf)
+          : await savePdf();
       if (result?.ok) {
         show({
           type: "success",
@@ -442,7 +458,9 @@ export default function AUSFPrint() {
       const previewPdf = () => bridge.previewPdfData();
       const result = isAusfLcrPrintType(type)
         ? await withLcrTriplePdfCapture({}, previewPdf)
-        : await previewPdf();
+        : REGISTRATION_CERT_PRINT_TYPES.has(type)
+          ? await withRegistrationCertPdfCapture(previewPdf)
+          : await previewPdf();
       if (!result?.ok || !result?.base64) {
         show({ type: "error", title: "Preview failed", message: result?.reason || "Unable to generate PDF preview." });
         return;

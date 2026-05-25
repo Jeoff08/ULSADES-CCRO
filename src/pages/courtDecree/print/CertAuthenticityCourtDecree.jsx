@@ -70,12 +70,12 @@ body.pdf-capture .print-doc-cert-registration.court-decree-certificate-print .co
 }
 `
 
-/** Print/PDF: CoA title 14pt; CoR title 16pt; CoR body justified with normal word spacing. */
+/** Print/PDF: CoA and CoR titles 16pt (screen uses 14pt on h2); CoR body justified with normal word spacing. */
 export const COURT_DECREE_CERT_LAYOUT_PRINT_STYLES = `
 @media print {
   .court-decree-certificate-print.print-doc-cert-auth .court-decree-cert-main-title,
   html[data-paper-size] .court-decree-certificate-print.print-doc-cert-auth .court-decree-cert-main-title {
-    font-size: 14pt !important;
+    font-size: 16pt !important;
     line-height: 1.2 !important;
   }
   .court-decree-certificate-print.print-doc-cert-registration .court-decree-cert-main-title,
@@ -102,7 +102,7 @@ export const COURT_DECREE_CERT_LAYOUT_PRINT_STYLES = `
 }
 body.pdf-capture .court-decree-certificate-print.print-doc-cert-auth .court-decree-cert-main-title,
 body.pdf-capture html[data-paper-size] .court-decree-certificate-print.print-doc-cert-auth .court-decree-cert-main-title {
-  font-size: 14pt !important;
+  font-size: 16pt !important;
   line-height: 1.2 !important;
 }
 body.pdf-capture .court-decree-certificate-print.print-doc-cert-registration .court-decree-cert-main-title,
@@ -171,7 +171,7 @@ export default function CertAuthenticityCourtDecree({ data }) {
       <DocumentHeader />
 
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
-        <h2 className="court-decree-cert-main-title text-center font-bold text-[30px] uppercase mb-6 tracking-tight">CERTIFICATE OF AUTHENTICITY</h2>
+        <h2 className="court-decree-cert-main-title text-center font-bold text-[14pt] uppercase mb-6 tracking-tight">CERTIFICATE OF AUTHENTICITY</h2>
 
         <p className="font-bold text-[18px] mb-4">TO WHOM IT MAY CONCERN:</p>
 

@@ -34,7 +34,7 @@ export default function CertRegistrationCourtDecree({ data }) {
       <DocumentHeader />
 
       <div className="print-doc-body flex flex-col flex-1 min-h-0">
-        <h2 className="court-decree-cert-main-title text-center font-bold text-[30px] uppercase mb-6 tracking-tight">CERTIFICATE OF REGISTRATION</h2>
+        <h2 className="court-decree-cert-main-title text-center font-bold text-[14pt] uppercase mb-6 tracking-tight">CERTIFICATE OF REGISTRATION</h2>
 
         <p className="font-bold text-[18px] mb-4">TO WHOM IT MAY CONCERN:</p>
 

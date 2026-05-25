@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import FormSubmitLoadingOverlay from '../components/loading/FormSubmitLoadingOverlay'
+import { runWithFormSubmitLoading } from '../components/loading/formSubmitLoading'
 
 function IconPerson({ className }) {
   return (
@@ -25,9 +27,7 @@ const MARQUEE_SEGMENTS = [
   'Legitimation: the process by which a child born to unmarried parents becomes legitimate when the parents later marry; it involves an Affidavit of Legitimation (sole or joint), registration with the Local Civil Registrar, and annotation on the child’s Certificate of Live Birth, giving the child the same rights as those born to married parents.',
 ]
 
-const LOGIN_LOADING_MS = 700
 const LOGIN_SUCCESS_DELAY_MS = 500
-const LOGIN_OVERLAY_EXIT_MS = 350
 
 const CCRO_APP_BRAND_SRC = encodeURI('/ChatGPT Image Feb 11, 2026, 03_26_31 PM.png')
 
@@ -35,9 +35,8 @@ export default function Login() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [formSubmitLoading, setFormSubmitLoading] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
-  const [isOverlayExiting, setIsOverlayExiting] = useState(false)
   const [showError, setShowError] = useState(false)
   const [marqueeIdx, setMarqueeIdx] = useState(0)
   const marqueeRef = useRef(null)
@@ -47,7 +46,6 @@ export default function Login() {
   const from = location.state?.from?.pathname || '/'
   const fromLogout = location.state?.fromLogout === true
 
-  // Cycle to next segment the instant the current one finishes scrolling
   useEffect(() => {
     const el = marqueeRef.current
     if (!el) return
@@ -56,63 +54,50 @@ export default function Login() {
     }
     el.addEventListener('animationend', handleEnd)
     return () => el.removeEventListener('animationend', handleEnd)
-  }, [marqueeIdx]) // re-attach after each remount caused by key change
+  }, [marqueeIdx])
 
   useEffect(() => {
-    if (isAuthenticated && !isLoading && !isTransitioning) {
+    if (isAuthenticated && !formSubmitLoading && !isTransitioning) {
       navigate(from, { replace: true })
     }
-  }, [isAuthenticated, isLoading, isTransitioning, from, navigate])
+  }, [isAuthenticated, formSubmitLoading, isTransitioning, from, navigate])
 
-  if (isAuthenticated && !isLoading && !isTransitioning) {
+  if (isAuthenticated && !formSubmitLoading && !isTransitioning) {
     return null
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setShowError(false)
-    setIsLoading(true)
-    setIsOverlayExiting(false)
-    setTimeout(() => {
-      if (login(username, password)) {
-        setIsTransitioning(true)
-        setTimeout(() => {
-          navigate(from, { replace: true })
-        }, LOGIN_SUCCESS_DELAY_MS)
-      } else {
-        setIsOverlayExiting(true)
-        setTimeout(() => {
-          setIsLoading(false)
-          setIsOverlayExiting(false)
-          setError('Invalid username or password.')
-          setShowError(true)
-        }, LOGIN_OVERLAY_EXIT_MS)
-      }
-    }, LOGIN_LOADING_MS)
+    let success = false
+    await runWithFormSubmitLoading(setFormSubmitLoading, async () => {
+      success = login(username, password)
+    })
+    if (success) {
+      setIsTransitioning(true)
+      setTimeout(() => {
+        navigate(from, { replace: true })
+      }, LOGIN_SUCCESS_DELAY_MS)
+    } else {
+      setError('Invalid username or password.')
+      setShowError(true)
+    }
   }
 
   return (
     <div className={`login-split login-page--enter min-h-screen flex flex-col ${isTransitioning ? 'login-page--exiting' : ''}`}>
-      {/* Loading overlay (stays mounted during exit for fade-out) */}
-      {(isLoading || isOverlayExiting) && (
-        <div
-          className={`login-loading-overlay ${isOverlayExiting ? 'login-loading-overlay--exiting' : ''}`}
-          role="status"
-          aria-live="polite"
-        >
-          <div className="login-loading-spinner" aria-hidden />
-          <p className="login-loading-text">Logging in...</p>
-        </div>
-      )}
-      {/* Panels row */}
+      <FormSubmitLoadingOverlay
+        open={formSubmitLoading}
+        title="Loading"
+        subtitle="Signing you in to ULSADES - CCRO…"
+      />
       <div className="login-split__panels flex flex-1 min-h-0">
-      {/* Left panel: branding */}
       <div className="login-brand flex flex-col px-8 py-10 text-white">
         <div className="login-brand__center flex-1 flex flex-col items-center justify-center">
           <div className="login-brand__logos flex items-center justify-center mb-6">
             <img
-              src={encodeURI('/ChatGPT Image Feb 11, 2026, 03_26_31 PM.png')}
+              src={CCRO_APP_BRAND_SRC}
               alt="City Civil Registrar's Office"
               className="w-52 h-52 md:w-64 md:h-64 object-contain shrink-0"
             />
@@ -128,7 +113,6 @@ export default function Login() {
         </footer>
       </div>
 
-      {/* Right panel: login form */}
       <div className="login-form-panel flex flex-col items-center justify-center flex-1 bg-white px-6 py-10">
         <div className="w-full max-w-sm">
           <p className="login-form-panel__label text-xs font-semibold uppercase tracking-wider text-gray-700">
@@ -167,6 +151,7 @@ export default function Login() {
                   placeholder="Enter your username"
                   autoComplete="username"
                   required
+                  disabled={formSubmitLoading}
                 />
               </div>
             </div>
@@ -187,15 +172,16 @@ export default function Login() {
                   placeholder="Enter your password"
                   autoComplete="current-password"
                   required
+                  disabled={formSubmitLoading}
                 />
               </div>
             </div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={formSubmitLoading}
               className="login-form-panel__btn w-full py-2.5 min-h-[44px] rounded-lg font-bold text-base text-white tracking-wider mt-1 disabled:opacity-70 disabled:cursor-not-allowed transition-opacity duration-200"
             >
-              {isLoading ? 'Logging in...' : 'Login'}
+              {formSubmitLoading ? 'Logging in...' : 'Login'}
             </button>
           </form>
 
@@ -205,7 +191,6 @@ export default function Login() {
       </div>
       </div>
 
-      {/* Scrolling text — one segment at a time, 1 min each, cycles automatically */}
       <div className={`login-marquee-wrap${fromLogout ? ' login-marquee-wrap--from-logout' : ''}`} aria-hidden>
         <div className="login-marquee" key={marqueeIdx} ref={marqueeRef}>
           <span className="login-marquee__text">
